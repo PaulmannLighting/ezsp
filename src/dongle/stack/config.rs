@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
-pub enum ConfigId {
+pub enum Config {
     PacketBufferCount = 0x0001,
     NeighborTableSize = 0x0002,
     ApsUnicastMessageCount = 0x0003,

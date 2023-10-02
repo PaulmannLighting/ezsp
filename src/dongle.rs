@@ -1,6 +1,7 @@
-use crate::config_id::ConfigId;
-use crate::policy_id::PolicyId;
+mod stack;
+
 use serialport::SerialPort;
+use stack::Stack;
 use std::collections::HashMap;
 use std::sync::Mutex;
 use std::thread::JoinHandle;
@@ -14,8 +15,7 @@ where
 {
     serial_port: SerialPort,
     bootload_handler: H,
-    stack_config: HashMap<ConfigId, u8>,
-    stack_policy: HashMap<PolicyId, DecisionId>,
+    stack: Stack,
     zigbee_transport_receive: T,
     zigbee_key: ZigBeeKey,
     network_key: ZigBeeKey,

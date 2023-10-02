@@ -8,7 +8,7 @@ pub trait Protocol {
 
     fn connect(&self);
 
-    fn disconnect(&self);
+    fn stop(&self); // setClosing()
 
     fn close(&self);
 

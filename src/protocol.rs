@@ -1,15 +1,20 @@
+mod counters;
+
+use counters::Counters;
 use serialport::SerialPort;
 
 pub trait Protocol {
-    fn start(serial_port: SerialPort);
+    fn start(serial_port: impl SerialPort);
 
-    fn set_closing(&self);
+    fn connect(&self);
+
+    fn disconnect(&self);
 
     fn close(&self);
 
-    fn is_alive(&self) -> bool;
+    fn enqueue(&self, frame: &[u8]);
 
-    fn queue_frame(&self, request: Request);
+    fn send_transaction(&self, transaction: impl Transaction);
 
-    fn connect(&self);
+    fn counters(&self) -> Counters;
 }

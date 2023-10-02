@@ -7,14 +7,14 @@ use std::sync::Mutex;
 use std::thread::JoinHandle;
 use std::time::SystemTime;
 
-pub struct Dongle<H, T, P>
+pub struct Dongle<B, T, P>
 where
-    H: BootloaderHandler,
+    B: BootloaderHandler,
     T: ZigBeeTransportReceive,
     P: SerialProtocol,
 {
     serial_port: SerialPort,
-    bootload_handler: H,
+    bootload_handler: B,
     stack: Stack,
     zigbee_transport_receive: T,
     zigbee_key: ZigBeeKey,

@@ -1,3 +1,4 @@
+use crate::config_id::ConfigId;
 use serialport::SerialPort;
 use std::collections::HashMap;
 use std::sync::Mutex;

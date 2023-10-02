@@ -1,3 +1,4 @@
+mod dongle;
 mod frame;
 mod protocol;
 

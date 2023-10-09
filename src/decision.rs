@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
-pub enum Decision {
+pub enum Id {
     DeferJoinsRejoinsHaveLinkKey = 0x07,
     DisallowBindingModification = 0x10,
     AllowBindingModification = 0x11,

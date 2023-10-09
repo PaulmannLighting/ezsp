@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
-pub enum Policy {
+pub enum Id {
     TrustCenter = 0x00,
     BindingModification = 0x01,
     UnicastReplies = 0x02,

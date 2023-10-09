@@ -1,3 +1,4 @@
+mod config;
 mod decision;
 mod dongle;
 mod error;

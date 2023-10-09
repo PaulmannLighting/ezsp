@@ -1,4 +1,5 @@
-use std::mem::size_of;
+const HEADER_SIZE: usize = 5;
+const LEGACY_HEADER_SIZE: usize = 3;
 
 #[derive(Debug)]
 pub struct Header {
@@ -21,7 +22,7 @@ impl TryFrom<&[u8]> for Header {
     type Error = crate::Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
-        if bytes.len() == size_of::<Self>() {
+        if bytes.len() == HEADER_SIZE {
             Ok(Self::new(
                 bytes[0],
                 u16::from_be_bytes([bytes[1], bytes[2]]),
@@ -29,7 +30,7 @@ impl TryFrom<&[u8]> for Header {
             ))
         } else {
             Err(Self::Error::InvalidSize {
-                expected: size_of::<Self>(),
+                expected: HEADER_SIZE,
                 found: bytes.len(),
             })
         }
@@ -57,11 +58,11 @@ impl TryFrom<&[u8]> for LegacyHeader {
     type Error = crate::Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
-        if bytes.len() == size_of::<Self>() {
+        if bytes.len() == LEGACY_HEADER_SIZE {
             Ok(Self::new(bytes[0], bytes[1], bytes[2]))
         } else {
             Err(Self::Error::InvalidSize {
-                expected: size_of::<Self>(),
+                expected: LEGACY_HEADER_SIZE,
                 found: bytes.len(),
             })
         }

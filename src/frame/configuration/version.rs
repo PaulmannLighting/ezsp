@@ -1,5 +1,6 @@
 use crate::frame::header::LegacyHeader;
 
+#[derive(Debug)]
 pub struct Command {
     header: LegacyHeader,
     desired_protocol_version: u8,
@@ -14,6 +15,7 @@ impl Command {
     }
 }
 
+#[derive(Debug)]
 pub struct Response {
     header: LegacyHeader,
     protocol_version: u8,

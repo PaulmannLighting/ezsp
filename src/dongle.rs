@@ -8,6 +8,7 @@ use std::sync::Mutex;
 use std::thread::JoinHandle;
 use std::time::SystemTime;
 
+#[derive(Debug)]
 pub struct Dongle<B, T, P>
 where
     B: BootloaderHandler,

@@ -1,5 +1,6 @@
 use std::mem::size_of;
 
+#[derive(Debug)]
 pub struct Header {
     sequence: u8,
     control: u16,
@@ -35,6 +36,7 @@ impl TryFrom<&[u8]> for Header {
     }
 }
 
+#[derive(Debug)]
 pub struct LegacyHeader {
     sequence: u8,
     control: u8,

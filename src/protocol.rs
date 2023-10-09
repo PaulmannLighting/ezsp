@@ -4,6 +4,8 @@ use counters::Counters;
 use serialport::SerialPort;
 
 pub trait Protocol {
+    const NAME: &'static str;
+
     fn start(serial_port: impl SerialPort);
 
     fn connect(&self);

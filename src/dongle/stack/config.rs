@@ -19,7 +19,8 @@ pub enum Config {
     MobileNodePollTimeout = 0x14,
     ReservedMobileChildEntries = 0x15,
     TxPowerMode = 0x17,
-    DisableRelay = 0x19,
+    DisableRelay = 0x18,
+    TrustCenterAddressCacheSize = 0x19,
     SourceRouteTableSize = 0x1A,
     EndDevicePollTimeoutShift = 0x1B,
     FragmentWindowSize = 0x1C,
@@ -45,4 +46,7 @@ pub enum Config {
     BroadcastMinAcksNeeded = 0x37,
     TcRejoinsUsingWellKnownKeyTimeoutSec = 0x38,
     CTuneValue = 0x39,
+    AssumeTcConcentratorType = 0x40,
+    GpProxyTableSize = 0x41,
+    GpSinkTableSize = 0x42,
 }

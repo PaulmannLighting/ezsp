@@ -1,5 +1,6 @@
 mod stack;
 
+use crate::Protocol;
 use serialport::SerialPort;
 use stack::Stack;
 use std::collections::HashMap;
@@ -11,7 +12,7 @@ pub struct Dongle<B, T, P>
 where
     B: BootloaderHandler,
     T: ZigBeeTransportReceive,
-    P: SerialProtocol,
+    P: Protocol,
 {
     serial_port: SerialPort,
     bootload_handler: B,

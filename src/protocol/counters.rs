@@ -5,6 +5,10 @@ pub struct Counters {
 }
 
 impl Counters {
+    pub const fn new(tx: Tx, rx: Rx) -> Self {
+        Self { tx, rx }
+    }
+
     pub fn tx(&self) -> &Tx {
         &self.tx
     }
@@ -22,6 +26,10 @@ pub struct Tx {
 }
 
 impl Tx {
+    pub const fn new(data: usize, naks: usize, acks: usize) -> Self {
+        Self { data, naks, acks }
+    }
+
     pub fn data(&self) -> usize {
         self.data
     }
@@ -44,6 +52,15 @@ pub struct Rx {
 }
 
 impl Rx {
+    pub const fn new(data: usize, naks: usize, acks: usize, errors: usize) -> Self {
+        Self {
+            data,
+            naks,
+            acks,
+            errors,
+        }
+    }
+
     pub fn data(&self) -> usize {
         self.data
     }

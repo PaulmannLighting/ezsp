@@ -2,13 +2,6 @@ use num_derive::{FromPrimitive, ToPrimitive};
 
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum Decision {
-    AllowJoins = 0x00,
-    AllowPreconfiguredKeyJoins = 0x01,
-    AllowRejoinsOnly = 0x02,
-    DisallowAllJoinsAndRejoins = 0x03,
-    AllowJoinsRejoinsHaveLinkKey = 0x04,
-    IgnoreTrustCenterRejoins = 0x05,
-    BdbJoinUsesInstallCodeKey = 0x06,
     DeferJoinsRejoinsHaveLinkKey = 0x07,
     DisallowBindingModification = 0x10,
     AllowBindingModification = 0x11,
@@ -26,4 +19,15 @@ pub enum Decision {
     AllowAppKeyRequests = 0x61,
     PacketValidateLibraryChecksEnabled = 0x62,
     PacketValidateLibraryChecksDisabled = 0x63,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+pub enum Bitmask {
+    Default = 0x00,
+    AllowJoins = 0x01,
+    AllowUnsecuredRejoins = 0x02,
+    SendKeyInClear = 0x04,
+    IgnoreUnsecuredRejoins = 0x08,
+    JoinsUseInstallCodeKey = 0x10,
+    DeferJoins = 0x20,
 }

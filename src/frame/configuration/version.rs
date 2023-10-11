@@ -15,6 +15,10 @@ impl Command {
             desired_protocol_version,
         }
     }
+
+    pub const fn desired_protocol_version(&self) -> u8 {
+        self.desired_protocol_version
+    }
 }
 
 #[derive(Debug)]
@@ -38,5 +42,17 @@ impl Response {
             stack_type,
             stack_version,
         }
+    }
+
+    pub const fn protocol_version(&self) -> u8 {
+        self.protocol_version
+    }
+
+    pub const fn stack_type(&self) -> u8 {
+        self.stack_type
+    }
+
+    pub const fn stack_version(&self) -> u8 {
+        self.stack_version
     }
 }

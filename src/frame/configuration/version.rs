@@ -1,5 +1,7 @@
 use crate::frame::header::LegacyHeader;
 
+pub const ID: u8 = 0x00;
+
 #[derive(Debug)]
 pub struct Command {
     header: LegacyHeader,

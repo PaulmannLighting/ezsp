@@ -12,7 +12,7 @@ pub trait Frame<const ID: u16, const PARAMETERS: usize> {
 
     /// Creates a new header for the frame
     fn make_header(sequence: u8, control: Control) -> Header {
-        Header::new(sequence, control, Self::ID)
+        Header::new(sequence, control, ID)
     }
 
     fn to_bytes(&self) -> Vec<u8> {

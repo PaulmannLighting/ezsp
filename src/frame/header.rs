@@ -20,19 +20,20 @@ impl Header {
 
 impl From<[u8; HEADER_SIZE]> for Header {
     fn from(bytes: [u8; HEADER_SIZE]) -> Self {
+        let [sequence, control_0, control_1, id_0, id_1] = bytes;
         Self::new(
-            bytes[0],
-            u16::from_be_bytes([bytes[1], bytes[2]]),
-            u16::from_be_bytes([bytes[3], bytes[4]]),
+            sequence,
+            u16::from_be_bytes([control_0, control_1]),
+            u16::from_be_bytes([id_0, id_1]),
         )
     }
 }
 
 impl From<Header> for [u8; HEADER_SIZE] {
     fn from(header: Header) -> Self {
-        let control = header.control.to_be_bytes();
-        let id = header.id.to_be_bytes();
-        [header.sequence, control[0], control[1], id[0], id[1]]
+        let [control_0, control_1] = header.control.to_be_bytes();
+        let [id_0, id_1] = header.id.to_be_bytes();
+        [header.sequence, control_0, control_1, id_0, id_1]
     }
 }
 
@@ -55,7 +56,8 @@ impl LegacyHeader {
 
 impl From<[u8; LEGACY_HEADER_SIZE]> for LegacyHeader {
     fn from(bytes: [u8; LEGACY_HEADER_SIZE]) -> Self {
-        Self::new(bytes[0], bytes[1], bytes[2])
+        let [sequence, control, id] = bytes;
+        Self::new(sequence, control, id)
     }
 }
 

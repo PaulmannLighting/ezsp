@@ -1,6 +1,7 @@
 use crate::frame::header::LegacyHeader;
+use crate::frame::{Frame, LegacyFrame};
 
-pub const ID: u8 = 0x00;
+const ID: u8 = 0x00;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
@@ -18,6 +19,12 @@ impl Command {
 
     pub const fn desired_protocol_version(&self) -> u8 {
         self.desired_protocol_version
+    }
+}
+
+impl LegacyFrame<ID> for Command {
+    fn header(&self) -> &LegacyHeader {
+        &self.header
     }
 }
 
@@ -54,5 +61,11 @@ impl Response {
 
     pub const fn stack_version(&self) -> u8 {
         self.stack_version
+    }
+}
+
+impl LegacyFrame<ID> for Response {
+    fn header(&self) -> &LegacyHeader {
+        &self.header
     }
 }

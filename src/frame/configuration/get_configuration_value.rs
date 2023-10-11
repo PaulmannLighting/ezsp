@@ -1,8 +1,9 @@
 use crate::config;
 use crate::frame::header::Header;
+use crate::frame::Frame;
 use crate::status::Status;
 
-pub const ID: u8 = 0x52;
+const ID: u8 = 0x52;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
@@ -17,6 +18,12 @@ impl Command {
 
     pub const fn config_id(&self) -> &config::Id {
         &self.config_id
+    }
+}
+
+impl Frame<ID> for Command {
+    fn header(&self) -> &Header {
+        &self.header
     }
 }
 
@@ -42,5 +49,11 @@ impl Response {
 
     pub const fn value(&self) -> u16 {
         self.value
+    }
+}
+
+impl Frame<ID> for Response {
+    fn header(&self) -> &Header {
+        &self.header
     }
 }

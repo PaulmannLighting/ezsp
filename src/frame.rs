@@ -1,4 +1,4 @@
-use crate::frame::header::{Header, LegacyHeader};
+use crate::frame::header::{Control, Header, LegacyHeader};
 
 mod configuration;
 mod header;
@@ -11,7 +11,7 @@ pub trait Frame<const ID: u16, const PARAMETERS: usize> {
     fn parameters(&self) -> [u8; PARAMETERS];
 
     /// Creates a new header for the frame
-    fn make_header(sequence: u8, control: u16) -> Header {
+    fn make_header(sequence: u8, control: Control) -> Header {
         Header::new(sequence, control, Self::ID)
     }
 

@@ -1,29 +1,37 @@
+mod control;
+
+pub use control::Control;
+
 const HEADER_SIZE: usize = 5;
 const LEGACY_HEADER_SIZE: usize = 3;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Header {
     sequence: u8,
-    control: u16,
+    control: Control,
     id: u16,
 }
 
 impl Header {
-    pub const fn new(sequence: u8, control: u16, id: u16) -> Self {
+    pub const fn new(sequence: u8, control: Control, id: u16) -> Self {
         Self {
             sequence,
             control,
             id,
         }
     }
+
+    pub const fn control(&self) -> &Control {
+        &self.control
+    }
 }
 
 impl From<[u8; HEADER_SIZE]> for Header {
     fn from(bytes: [u8; HEADER_SIZE]) -> Self {
-        let [sequence, control_0, control_1, id_0, id_1] = bytes;
+        let [sequence, control_low, control_high, id_0, id_1] = bytes;
         Self::new(
             sequence,
-            u16::from_be_bytes([control_0, control_1]),
+            Control::new(control_low, control_high),
             u16::from_be_bytes([id_0, id_1]),
         )
     }

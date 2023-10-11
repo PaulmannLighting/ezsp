@@ -1,7 +1,7 @@
 const HEADER_SIZE: usize = 5;
 const LEGACY_HEADER_SIZE: usize = 3;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Header {
     sequence: u8,
     control: u16,
@@ -37,7 +37,7 @@ impl TryFrom<&[u8]> for Header {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct LegacyHeader {
     sequence: u8,
     control: u8,

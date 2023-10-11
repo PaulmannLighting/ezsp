@@ -2,7 +2,7 @@ use crate::frame::header::LegacyHeader;
 
 pub const ID: u8 = 0x00;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: LegacyHeader,
     desired_protocol_version: u8,
@@ -21,7 +21,7 @@ impl Command {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     header: LegacyHeader,
     protocol_version: u8,

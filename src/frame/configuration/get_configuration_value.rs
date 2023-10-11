@@ -4,7 +4,7 @@ use crate::status::Status;
 
 pub const ID: u8 = 0x52;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,
     config_id: config::Id,
@@ -20,7 +20,7 @@ impl Command {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     header: Header,
     status: Status,

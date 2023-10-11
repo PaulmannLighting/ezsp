@@ -3,7 +3,7 @@ use crate::frame::header::Header;
 use crate::frame::Frame;
 use crate::status::Status;
 
-const ID: u8 = 0x52;
+const ID: u16 = 0x52;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {

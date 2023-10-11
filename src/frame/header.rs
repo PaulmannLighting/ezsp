@@ -18,22 +18,21 @@ impl Header {
     }
 }
 
-impl TryFrom<&[u8]> for Header {
-    type Error = crate::Error;
+impl From<[u8; HEADER_SIZE]> for Header {
+    fn from(bytes: [u8; HEADER_SIZE]) -> Self {
+        Self::new(
+            bytes[0],
+            u16::from_be_bytes([bytes[1], bytes[2]]),
+            u16::from_be_bytes([bytes[3], bytes[4]]),
+        )
+    }
+}
 
-    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
-        if bytes.len() == HEADER_SIZE {
-            Ok(Self::new(
-                bytes[0],
-                u16::from_be_bytes([bytes[1], bytes[2]]),
-                u16::from_be_bytes([bytes[3], bytes[4]]),
-            ))
-        } else {
-            Err(Self::Error::InvalidSize {
-                expected: HEADER_SIZE,
-                found: bytes.len(),
-            })
-        }
+impl From<Header> for [u8; HEADER_SIZE] {
+    fn from(header: Header) -> Self {
+        let control = header.control.to_be_bytes();
+        let id = header.id.to_be_bytes();
+        [header.sequence, control[0], control[1], id[0], id[1]]
     }
 }
 
@@ -54,17 +53,14 @@ impl LegacyHeader {
     }
 }
 
-impl TryFrom<&[u8]> for LegacyHeader {
-    type Error = crate::Error;
+impl From<[u8; LEGACY_HEADER_SIZE]> for LegacyHeader {
+    fn from(bytes: [u8; LEGACY_HEADER_SIZE]) -> Self {
+        Self::new(bytes[0], bytes[1], bytes[2])
+    }
+}
 
-    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
-        if bytes.len() == LEGACY_HEADER_SIZE {
-            Ok(Self::new(bytes[0], bytes[1], bytes[2]))
-        } else {
-            Err(Self::Error::InvalidSize {
-                expected: LEGACY_HEADER_SIZE,
-                found: bytes.len(),
-            })
-        }
+impl From<LegacyHeader> for [u8; LEGACY_HEADER_SIZE] {
+    fn from(header: LegacyHeader) -> Self {
+        [header.sequence, header.control, header.id]
     }
 }

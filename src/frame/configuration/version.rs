@@ -26,6 +26,10 @@ impl LegacyFrame<ID> for Command {
     fn header(&self) -> &LegacyHeader {
         &self.header
     }
+
+    fn parameters(&self) -> Vec<u8> {
+        vec![self.desired_protocol_version]
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -67,5 +71,9 @@ impl Response {
 impl LegacyFrame<ID> for Response {
     fn header(&self) -> &LegacyHeader {
         &self.header
+    }
+
+    fn parameters(&self) -> Vec<u8> {
+        vec![self.protocol_version, self.stack_type, self.stack_version]
     }
 }

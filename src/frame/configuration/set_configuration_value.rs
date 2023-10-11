@@ -2,6 +2,7 @@ use crate::config;
 use crate::frame::header::Header;
 use crate::frame::Frame;
 use crate::status::Status;
+use num_traits::ToPrimitive;
 
 const ID: u16 = 0x0053;
 
@@ -34,6 +35,15 @@ impl Frame<ID> for Command {
     fn header(&self) -> &Header {
         &self.header
     }
+
+    fn parameters(&self) -> Vec<u8> {
+        let mut parameters = vec![self
+            .config_id
+            .to_u8()
+            .expect("could not convert the config_id to u8")];
+        parameters.extend_from_slice(&self.value.to_be_bytes());
+        parameters
+    }
 }
 
 #[derive(Debug)]
@@ -55,5 +65,9 @@ impl Response {
 impl Frame<ID> for Response {
     fn header(&self) -> &Header {
         &self.header
+    }
+
+    fn parameters(&self) -> Vec<u8> {
+        vec![self.status.to_u8().expect("could not convert status to u8")]
     }
 }

@@ -31,7 +31,7 @@ pub trait LegacyFrame<const ID: u8, const PARAMETERS: usize> {
 
     /// Creates a new header for the frame
     fn make_header(sequence: u8, control: u8) -> LegacyHeader {
-        LegacyHeader::new(sequence, control, Self::ID)
+        LegacyHeader::new(sequence, control, ID)
     }
 
     fn to_bytes(&self) -> Vec<u8> {

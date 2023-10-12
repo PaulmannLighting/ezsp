@@ -6,6 +6,7 @@ mod get_value;
 mod read_attribute;
 mod send_pan_id_update;
 mod set_configuration_value;
+mod set_passive_ack_config;
 mod set_policy;
 mod set_value;
 mod version;

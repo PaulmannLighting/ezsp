@@ -15,12 +15,14 @@ impl Command {
 }
 
 impl Frame<ID> for Command {
+    type Parameters = [u8; 0];
+
     fn header(&self) -> &Header {
         &self.header
     }
 
-    fn parameters(&self) -> Vec<u8> {
-        Vec::with_capacity(0)
+    fn parameters(&self) -> Self::Parameters {
+        []
     }
 }
 
@@ -36,11 +38,13 @@ impl Response {
 }
 
 impl Frame<ID> for Response {
+    type Parameters = [u8; 0];
+
     fn header(&self) -> &Header {
         &self.header
     }
 
-    fn parameters(&self) -> Vec<u8> {
-        Vec::with_capacity(0)
+    fn parameters(&self) -> Self::Parameters {
+        []
     }
 }

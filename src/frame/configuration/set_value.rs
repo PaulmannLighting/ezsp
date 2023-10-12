@@ -40,11 +40,13 @@ impl Command {
 }
 
 impl Frame<ID> for Command {
+    type Parameters = Vec<u8>;
+
     fn header(&self) -> &Header {
         &self.header
     }
 
-    fn parameters(&self) -> Vec<u8> {
+    fn parameters(&self) -> Self::Parameters {
         let mut parameters = Vec::with_capacity(2 + self.value.len());
         parameters.push(
             self.value_id
@@ -74,11 +76,13 @@ impl Response {
 }
 
 impl Frame<ID> for Response {
+    type Parameters = [u8; 1];
+
     fn header(&self) -> &Header {
         &self.header
     }
 
-    fn parameters(&self) -> Vec<u8> {
-        vec![self.status.to_u8().expect("could not convert status to u8")]
+    fn parameters(&self) -> Self::Parameters {
+        [self.status.to_u8().expect("could not convert status to u8")]
     }
 }

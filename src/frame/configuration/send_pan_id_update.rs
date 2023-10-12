@@ -20,12 +20,14 @@ impl Command {
 }
 
 impl Frame<ID> for Command {
+    type Parameters = [u8; 2];
+
     fn header(&self) -> &Header {
         &self.header
     }
 
-    fn parameters(&self) -> Vec<u8> {
-        self.new_pan.to_be_bytes().into()
+    fn parameters(&self) -> Self::Parameters {
+        self.new_pan.to_be_bytes()
     }
 }
 
@@ -46,11 +48,13 @@ impl Response {
 }
 
 impl Frame<ID> for Response {
+    type Parameters = [u8; 1];
+
     fn header(&self) -> &Header {
         &self.header
     }
 
-    fn parameters(&self) -> Vec<u8> {
-        vec![self.status.into()]
+    fn parameters(&self) -> Self::Parameters {
+        [self.status.into()]
     }
 }

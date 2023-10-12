@@ -22,11 +22,13 @@ impl Response {
 }
 
 impl Frame<ID> for Response {
+    type Parameters = [u8; 1];
+
     fn header(&self) -> &Header {
         &self.header
     }
 
-    fn parameters(&self) -> Vec<u8> {
-        vec![self.reason.to_u8().expect("could not convert reason to u8")]
+    fn parameters(&self) -> Self::Parameters {
+        [self.reason.to_u8().expect("could not convert reason to u8")]
     }
 }

@@ -29,6 +29,11 @@ pub trait Frame<const ID: u16> {
 }
 
 pub trait LegacyFrame<const ID: u8> {
+    /// Returns the frame ID
+    fn id() -> u8 {
+        ID
+    }
+
     /// Returns the header
     fn header(&self) -> &LegacyHeader;
 

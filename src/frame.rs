@@ -2,6 +2,7 @@ use crate::frame::header::{Control, Header, LegacyHeader};
 
 pub mod configuration;
 mod header;
+mod utilities;
 
 pub trait Frame<const ID: u16> {
     /// Returns the header

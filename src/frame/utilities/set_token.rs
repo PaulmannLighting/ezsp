@@ -2,7 +2,6 @@ use crate::frame::header::Header;
 use crate::frame::Frame;
 use crate::status::Status;
 use num_traits::ToPrimitive;
-use std::sync::Arc;
 
 const ID: u16 = 0x0009;
 
@@ -10,11 +9,11 @@ const ID: u16 = 0x0009;
 pub struct Command {
     header: Header,
     token_id: u8,
-    token_data: Arc<[u8]>,
+    token_data: [u8; 8],
 }
 
 impl Command {
-    pub const fn new(header: Header, token_id: u8, token_data: Arc<[u8]>) -> Self {
+    pub const fn new(header: Header, token_id: u8, token_data: [u8; 8]) -> Self {
         Self {
             header,
             token_id,
@@ -32,17 +31,24 @@ impl Command {
 }
 
 impl Frame<ID> for Command {
-    type Parameters = Vec<u8>;
+    type Parameters = [u8; 9];
 
     fn header(&self) -> &Header {
         &self.header
     }
 
     fn parameters(&self) -> Option<Self::Parameters> {
-        let mut parameters = Vec::with_capacity(1 + self.token_data.len());
-        parameters.push(self.token_id);
-        parameters.extend_from_slice(&self.token_data);
-        Some(parameters)
+        Some([
+            self.token_id,
+            self.token_data[0],
+            self.token_data[1],
+            self.token_data[2],
+            self.token_data[3],
+            self.token_data[4],
+            self.token_data[5],
+            self.token_data[6],
+            self.token_data[7],
+        ])
     }
 }
 

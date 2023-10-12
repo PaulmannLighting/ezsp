@@ -4,6 +4,7 @@ use never::Never;
 
 const ID: u16 = 0x0006;
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,
 }

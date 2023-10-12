@@ -7,5 +7,6 @@ mod read_attribute;
 mod send_pan_id_update;
 mod set_configuration_value;
 mod set_policy;
+mod set_value;
 mod version;
 mod write_attribute;

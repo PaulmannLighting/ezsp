@@ -55,3 +55,10 @@ pub enum Id {
     TransientDeviceTimeout = 0x43,
     KeyStorageVersion = 0x44,
 }
+
+#[derive(Debug, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum ExtendedId {
+    EndpointFlags = 0x00,
+    LastLeaveReason = 0x01,
+    GetSourceRouteOverhead = 0x02,
+}

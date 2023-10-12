@@ -1,5 +1,6 @@
 mod add_endpoint;
 mod get_configuration_value;
+mod get_extended_value;
 mod get_policy;
 mod get_value;
 mod read_attribute;

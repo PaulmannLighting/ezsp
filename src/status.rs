@@ -3,11 +3,11 @@ mod error;
 mod misc;
 mod spi_err;
 
-use ash::Ash;
-use error::Error;
-use misc::Misc;
+pub use ash::Ash;
+pub use error::Error;
+pub use misc::Misc;
 use num_traits::{FromPrimitive, ToPrimitive};
-use spi_err::SpiErr;
+pub use spi_err::SpiErr;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Status {

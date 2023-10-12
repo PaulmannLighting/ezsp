@@ -1,6 +1,6 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
-use crate::status::Status;
+use crate::status::{Misc, Status};
 use never::Never;
 use num_traits::ToPrimitive;
 
@@ -53,6 +53,10 @@ impl Response {
 
     pub const fn value(&self) -> u16 {
         self.value
+    }
+
+    pub const fn succeeded(&self) -> bool {
+        self.status == Status::Misc(Misc::Success)
     }
 }
 

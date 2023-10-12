@@ -7,6 +7,7 @@ use std::sync::Arc;
 
 const ID: u16 = 0x003;
 
+/// Reads a value from the NCP but passes an extra argument specific to the value being retrieved.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

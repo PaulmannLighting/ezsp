@@ -4,6 +4,10 @@ use std::sync::Arc;
 
 const ID: u16 = 0x0081;
 
+/// Variable length data from the Host is echoed back by the NCP.
+///
+/// This command has no other effects and is designed
+/// for testing the link between the Host and NCP.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

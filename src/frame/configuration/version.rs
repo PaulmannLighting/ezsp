@@ -3,6 +3,8 @@ use crate::frame::{Frame, LegacyFrame};
 
 const ID: u8 = 0x00;
 
+/// The command allows the Host to specify the desired EZSP version
+/// and must be sent before any other command.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: LegacyHeader,
@@ -34,6 +36,7 @@ impl LegacyFrame<ID> for Command {
     }
 }
 
+/// The response provides information about the firmware running on the NCP.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     header: LegacyHeader,

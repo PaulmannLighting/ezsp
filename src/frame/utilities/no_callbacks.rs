@@ -4,6 +4,7 @@ use never::Never;
 
 const ID: u16 = 0x0007;
 
+/// Indicates that there are currently no pending callbacks.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     header: Header,

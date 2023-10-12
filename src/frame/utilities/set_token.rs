@@ -5,6 +5,7 @@ use num_traits::ToPrimitive;
 
 const ID: u16 = 0x0009;
 
+/// Sets a token (8 bytes of non-volatile storage) in the Simulated EEPROM of the NCP.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

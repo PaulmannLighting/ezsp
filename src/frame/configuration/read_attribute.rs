@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 const ID: u16 = 0x0108;
 
+/// Read attribute data on NCP endpoints.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

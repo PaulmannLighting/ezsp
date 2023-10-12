@@ -5,6 +5,7 @@ use num_traits::ToPrimitive;
 
 const ID: u16 = 0x0058;
 
+/// Indicates that the NCP received an invalid command.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     header: Header,

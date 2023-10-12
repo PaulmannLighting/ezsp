@@ -6,6 +6,8 @@ use std::sync::Arc;
 
 const ID: u16 = 0x000B;
 
+/// Retrieves a manufacturing token from the Flash Information Area of the NCP
+/// (except for EZSP_STACK_CAL_DATA which is managed by the stack).
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

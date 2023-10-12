@@ -5,6 +5,7 @@ use num_traits::ToPrimitive;
 
 const ID: u16 = 0x0105;
 
+/// Allows the Host to control the broadcast behaviour of a routing device used by the NCP.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

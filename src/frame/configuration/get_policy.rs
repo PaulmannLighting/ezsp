@@ -6,6 +6,7 @@ use num_traits::ToPrimitive;
 
 const ID: u16 = 0x0056;
 
+/// Allows the Host to read the policies used by the NCP to make fast decisions.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

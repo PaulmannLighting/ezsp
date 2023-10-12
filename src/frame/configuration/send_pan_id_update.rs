@@ -3,6 +3,7 @@ use crate::frame::Frame;
 
 const ID: u16 = 0x0057;
 
+/// Triggers a pan id update message.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

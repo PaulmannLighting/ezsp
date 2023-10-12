@@ -5,6 +5,11 @@ mod header;
 mod utilities;
 
 pub trait Frame<const ID: u16> {
+    /// Returns the frame ID
+    fn id() -> u16 {
+        ID
+    }
+
     /// Returns the header
     fn header(&self) -> &Header;
 

@@ -36,6 +36,7 @@ impl Frame<ID> for Command {
     }
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     header: Header,
     status: Status,

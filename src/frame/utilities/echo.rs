@@ -1,4 +1,4 @@
-use crate::frame::header::Header;
+use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use std::sync::Arc;
 
@@ -11,8 +11,11 @@ pub struct Command {
 }
 
 impl Command {
-    pub const fn new(header: Header, data: Arc<[u8]>) -> Self {
-        Self { header, data }
+    pub const fn new(sequence: u8, control: Control, data: Arc<[u8]>) -> Self {
+        Self {
+            header: Self::make_header(sequence, control),
+            data,
+        }
     }
 
     pub const fn data_length(&self) -> u8 {
@@ -46,6 +49,13 @@ pub struct Response {
 }
 
 impl Response {
+    pub const fn new(sequence: u8, control: Control, echo: Arc<[u8]>) -> Self {
+        Self {
+            header: Self::make_header(sequence, control),
+            echo,
+        }
+    }
+
     pub const fn echo_length(&self) -> u8 {
         self.echo.len().try_into().expect("echo length exceeds u8")
     }

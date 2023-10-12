@@ -1,4 +1,4 @@
-use crate::frame::header::Header;
+use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 
 const ID: u16 = 0x000D;
@@ -10,9 +10,9 @@ pub struct Response {
 }
 
 impl Response {
-    pub const fn new(header: Header, token_address: u16) -> Self {
+    pub const fn new(sequence: u8, control: Control, token_address: u16) -> Self {
         Self {
-            header,
+            header: Self::make_header(sequence, control),
             token_address,
         }
     }

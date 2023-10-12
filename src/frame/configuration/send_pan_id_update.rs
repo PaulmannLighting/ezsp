@@ -1,4 +1,4 @@
-use crate::frame::header::Header;
+use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 
 const ID: u16 = 0x0057;
@@ -10,8 +10,11 @@ pub struct Command {
 }
 
 impl Command {
-    pub const fn new(header: Header, new_pan: u16) -> Self {
-        Self { header, new_pan }
+    pub const fn new(sequence: u8, control: Control, new_pan: u16) -> Self {
+        Self {
+            header: Self::make_header(sequence, control),
+            new_pan,
+        }
     }
 
     pub const fn new_pan(&self) -> u16 {
@@ -38,8 +41,11 @@ pub struct Response {
 }
 
 impl Response {
-    pub const fn new(header: Header, status: bool) -> Self {
-        Self { header, status }
+    pub const fn new(sequence: u8, control: Control, status: bool) -> Self {
+        Self {
+            header: Self::make_header(sequence, control),
+            status,
+        }
     }
 
     pub const fn status(&self) -> bool {

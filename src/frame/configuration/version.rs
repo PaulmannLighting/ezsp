@@ -10,9 +10,9 @@ pub struct Command {
 }
 
 impl Command {
-    pub const fn new(header: LegacyHeader, desired_protocol_version: u8) -> Self {
+    pub const fn new(sequence: u8, control: u8, desired_protocol_version: u8) -> Self {
         Self {
-            header,
+            header: Self::make_header(sequence, control),
             desired_protocol_version,
         }
     }
@@ -44,13 +44,14 @@ pub struct Response {
 
 impl Response {
     pub const fn new(
-        header: LegacyHeader,
+        sequence: u8,
+        control: u8,
         protocol_version: u8,
         stack_type: u8,
         stack_version: u8,
     ) -> Self {
         Self {
-            header,
+            header: Self::make_header(sequence, control),
             protocol_version,
             stack_type,
             stack_version,

@@ -1,4 +1,4 @@
-use crate::frame::header::Header;
+use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::policy;
 use crate::status::Status;
@@ -13,8 +13,11 @@ pub struct Command {
 }
 
 impl Command {
-    pub const fn new(header: Header, policy_id: policy::Id) -> Self {
-        Self { header, policy_id }
+    pub const fn new(sequence: u8, control: Control, policy_id: policy::Id) -> Self {
+        Self {
+            header: Self::make_header(sequence, control),
+            policy_id,
+        }
     }
 
     pub const fn policy_id(&self) -> &policy::Id {
@@ -44,8 +47,11 @@ pub struct Response {
 }
 
 impl Response {
-    pub const fn new(header: Header, status: Status) -> Self {
-        Self { header, status }
+    pub const fn new(sequence: u8, control: Control, status: Status) -> Self {
+        Self {
+            header: Self::make_header(sequence, control),
+            status,
+        }
     }
 
     pub const fn status(&self) -> &Status {

@@ -1,4 +1,4 @@
-use crate::frame::header::Header;
+use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
 use num_traits::ToPrimitive;
@@ -22,7 +22,8 @@ pub struct Command {
 
 impl Command {
     pub const fn new(
-        header: Header,
+        sequence: u8,
+        control: Control,
         endpoint: u8,
         cluster: u16,
         attribute_id: u16,
@@ -34,7 +35,7 @@ impl Command {
         data: Arc<[u8]>,
     ) -> Self {
         Self {
-            header,
+            header: Self::make_header(sequence, control),
             endpoint,
             cluster,
             attribute_id,
@@ -118,8 +119,11 @@ pub struct Response {
 }
 
 impl Response {
-    pub const fn new(header: Header, status: Status) -> Self {
-        Self { header, status }
+    pub const fn new(sequence: u8, control: Control, status: Status) -> Self {
+        Self {
+            header: Self::make_header(sequence, control),
+            status,
+        }
     }
 
     pub const fn status(&self) -> &Status {

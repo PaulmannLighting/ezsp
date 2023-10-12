@@ -1,4 +1,4 @@
-use crate::frame::header::Header;
+use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use never::Never;
 
@@ -10,8 +10,10 @@ pub struct Response {
 }
 
 impl Response {
-    pub const fn new(header: Header) -> Self {
-        Self { header }
+    pub const fn new(sequence: u8, control: Control) -> Self {
+        Self {
+            header: Self::make_header(sequence, control),
+        }
     }
 }
 

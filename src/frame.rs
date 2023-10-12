@@ -3,12 +3,12 @@ use crate::frame::header::{Control, Header, LegacyHeader};
 mod configuration;
 mod header;
 
-pub trait Frame<const ID: u16, const PARAMETERS: usize> {
+pub trait Frame<const ID: u16> {
     /// Returns the header
     fn header(&self) -> &Header;
 
     /// Returns the parameters as bytes
-    fn parameters(&self) -> [u8; PARAMETERS];
+    fn parameters(&self) -> Vec<u8>;
 
     /// Creates a new header for the frame
     fn make_header(sequence: u8, control: Control) -> Header {
@@ -22,12 +22,12 @@ pub trait Frame<const ID: u16, const PARAMETERS: usize> {
     }
 }
 
-pub trait LegacyFrame<const ID: u8, const PARAMETERS: usize> {
+pub trait LegacyFrame<const ID: u8> {
     /// Returns the header
     fn header(&self) -> &LegacyHeader;
 
     /// Returns the parameters as bytes
-    fn parameters(&self) -> [u8; PARAMETERS];
+    fn parameters(&self) -> Vec<u8>;
 
     /// Creates a new header for the frame
     fn make_header(sequence: u8, control: u8) -> LegacyHeader {

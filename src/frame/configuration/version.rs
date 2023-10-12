@@ -22,13 +22,13 @@ impl Command {
     }
 }
 
-impl LegacyFrame<ID, 1> for Command {
+impl LegacyFrame<ID> for Command {
     fn header(&self) -> &LegacyHeader {
         &self.header
     }
 
-    fn parameters(&self) -> [u8; 1] {
-        [self.desired_protocol_version]
+    fn parameters(&self) -> Vec<u8> {
+        vec![self.desired_protocol_version]
     }
 }
 
@@ -68,12 +68,12 @@ impl Response {
     }
 }
 
-impl LegacyFrame<ID, 3> for Response {
+impl LegacyFrame<ID> for Response {
     fn header(&self) -> &LegacyHeader {
         &self.header
     }
 
-    fn parameters(&self) -> [u8; 3] {
-        [self.protocol_version, self.stack_type, self.stack_version]
+    fn parameters(&self) -> Vec<u8> {
+        vec![self.protocol_version, self.stack_type, self.stack_version]
     }
 }

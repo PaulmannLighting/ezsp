@@ -22,13 +22,13 @@ impl Command {
     }
 }
 
-impl Frame<ID, 1> for Command {
+impl Frame<ID> for Command {
     fn header(&self) -> &Header {
         &self.header
     }
 
-    fn parameters(&self) -> [u8; 1] {
-        [self
+    fn parameters(&self) -> Vec<u8> {
+        vec![self
             .config_id
             .to_u8()
             .expect("could not convert config id to u8")]
@@ -60,17 +60,15 @@ impl Response {
     }
 }
 
-impl Frame<ID, 3> for Response {
+impl Frame<ID> for Response {
     fn header(&self) -> &Header {
         &self.header
     }
 
-    fn parameters(&self) -> [u8; 3] {
-        let [high, low] = self.value.to_be_bytes();
-        [
-            self.status.to_u8().expect("could not convert status to u8"),
-            high,
-            low,
-        ]
+    fn parameters(&self) -> Vec<u8> {
+        let mut parameters = Vec::with_capacity(3);
+        parameters.push(self.status.to_u8().expect("could not convert status to u8"));
+        parameters.extend_from_slice(&self.value.to_be_bytes());
+        parameters
     }
 }

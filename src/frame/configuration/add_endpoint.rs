@@ -84,7 +84,7 @@ impl Frame<ID> for Command {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
+    fn parameters(&self) -> Option<Self::Parameters> {
         let mut parameters =
             Vec::with_capacity(8 + self.input_clusters.len() * 2 + self.output_clusters.len() * 2);
         parameters.push(self.endpoint);
@@ -99,7 +99,7 @@ impl Frame<ID> for Command {
         self.output_clusters
             .iter()
             .for_each(|cluster| parameters.extend_from_slice(&cluster.to_be_bytes()));
-        parameters
+        Some(parameters)
     }
 }
 
@@ -126,7 +126,7 @@ impl Frame<ID> for Response {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        [self.status.to_u8().expect("could not convert status to u8")]
+    fn parameters(&self) -> Option<Self::Parameters> {
+        Some([self.status.to_u8().expect("could not convert status to u8")])
     }
 }

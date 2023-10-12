@@ -29,11 +29,11 @@ impl Frame<ID> for Command {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        [self
+    fn parameters(&self) -> Option<Self::Parameters> {
+        Some([self
             .policy_id
             .to_u8()
-            .expect("could not convert policy ID to u8")]
+            .expect("could not convert policy ID to u8")])
     }
 }
 
@@ -60,7 +60,7 @@ impl Frame<ID> for Response {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        [self.status.to_u8().expect("could not convert status to u8")]
+    fn parameters(&self) -> Option<Self::Parameters> {
+        Some([self.status.to_u8().expect("could not convert status to u8")])
     }
 }

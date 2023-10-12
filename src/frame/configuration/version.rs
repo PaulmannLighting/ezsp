@@ -29,8 +29,8 @@ impl LegacyFrame<ID> for Command {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        [self.desired_protocol_version]
+    fn parameters(&self) -> Option<Self::Parameters> {
+        Some([self.desired_protocol_version])
     }
 }
 
@@ -77,7 +77,7 @@ impl LegacyFrame<ID> for Response {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        [self.protocol_version, self.stack_type, self.stack_version]
+    fn parameters(&self) -> Option<Self::Parameters> {
+        Some([self.protocol_version, self.stack_type, self.stack_version])
     }
 }

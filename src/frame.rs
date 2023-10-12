@@ -19,7 +19,7 @@ where
     fn header(&self) -> &Header;
 
     /// Returns the parameters as bytes
-    fn parameters(&self) -> Self::Parameters;
+    fn parameters(&self) -> Option<Self::Parameters>;
 
     /// Creates a new header for the frame
     fn make_header(sequence: u8, control: Control) -> Header {
@@ -28,7 +28,11 @@ where
 
     fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::from(self.header.into());
-        bytes.extend_from_slice(self.parameters().as_ref());
+
+        if let Some(parameters) = self.parameters() {
+            bytes.extend_from_slice(parameters.as_ref());
+        }
+
         bytes
     }
 }
@@ -48,7 +52,7 @@ where
     fn header(&self) -> &LegacyHeader;
 
     /// Returns the parameters as bytes
-    fn parameters(&self) -> Self::Parameters;
+    fn parameters(&self) -> Option<Self::Parameters>;
 
     /// Creates a new header for the frame
     fn make_header(sequence: u8, control: u8) -> LegacyHeader {
@@ -57,7 +61,11 @@ where
 
     fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::from(self.header.into());
-        bytes.extend_from_slice(self.parameters().as_ref());
+
+        if let Some(parameters) = self.parameters() {
+            bytes.extend_from_slice(parameters.as_ref());
+        }
+
         bytes
     }
 }

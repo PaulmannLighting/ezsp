@@ -37,8 +37,8 @@ impl Frame<ID> for Command {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        [self.config, self.min_acks_needed]
+    fn parameters(&self) -> Option<Self::Parameters> {
+        Some([self.config, self.min_acks_needed])
     }
 }
 
@@ -65,7 +65,7 @@ impl Frame<ID> for Response {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        [self.status.to_u8().expect("could not convert status to u8")]
+    fn parameters(&self) -> Option<Self::Parameters> {
+        Some([self.status.to_u8().expect("could not convert status to u8")])
     }
 }

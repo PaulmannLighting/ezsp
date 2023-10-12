@@ -28,7 +28,7 @@ impl Frame<ID> for Response {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        [self.reason.to_u8().expect("could not convert reason to u8")]
+    fn parameters(&self) -> Option<Self::Parameters> {
+        Some([self.reason.to_u8().expect("could not convert reason to u8")])
     }
 }

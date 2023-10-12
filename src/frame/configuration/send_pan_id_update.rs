@@ -26,8 +26,8 @@ impl Frame<ID> for Command {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        self.new_pan.to_be_bytes()
+    fn parameters(&self) -> Option<Self::Parameters> {
+        Some(self.new_pan.to_be_bytes())
     }
 }
 
@@ -54,7 +54,7 @@ impl Frame<ID> for Response {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        [self.status.into()]
+    fn parameters(&self) -> Option<Self::Parameters> {
+        Some([self.status.into()])
     }
 }

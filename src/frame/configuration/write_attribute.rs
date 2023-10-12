@@ -95,7 +95,7 @@ impl Frame<ID> for Command {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
+    fn parameters(&self) -> Option<Self::Parameters> {
         let mut parameters = Vec::with_capacity(12 + self.data.len());
         parameters.push(self.endpoint);
         parameters.extend_from_slice(&self.cluster.to_be_bytes());
@@ -107,7 +107,7 @@ impl Frame<ID> for Command {
         parameters.push(self.data_type);
         parameters.push(self.data_length());
         parameters.extend_from_slice(&self.data);
-        parameters
+        Some(parameters)
     }
 }
 
@@ -134,7 +134,7 @@ impl Frame<ID> for Response {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        [self.status.to_u8().expect("could not convert status to u8")]
+    fn parameters(&self) -> Option<Self::Parameters> {
+        Some([self.status.to_u8().expect("could not convert status to u8")])
     }
 }

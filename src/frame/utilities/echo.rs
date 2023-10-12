@@ -31,11 +31,11 @@ impl Frame<ID> for Command {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
+    fn parameters(&self) -> Option<Self::Parameters> {
         let mut parameters = Vec::with_capacity(1 + self.data.len());
         parameters.push(self.data_length());
         parameters.extend_from_slice(&self.data);
-        parameters
+        Some(parameters)
     }
 }
 
@@ -62,10 +62,10 @@ impl Frame<ID> for Response {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
+    fn parameters(&self) -> Option<Self::Parameters> {
         let mut parameters = Vec::with_capacity(1 + self.echo.len());
         parameters.push(self.echo_length());
         parameters.extend_from_slice(&self.echo);
-        parameters
+        Some(parameters)
     }
 }

@@ -38,15 +38,15 @@ impl Frame<ID> for Command {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
+    fn parameters(&self) -> Option<Self::Parameters> {
         let [value_low, value_high] = self.value.to_be_bytes();
-        [
+        Some([
             self.config_id
                 .to_u8()
                 .expect("could not convert config_id to u8"),
             value_low,
             value_high,
-        ]
+        ])
     }
 }
 
@@ -73,7 +73,7 @@ impl Frame<ID> for Response {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        [self.status.to_u8().expect("could not convert status to u8")]
+    fn parameters(&self) -> Option<Self::Parameters> {
+        Some([self.status.to_u8().expect("could not convert status to u8")])
     }
 }

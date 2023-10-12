@@ -1,5 +1,6 @@
 use crate::frame::header::Header;
 use crate::frame::Frame;
+use never::Never;
 
 const ID: u16 = 0x0005;
 
@@ -15,14 +16,14 @@ impl Command {
 }
 
 impl Frame<ID> for Command {
-    type Parameters = [u8; 0];
+    type Parameters = Never;
 
     fn header(&self) -> &Header {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        []
+    fn parameters(&self) -> Option<Self::Parameters> {
+        None
     }
 }
 
@@ -38,13 +39,13 @@ impl Response {
 }
 
 impl Frame<ID> for Response {
-    type Parameters = [u8; 0];
+    type Parameters = Never;
 
     fn header(&self) -> &Header {
         &self.header
     }
 
-    fn parameters(&self) -> Self::Parameters {
-        []
+    fn parameters(&self) -> Option<Self::Parameters> {
+        None
     }
 }

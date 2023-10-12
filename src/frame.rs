@@ -1,6 +1,6 @@
 use crate::frame::header::{Control, Header, LegacyHeader};
 
-mod configuration;
+pub mod configuration;
 mod header;
 
 pub trait Frame<const ID: u16> {

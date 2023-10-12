@@ -6,7 +6,7 @@ mod utilities;
 
 pub trait Frame<const ID: u16>
 where
-    Self::Parameters: IntoIterator<Item = u8>,
+    Self::Parameters: AsRef<[u8]>,
 {
     type Parameters;
 
@@ -28,14 +28,14 @@ where
 
     fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::from(self.header.into());
-        bytes.extend_from_slice(&self.parameters());
+        bytes.extend_from_slice(self.parameters().as_ref());
         bytes
     }
 }
 
 pub trait LegacyFrame<const ID: u8>
 where
-    Self::Parameters: IntoIterator<Item = u8>,
+    Self::Parameters: AsRef<[u8]>,
 {
     type Parameters;
 
@@ -57,7 +57,7 @@ where
 
     fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::from(self.header.into());
-        bytes.extend_from_slice(&self.parameters());
+        bytes.extend_from_slice(self.parameters().as_ref());
         bytes
     }
 }

@@ -11,7 +11,7 @@ const ID: u16 = 0x0053;
 /// Configuration values can be modified by the Host after the NCP has reset.
 /// Once the status of the stack changes to EMBER_NETWORK_UP,
 /// configuration values can no longer be modified and this command
-/// will respond with EZSP_ERROR_INVALID_CALL.
+/// will respond with [`Status::Error`]`(`[`Error::InvalidCall`][crate::status::Error::InvalidCall]`)`.
 #[derive(Debug)]
 pub struct Command {
     header: Header,

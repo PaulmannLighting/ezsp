@@ -12,7 +12,7 @@ pub struct Command {
     config_id: config::Id,
 }
 
-/// Reads a configuration value from the NCP
+/// Reads a configuration value from the NCP.
 impl Command {
     pub const fn new(sequence: u8, control: Control, config_id: config::Id) -> Self {
         Self {

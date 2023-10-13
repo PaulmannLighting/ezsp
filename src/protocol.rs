@@ -3,6 +3,9 @@ mod counters;
 use counters::Counters;
 use serialport::SerialPort;
 
+// XXX: Mockup
+pub trait Transaction {}
+
 pub trait Protocol {
     const NAME: &'static str;
 

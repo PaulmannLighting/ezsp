@@ -8,6 +8,7 @@ use std::sync::Mutex;
 use std::thread::JoinHandle;
 use std::time::SystemTime;
 
+/*
 #[derive(Debug)]
 pub struct Dongle<B, T, P>
 where
@@ -44,3 +45,4 @@ where
     fragmentation_aps_counter: HashMap<u8, u8>,
     concentrator_type: Concentrator,
 }
+*/

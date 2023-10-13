@@ -28,6 +28,10 @@ impl Header {
     pub const fn control(&self) -> &Control {
         &self.control
     }
+
+    pub const fn id(&self) -> u16 {
+        self.id
+    }
 }
 
 impl From<[u8; HEADER_SIZE]> for Header {
@@ -72,6 +76,14 @@ impl LegacyHeader {
 
     pub const fn for_frame<const ID: u8>(sequence: u8, control: u8) -> Self {
         Self::new(sequence, control, ID)
+    }
+
+    pub const fn control(&self) -> u8 {
+        self.control
+    }
+
+    pub const fn id(&self) -> u8 {
+        self.id
     }
 }
 

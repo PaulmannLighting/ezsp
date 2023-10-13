@@ -11,6 +11,7 @@ where
     type Parameters;
 
     /// Returns the frame ID
+    #[must_use]
     fn id() -> u16 {
         ID
     }
@@ -32,6 +33,7 @@ where
     }
 }
 
+#[allow(clippy::module_name_repetitions)]
 pub trait LegacyFrame<const ID: u8>
 where
     Self::Parameters: AsRef<[u8]>,
@@ -39,6 +41,7 @@ where
     type Parameters;
 
     /// Returns the frame ID
+    #[must_use]
     fn id() -> u8 {
         ID
     }
@@ -48,11 +51,6 @@ where
 
     /// Returns the parameters as bytes
     fn parameters(&self) -> Option<Self::Parameters>;
-
-    /// Creates a new header for the frame
-    fn make_header(sequence: u8, control: u8) -> LegacyHeader {
-        LegacyHeader::new(sequence, control, ID)
-    }
 
     fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::from(<[u8; LEGACY_HEADER_SIZE]>::from(self.header()));

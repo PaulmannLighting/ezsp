@@ -9,11 +9,11 @@ impl Counters {
         Self { tx, rx }
     }
 
-    pub fn tx(&self) -> &Tx {
+    pub const fn tx(&self) -> &Tx {
         &self.tx
     }
 
-    pub fn rx(&self) -> &Rx {
+    pub const fn rx(&self) -> &Rx {
         &self.rx
     }
 }
@@ -30,15 +30,15 @@ impl Tx {
         Self { data, naks, acks }
     }
 
-    pub fn data(&self) -> usize {
+    pub const fn data(&self) -> usize {
         self.data
     }
 
-    pub fn naks(&self) -> usize {
+    pub const fn naks(&self) -> usize {
         self.naks
     }
 
-    pub fn acks(&self) -> usize {
+    pub const fn acks(&self) -> usize {
         self.acks
     }
 }
@@ -61,19 +61,19 @@ impl Rx {
         }
     }
 
-    pub fn data(&self) -> usize {
+    pub const fn data(&self) -> usize {
         self.data
     }
 
-    pub fn naks(&self) -> usize {
+    pub const fn naks(&self) -> usize {
         self.naks
     }
 
-    pub fn acks(&self) -> usize {
+    pub const fn acks(&self) -> usize {
         self.acks
     }
 
-    pub fn errors(&self) -> usize {
+    pub const fn errors(&self) -> usize {
         self.errors
     }
 }

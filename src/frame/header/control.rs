@@ -5,14 +5,17 @@ pub struct Control {
 }
 
 impl Control {
+    #[must_use]
     pub const fn new(low: u8, high: u8) -> Self {
         Self { low, high }
     }
 
+    #[must_use]
     pub const fn low(&self) -> u8 {
         self.low
     }
 
+    #[must_use]
     pub const fn high(&self) -> u8 {
         self.high
     }

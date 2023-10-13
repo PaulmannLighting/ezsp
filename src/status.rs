@@ -9,7 +9,7 @@ pub use misc::Misc;
 use num_traits::{FromPrimitive, ToPrimitive};
 pub use spi_err::SpiErr;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 pub enum Status {
     SpiErr(SpiErr),
     Error(Error),

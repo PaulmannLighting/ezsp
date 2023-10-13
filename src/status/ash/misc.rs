@@ -1,6 +1,6 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 
-#[derive(Clone, Debug, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum Misc {
     Started = 0x70,
     Connected = 0x71,

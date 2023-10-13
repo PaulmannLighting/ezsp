@@ -5,7 +5,7 @@ use error::Error;
 use misc::Misc;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 pub enum Ash {
     Error(Error),
     Misc(Misc),

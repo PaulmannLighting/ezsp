@@ -1,6 +1,6 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 
-#[derive(Clone, Debug, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum Error {
     VersionNotSet = 0x30,
     InvalidFrameId = 0x31,

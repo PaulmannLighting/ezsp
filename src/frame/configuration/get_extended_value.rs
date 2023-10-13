@@ -40,20 +40,22 @@ impl Command {
 }
 
 impl Frame<ID> for Command {
-    type Parameters = [u8; 3];
+    type Parameters = [u8; 5];
 
     fn header(&self) -> &Header {
         &self.header
     }
 
     fn parameters(&self) -> Option<Self::Parameters> {
-        let [characteristics_low, characteristics_high] = self.characteristics.to_be_bytes();
+        let characteristics = self.characteristics.to_be_bytes();
         Some([
             self.value_id
                 .to_u8()
                 .expect("could not convert value ID to u8"),
-            characteristics_low,
-            characteristics_high,
+            characteristics[0],
+            characteristics[1],
+            characteristics[2],
+            characteristics[3],
         ])
     }
 }

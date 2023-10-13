@@ -1,5 +1,5 @@
 use crate::frame::header::LegacyHeader;
-use crate::frame::{Frame, LegacyFrame};
+use crate::frame::LegacyFrame;
 
 const ID: u8 = 0x00;
 

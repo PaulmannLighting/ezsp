@@ -28,6 +28,12 @@ pub struct Command {
 }
 
 impl Command {
+    /// Creates a new [`Command`]
+    ///
+    /// # Errors
+    /// Returns a [`TryFromIntError`] if the size of either `input_clusters`
+    /// or `output_clusters` exceeds the bounds of an u8.
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         sequence: u8,
         control: Control,
@@ -51,34 +57,42 @@ impl Command {
         })
     }
 
+    #[must_use]
     pub const fn endpoint(&self) -> u8 {
         self.endpoint
     }
 
+    #[must_use]
     pub const fn profile_id(&self) -> u16 {
         self.profile_id
     }
 
+    #[must_use]
     pub const fn device_id(&self) -> u16 {
         self.device_id
     }
 
+    #[must_use]
     pub const fn app_flags(&self) -> u8 {
         self.app_flags
     }
 
+    #[must_use]
     pub const fn input_cluster_count(&self) -> u8 {
         self.input_cluster_count
     }
 
+    #[must_use]
     pub const fn output_cluster_count(&self) -> u8 {
         self.output_cluster_count
     }
 
+    #[must_use]
     pub fn input_cluster_list(&self) -> &[u16] {
         &self.input_clusters
     }
 
+    #[must_use]
     pub fn output_cluster_list(&self) -> &[u16] {
         &self.output_clusters
     }
@@ -117,6 +131,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, status: Status) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -124,6 +139,7 @@ impl Response {
         }
     }
 
+    #[must_use]
     pub const fn status(&self) -> &Status {
         &self.status
     }

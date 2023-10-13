@@ -19,6 +19,7 @@ pub struct Command {
 }
 
 impl Command {
+    #[must_use]
     pub const fn new(
         sequence: u8,
         control: Control,
@@ -38,22 +39,27 @@ impl Command {
         }
     }
 
+    #[must_use]
     pub const fn endpoint(&self) -> u8 {
         self.endpoint
     }
 
+    #[must_use]
     pub const fn cluster(&self) -> u16 {
         self.cluster
     }
 
+    #[must_use]
     pub const fn attribute_id(&self) -> u16 {
         self.attribute_id
     }
 
+    #[must_use]
     pub const fn mask(&self) -> u8 {
         self.mask
     }
 
+    #[must_use]
     pub const fn manufacturer_code(&self) -> u16 {
         self.manufacturer_code
     }
@@ -93,6 +99,10 @@ pub struct Response {
 }
 
 impl Response {
+    /// Crates a new [`Response`]
+    ///
+    /// # Errors
+    /// Returns an [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
     pub fn new(
         sequence: u8,
         control: Control,
@@ -109,18 +119,22 @@ impl Response {
         })
     }
 
+    #[must_use]
     pub const fn status(&self) -> &Status {
         &self.status
     }
 
+    #[must_use]
     pub const fn data_type(&self) -> u8 {
         self.data_type
     }
 
+    #[must_use]
     pub const fn read_length(&self) -> u8 {
         self.read_length
     }
 
+    #[must_use]
     pub fn data(&self) -> &[u8] {
         &self.data
     }

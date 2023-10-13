@@ -11,6 +11,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, token_address: u16) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -18,6 +19,7 @@ impl Response {
         }
     }
 
+    #[must_use]
     pub const fn token_address(&self) -> u16 {
         self.token_address
     }

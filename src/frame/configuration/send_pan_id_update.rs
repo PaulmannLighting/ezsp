@@ -11,6 +11,7 @@ pub struct Command {
 }
 
 impl Command {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, new_pan: u16) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -18,6 +19,7 @@ impl Command {
         }
     }
 
+    #[must_use]
     pub const fn new_pan(&self) -> u16 {
         self.new_pan
     }
@@ -42,6 +44,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, status: bool) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -49,6 +52,7 @@ impl Response {
         }
     }
 
+    #[must_use]
     pub const fn status(&self) -> bool {
         self.status
     }

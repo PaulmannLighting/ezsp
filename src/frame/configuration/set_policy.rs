@@ -15,6 +15,7 @@ pub struct Command {
 }
 
 impl Command {
+    #[must_use]
     pub const fn new(
         sequence: u8,
         control: Control,
@@ -28,10 +29,12 @@ impl Command {
         }
     }
 
+    #[must_use]
     pub const fn policy_id(&self) -> &policy::Id {
         &self.policy_id
     }
 
+    #[must_use]
     pub const fn decision_id(&self) -> &decision::Id {
         &self.decision_id
     }
@@ -63,6 +66,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, status: Status) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -70,6 +74,7 @@ impl Response {
         }
     }
 
+    #[must_use]
     pub const fn status(&self) -> &Status {
         &self.status
     }

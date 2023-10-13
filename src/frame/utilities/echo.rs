@@ -17,6 +17,10 @@ pub struct Command {
 }
 
 impl Command {
+    /// Crates a new [`Command`]
+    ///
+    /// # Errors
+    /// Returns an [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
     pub fn new(sequence: u8, control: Control, data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
         Ok(Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -25,10 +29,12 @@ impl Command {
         })
     }
 
+    #[must_use]
     pub const fn data_length(&self) -> u8 {
         self.data_length
     }
 
+    #[must_use]
     pub fn data(&self) -> &[u8] {
         &self.data
     }
@@ -57,6 +63,10 @@ pub struct Response {
 }
 
 impl Response {
+    /// Crates a new [`Response`]
+    ///
+    /// # Errors
+    /// Returns an [`TryFromIntError`] if the size of `echo` exceeds the bounds of an u8.
     pub fn new(sequence: u8, control: Control, echo: Arc<[u8]>) -> Result<Self, TryFromIntError> {
         Ok(Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -65,10 +75,12 @@ impl Response {
         })
     }
 
+    #[must_use]
     pub const fn echo_length(&self) -> u8 {
         self.echo_length
     }
 
+    #[must_use]
     pub fn echo(&self) -> &[u8] {
         &self.echo
     }

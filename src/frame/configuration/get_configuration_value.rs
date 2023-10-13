@@ -14,6 +14,7 @@ pub struct Command {
 
 /// Reads a configuration value from the NCP.
 impl Command {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, config_id: config::Id) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -21,6 +22,7 @@ impl Command {
         }
     }
 
+    #[must_use]
     pub const fn config_id(&self) -> &config::Id {
         &self.config_id
     }
@@ -49,6 +51,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, status: Status, value: u16) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -57,10 +60,12 @@ impl Response {
         }
     }
 
+    #[must_use]
     pub const fn status(&self) -> &Status {
         &self.status
     }
 
+    #[must_use]
     pub const fn value(&self) -> u16 {
         self.value
     }

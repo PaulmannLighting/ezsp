@@ -13,6 +13,7 @@ pub struct Command {
 }
 
 impl Command {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -40,6 +41,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, status: Status, value: u16) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -48,14 +50,17 @@ impl Response {
         }
     }
 
+    #[must_use]
     pub const fn status(&self) -> &Status {
         &self.status
     }
 
+    #[must_use]
     pub const fn value(&self) -> u16 {
         self.value
     }
 
+    #[must_use]
     pub fn succeeded(&self) -> bool {
         self.status == Status::Misc(Misc::Success)
     }

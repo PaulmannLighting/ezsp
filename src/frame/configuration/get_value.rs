@@ -16,6 +16,7 @@ pub struct Command {
 }
 
 impl Command {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, value_id: value::Id) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -23,6 +24,7 @@ impl Command {
         }
     }
 
+    #[must_use]
     pub const fn value_id(&self) -> &value::Id {
         &self.value_id
     }
@@ -52,6 +54,10 @@ pub struct Response {
 }
 
 impl Response {
+    /// Creates a new [`Response`]
+    ///
+    /// # Errors
+    /// Returns an [`TryFromIntError`] if the size of `value` exceeds the bounds of an u8.
     pub fn new(
         sequence: u8,
         control: Control,
@@ -66,14 +72,17 @@ impl Response {
         })
     }
 
+    #[must_use]
     pub const fn status(&self) -> &Status {
         &self.status
     }
 
+    #[must_use]
     pub const fn value_length(&self) -> u8 {
         self.value_length
     }
 
+    #[must_use]
     pub fn value(&self) -> &[u8] {
         &self.value
     }

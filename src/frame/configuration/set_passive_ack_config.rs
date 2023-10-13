@@ -14,6 +14,7 @@ pub struct Command {
 }
 
 impl Command {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, config: u8, min_acks_needed: u8) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -22,10 +23,12 @@ impl Command {
         }
     }
 
+    #[must_use]
     pub const fn config(&self) -> u8 {
         self.config
     }
 
+    #[must_use]
     pub const fn min_acks_needed(&self) -> u8 {
         self.min_acks_needed
     }
@@ -50,6 +53,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, status: Status) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -57,6 +61,7 @@ impl Response {
         }
     }
 
+    #[must_use]
     pub const fn status(&self) -> &Status {
         &self.status
     }

@@ -14,6 +14,7 @@ pub struct Command {
 }
 
 impl Command {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, token_id: u8, token_data: [u8; 8]) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -22,10 +23,12 @@ impl Command {
         }
     }
 
+    #[must_use]
     pub const fn token_id(&self) -> u8 {
         self.token_id
     }
 
+    #[must_use]
     pub const fn token_data(&self) -> &[u8] {
         &self.token_data
     }
@@ -60,6 +63,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, status: Status) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -67,6 +71,7 @@ impl Response {
         }
     }
 
+    #[must_use]
     pub const fn status(&self) -> &Status {
         &self.status
     }

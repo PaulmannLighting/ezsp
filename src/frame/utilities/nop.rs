@@ -11,6 +11,7 @@ pub struct Command {
 }
 
 impl Command {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -36,6 +37,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),

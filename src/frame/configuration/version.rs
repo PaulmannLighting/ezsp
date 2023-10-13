@@ -12,6 +12,7 @@ pub struct Command {
 }
 
 impl Command {
+    #[must_use]
     pub const fn new(sequence: u8, control: u8, desired_protocol_version: u8) -> Self {
         Self {
             header: LegacyHeader::for_frame::<ID>(sequence, control),
@@ -19,6 +20,7 @@ impl Command {
         }
     }
 
+    #[must_use]
     pub const fn desired_protocol_version(&self) -> u8 {
         self.desired_protocol_version
     }
@@ -46,6 +48,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(
         sequence: u8,
         control: u8,
@@ -61,14 +64,17 @@ impl Response {
         }
     }
 
+    #[must_use]
     pub const fn protocol_version(&self) -> u8 {
         self.protocol_version
     }
 
+    #[must_use]
     pub const fn stack_type(&self) -> u8 {
         self.stack_type
     }
 
+    #[must_use]
     pub const fn stack_version(&self) -> u8 {
         self.stack_version
     }

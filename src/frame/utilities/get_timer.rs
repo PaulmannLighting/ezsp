@@ -16,6 +16,7 @@ pub struct Command {
 }
 
 impl Command {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, timer_id: u8) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -23,6 +24,7 @@ impl Command {
         }
     }
 
+    #[must_use]
     pub const fn timer_id(&self) -> u8 {
         self.timer_id
     }
@@ -49,6 +51,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(
         sequence: u8,
         control: Control,
@@ -64,14 +67,17 @@ impl Response {
         }
     }
 
+    #[must_use]
     pub const fn time(&self) -> u16 {
         self.time
     }
 
+    #[must_use]
     pub const fn units(&self) -> &event::Units {
         &self.units
     }
 
+    #[must_use]
     pub const fn repeat(&self) -> bool {
         self.repeat
     }

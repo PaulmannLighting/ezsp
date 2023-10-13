@@ -13,6 +13,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(sequence: u8, control: Control, reason: Status) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
@@ -20,6 +21,7 @@ impl Response {
         }
     }
 
+    #[must_use]
     pub const fn reason(&self) -> &Status {
         &self.reason
     }

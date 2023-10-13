@@ -29,7 +29,7 @@ impl Command {
         self.data_length
     }
 
-    pub const fn data(&self) -> &[u8] {
+    pub fn data(&self) -> &[u8] {
         &self.data
     }
 }
@@ -69,7 +69,7 @@ impl Response {
         self.echo_length
     }
 
-    pub const fn echo(&self) -> &[u8] {
+    pub fn echo(&self) -> &[u8] {
         &self.echo
     }
 }

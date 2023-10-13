@@ -75,11 +75,11 @@ impl Command {
         self.output_cluster_count
     }
 
-    pub const fn input_cluster_list(&self) -> &[u16] {
+    pub fn input_cluster_list(&self) -> &[u16] {
         &self.input_clusters
     }
 
-    pub const fn output_cluster_list(&self) -> &[u16] {
+    pub fn output_cluster_list(&self) -> &[u16] {
         &self.output_clusters
     }
 }

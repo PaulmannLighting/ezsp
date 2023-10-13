@@ -88,7 +88,7 @@ impl Command {
         self.data_length
     }
 
-    pub const fn data(&self) -> &[u8] {
+    pub fn data(&self) -> &[u8] {
         &self.data
     }
 }

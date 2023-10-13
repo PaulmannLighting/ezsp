@@ -44,7 +44,7 @@ impl Command {
         self.token_data_length
     }
 
-    pub const fn token_data(&self) -> &[u8] {
+    pub fn token_data(&self) -> &[u8] {
         &self.token_data
     }
 }

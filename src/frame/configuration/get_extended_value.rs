@@ -91,7 +91,7 @@ impl Response {
         self.value_length
     }
 
-    pub const fn value(&self) -> &[u8] {
+    pub fn value(&self) -> &[u8] {
         &self.value
     }
 }

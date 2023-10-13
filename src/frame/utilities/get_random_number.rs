@@ -56,7 +56,7 @@ impl Response {
         self.value
     }
 
-    pub const fn succeeded(&self) -> bool {
+    pub fn succeeded(&self) -> bool {
         self.status == Status::Misc(Misc::Success)
     }
 }

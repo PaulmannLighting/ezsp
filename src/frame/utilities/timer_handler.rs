@@ -4,6 +4,7 @@ use never::Never;
 
 const ID: u16 = 0x000F;
 
+/// A callback from the timer.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     header: Header,

@@ -7,6 +7,7 @@ use std::sync::Arc;
 
 const ID: u16 = 0x0012;
 
+/// Sends a debug message from the Host to the Network Analyzer utility via the NCP.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

@@ -1,13 +1,10 @@
+use crate::Protocol;
+use serialport::SerialPort;
+use stack::Stack;
 use std::collections::HashMap;
 use std::sync::Mutex;
 use std::thread::JoinHandle;
 use std::time::SystemTime;
-
-use serialport::SerialPort;
-
-use stack::Stack;
-
-use crate::Protocol;
 
 mod stack;
 

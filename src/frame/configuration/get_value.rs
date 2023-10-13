@@ -18,7 +18,7 @@ pub struct Command {
 impl Command {
     pub const fn new(sequence: u8, control: Control, value_id: value::Id) -> Self {
         Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             value_id,
         }
     }
@@ -59,7 +59,7 @@ impl Response {
         value: Arc<[u8]>,
     ) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             status,
             value_length: value.len().try_into()?,
             value,

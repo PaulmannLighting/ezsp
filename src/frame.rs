@@ -1,4 +1,4 @@
-use crate::frame::header::{Control, Header, LegacyHeader, HEADER_SIZE, LEGACY_HEADER_SIZE};
+use crate::frame::header::{Header, LegacyHeader, HEADER_SIZE, LEGACY_HEADER_SIZE};
 
 pub mod configuration;
 pub mod header;
@@ -20,11 +20,6 @@ where
 
     /// Returns the parameters as bytes
     fn parameters(&self) -> Option<Self::Parameters>;
-
-    /// Creates a new header for the frame
-    fn make_header(sequence: u8, control: Control) -> Header {
-        Header::new(sequence, control, ID)
-    }
 
     fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::from(<[u8; HEADER_SIZE]>::from(self.header()));

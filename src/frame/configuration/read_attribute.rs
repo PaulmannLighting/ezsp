@@ -29,7 +29,7 @@ impl Command {
         manufacturer_code: u16,
     ) -> Self {
         Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             endpoint,
             cluster,
             attribute_id,
@@ -101,7 +101,7 @@ impl Response {
         data: Arc<[u8]>,
     ) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             status,
             data_type,
             read_length: data.len().try_into()?,

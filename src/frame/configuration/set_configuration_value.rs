@@ -22,7 +22,7 @@ pub struct Command {
 impl Command {
     pub const fn new(sequence: u8, control: Control, config_id: config::Id, value: u16) -> Self {
         Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             config_id,
             value,
         }
@@ -65,7 +65,7 @@ pub struct Response {
 impl Response {
     pub const fn new(sequence: u8, control: Control, status: Status) -> Self {
         Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             status,
         }
     }

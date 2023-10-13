@@ -19,7 +19,7 @@ pub struct Command {
 impl Command {
     pub fn new(sequence: u8, control: Control, data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             data_length: data.len().try_into()?,
             data,
         })
@@ -59,7 +59,7 @@ pub struct Response {
 impl Response {
     pub fn new(sequence: u8, control: Control, echo: Arc<[u8]>) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             echo_length: echo.len().try_into()?,
             echo,
         })

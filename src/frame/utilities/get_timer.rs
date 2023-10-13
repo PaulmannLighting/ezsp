@@ -18,7 +18,7 @@ pub struct Command {
 impl Command {
     pub const fn new(sequence: u8, control: Control, timer_id: u8) -> Self {
         Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             timer_id,
         }
     }
@@ -57,7 +57,7 @@ impl Response {
         repeat: bool,
     ) -> Self {
         Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             time,
             units,
             repeat,

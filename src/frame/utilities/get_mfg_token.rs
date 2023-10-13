@@ -18,7 +18,7 @@ pub struct Command {
 impl Command {
     pub const fn new(sequence: u8, control: Control, token_id: mfg_token::Id) -> Self {
         Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             token_id,
         }
     }
@@ -57,7 +57,7 @@ impl Response {
         token_data: Arc<[u8]>,
     ) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             token_data_length: token_data.len().try_into()?,
             token_data,
         })

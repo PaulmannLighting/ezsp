@@ -24,7 +24,7 @@ impl Command {
         characteristics: u32,
     ) -> Self {
         Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             value_id,
             characteristics,
         }
@@ -76,7 +76,7 @@ impl Response {
         value: Arc<[u8]>,
     ) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             status,
             value_length: value.len().try_into()?,
             value,

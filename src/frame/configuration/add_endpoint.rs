@@ -39,7 +39,7 @@ impl Command {
         output_clusters: Arc<[u16]>,
     ) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             endpoint,
             profile_id,
             device_id,
@@ -119,7 +119,7 @@ pub struct Response {
 impl Response {
     pub const fn new(sequence: u8, control: Control, status: Status) -> Self {
         Self {
-            header: Self::make_header(sequence, control),
+            header: Header::for_frame::<ID>(sequence, control),
             status,
         }
     }

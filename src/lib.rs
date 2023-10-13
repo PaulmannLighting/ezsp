@@ -1,5 +1,4 @@
 pub mod config;
-pub mod counter_type;
 pub mod decision;
 pub mod dongle;
 pub mod error;

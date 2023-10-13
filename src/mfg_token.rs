@@ -13,7 +13,7 @@ pub enum Id {
 
 impl FromPrimitive for Id {
     fn from_i64(n: i64) -> Option<Self> {
-        u64::from(n).and_then(Self::from_u64)
+        u64::try_from(n).ok().and_then(Self::from_u64)
     }
 
     fn from_u64(n: u64) -> Option<Self> {

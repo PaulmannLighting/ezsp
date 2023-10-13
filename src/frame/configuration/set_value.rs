@@ -2,7 +2,6 @@ use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
 use crate::value;
-use num_traits::ToPrimitive;
 use std::num::TryFromIntError;
 use std::sync::Arc;
 
@@ -61,11 +60,7 @@ impl Frame<ID> for Command {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         let mut parameters = Vec::with_capacity(2 + self.value.len());
-        parameters.push(
-            self.value_id
-                .to_u8()
-                .expect("could not convert value ID to u8"),
-        );
+        parameters.push(self.value_id.into());
         parameters.push(self.value_length);
         parameters.extend_from_slice(&self.value);
         Some(parameters)
@@ -101,6 +96,6 @@ impl Frame<ID> for Response {
     }
 
     fn parameters(&self) -> Option<Self::Parameters> {
-        Some([self.status.to_u8().expect("could not convert status to u8")])
+        Some([self.status.into()])
     }
 }

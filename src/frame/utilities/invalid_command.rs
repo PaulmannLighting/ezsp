@@ -1,7 +1,6 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
-use num_traits::ToPrimitive;
 
 const ID: u16 = 0x0058;
 
@@ -22,8 +21,8 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn reason(&self) -> &Status {
-        &self.reason
+    pub const fn reason(&self) -> Status {
+        self.reason
     }
 }
 
@@ -35,6 +34,6 @@ impl Frame<ID> for Response {
     }
 
     fn parameters(&self) -> Option<Self::Parameters> {
-        Some([self.reason.to_u8().expect("could not convert reason to u8")])
+        Some([self.reason.into()])
     }
 }

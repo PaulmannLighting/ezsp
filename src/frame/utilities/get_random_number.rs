@@ -2,7 +2,6 @@ use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::{Misc, Status};
 use never::Never;
-use num_traits::ToPrimitive;
 
 const ID: u16 = 0x0049;
 
@@ -51,8 +50,8 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn status(&self) -> &Status {
-        &self.status
+    pub const fn status(&self) -> Status {
+        self.status
     }
 
     #[must_use]
@@ -75,10 +74,6 @@ impl Frame<ID> for Response {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         let [value_low, value_high] = self.value.to_be_bytes();
-        Some([
-            self.status.to_u8().expect("could not convert status to u8"),
-            value_low,
-            value_high,
-        ])
+        Some([self.status.into(), value_low, value_high])
     }
 }

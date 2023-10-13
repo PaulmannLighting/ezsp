@@ -5,7 +5,7 @@ use manufacturing::Manufacturing;
 use num_traits::{FromPrimitive, ToPrimitive};
 use stack::Stack;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Id {
     Mfg(Manufacturing),
     Stack(Stack),

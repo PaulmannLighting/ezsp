@@ -1,7 +1,6 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
-use num_traits::ToPrimitive;
 use std::num::TryFromIntError;
 use std::sync::Arc;
 
@@ -147,8 +146,8 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn status(&self) -> &Status {
-        &self.status
+    pub const fn status(&self) -> Status {
+        self.status
     }
 }
 
@@ -160,6 +159,6 @@ impl Frame<ID> for Response {
     }
 
     fn parameters(&self) -> Option<Self::Parameters> {
-        Some([self.status.to_u8().expect("could not convert status to u8")])
+        Some([self.status.into()])
     }
 }

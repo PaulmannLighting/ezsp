@@ -2,7 +2,6 @@ use crate::event;
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
-use num_traits::ToPrimitive;
 
 const ID: u16 = 0x000E;
 
@@ -37,6 +36,26 @@ impl Command {
             repeat,
         }
     }
+
+    #[must_use]
+    pub const fn timer_id(&self) -> u8 {
+        self.timer_id
+    }
+
+    #[must_use]
+    pub const fn time(&self) -> u16 {
+        self.time
+    }
+
+    #[must_use]
+    pub const fn units(&self) -> event::Units {
+        self.units
+    }
+
+    #[must_use]
+    pub const fn repeat(&self) -> bool {
+        self.repeat
+    }
 }
 
 impl Frame<ID> for Command {
@@ -52,7 +71,7 @@ impl Frame<ID> for Command {
             self.timer_id,
             time_low,
             time_high,
-            self.units.to_u8().expect("could not convert units to u8"),
+            self.units.into(),
             self.repeat.into(),
         ])
     }
@@ -74,8 +93,8 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn status(&self) -> &Status {
-        &self.status
+    pub const fn status(&self) -> Status {
+        self.status
     }
 }
 
@@ -87,6 +106,6 @@ impl Frame<ID> for Response {
     }
 
     fn parameters(&self) -> Option<Self::Parameters> {
-        Some([self.status.to_u8().expect("could not convert status to u8")])
+        Some([self.status.into()])
     }
 }

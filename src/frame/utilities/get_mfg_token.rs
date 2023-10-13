@@ -1,7 +1,6 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::mfg_token;
-use num_traits::ToPrimitive;
 use std::num::TryFromIntError;
 use std::sync::Arc;
 
@@ -25,8 +24,8 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn token_id(&self) -> &mfg_token::Id {
-        &self.token_id
+    pub const fn token_id(&self) -> mfg_token::Id {
+        self.token_id
     }
 }
 
@@ -38,10 +37,7 @@ impl Frame<ID> for Command {
     }
 
     fn parameters(&self) -> Option<Self::Parameters> {
-        Some([self
-            .token_id
-            .to_u8()
-            .expect("could not convert token ID to u8")])
+        Some([self.token_id.into()])
     }
 }
 

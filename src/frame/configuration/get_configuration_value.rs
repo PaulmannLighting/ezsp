@@ -23,8 +23,8 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn config_id(&self) -> &config::Id {
-        &self.config_id
+    pub const fn config_id(&self) -> config::Id {
+        self.config_id
     }
 }
 

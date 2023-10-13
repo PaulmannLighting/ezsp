@@ -2,7 +2,6 @@ use crate::config;
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
-use num_traits::ToPrimitive;
 
 const ID: u16 = 0x0053;
 
@@ -30,8 +29,8 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn config_id(&self) -> &config::Id {
-        &self.config_id
+    pub const fn config_id(&self) -> config::Id {
+        self.config_id
     }
 
     #[must_use]
@@ -49,13 +48,7 @@ impl Frame<ID> for Command {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         let [value_low, value_high] = self.value.to_be_bytes();
-        Some([
-            self.config_id
-                .to_u8()
-                .expect("could not convert config_id to u8"),
-            value_low,
-            value_high,
-        ])
+        Some([self.config_id.into(), value_low, value_high])
     }
 }
 
@@ -75,8 +68,8 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn status(&self) -> &Status {
-        &self.status
+    pub const fn status(&self) -> Status {
+        self.status
     }
 }
 
@@ -88,6 +81,6 @@ impl Frame<ID> for Response {
     }
 
     fn parameters(&self) -> Option<Self::Parameters> {
-        Some([self.status.to_u8().expect("could not convert status to u8")])
+        Some([self.status.into()])
     }
 }

@@ -1,7 +1,6 @@
 use crate::event;
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
-use num_traits::ToPrimitive;
 
 const ID: u16 = 0x004E;
 
@@ -73,8 +72,8 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn units(&self) -> &event::Units {
-        &self.units
+    pub const fn units(&self) -> event::Units {
+        self.units
     }
 
     #[must_use]
@@ -92,11 +91,6 @@ impl Frame<ID> for Response {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         let [time_low, time_high] = self.time.to_be_bytes();
-        Some([
-            time_low,
-            time_high,
-            self.units.to_u8().expect("could not convert units to u8"),
-            self.repeat.into(),
-        ])
+        Some([time_low, time_high, self.units.into(), self.repeat.into()])
     }
 }

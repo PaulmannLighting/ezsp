@@ -1,22 +1,52 @@
-mod stack;
-
-use crate::Protocol;
-use serialport::SerialPort;
-use stack::Stack;
 use std::collections::HashMap;
 use std::sync::Mutex;
 use std::thread::JoinHandle;
 use std::time::SystemTime;
 
-/*
+use serialport::SerialPort;
+
+use stack::Stack;
+
+use crate::Protocol;
+
+mod stack;
+
+// XXX: Mockups
+pub trait BootloaderHandler {}
+pub trait ZigBeeTransportReceive {}
+
 #[derive(Debug)]
-pub struct Dongle<B, T, P>
+pub struct ZigBeeKey;
+#[derive(Debug)]
+pub struct NetworkParameters;
+#[derive(Debug)]
+pub struct IeeeAddress;
+#[derive(Debug)]
+pub struct DeviceType;
+#[derive(Debug)]
+pub struct VersionResponse;
+#[derive(Debug)]
+pub struct NetworkState;
+#[derive(Debug)]
+pub struct ProfileId;
+#[derive(Debug)]
+pub struct DeviceId;
+#[derive(Debug)]
+pub struct EmberMfglibListener;
+#[derive(Debug)]
+pub struct EmberNcpResetProvider;
+#[derive(Debug)]
+pub struct Concentrator;
+
+#[derive(Debug)]
+pub struct Dongle<B, T, P, S>
 where
     B: BootloaderHandler,
     T: ZigBeeTransportReceive,
     P: Protocol,
+    S: SerialPort,
 {
-    serial_port: SerialPort,
+    serial_port: S,
     bootload_handler: B,
     stack: Stack,
     zigbee_transport_receive: T,
@@ -45,4 +75,3 @@ where
     fragmentation_aps_counter: HashMap<u8, u8>,
     concentrator_type: Concentrator,
 }
-*/

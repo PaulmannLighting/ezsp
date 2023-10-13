@@ -1,4 +1,4 @@
-use crate::frame::header::{Control, Header, LegacyHeader};
+use crate::frame::header::{Control, Header, LegacyHeader, HEADER_SIZE, LEGACY_HEADER_SIZE};
 
 pub mod configuration;
 pub mod header;
@@ -27,7 +27,7 @@ where
     }
 
     fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes = Vec::from(self.header.into());
+        let mut bytes = Vec::from(<[u8; HEADER_SIZE]>::from(self.header()));
 
         if let Some(parameters) = self.parameters() {
             bytes.extend_from_slice(parameters.as_ref());
@@ -60,7 +60,7 @@ where
     }
 
     fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes = Vec::from(self.header.into());
+        let mut bytes = Vec::from(<[u8; LEGACY_HEADER_SIZE]>::from(self.header()));
 
         if let Some(parameters) = self.parameters() {
             bytes.extend_from_slice(parameters.as_ref());

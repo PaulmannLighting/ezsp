@@ -2,8 +2,8 @@ mod control;
 
 pub use control::Control;
 
-const HEADER_SIZE: usize = 5;
-const LEGACY_HEADER_SIZE: usize = 3;
+pub const HEADER_SIZE: usize = 5;
+pub const LEGACY_HEADER_SIZE: usize = 3;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Header {
@@ -37,11 +37,16 @@ impl From<[u8; HEADER_SIZE]> for Header {
     }
 }
 
-impl From<Header> for [u8; HEADER_SIZE] {
-    fn from(header: Header) -> Self {
-        let [control_0, control_1] = header.control.to_be_bytes();
+impl From<&Header> for [u8; HEADER_SIZE] {
+    fn from(header: &Header) -> Self {
         let [id_0, id_1] = header.id.to_be_bytes();
-        [header.sequence, control_0, control_1, id_0, id_1]
+        [
+            header.sequence,
+            header.control.low(),
+            header.control.high(),
+            id_0,
+            id_1,
+        ]
     }
 }
 
@@ -69,8 +74,8 @@ impl From<[u8; LEGACY_HEADER_SIZE]> for LegacyHeader {
     }
 }
 
-impl From<LegacyHeader> for [u8; LEGACY_HEADER_SIZE] {
-    fn from(header: LegacyHeader) -> Self {
+impl From<&LegacyHeader> for [u8; LEGACY_HEADER_SIZE] {
+    fn from(header: &LegacyHeader) -> Self {
         [header.sequence, header.control, header.id]
     }
 }

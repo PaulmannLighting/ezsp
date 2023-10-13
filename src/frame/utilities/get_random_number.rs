@@ -6,6 +6,7 @@ use num_traits::ToPrimitive;
 
 const ID: u16 = 0x0049;
 
+/// Returns a pseudorandom number.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

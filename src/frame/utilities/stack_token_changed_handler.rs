@@ -3,6 +3,7 @@ use crate::frame::Frame;
 
 const ID: u16 = 0x000D;
 
+/// A callback invoked to inform the application that a stack token has changed.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     header: Header,

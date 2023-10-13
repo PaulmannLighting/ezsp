@@ -13,7 +13,7 @@ pub enum Ash {
 
 impl FromPrimitive for Ash {
     fn from_i64(n: i64) -> Option<Self> {
-        u64::try_from(n).ok().and_then(Self::from)
+        u64::try_from(n).ok().and_then(Self::from_u64)
     }
 
     fn from_u64(n: u64) -> Option<Self> {

@@ -1,4 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::ToPrimitive;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum Id {
@@ -56,9 +57,23 @@ pub enum Id {
     KeyStorageVersion = 0x44,
 }
 
+impl From<Id> for u8 {
+    fn from(id: Id) -> Self {
+        id.to_u8().expect("could not convert Id to u8")
+    }
+}
+
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum ExtendedId {
     EndpointFlags = 0x00,
     LastLeaveReason = 0x01,
     GetSourceRouteOverhead = 0x02,
+}
+
+impl From<ExtendedId> for u8 {
+    fn from(extended_id: ExtendedId) -> Self {
+        extended_id
+            .to_u8()
+            .expect("could not convert ExtendedId to u8")
+    }
 }

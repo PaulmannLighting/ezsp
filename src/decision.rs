@@ -1,4 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::ToPrimitive;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum Id {
@@ -21,6 +22,12 @@ pub enum Id {
     PacketValidateLibraryChecksDisabled = 0x63,
 }
 
+impl From<Id> for u8 {
+    fn from(id: Id) -> Self {
+        id.to_u8().expect("could not convert ID to u8")
+    }
+}
+
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum Bitmask {
     Default = 0x00,
@@ -30,4 +37,10 @@ pub enum Bitmask {
     IgnoreUnsecuredRejoins = 0x08,
     JoinsUseInstallCodeKey = 0x10,
     DeferJoins = 0x20,
+}
+
+impl From<Bitmask> for u8 {
+    fn from(bitmask: Bitmask) -> Self {
+        bitmask.to_u8().expect("could not convert Bitmask to u8")
+    }
 }

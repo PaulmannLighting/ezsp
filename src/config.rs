@@ -1,4 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::ToPrimitive;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum Id {
@@ -49,4 +50,10 @@ pub enum Id {
     AssumeTcConcentratorType = 0x40,
     GpProxyTableSize = 0x41,
     GpSinkTableSize = 0x42,
+}
+
+impl From<Id> for u8 {
+    fn from(id: Id) -> Self {
+        id.to_u8().expect("could not convert Id to u8")
+    }
 }

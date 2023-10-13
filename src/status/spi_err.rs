@@ -1,4 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::ToPrimitive;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum SpiErr {
@@ -16,4 +17,10 @@ pub enum SpiErr {
     StartupTimeout = 0x1B,
     StartupFail = 0x1C,
     UnsupportedSpiCommand = 0x1D,
+}
+
+impl From<SpiErr> for u8 {
+    fn from(spi_err: SpiErr) -> Self {
+        spi_err.to_u8().expect("could not convert SpiErr to u8")
+    }
 }

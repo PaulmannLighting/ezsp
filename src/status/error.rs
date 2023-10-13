@@ -1,4 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::ToPrimitive;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum Error {
@@ -23,4 +24,10 @@ pub enum Error {
     SecurityParametersNotSet = 0x48,
     UnsupportedControl = 0x49,
     UnsecureFrame = 0x4A,
+}
+
+impl From<Error> for u8 {
+    fn from(error: Error) -> Self {
+        error.to_u8().expect("could not convert Error to u8")
+    }
 }

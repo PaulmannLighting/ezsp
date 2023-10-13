@@ -1,4 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::ToPrimitive;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum Misc {
@@ -24,4 +25,10 @@ pub enum Misc {
     Status = 0x83,
     Tx = 0x84,
     Rx = 0x85,
+}
+
+impl From<Misc> for u8 {
+    fn from(misc: Misc) -> Self {
+        misc.to_u8().expect("could not convert Misc to u8")
+    }
 }

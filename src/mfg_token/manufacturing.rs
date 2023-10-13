@@ -1,4 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::ToPrimitive;
 
 #[derive(Debug, Eq, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum Manufacturing {
@@ -14,4 +15,12 @@ pub enum Manufacturing {
     InstallationCode = 0x0A,
     CustomEui64 = 0x0C,
     CTune = 0x0D,
+}
+
+impl From<Manufacturing> for u8 {
+    fn from(manufacturing: Manufacturing) -> Self {
+        manufacturing
+            .to_u8()
+            .expect("could not convert Manufacturing to u8")
+    }
 }

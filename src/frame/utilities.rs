@@ -8,6 +8,7 @@ pub mod get_token;
 pub mod invalid_command;
 pub mod no_callbacks;
 pub mod nop;
+pub mod read_and_clear_counters;
 pub mod set_mfg_token;
 pub mod set_timer;
 pub mod set_token;

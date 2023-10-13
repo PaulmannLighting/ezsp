@@ -2,6 +2,7 @@ use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
 use num_traits::ToPrimitive;
+use std::num::TryFromIntError;
 use std::sync::Arc;
 
 const ID: u16 = 0x0002;
@@ -20,12 +21,14 @@ pub struct Command {
     profile_id: u16,
     device_id: u16,
     app_flags: u8,
+    input_cluster_count: u8,
+    output_cluster_count: u8,
     input_clusters: Arc<[u16]>,
     output_clusters: Arc<[u16]>,
 }
 
 impl Command {
-    pub const fn new(
+    pub fn new(
         sequence: u8,
         control: Control,
         endpoint: u8,
@@ -34,16 +37,18 @@ impl Command {
         app_flags: u8,
         input_clusters: Arc<[u16]>,
         output_clusters: Arc<[u16]>,
-    ) -> Self {
-        Self {
+    ) -> Result<Self, TryFromIntError> {
+        Ok(Self {
             header: Self::make_header(sequence, control),
             endpoint,
             profile_id,
             device_id,
             app_flags,
+            input_cluster_count: input_clusters.len().try_into()?,
+            output_cluster_count: output_clusters.len().try_into()?,
             input_clusters,
             output_clusters,
-        }
+        })
     }
 
     pub const fn endpoint(&self) -> u8 {
@@ -63,17 +68,11 @@ impl Command {
     }
 
     pub const fn input_cluster_count(&self) -> u8 {
-        self.input_clusters
-            .len()
-            .try_into()
-            .expect("input cluster length exceeds u8")
+        self.input_cluster_count
     }
 
     pub const fn output_cluster_count(&self) -> u8 {
-        self.output_clusters
-            .len()
-            .try_into()
-            .expect("output cluster length exceeds u8")
+        self.output_cluster_count
     }
 
     pub const fn input_cluster_list(&self) -> &[u16] {
@@ -99,8 +98,8 @@ impl Frame<ID> for Command {
         parameters.extend_from_slice(&self.profile_id.to_be_bytes());
         parameters.extend_from_slice(&self.device_id.to_be_bytes());
         parameters.push(self.app_flags);
-        parameters.push(self.input_cluster_count());
-        parameters.push(self.output_cluster_count());
+        parameters.push(self.input_cluster_count);
+        parameters.push(self.output_cluster_count);
         self.input_clusters
             .iter()
             .for_each(|cluster| parameters.extend_from_slice(&cluster.to_be_bytes()));

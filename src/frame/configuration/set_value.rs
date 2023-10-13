@@ -3,6 +3,7 @@ use crate::frame::Frame;
 use crate::status::Status;
 use crate::value;
 use num_traits::ToPrimitive;
+use std::num::TryFromIntError;
 use std::sync::Arc;
 
 const ID: u16 = 0x00AB;
@@ -12,21 +13,23 @@ const ID: u16 = 0x00AB;
 pub struct Command {
     header: Header,
     value_id: value::Id,
+    value_length: u8,
     value: Arc<[u8]>,
 }
 
 impl Command {
-    pub const fn new(
+    pub fn new(
         sequence: u8,
         control: Control,
         value_id: value::Id,
         value: Arc<[u8]>,
-    ) -> Self {
-        Self {
+    ) -> Result<Self, TryFromIntError> {
+        Ok(Self {
             header: Self::make_header(sequence, control),
             value_id,
+            value_length: value.len().try_into()?,
             value,
-        }
+        })
     }
 
     pub const fn value_id(&self) -> &value::Id {
@@ -34,10 +37,7 @@ impl Command {
     }
 
     pub const fn value_length(&self) -> u8 {
-        self.value
-            .len()
-            .try_into()
-            .expect("value length exceeds u8")
+        self.value_length
     }
 
     pub const fn value(&self) -> &[u8] {
@@ -59,7 +59,7 @@ impl Frame<ID> for Command {
                 .to_u8()
                 .expect("could not convert value ID to u8"),
         );
-        parameters.push(self.value_length());
+        parameters.push(self.value_length);
         parameters.extend_from_slice(&self.value);
         Some(parameters)
     }

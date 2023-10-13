@@ -2,6 +2,7 @@ use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
 use num_traits::ToPrimitive;
+use std::num::TryFromIntError;
 use std::sync::Arc;
 
 const ID: u16 = 0x0108;
@@ -92,21 +93,20 @@ pub struct Response {
 }
 
 impl Response {
-    pub const fn new(
+    pub fn new(
         sequence: u8,
         control: Control,
         status: Status,
         data_type: u8,
-        read_length: u8,
         data: Arc<[u8]>,
-    ) -> Self {
-        Self {
+    ) -> Result<Self, TryFromIntError> {
+        Ok(Self {
             header: Self::make_header(sequence, control),
             status,
             data_type,
-            read_length,
+            read_length: data.len().try_into()?,
             data,
-        }
+        })
     }
 
     pub const fn status(&self) -> &Status {

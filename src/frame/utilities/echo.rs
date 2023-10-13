@@ -1,5 +1,6 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
+use std::num::TryFromIntError;
 use std::sync::Arc;
 
 const ID: u16 = 0x0081;
@@ -11,19 +12,21 @@ const ID: u16 = 0x0081;
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,
+    data_length: u8,
     data: Arc<[u8]>,
 }
 
 impl Command {
-    pub const fn new(sequence: u8, control: Control, data: Arc<[u8]>) -> Self {
-        Self {
+    pub fn new(sequence: u8, control: Control, data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
+        Ok(Self {
             header: Self::make_header(sequence, control),
+            data_length: data.len().try_into()?,
             data,
-        }
+        })
     }
 
     pub const fn data_length(&self) -> u8 {
-        self.data.len().try_into().expect("data length exceeds u8")
+        self.data_length
     }
 
     pub const fn data(&self) -> &[u8] {
@@ -40,7 +43,7 @@ impl Frame<ID> for Command {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         let mut parameters = Vec::with_capacity(1 + self.data.len());
-        parameters.push(self.data_length());
+        parameters.push(self.data_length);
         parameters.extend_from_slice(&self.data);
         Some(parameters)
     }
@@ -49,19 +52,21 @@ impl Frame<ID> for Command {
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     header: Header,
+    echo_length: u8,
     echo: Arc<[u8]>,
 }
 
 impl Response {
-    pub const fn new(sequence: u8, control: Control, echo: Arc<[u8]>) -> Self {
-        Self {
+    pub fn new(sequence: u8, control: Control, echo: Arc<[u8]>) -> Result<Self, TryFromIntError> {
+        Ok(Self {
             header: Self::make_header(sequence, control),
+            echo_length: echo.len().try_into()?,
             echo,
-        }
+        })
     }
 
     pub const fn echo_length(&self) -> u8 {
-        self.echo.len().try_into().expect("echo length exceeds u8")
+        self.echo_length
     }
 
     pub const fn echo(&self) -> &[u8] {
@@ -78,7 +83,7 @@ impl Frame<ID> for Response {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         let mut parameters = Vec::with_capacity(1 + self.echo.len());
-        parameters.push(self.echo_length());
+        parameters.push(self.echo_length);
         parameters.extend_from_slice(&self.echo);
         Some(parameters)
     }

@@ -3,6 +3,7 @@ use crate::frame::Frame;
 use crate::status::Status;
 use crate::value;
 use num_traits::ToPrimitive;
+use std::num::TryFromIntError;
 use std::sync::Arc;
 
 const ID: u16 = 0x003;
@@ -61,16 +62,23 @@ impl Frame<ID> for Command {
 pub struct Response {
     header: Header,
     status: Status,
+    value_length: u8,
     value: Arc<[u8]>,
 }
 
 impl Response {
-    pub const fn new(sequence: u8, control: Control, status: Status, value: Arc<[u8]>) -> Self {
-        Self {
+    pub fn new(
+        sequence: u8,
+        control: Control,
+        status: Status,
+        value: Arc<[u8]>,
+    ) -> Result<Self, TryFromIntError> {
+        Ok(Self {
             header: Self::make_header(sequence, control),
             status,
+            value_length: value.len().try_into()?,
             value,
-        }
+        })
     }
 
     pub const fn status(&self) -> &Status {
@@ -78,10 +86,7 @@ impl Response {
     }
 
     pub const fn value_length(&self) -> u8 {
-        self.value
-            .len()
-            .try_into()
-            .expect("value length exceeds u8")
+        self.value_length
     }
 
     pub const fn value(&self) -> &[u8] {
@@ -99,7 +104,7 @@ impl Frame<ID> for Response {
     fn parameters(&self) -> Option<Self::Parameters> {
         let mut parameters = Vec::with_capacity(2 + self.value.len());
         parameters.push(self.status.to_u8().expect("could not convert status to u8"));
-        parameters.push(self.value_length());
+        parameters.push(self.value_length);
         parameters.extend_from_slice(&self.value);
         Some(parameters)
     }

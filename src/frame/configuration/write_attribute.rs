@@ -2,6 +2,7 @@ use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
 use num_traits::ToPrimitive;
+use std::num::TryFromIntError;
 use std::sync::Arc;
 
 const ID: u16 = 0x0109;
@@ -18,11 +19,12 @@ pub struct Command {
     override_read_only_and_data_type: bool,
     just_test: bool,
     data_type: u8,
+    data_length: u8,
     data: Arc<[u8]>,
 }
 
 impl Command {
-    pub const fn new(
+    pub fn new(
         sequence: u8,
         control: Control,
         endpoint: u8,
@@ -34,8 +36,8 @@ impl Command {
         just_test: bool,
         data_type: u8,
         data: Arc<[u8]>,
-    ) -> Self {
-        Self {
+    ) -> Result<Self, TryFromIntError> {
+        Ok(Self {
             header: Self::make_header(sequence, control),
             endpoint,
             cluster,
@@ -45,8 +47,9 @@ impl Command {
             override_read_only_and_data_type,
             just_test,
             data_type,
+            data_length: data.len().try_into()?,
             data,
-        }
+        })
     }
 
     pub const fn endpoint(&self) -> u8 {
@@ -82,7 +85,7 @@ impl Command {
     }
 
     pub const fn data_length(&self) -> u8 {
-        self.data.len().try_into().expect("data length exceeded u8")
+        self.data_length
     }
 
     pub const fn data(&self) -> &[u8] {
@@ -107,7 +110,7 @@ impl Frame<ID> for Command {
         parameters.push(self.override_read_only_and_data_type.into());
         parameters.push(self.just_test.into());
         parameters.push(self.data_type);
-        parameters.push(self.data_length());
+        parameters.push(self.data_length);
         parameters.extend_from_slice(&self.data);
         Some(parameters)
     }

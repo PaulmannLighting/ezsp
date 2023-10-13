@@ -1,4 +1,5 @@
 pub mod callback;
+pub mod debug_write;
 pub mod echo;
 pub mod get_mfg_token;
 pub mod get_random_number;

@@ -5,6 +5,10 @@ use std::io::Read;
 
 const ID: u16 = 0x0013;
 
+/// Allows the HOST to know whether the NCP is running the XNCP library.
+///
+/// If so, the response contains also the manufacturer ID and the
+/// version number of the XNCP application that is running on the NCP.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

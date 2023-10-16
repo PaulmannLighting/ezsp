@@ -1,6 +1,7 @@
 use crate::event;
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
+use std::io::Read;
 
 const ID: u16 = 0x004E;
 
@@ -38,6 +39,16 @@ impl Frame<ID> for Command {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.timer_id])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [timer_id]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        Ok(Self { header, timer_id })
     }
 }
 
@@ -92,5 +103,20 @@ impl Frame<ID> for Response {
     fn parameters(&self) -> Option<Self::Parameters> {
         let [time_low, time_high] = self.time.to_be_bytes();
         Some([time_low, time_high, self.units.into(), self.repeat.into()])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [time @ .., units, repeat]: [u8; 4] = [0; 4];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            time: u16::from_be_bytes(time),
+            units: event::Units::try_from(units)?,
+            repeat: repeat != 0,
+        })
     }
 }

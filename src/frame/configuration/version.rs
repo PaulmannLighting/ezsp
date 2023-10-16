@@ -1,5 +1,6 @@
 use crate::frame::header::LegacyHeader;
 use crate::frame::LegacyFrame;
+use std::io::Read;
 
 const ID: u8 = 0x00;
 
@@ -35,6 +36,19 @@ impl LegacyFrame<ID> for Command {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.desired_protocol_version])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [desired_protocol_version]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            desired_protocol_version,
+        })
     }
 }
 
@@ -89,5 +103,20 @@ impl LegacyFrame<ID> for Response {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.protocol_version, self.stack_type, self.stack_version])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [protocol_version, stack_type, stack_version]: [u8; 3] = [0; 3];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            protocol_version,
+            stack_type,
+            stack_version,
+        })
     }
 }

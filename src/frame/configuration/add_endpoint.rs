@@ -1,6 +1,8 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
+use std::io;
+use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
 
@@ -95,6 +97,18 @@ impl Command {
     pub fn output_cluster_list(&self) -> &[u16] {
         &self.output_clusters
     }
+
+    fn read_clusters<R>(reader: &mut R, count: usize) -> io::Result<Vec<u16>>
+    where
+        R: Read,
+    {
+        let mut clusters = Vec::with_capacity(2 * count);
+        reader.read_exact(&mut clusters)?;
+        Ok(clusters
+            .chunks(2)
+            .map(|&[low, high]| u16::from_be_bytes([low, high]))
+            .collect())
+    }
 }
 
 impl Frame<ID> for Command {
@@ -120,6 +134,37 @@ impl Frame<ID> for Command {
             .iter()
             .for_each(|cluster| parameters.extend_from_slice(&cluster.to_be_bytes()));
         Some(parameters)
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [
+            endpoint,
+            profile_id_low,
+            profile_id_high,
+            device_id_low,
+            device_id_high,
+            app_flags,
+            input_cluster_count,
+            output_cluster_count
+        ]: [u8; 8] = [0; 8];
+        src.read_exact(&mut buffer)?;
+        let input_clusters = Self::read_clusters(src, input_cluster_count.into())?;
+        let output_clusters = Self::read_clusters(src, output_cluster_count.into())?;
+        Ok(Self {
+            header,
+            endpoint,
+            profile_id: u16::from_be_bytes([profile_id_low, profile_id_high]),
+            device_id: u16::from_be_bytes([device_id_low, device_id_high]),
+            app_flags,
+            input_cluster_count,
+            output_cluster_count,
+            input_clusters: input_clusters.into(),
+            output_clusters: output_clusters.into(),
+        })
     }
 }
 
@@ -153,5 +198,18 @@ impl Frame<ID> for Response {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.status.into()])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [status]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            status: Status::try_from(status)?,
+        })
     }
 }

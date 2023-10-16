@@ -2,6 +2,7 @@ use crate::event;
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
+use std::io::Read;
 
 const ID: u16 = 0x000E;
 
@@ -75,6 +76,22 @@ impl Frame<ID> for Command {
             self.repeat.into(),
         ])
     }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [timer_id, time @ .., units, repeat]: [u8; 5] = [0; 5];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            timer_id,
+            time: u16::from_be_bytes(time),
+            units: event::Units::try_from(units)?,
+            repeat: repeat != 0,
+        })
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -107,5 +124,18 @@ impl Frame<ID> for Response {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.status.into()])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [status]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            status: Status::try_from(status)?,
+        })
     }
 }

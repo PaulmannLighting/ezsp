@@ -1,6 +1,7 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
+use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
 
@@ -128,6 +129,43 @@ impl Frame<ID> for Command {
         parameters.extend_from_slice(&self.data);
         Some(parameters)
     }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [
+            endpoint,
+            cluster_low,
+            cluster_high,
+            attribute_id_low,
+            attribute_id_high,
+            mask,
+            manufacturer_code_low,
+            manufacturer_code_high,
+            override_read_only_and_data_type,
+            just_test,
+            data_type,
+            data_length
+        ]: [u8; 12] = [0; 12];
+        src.read_exact(&mut buffer)?;
+        let mut data = Vec::with_capacity(data_length.into());
+        src.read_exact(&mut data)?;
+        Ok(Self {
+            header,
+            endpoint,
+            cluster: u16::from_be_bytes([cluster_low, cluster_high]),
+            attribute_id: u16::from_be_bytes([attribute_id_low, attribute_id_high]),
+            mask,
+            manufacturer_code: u16::from_be_bytes([manufacturer_code_low, manufacturer_code_high]),
+            override_read_only_and_data_type: override_read_only_and_data_type != 0,
+            just_test: just_test != 0,
+            data_type,
+            data_length,
+            data: data.into(),
+        })
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -160,5 +198,18 @@ impl Frame<ID> for Response {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.status.into()])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [status]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            status: Status::try_from(status)?,
+        })
     }
 }

@@ -1,9 +1,12 @@
 use crate::counter::Counter;
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
+use anyhow::anyhow;
 use never::Never;
+use std::io::Read;
 
 const ID: u16 = 0x00F1;
+const TYPE_COUNT: usize = Counter::TypeCount as usize;
 
 /// Retrieves Ember counters.
 ///
@@ -32,21 +35,24 @@ impl Frame<ID> for Command {
     fn parameters(&self) -> Option<Self::Parameters> {
         None
     }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        Self::read_header(src).map(|header| Self { header })
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     header: Header,
-    values: [u16; Counter::TypeCount as usize],
+    values: [u16; TYPE_COUNT],
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(
-        sequence: u8,
-        control: Control,
-        values: [u16; Counter::TypeCount as usize],
-    ) -> Self {
+    pub const fn new(sequence: u8, control: Control, values: [u16; TYPE_COUNT]) -> Self {
         Self {
             header: Header::for_frame::<ID>(sequence, control),
             values,
@@ -54,7 +60,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn values(&self) -> &[u16; Counter::TypeCount as usize] {
+    pub const fn values(&self) -> &[u16] {
         &self.values
     }
 }
@@ -72,5 +78,24 @@ impl Frame<ID> for Response {
             .iter()
             .for_each(|value| parameters.extend_from_slice(&value.to_be_bytes()));
         Some(parameters)
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer: [u8; TYPE_COUNT * 2] = [0; TYPE_COUNT * 2];
+        src.read_exact(&mut buffer)?;
+        let values: Vec<u16> = buffer
+            .chunks(2)
+            .map(|&[low, high]| u16::from_be_bytes([low, high]))
+            .collect();
+        Ok(Self {
+            header,
+            values: values
+                .try_into()
+                .map_err(|_| anyhow!("values size != {TYPE_COUNT}"))?,
+        })
     }
 }

@@ -1,6 +1,7 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
+use std::io::Read;
 
 const ID: u16 = 0x000A;
 
@@ -35,6 +36,16 @@ impl Frame<ID> for Command {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.token_id])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [token_id]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        Ok(Self { header, token_id })
     }
 }
 
@@ -85,5 +96,19 @@ impl Frame<ID> for Response {
             self.token_data[6],
             self.token_data[7],
         ])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [status, token_data @ ..]: [u8; 9] = [0; 9];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            status: Status::try_from(status)?,
+            token_data,
+        })
     }
 }

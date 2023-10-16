@@ -2,6 +2,7 @@ use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::policy;
 use crate::status::Status;
+use std::io::Read;
 
 const ID: u16 = 0x0056;
 
@@ -37,6 +38,19 @@ impl Frame<ID> for Command {
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.policy_id.into()])
     }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            policy_id: policy::Id::try_from(buffer[0])?,
+        })
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -69,5 +83,18 @@ impl Frame<ID> for Response {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.status.into()])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [status]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            status: Status::try_from(status)?,
+        })
     }
 }

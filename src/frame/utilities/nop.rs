@@ -1,6 +1,7 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use never::Never;
+use std::io::Read;
 
 const ID: u16 = 0x0005;
 
@@ -29,6 +30,13 @@ impl Frame<ID> for Command {
     fn parameters(&self) -> Option<Self::Parameters> {
         None
     }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        Self::read_header(src).map(|header| Self { header })
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -54,5 +62,12 @@ impl Frame<ID> for Response {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         None
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        Self::read_header(src).map(|header| Self { header })
     }
 }

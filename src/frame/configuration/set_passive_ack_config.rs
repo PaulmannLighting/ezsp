@@ -1,6 +1,7 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
+use std::io::Read;
 
 const ID: u16 = 0x0105;
 
@@ -43,6 +44,20 @@ impl Frame<ID> for Command {
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.config, self.min_acks_needed])
     }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [config, min_acks_needed]: [u8; 2] = [0; 2];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            config,
+            min_acks_needed,
+        })
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -75,5 +90,18 @@ impl Frame<ID> for Response {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.status.into()])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [status]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            status: Status::try_from(status)?,
+        })
     }
 }

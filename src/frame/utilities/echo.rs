@@ -1,5 +1,6 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
+use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
 
@@ -53,6 +54,22 @@ impl Frame<ID> for Command {
         parameters.extend_from_slice(&self.data);
         Some(parameters)
     }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [data_length]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        let mut data = Vec::with_capacity(data_length.into());
+        src.read_exact(&mut data)?;
+        Ok(Self {
+            header,
+            data_length,
+            data: data.into(),
+        })
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -98,5 +115,21 @@ impl Frame<ID> for Response {
         parameters.push(self.echo_length);
         parameters.extend_from_slice(&self.echo);
         Some(parameters)
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [echo_length]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        let mut echo = Vec::with_capacity(echo_length.into());
+        src.read_exact(&mut echo)?;
+        Ok(Self {
+            header,
+            echo_length,
+            echo: echo.into(),
+        })
     }
 }

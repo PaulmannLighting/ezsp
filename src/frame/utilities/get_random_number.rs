@@ -2,6 +2,7 @@ use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::{Misc, Status};
 use never::Never;
+use std::io::Read;
 
 const ID: u16 = 0x0049;
 
@@ -29,6 +30,13 @@ impl Frame<ID> for Command {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         None
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        Self::read_header(src).map(|header| Self { header })
     }
 }
 
@@ -75,5 +83,19 @@ impl Frame<ID> for Response {
     fn parameters(&self) -> Option<Self::Parameters> {
         let [value_low, value_high] = self.value.to_be_bytes();
         Some([self.status.into(), value_low, value_high])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [status, value @ ..]: [u8; 3] = [0; 3];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            status: Status::try_from(status)?,
+            value: u16::from_be_bytes(value),
+        })
     }
 }

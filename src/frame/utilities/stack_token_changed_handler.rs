@@ -1,5 +1,6 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
+use std::io::Read;
 
 const ID: u16 = 0x000D;
 
@@ -34,5 +35,18 @@ impl Frame<ID> for Response {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         Some(self.token_address.to_be_bytes())
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer: [u8; 2] = [0; 2];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            token_address: u16::from_be_bytes(buffer),
+        })
     }
 }

@@ -1,6 +1,7 @@
 use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::mfg_token;
+use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
 
@@ -38,6 +39,19 @@ impl Frame<ID> for Command {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.token_id.into()])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [token_id]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            token_id: mfg_token::Id::try_from(token_id)?,
+        })
     }
 }
 
@@ -88,5 +102,21 @@ impl Frame<ID> for Response {
         parameters.push(self.token_data_length);
         parameters.extend_from_slice(&self.token_data);
         Some(parameters)
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [token_data_length]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        let mut token_data = Vec::with_capacity(token_data_length.into());
+        src.read_exact(&mut token_data)?;
+        Ok(Self {
+            header,
+            token_data_length,
+            token_data: token_data.into(),
+        })
     }
 }

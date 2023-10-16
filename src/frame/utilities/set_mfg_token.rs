@@ -2,6 +2,7 @@ use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::mfg_token;
 use crate::status::Status;
+use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
 
@@ -69,6 +70,23 @@ impl Frame<ID> for Command {
         parameters.extend_from_slice(&self.token_data);
         Some(parameters)
     }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [token_id, token_data_length]: [u8; 2] = [0; 2];
+        src.read_exact(&mut buffer)?;
+        let mut token_data = Vec::with_capacity(token_data_length.into());
+        src.read_exact(&mut token_data)?;
+        Ok(Self {
+            header,
+            token_id: mfg_token::Id::try_from(token_id)?,
+            token_data_length,
+            token_data: token_data.into(),
+        })
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -101,5 +119,18 @@ impl Frame<ID> for Response {
 
     fn parameters(&self) -> Option<Self::Parameters> {
         Some([self.status.into()])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [status]: [u8; 1] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            status: Status::try_from(status)?,
+        })
     }
 }

@@ -2,6 +2,7 @@ use crate::frame::header::{Control, Header};
 use crate::frame::Frame;
 use crate::status::Status;
 use crate::value;
+use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
 
@@ -57,6 +58,20 @@ impl Frame<ID> for Command {
             characteristics[2],
             characteristics[3],
         ])
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [value_id, characteristics @ ..]: [u8; 5] = [0; 5];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            header,
+            value_id: value::ExtendedId::try_from(value_id)?,
+            characteristics: u32::from_be_bytes(characteristics),
+        })
     }
 }
 
@@ -116,5 +131,22 @@ impl Frame<ID> for Response {
         parameters.push(self.value_length);
         parameters.extend_from_slice(&self.value);
         Some(parameters)
+    }
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let header = Self::read_header(src)?;
+        let mut buffer @ [status, value_length]: [u8; 2] = [0; 2];
+        src.read_exact(&mut buffer)?;
+        let mut value = Vec::with_capacity(value_length.into());
+        src.read_exact(&mut value)?;
+        Ok(Self {
+            header,
+            status: Status::try_from(status)?,
+            value_length,
+            value: value.into(),
+        })
     }
 }

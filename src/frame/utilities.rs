@@ -1,4 +1,5 @@
 pub mod callback;
+pub mod counter_rollover_handler;
 pub mod debug_write;
 pub mod echo;
 pub mod get_mfg_token;

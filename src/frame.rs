@@ -54,11 +54,11 @@ where
         bytes
     }
 
-    fn write_to<W>(&self, writer: &mut W) -> std::io::Result<()>
+    fn write_to<W>(&self, dst: &mut W) -> std::io::Result<()>
     where
         W: Write,
     {
-        writer.write_all(&self.to_bytes())
+        dst.write_all(&self.to_bytes())
     }
 }
 
@@ -111,10 +111,10 @@ where
         bytes
     }
 
-    fn write_to<W>(&self, writer: &mut W) -> std::io::Result<()>
+    fn write_to<W>(&self, dst: &mut W) -> std::io::Result<()>
     where
         W: Write,
     {
-        writer.write_all(&self.to_bytes())
+        dst.write_all(&self.to_bytes())
     }
 }

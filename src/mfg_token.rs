@@ -1,6 +1,7 @@
 mod manufacturing;
 mod stack;
 
+use anyhow::anyhow;
 use manufacturing::Manufacturing;
 use num_traits::{FromPrimitive, ToPrimitive};
 use stack::Stack;
@@ -42,5 +43,13 @@ impl ToPrimitive for Id {
 impl From<Id> for u8 {
     fn from(id: Id) -> Self {
         id.to_u8().expect("could not convert Id to u8")
+    }
+}
+
+impl TryFrom<u8> for Id {
+    type Error = anyhow::Error;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Self::from_u8(value).ok_or_else(|| anyhow!("Invalid Id: {value:#04X}"))
     }
 }

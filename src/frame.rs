@@ -1,120 +1,108 @@
-use crate::frame::header::{Header, LegacyHeader, HEADER_SIZE, LEGACY_HEADER_SIZE};
+use crate::frame::header::{Control, Header, LegacyHeader};
 use anyhow::anyhow;
-use std::io::{Read, Write};
+use std::io::Read;
 
 pub mod configuration;
 pub mod header;
 pub mod utilities;
 
-pub trait Frame<const ID: u16>
-where
-    Self::Parameters: AsRef<[u8]>,
-{
-    type Parameters;
+pub trait Parameters<T>: Into<Vec<u8>> {
+    const FRAME_ID: T;
 
-    /// Returns the frame ID
-    #[must_use]
-    fn id() -> u16 {
-        ID
+    fn read_from<R>(src: R) -> anyhow::Result<Self>
+    where
+        R: Read;
+}
+
+#[derive(Debug)]
+pub struct Frame<P>
+where
+    P: Parameters<u16>,
+{
+    header: Header,
+    parameters: P,
+}
+
+impl<P> Frame<P> {
+    pub const fn new(sequence: u8, control: Control, parameters: P) -> Self {
+        Self {
+            header: Header::new(sequence, control, P::FRAME_ID),
+            parameters,
+        }
     }
 
     /// Returns the header
-    fn header(&self) -> &Header;
+    pub const fn header(&self) -> &Header {
+        &self.header
+    }
 
-    /// Returns the parameters as bytes
-    fn parameters(&self) -> Option<Self::Parameters>;
+    /// Returns the payload
+    pub fn parameters(&self) -> &P {
+        &self.parameters
+    }
 
     /// Reads a frame
-    fn read_header<R>(src: &mut R) -> anyhow::Result<Header>
+    pub fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
-        Self: Sized,
     {
         let header = Header::read_from(src)?;
 
-        if header.id() == ID {
-            Ok(header)
-        } else {
-            Err(anyhow!("Frame ID mismatch: {} != {ID}", header.id()))
-        }
-    }
+        let parameters = match header.id() {
+            configuration::add_endpoint::ID => {
+                configuration::add_endpoint::Response::read_from(src)?
+            }
+            configuration::get_configuration_value::ID => {
+                configuration::get_configuration_value::Response::read_from(src)?
+            }
+            id => return Err(anyhow!("invalid frame ID: {id}")),
+        };
 
-    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
-    where
-        R: Read,
-        Self: Sized;
-
-    fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes = Vec::from(<[u8; HEADER_SIZE]>::from(self.header()));
-
-        if let Some(parameters) = self.parameters() {
-            bytes.extend_from_slice(parameters.as_ref());
-        }
-
-        bytes
-    }
-
-    fn write_to<W>(&self, dst: &mut W) -> std::io::Result<()>
-    where
-        W: Write,
-    {
-        dst.write_all(&self.to_bytes())
+        Ok(Self { header, parameters })
     }
 }
 
 #[allow(clippy::module_name_repetitions)]
-pub trait LegacyFrame<const ID: u8>
+pub struct LegacyFrame<P>
 where
-    Self::Parameters: AsRef<[u8]>,
+    P: Parameters<u8>,
 {
-    type Parameters;
+    header: LegacyHeader,
+    parameters: P,
+}
 
-    /// Returns the frame ID
-    #[must_use]
-    fn id() -> u8 {
-        ID
+impl<P> LegacyFrame<P>
+where
+    P: Parameters<u8>,
+{
+    pub const fn new(sequence: u8, control: u8, parameters: P) -> Self {
+        Self {
+            header: LegacyHeader::new(sequence, control, P::FRAME_ID),
+            parameters,
+        }
     }
 
     /// Returns the header
-    fn header(&self) -> &LegacyHeader;
+    pub const fn header(&self) -> &LegacyHeader {
+        &self.header
+    }
 
-    /// Returns the parameters as bytes
-    fn parameters(&self) -> Option<Self::Parameters>;
+    /// Returns the parameters
+    pub fn parameters(&self) -> &P {
+        &self.parameters
+    }
 
-    /// Reads a frame
-    fn read_header<R>(src: &mut R) -> anyhow::Result<LegacyHeader>
+    pub fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
-        Self: Sized,
     {
         let header = LegacyHeader::read_from(src)?;
 
-        if header.id() == ID {
-            Ok(header)
-        } else {
-            Err(anyhow!("Frame ID mismatch: {} != {ID}", header.id()))
-        }
-    }
+        let parameters = match header.id() {
+            configuration::version::ID => configuration::version::Response::read_from(src)?,
+            id => return Err(anyhow!("invalid frame ID: {id}")),
+        };
 
-    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
-    where
-        R: Read,
-        Self: Sized;
-
-    fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes = Vec::from(<[u8; LEGACY_HEADER_SIZE]>::from(self.header()));
-
-        if let Some(parameters) = self.parameters() {
-            bytes.extend_from_slice(parameters.as_ref());
-        }
-
-        bytes
-    }
-
-    fn write_to<W>(&self, dst: &mut W) -> std::io::Result<()>
-    where
-        W: Write,
-    {
-        dst.write_all(&self.to_bytes())
+        Ok(Self { header, parameters })
     }
 }

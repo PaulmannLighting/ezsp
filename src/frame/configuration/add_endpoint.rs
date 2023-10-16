@@ -1,12 +1,11 @@
-use crate::frame::header::{Control, Header};
-use crate::frame::Frame;
+use crate::frame::Parameters;
 use crate::status::Status;
 use std::io;
 use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
 
-const ID: u16 = 0x0002;
+pub const ID: u16 = 0x0002;
 
 /// Configures endpoint information on the NCP.
 ///
@@ -17,7 +16,6 @@ const ID: u16 = 0x0002;
 /// will respond with [`Status::Error`]`(`[`Error::InvalidCall`][crate::status::Error::InvalidCall]`)`.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    header: Header,
     endpoint: u8,
     profile_id: u16,
     device_id: u16,
@@ -36,8 +34,6 @@ impl Command {
     /// or `output_clusters` exceeds the bounds of an u8.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        sequence: u8,
-        control: Control,
         endpoint: u8,
         profile_id: u16,
         device_id: u16,
@@ -46,7 +42,6 @@ impl Command {
         output_clusters: Arc<[u16]>,
     ) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Header::for_frame::<ID>(sequence, control),
             endpoint,
             profile_id,
             device_id,
@@ -117,36 +112,36 @@ impl Command {
     }
 }
 
-impl Frame<ID> for Command {
-    type Parameters = Vec<u8>;
-
-    fn header(&self) -> &Header {
-        &self.header
-    }
-
-    fn parameters(&self) -> Option<Self::Parameters> {
-        let mut parameters =
-            Vec::with_capacity(8 + self.input_clusters.len() * 2 + self.output_clusters.len() * 2);
-        parameters.push(self.endpoint);
-        parameters.extend_from_slice(&self.profile_id.to_be_bytes());
-        parameters.extend_from_slice(&self.device_id.to_be_bytes());
-        parameters.push(self.app_flags);
-        parameters.push(self.input_cluster_count);
-        parameters.push(self.output_cluster_count);
-        self.input_clusters
+impl From<Command> for Vec<u8> {
+    fn from(command: Command) -> Self {
+        let mut parameters = Vec::with_capacity(
+            8 + command.input_clusters.len() * 2 + command.output_clusters.len() * 2,
+        );
+        parameters.push(command.endpoint);
+        parameters.extend_from_slice(&command.profile_id.to_be_bytes());
+        parameters.extend_from_slice(&command.device_id.to_be_bytes());
+        parameters.push(command.app_flags);
+        parameters.push(command.input_cluster_count);
+        parameters.push(command.output_cluster_count);
+        command
+            .input_clusters
             .iter()
             .for_each(|cluster| parameters.extend_from_slice(&cluster.to_be_bytes()));
-        self.output_clusters
+        command
+            .output_clusters
             .iter()
             .for_each(|cluster| parameters.extend_from_slice(&cluster.to_be_bytes()));
-        Some(parameters)
+        parameters
     }
+}
+
+impl Parameters<u16> for Command {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @
         [endpoint, profile_id_low, profile_id_high, device_id_low, device_id_high, app_flags, input_cluster_count, output_cluster_count] =
             [0; 8];
@@ -154,7 +149,6 @@ impl Frame<ID> for Command {
         let input_clusters = Self::read_clusters(src, input_cluster_count.into())?;
         let output_clusters = Self::read_clusters(src, output_cluster_count.into())?;
         Ok(Self {
-            header,
             endpoint,
             profile_id: u16::from_be_bytes([profile_id_low, profile_id_high]),
             device_id: u16::from_be_bytes([device_id_low, device_id_high]),
@@ -169,17 +163,13 @@ impl Frame<ID> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    header: Header,
     status: Status,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(sequence: u8, control: Control, status: Status) -> Self {
-        Self {
-            header: Header::for_frame::<ID>(sequence, control),
-            status,
-        }
+    pub const fn new(status: Status) -> Self {
+        Self { status }
     }
 
     #[must_use]
@@ -188,26 +178,22 @@ impl Response {
     }
 }
 
-impl Frame<ID> for Response {
-    type Parameters = [u8; 1];
-
-    fn header(&self) -> &Header {
-        &self.header
+impl From<Response> for Vec<u8> {
+    fn from(response: Response) -> Self {
+        vec![response.status.into()]
     }
+}
 
-    fn parameters(&self) -> Option<Self::Parameters> {
-        Some([self.status.into()])
-    }
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            header,
             status: Status::try_from(status)?,
         })
     }

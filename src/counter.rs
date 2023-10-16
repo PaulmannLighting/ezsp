@@ -1,4 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::ToPrimitive;
 
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum Counter {
@@ -43,4 +44,10 @@ pub enum Counter {
     PtaLoPriTxAborted = 38,
     PtaHiPriTxAborted = 39,
     TypeCount = 40,
+}
+
+impl From<Counter> for u8 {
+    fn from(counter: Counter) -> Self {
+        counter.to_u8().expect("could not convert Counter to u8")
+    }
 }

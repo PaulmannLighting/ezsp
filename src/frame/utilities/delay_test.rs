@@ -5,6 +5,7 @@ use std::io::Read;
 
 const ID: u16 = 0x009D;
 
+/// Used to test that UART flow control is working correctly.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

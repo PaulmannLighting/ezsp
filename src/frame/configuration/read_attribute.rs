@@ -93,16 +93,9 @@ impl Frame<ID> for Command {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [
-            endpoint,
-            cluster_low,
-            cluster_high,
-            attribute_low,
-            attribute_high,
-            mask,
-            manufacturer_code_low,
-            manufacturer_code_high
-        ]: [u8; 8] = [0; 8];
+        let mut buffer @
+        [endpoint, cluster_low, cluster_high, attribute_low, attribute_high, mask, manufacturer_code_low, manufacturer_code_high] =
+            [0; 8];
         src.read_exact(&mut buffer)?;
         Ok(Self {
             header,
@@ -187,7 +180,7 @@ impl Frame<ID> for Response {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [status, data_type, read_length]: [u8; 3] = [0; 3];
+        let mut buffer @ [status, data_type, read_length] = [0; 3];
         src.read_exact(&mut buffer)?;
         let mut data = vec![0; read_length.into()];
         src.read_exact(&mut data)?;

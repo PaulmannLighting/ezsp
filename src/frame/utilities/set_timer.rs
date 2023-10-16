@@ -82,7 +82,7 @@ impl Frame<ID> for Command {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [timer_id, time @ .., units, repeat]: [u8; 5] = [0; 5];
+        let mut buffer @ [timer_id, time @ .., units, repeat] = [0; 5];
         src.read_exact(&mut buffer)?;
         Ok(Self {
             header,
@@ -131,7 +131,7 @@ impl Frame<ID> for Response {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [status]: [u8; 1] = [0; 1];
+        let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
             header,

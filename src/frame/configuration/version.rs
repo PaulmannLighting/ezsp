@@ -43,7 +43,7 @@ impl LegacyFrame<ID> for Command {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [desired_protocol_version]: [u8; 1] = [0; 1];
+        let mut buffer @ [desired_protocol_version] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
             header,
@@ -110,7 +110,7 @@ impl LegacyFrame<ID> for Response {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [protocol_version, stack_type, stack_version]: [u8; 3] = [0; 3];
+        let mut buffer @ [protocol_version, stack_type, stack_version] = [0; 3];
         src.read_exact(&mut buffer)?;
         Ok(Self {
             header,

@@ -85,7 +85,7 @@ impl Frame<ID> for Response {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer: [u8; TYPE_COUNT * 2] = [0; TYPE_COUNT * 2];
+        let mut buffer = [0; TYPE_COUNT * 2];
         src.read_exact(&mut buffer)?;
         let values: Vec<u16> = buffer
             .chunks_exact(2)

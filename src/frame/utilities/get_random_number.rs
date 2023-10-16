@@ -90,7 +90,7 @@ impl Frame<ID> for Response {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [status, value @ ..]: [u8; 3] = [0; 3];
+        let mut buffer @ [status, value @ ..] = [0; 3];
         src.read_exact(&mut buffer)?;
         Ok(Self {
             header,

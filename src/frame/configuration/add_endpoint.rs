@@ -147,16 +147,9 @@ impl Frame<ID> for Command {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [
-            endpoint,
-            profile_id_low,
-            profile_id_high,
-            device_id_low,
-            device_id_high,
-            app_flags,
-            input_cluster_count,
-            output_cluster_count
-        ]: [u8; 8] = [0; 8];
+        let mut buffer @
+        [endpoint, profile_id_low, profile_id_high, device_id_low, device_id_high, app_flags, input_cluster_count, output_cluster_count] =
+            [0; 8];
         src.read_exact(&mut buffer)?;
         let input_clusters = Self::read_clusters(src, input_cluster_count.into())?;
         let output_clusters = Self::read_clusters(src, output_cluster_count.into())?;
@@ -211,7 +204,7 @@ impl Frame<ID> for Response {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [status]: [u8; 1] = [0; 1];
+        let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
             header,

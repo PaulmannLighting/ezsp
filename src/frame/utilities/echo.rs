@@ -60,7 +60,7 @@ impl Frame<ID> for Command {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [data_length]: [u8; 1] = [0; 1];
+        let mut buffer @ [data_length] = [0; 1];
         src.read_exact(&mut buffer)?;
         let mut data = vec![0; data_length.into()];
         src.read_exact(&mut data)?;
@@ -122,7 +122,7 @@ impl Frame<ID> for Response {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [echo_length]: [u8; 1] = [0; 1];
+        let mut buffer @ [echo_length] = [0; 1];
         src.read_exact(&mut buffer)?;
         let mut echo = vec![0, echo_length.into()];
         src.read_exact(&mut echo)?;

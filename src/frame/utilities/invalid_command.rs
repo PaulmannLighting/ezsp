@@ -43,7 +43,7 @@ impl Frame<ID> for Response {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [reason]: [u8; 1] = [0; 1];
+        let mut buffer @ [reason] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
             header,

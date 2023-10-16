@@ -38,11 +38,15 @@ impl Header {
         self.id
     }
 
+    /// Reads the header from a reader
+    ///
+    /// # Errors
+    /// Returns an [`std::io::Error`] on read errors.
     pub fn read_from<R>(reader: &mut R) -> std::io::Result<Self>
     where
         R: Read,
     {
-        let mut buffer: [u8; HEADER_SIZE] = [0; HEADER_SIZE];
+        let mut buffer = [0; HEADER_SIZE];
         reader.read_exact(&mut buffer)?;
         Ok(Self::from(buffer))
     }
@@ -105,11 +109,15 @@ impl LegacyHeader {
         self.id
     }
 
+    /// Reads the header from a reader
+    ///
+    /// # Errors
+    /// Returns an [`std::io::Error`] on read errors.
     pub fn read_from<R>(reader: &mut R) -> std::io::Result<Self>
     where
         R: Read,
     {
-        let mut buffer: [u8; LEGACY_HEADER_SIZE] = [0; LEGACY_HEADER_SIZE];
+        let mut buffer = [0; LEGACY_HEADER_SIZE];
         reader.read_exact(&mut buffer)?;
         Ok(Self::from(buffer))
     }

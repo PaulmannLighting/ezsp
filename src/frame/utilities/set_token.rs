@@ -60,7 +60,7 @@ impl Frame<ID> for Command {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [token_id, token_data @ ..]: [u8; 9] = [0; 9];
+        let mut buffer @ [token_id, token_data @ ..] = [0; 9];
         src.read_exact(&mut buffer)?;
         Ok(Self {
             header,
@@ -107,7 +107,7 @@ impl Frame<ID> for Response {
         R: Read,
     {
         let header = Self::read_header(src)?;
-        let mut buffer @ [status]: [u8; 1] = [0; 1];
+        let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
             header,

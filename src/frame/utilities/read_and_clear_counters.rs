@@ -88,7 +88,7 @@ impl Frame<ID> for Response {
         let mut buffer: [u8; TYPE_COUNT * 2] = [0; TYPE_COUNT * 2];
         src.read_exact(&mut buffer)?;
         let values: Vec<u16> = buffer
-            .chunks(2)
+            .chunks_exact(2)
             .filter_map(|chunk| {
                 if chunk.len() == 2 {
                     Some(u16::from_be_bytes([chunk[0], chunk[1]]))

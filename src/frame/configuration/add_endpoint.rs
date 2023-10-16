@@ -105,7 +105,7 @@ impl Command {
         let mut clusters = Vec::with_capacity(2 * count);
         reader.read_exact(&mut clusters)?;
         Ok(clusters
-            .chunks(2)
+            .chunks_exact(2)
             .filter_map(|chunk| {
                 if chunk.len() == 2 {
                     Some(u16::from_be_bytes([chunk[0], chunk[1]]))

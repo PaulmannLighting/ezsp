@@ -8,6 +8,7 @@ pub mod get_mfg_token;
 pub mod get_random_number;
 pub mod get_timer;
 pub mod get_token;
+pub mod get_xncp_info;
 pub mod invalid_command;
 pub mod no_callbacks;
 pub mod nop;

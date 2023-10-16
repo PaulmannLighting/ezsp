@@ -62,7 +62,7 @@ impl Frame<ID> for Command {
         let header = Self::read_header(src)?;
         let mut buffer @ [data_length]: [u8; 1] = [0; 1];
         src.read_exact(&mut buffer)?;
-        let mut data = Vec::with_capacity(data_length.into());
+        let mut data = vec![0; data_length.into()];
         src.read_exact(&mut data)?;
         Ok(Self {
             header,
@@ -124,7 +124,7 @@ impl Frame<ID> for Response {
         let header = Self::read_header(src)?;
         let mut buffer @ [echo_length]: [u8; 1] = [0; 1];
         src.read_exact(&mut buffer)?;
-        let mut echo = Vec::with_capacity(echo_length.into());
+        let mut echo = vec![0, echo_length.into()];
         src.read_exact(&mut echo)?;
         Ok(Self {
             header,

@@ -150,7 +150,7 @@ impl Frame<ID> for Command {
             data_length
         ]: [u8; 12] = [0; 12];
         src.read_exact(&mut buffer)?;
-        let mut data = Vec::with_capacity(data_length.into());
+        let mut data = vec![0; data_length.into()];
         src.read_exact(&mut data)?;
         Ok(Self {
             header,

@@ -102,7 +102,7 @@ impl Command {
     where
         R: Read,
     {
-        let mut clusters = Vec::with_capacity(2 * count);
+        let mut clusters = vec![0; 2 * count];
         reader.read_exact(&mut clusters)?;
         Ok(clusters
             .chunks_exact(2)

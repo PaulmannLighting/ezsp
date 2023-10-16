@@ -78,7 +78,7 @@ impl Frame<ID> for Command {
         let header = Self::read_header(src)?;
         let mut buffer @ [token_id, token_data_length]: [u8; 2] = [0; 2];
         src.read_exact(&mut buffer)?;
-        let mut token_data = Vec::with_capacity(token_data_length.into());
+        let mut token_data = vec![0; token_data_length.into()];
         src.read_exact(&mut token_data)?;
         Ok(Self {
             header,

@@ -73,7 +73,7 @@ impl Frame<ID> for Command {
         let header = Self::read_header(src)?;
         let mut buffer @ [binary_message, message_length]: [u8; 2] = [0; 2];
         src.read_exact(&mut buffer)?;
-        let mut message_contents = Vec::with_capacity(message_length.into());
+        let mut message_contents = vec![0; message_length.into()];
         src.read_exact(&mut message_contents)?;
         Ok(Self {
             header,

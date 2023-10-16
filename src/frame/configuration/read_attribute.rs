@@ -189,7 +189,7 @@ impl Frame<ID> for Response {
         let header = Self::read_header(src)?;
         let mut buffer @ [status, data_type, read_length]: [u8; 3] = [0; 3];
         src.read_exact(&mut buffer)?;
-        let mut data = Vec::with_capacity(read_length.into());
+        let mut data = vec![0; read_length.into()];
         src.read_exact(&mut data)?;
         Ok(Self {
             header,

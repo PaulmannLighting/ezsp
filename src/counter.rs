@@ -1,6 +1,6 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 
-#[derive(Debug, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum Counter {
     MacRxBroadcast = 0,
     MacTxBroadcast = 1,

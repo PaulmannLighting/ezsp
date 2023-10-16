@@ -1,4 +1,6 @@
 use crate::frame::header::{Header, LegacyHeader, HEADER_SIZE, LEGACY_HEADER_SIZE};
+use anyhow::anyhow;
+use std::io::Read;
 
 pub mod configuration;
 pub mod header;
@@ -21,6 +23,26 @@ where
 
     /// Returns the parameters as bytes
     fn parameters(&self) -> Option<Self::Parameters>;
+
+    /// Reads a frame
+    fn read_header<R>(reader: &mut R) -> anyhow::Result<Header>
+    where
+        R: Read,
+        Self: Sized,
+    {
+        let header = Header::read_from(reader)?;
+
+        if header.id() == ID {
+            Ok(header)
+        } else {
+            Err(anyhow!("Frame ID mismatch: {} != {ID}", header.id()))
+        }
+    }
+
+    fn read_from<R>(reader: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+        Self: Sized;
 
     fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::from(<[u8; HEADER_SIZE]>::from(self.header()));
@@ -51,6 +73,26 @@ where
 
     /// Returns the parameters as bytes
     fn parameters(&self) -> Option<Self::Parameters>;
+
+    /// Reads a frame
+    fn read_header<R>(reader: &mut R) -> anyhow::Result<LegacyHeader>
+    where
+        R: Read,
+        Self: Sized,
+    {
+        let header = LegacyHeader::read_from(reader)?;
+
+        if header.id() == ID {
+            Ok(header)
+        } else {
+            Err(anyhow!("Frame ID mismatch: {} != {ID}", header.id()))
+        }
+    }
+
+    fn read_from<R>(reader: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+        Self: Sized;
 
     fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::from(<[u8; LEGACY_HEADER_SIZE]>::from(self.header()));

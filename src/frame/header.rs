@@ -1,6 +1,7 @@
 mod control;
 
 pub use control::Control;
+use std::io::Read;
 
 pub const HEADER_SIZE: usize = 5;
 pub const LEGACY_HEADER_SIZE: usize = 3;
@@ -35,6 +36,15 @@ impl Header {
     #[must_use]
     pub const fn id(&self) -> u16 {
         self.id
+    }
+
+    pub fn read_from<R>(reader: &mut R) -> std::io::Result<Self>
+    where
+        R: Read,
+    {
+        let mut buffer: [u8; HEADER_SIZE] = [0; HEADER_SIZE];
+        reader.read_exact(&mut buffer)?;
+        Ok(Self::from(buffer))
     }
 }
 
@@ -93,6 +103,15 @@ impl LegacyHeader {
     #[must_use]
     pub const fn id(&self) -> u8 {
         self.id
+    }
+
+    pub fn read_from<R>(reader: &mut R) -> std::io::Result<Self>
+    where
+        R: Read,
+    {
+        let mut buffer: [u8; LEGACY_HEADER_SIZE] = [0; LEGACY_HEADER_SIZE];
+        reader.read_exact(&mut buffer)?;
+        Ok(Self::from(buffer))
     }
 }
 

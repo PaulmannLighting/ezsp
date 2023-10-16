@@ -106,7 +106,13 @@ impl Command {
         reader.read_exact(&mut clusters)?;
         Ok(clusters
             .chunks(2)
-            .map(|&[low, high]| u16::from_be_bytes([low, high]))
+            .filter_map(|chunk| {
+                if chunk.len() == 2 {
+                    Some(u16::from_be_bytes([chunk[0], chunk[1]]))
+                } else {
+                    None
+                }
+            })
             .collect())
     }
 }

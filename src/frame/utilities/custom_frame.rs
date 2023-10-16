@@ -8,6 +8,10 @@ use std::sync::Arc;
 const ID: u16 = 0x0047;
 const MAX_PAYLOAD_SIZE: u8 = 119;
 
+/// Provides the customer a custom EZSP frame.
+///
+/// On the NCP, these frames are only handled if the XNCP library is included.
+/// On the NCP side these frames are handled in the emberXNcpIncomingCustomEzspMessageCallback() callback function.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     header: Header,

@@ -3,6 +3,7 @@ mod error;
 mod misc;
 mod spi_err;
 
+use anyhow::anyhow;
 pub use ash::Ash;
 pub use error::Error;
 pub use misc::Misc;
@@ -55,5 +56,13 @@ impl ToPrimitive for Status {
 impl From<Status> for u8 {
     fn from(status: Status) -> Self {
         status.to_u8().expect("could not convert Status to u8")
+    }
+}
+
+impl TryFrom<u8> for Status {
+    type Error = anyhow::Error;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Self::from_u8(value).ok_or_else(|| anyhow!("Invalid Status: {value:?}"))
     }
 }

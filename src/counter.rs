@@ -1,5 +1,6 @@
+use anyhow::anyhow;
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::ToPrimitive;
+use num_traits::{FromPrimitive, ToPrimitive};
 
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum Counter {
@@ -49,5 +50,13 @@ pub enum Counter {
 impl From<Counter> for u8 {
     fn from(counter: Counter) -> Self {
         counter.to_u8().expect("could not convert Counter to u8")
+    }
+}
+
+impl TryFrom<u8> for Counter {
+    type Error = anyhow::Error;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Self::from_u8(value).ok_or_else(|| anyhow!("Invalid Counter: {value:#04X}"))
     }
 }

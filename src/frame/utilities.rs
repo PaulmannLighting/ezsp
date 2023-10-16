@@ -3,6 +3,7 @@ pub mod counter_rollover_handler;
 pub mod debug_write;
 pub mod delay_test;
 pub mod echo;
+pub mod get_library_status;
 pub mod get_mfg_token;
 pub mod get_random_number;
 pub mod get_timer;

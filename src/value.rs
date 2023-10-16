@@ -1,5 +1,6 @@
+use anyhow::anyhow;
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::ToPrimitive;
+use num_traits::{FromPrimitive, ToPrimitive};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum Id {
@@ -63,6 +64,14 @@ impl From<Id> for u8 {
     }
 }
 
+impl TryFrom<u8> for Id {
+    type Error = anyhow::Error;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Self::from_u8(value).ok_or_else(|| anyhow!("Invalid Id:  {value:#04X}"))
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 pub enum ExtendedId {
     EndpointFlags = 0x00,
@@ -75,5 +84,13 @@ impl From<ExtendedId> for u8 {
         extended_id
             .to_u8()
             .expect("could not convert ExtendedId to u8")
+    }
+}
+
+impl TryFrom<u8> for ExtendedId {
+    type Error = anyhow::Error;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Self::from_u8(value).ok_or_else(|| anyhow!("Invalid ExtendedId:  {value:#04X}"))
     }
 }

@@ -124,7 +124,7 @@ impl Frame<ID> for Response {
         let header = Self::read_header(src)?;
         let mut buffer @ [echo_length] = [0; 1];
         src.read_exact(&mut buffer)?;
-        let mut echo = vec![0, echo_length.into()];
+        let mut echo = vec![0; echo_length.into()];
         src.read_exact(&mut echo)?;
         Ok(Self {
             header,

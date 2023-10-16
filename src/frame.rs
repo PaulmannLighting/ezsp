@@ -1,6 +1,6 @@
 use crate::frame::header::{Header, LegacyHeader, HEADER_SIZE, LEGACY_HEADER_SIZE};
 use anyhow::anyhow;
-use std::io::Read;
+use std::io::{Read, Write};
 
 pub mod configuration;
 pub mod header;
@@ -53,6 +53,13 @@ where
 
         bytes
     }
+
+    fn write_to<W>(&self, writer: &mut W) -> std::io::Result<()>
+    where
+        W: Write,
+    {
+        writer.write_all(&self.to_bytes())
+    }
 }
 
 #[allow(clippy::module_name_repetitions)]
@@ -102,5 +109,12 @@ where
         }
 
         bytes
+    }
+
+    fn write_to<W>(&self, writer: &mut W) -> std::io::Result<()>
+    where
+        W: Write,
+    {
+        writer.write_all(&self.to_bytes())
     }
 }

@@ -25,12 +25,12 @@ where
     fn parameters(&self) -> Option<Self::Parameters>;
 
     /// Reads a frame
-    fn read_header<R>(reader: &mut R) -> anyhow::Result<Header>
+    fn read_header<R>(src: &mut R) -> anyhow::Result<Header>
     where
         R: Read,
         Self: Sized,
     {
-        let header = Header::read_from(reader)?;
+        let header = Header::read_from(src)?;
 
         if header.id() == ID {
             Ok(header)
@@ -39,7 +39,7 @@ where
         }
     }
 
-    fn read_from<R>(reader: &mut R) -> anyhow::Result<Self>
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
         Self: Sized;
@@ -82,12 +82,12 @@ where
     fn parameters(&self) -> Option<Self::Parameters>;
 
     /// Reads a frame
-    fn read_header<R>(reader: &mut R) -> anyhow::Result<LegacyHeader>
+    fn read_header<R>(src: &mut R) -> anyhow::Result<LegacyHeader>
     where
         R: Read,
         Self: Sized,
     {
-        let header = LegacyHeader::read_from(reader)?;
+        let header = LegacyHeader::read_from(src)?;
 
         if header.id() == ID {
             Ok(header)
@@ -96,7 +96,7 @@ where
         }
     }
 
-    fn read_from<R>(reader: &mut R) -> anyhow::Result<Self>
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
         Self: Sized;

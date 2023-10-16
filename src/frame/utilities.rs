@@ -1,6 +1,7 @@
 pub mod callback;
 pub mod counter_rollover_handler;
 pub mod custom_frame;
+pub mod custom_frame_handler;
 pub mod debug_write;
 pub mod delay_test;
 pub mod echo;

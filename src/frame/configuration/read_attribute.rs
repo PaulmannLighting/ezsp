@@ -1,16 +1,15 @@
-use crate::frame::header::{Control, Header};
-use crate::frame::Frame;
+use crate::frame::Parameters;
 use crate::status::Status;
 use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
+use std::{array, vec};
 
-const ID: u16 = 0x0108;
+pub const ID: u16 = 0x0108;
 
 /// Read attribute data on NCP endpoints.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    header: Header,
     endpoint: u8,
     cluster: u16,
     attribute_id: u16,
@@ -21,8 +20,6 @@ pub struct Command {
 impl Command {
     #[must_use]
     pub const fn new(
-        sequence: u8,
-        control: Control,
         endpoint: u8,
         cluster: u16,
         attribute_id: u16,
@@ -30,7 +27,6 @@ impl Command {
         manufacturer_code: u16,
     ) -> Self {
         Self {
-            header: Header::for_frame::<ID>(sequence, control),
             endpoint,
             cluster,
             attribute_id,
@@ -65,40 +61,40 @@ impl Command {
     }
 }
 
-impl Frame<ID> for Command {
-    type Parameters = [u8; 8];
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = array::IntoIter<Self::Item, 8>;
 
-    fn header(&self) -> &Header {
-        &self.header
-    }
-
-    fn parameters(&self) -> Option<Self::Parameters> {
+    fn into_iter(self) -> Self::IntoIter {
         let [cluster_low, cluster_high] = self.cluster.to_be_bytes();
-        let [attribute_low, attribute_high] = self.attribute_id.to_be_bytes();
+        let [attribute_id_low, attribute_id_high] = self.attribute_id.to_be_bytes();
         let [manufacturer_code_low, manufacturer_code_high] = self.manufacturer_code.to_be_bytes();
-        Some([
+        [
             self.endpoint,
             cluster_low,
             cluster_high,
-            attribute_low,
-            attribute_high,
+            attribute_id_low,
+            attribute_id_high,
             self.mask,
             manufacturer_code_low,
             manufacturer_code_high,
-        ])
+        ]
+        .into_iter()
     }
+}
+
+impl Parameters<u16> for Command {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @
         [endpoint, cluster_low, cluster_high, attribute_low, attribute_high, mask, manufacturer_code_low, manufacturer_code_high] =
             [0; 8];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            header,
             endpoint,
             cluster: u16::from_be_bytes([cluster_low, cluster_high]),
             attribute_id: u16::from_be_bytes([attribute_low, attribute_high]),
@@ -110,7 +106,6 @@ impl Frame<ID> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    header: Header,
     status: Status,
     data_type: u8,
     read_length: u8,
@@ -122,15 +117,8 @@ impl Response {
     ///
     /// # Errors
     /// Returns an [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
-    pub fn new(
-        sequence: u8,
-        control: Control,
-        status: Status,
-        data_type: u8,
-        data: Arc<[u8]>,
-    ) -> Result<Self, TryFromIntError> {
+    pub fn new(status: Status, data_type: u8, data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Header::for_frame::<ID>(sequence, control),
             status,
             data_type,
             read_length: data.len().try_into()?,
@@ -159,33 +147,32 @@ impl Response {
     }
 }
 
-impl Frame<ID> for Response {
-    type Parameters = Vec<u8>;
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = vec::IntoIter<Self::Item>;
 
-    fn header(&self) -> &Header {
-        &self.header
-    }
-
-    fn parameters(&self) -> Option<Self::Parameters> {
+    fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(3 + self.data.len());
         parameters.push(self.status.into());
         parameters.push(self.data_type);
         parameters.push(self.read_length);
         parameters.extend_from_slice(&self.data);
-        Some(parameters)
+        parameters.into_iter()
     }
+}
+
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @ [status, data_type, read_length] = [0; 3];
         src.read_exact(&mut buffer)?;
         let mut data = vec![0; read_length.into()];
         src.read_exact(&mut data)?;
         Ok(Self {
-            header,
             status: Status::try_from(status)?,
             data_type,
             read_length,

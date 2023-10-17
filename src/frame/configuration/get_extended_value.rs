@@ -4,6 +4,7 @@ use crate::value;
 use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
+use std::{array, vec};
 
 pub const ID: u16 = 0x003;
 
@@ -34,12 +35,13 @@ impl Command {
     }
 }
 
-impl From<Command> for Vec<u8> {
-    fn from(command: Command) -> Self {
-        let mut bytes = Vec::with_capacity(5);
-        bytes.push(command.value_id.into());
-        bytes.extend_from_slice(&command.characteristics.to_be_bytes());
-        bytes
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = array::IntoIter<Self::Item, 5>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let [c0, c1, c2, c3] = self.characteristics.to_be_bytes();
+        [self.value_id.into(), c0, c1, c2, c3].into_iter()
     }
 }
 
@@ -95,13 +97,16 @@ impl Response {
     }
 }
 
-impl From<Response> for Vec<u8> {
-    fn from(response: Response) -> Self {
-        let mut bytes = Vec::with_capacity(2 + response.value.len());
-        bytes.push(response.status.into());
-        bytes.push(response.value_length);
-        bytes.extend_from_slice(&response.value);
-        bytes
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let mut bytes = Vec::with_capacity(2 + self.value.len());
+        bytes.push(self.status.into());
+        bytes.push(self.value_length);
+        bytes.extend_from_slice(&self.value);
+        bytes.into_iter()
     }
 }
 

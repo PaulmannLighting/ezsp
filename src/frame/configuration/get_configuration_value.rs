@@ -2,6 +2,7 @@ use crate::config;
 use crate::frame::Parameters;
 use crate::status::Status;
 use num_traits::ToPrimitive;
+use std::array::IntoIter;
 use std::io::Read;
 
 pub const ID: u16 = 0x0052;
@@ -24,12 +25,16 @@ impl Command {
     }
 }
 
-impl From<Command> for Vec<u8> {
-    fn from(command: Command) -> Self {
-        vec![command
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = IntoIter<Self::Item, 1>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        [self
             .config_id
             .to_u8()
             .expect("could not convert config id to u8")]
+        .into_iter()
     }
 }
 
@@ -71,17 +76,18 @@ impl Response {
     }
 }
 
-impl From<Response> for Vec<u8> {
-    fn from(response: Response) -> Self {
-        let [value_low, value_high] = response.value.to_be_bytes();
-        vec![
-            response
-                .status
-                .to_u8()
-                .expect("could not convert status to u8"),
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = IntoIter<Self::Item, 3>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let [value_low, value_high] = self.value.to_be_bytes();
+        [
+            self.status.to_u8().expect("could not convert status to u8"),
             value_low,
             value_high,
         ]
+        .into_iter()
     }
 }
 

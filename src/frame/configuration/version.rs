@@ -1,4 +1,5 @@
 use crate::frame::Parameters;
+use std::array::IntoIter;
 use std::io::Read;
 
 pub const ID: u8 = 0x00;
@@ -24,9 +25,12 @@ impl Command {
     }
 }
 
-impl From<Command> for Vec<u8> {
-    fn from(command: Command) -> Self {
-        vec![command.desired_protocol_version]
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = IntoIter<Self::Item, 1>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        [self.desired_protocol_version].into_iter()
     }
 }
 
@@ -79,13 +83,12 @@ impl Response {
     }
 }
 
-impl From<Response> for Vec<u8> {
-    fn from(response: Response) -> Self {
-        vec![
-            response.protocol_version,
-            response.stack_type,
-            response.stack_version,
-        ]
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = IntoIter<Self::IntoIter, 3>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        [self.protocol_version, self.stack_type, self.stack_version].into_iter()
     }
 }
 

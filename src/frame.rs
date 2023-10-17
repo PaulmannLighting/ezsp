@@ -1,17 +1,24 @@
 use crate::frame::header::{Control, Header, LegacyHeader};
 use anyhow::anyhow;
-use std::io::Read;
+use std::io::{Read, Write};
 
 pub mod configuration;
 pub mod header;
 pub mod utilities;
 
-pub trait Parameters<T>: Into<Vec<u8>> {
+pub trait Parameters<T>: IntoIterator<Item = u8> {
     const FRAME_ID: T;
 
     fn read_from<R>(src: R) -> anyhow::Result<Self>
     where
         R: Read;
+
+    fn write_to<W>(&self, dst: &mut W) -> std::io::Result<()>
+    where
+        W: Write,
+    {
+        dst.write_all(&self.into_iter().collect::<Vec<_>>())
+    }
 }
 
 #[derive(Debug)]
@@ -60,6 +67,21 @@ impl<P> Frame<P> {
 
         Ok(Self { header, parameters })
     }
+
+    pub fn write_to<W>(&self, dst: &mut W) -> std::io::Result<()>
+    where
+        W: Write,
+    {
+        dst.write_all(&self.into())
+    }
+}
+
+impl<P> From<Frame<P>> for Vec<u8> {
+    fn from(frame: Frame<P>) -> Self {
+        let mut bytes = frame.header.into();
+        bytes.extend(frame.parameters.into_iter());
+        bytes
+    }
 }
 
 #[allow(clippy::module_name_repetitions)]
@@ -104,5 +126,13 @@ where
         };
 
         Ok(Self { header, parameters })
+    }
+}
+
+impl<P> From<LegacyFrame<P>> for Vec<u8> {
+    fn from(frame: LegacyFrame<P>) -> Self {
+        let mut bytes = frame.header.into();
+        bytes.extend(frame.parameters.into_iter());
+        bytes
     }
 }

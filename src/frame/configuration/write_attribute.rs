@@ -1,16 +1,15 @@
-use crate::frame::header::{Control, Header};
-use crate::frame::Frame;
+use crate::frame::Parameters;
 use crate::status::Status;
 use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
+use std::{array, vec};
 
-const ID: u16 = 0x0109;
+pub const ID: u16 = 0x0109;
 
 /// Write attribute data on NCP endpoints.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    header: Header,
     endpoint: u8,
     cluster: u16,
     attribute_id: u16,
@@ -24,14 +23,11 @@ pub struct Command {
 }
 
 impl Command {
-    /// Crates a new [`Command`]
+    /// Crates new [`Command`] payload
     ///
     /// # Errors
-    /// Returns an [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
-    #[allow(clippy::too_many_arguments)]
+    /// Returns a [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
     pub fn new(
-        sequence: u8,
-        control: Control,
         endpoint: u8,
         cluster: u16,
         attribute_id: u16,
@@ -43,7 +39,6 @@ impl Command {
         data: Arc<[u8]>,
     ) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Header::for_frame::<ID>(sequence, control),
             endpoint,
             cluster,
             attribute_id,
@@ -108,14 +103,11 @@ impl Command {
     }
 }
 
-impl Frame<ID> for Command {
-    type Parameters = Vec<u8>;
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = vec::IntoIter<Self::Item>;
 
-    fn header(&self) -> &Header {
-        &self.header
-    }
-
-    fn parameters(&self) -> Option<Self::Parameters> {
+    fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(12 + self.data.len());
         parameters.push(self.endpoint);
         parameters.extend_from_slice(&self.cluster.to_be_bytes());
@@ -127,14 +119,17 @@ impl Frame<ID> for Command {
         parameters.push(self.data_type);
         parameters.push(self.data_length);
         parameters.extend_from_slice(&self.data);
-        Some(parameters)
+        parameters.into_iter()
     }
+}
+
+impl Parameters<u16> for Command {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @
         [endpoint, cluster_low, cluster_high, attribute_id_low, attribute_id_high, mask, manufacturer_code_low, manufacturer_code_high, override_read_only_and_data_type, just_test, data_type, data_length] =
             [0; 12];
@@ -142,7 +137,6 @@ impl Frame<ID> for Command {
         let mut data = vec![0; data_length.into()];
         src.read_exact(&mut data)?;
         Ok(Self {
-            header,
             endpoint,
             cluster: u16::from_be_bytes([cluster_low, cluster_high]),
             attribute_id: u16::from_be_bytes([attribute_id_low, attribute_id_high]),
@@ -159,17 +153,13 @@ impl Frame<ID> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    header: Header,
     status: Status,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(sequence: u8, control: Control, status: Status) -> Self {
-        Self {
-            header: Header::for_frame::<ID>(sequence, control),
-            status,
-        }
+    pub const fn new(status: Status) -> Self {
+        Self { status }
     }
 
     #[must_use]
@@ -178,26 +168,25 @@ impl Response {
     }
 }
 
-impl Frame<ID> for Response {
-    type Parameters = [u8; 1];
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = array::IntoIter<Self::IntoIter, 1>;
 
-    fn header(&self) -> &Header {
-        &self.header
+    fn into_iter(self) -> Self::IntoIter {
+        [self.status.into()].into_iter()
     }
+}
 
-    fn parameters(&self) -> Option<Self::Parameters> {
-        Some([self.status.into()])
-    }
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            header,
             status: Status::try_from(status)?,
         })
     }

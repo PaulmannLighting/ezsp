@@ -1,35 +1,28 @@
-use crate::frame::header::{Control, Header};
-use crate::frame::Frame;
+use crate::frame::Parameters;
 use crate::status::Status;
 use crate::value;
 use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
+use std::{array, vec};
 
-const ID: u16 = 0x00AB;
+pub const ID: u16 = 0x00AB;
 
 /// Writes a value to the NCP.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    header: Header,
     value_id: value::Id,
     value_length: u8,
     value: Arc<[u8]>,
 }
 
 impl Command {
-    /// Crates a new [`Command`]
+    /// Crates new [`Command`] payload
     ///
     /// # Errors
     /// Returns an [`TryFromIntError`] if the size of `value` exceeds the bounds of an u8.
-    pub fn new(
-        sequence: u8,
-        control: Control,
-        value_id: value::Id,
-        value: Arc<[u8]>,
-    ) -> Result<Self, TryFromIntError> {
+    pub fn new(value_id: value::Id, value: Arc<[u8]>) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Header::for_frame::<ID>(sequence, control),
             value_id,
             value_length: value.len().try_into()?,
             value,
@@ -52,32 +45,31 @@ impl Command {
     }
 }
 
-impl Frame<ID> for Command {
-    type Parameters = Vec<u8>;
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = vec::IntoIter<Self::Item>;
 
-    fn header(&self) -> &Header {
-        &self.header
-    }
-
-    fn parameters(&self) -> Option<Self::Parameters> {
+    fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(2 + self.value.len());
         parameters.push(self.value_id.into());
         parameters.push(self.value_length);
         parameters.extend_from_slice(&self.value);
-        Some(parameters)
+        parameters.into_iter()
     }
+}
+
+impl Parameters<u16> for Command {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @ [value_id, value_length] = [0; 2];
         src.read_exact(&mut buffer)?;
         let mut value = vec![0; value_length.into()];
         src.read_exact(&mut value)?;
         Ok(Self {
-            header,
             value_id: value::Id::try_from(value_id)?,
             value_length,
             value: value.into(),
@@ -87,17 +79,13 @@ impl Frame<ID> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    header: Header,
     status: Status,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(sequence: u8, control: Control, status: Status) -> Self {
-        Self {
-            header: Header::for_frame::<ID>(sequence, control),
-            status,
-        }
+    pub const fn new(status: Status) -> Self {
+        Self { status }
     }
 
     #[must_use]
@@ -106,26 +94,25 @@ impl Response {
     }
 }
 
-impl Frame<ID> for Response {
-    type Parameters = [u8; 1];
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = array::IntoIter<Self::Item, 1>;
 
-    fn header(&self) -> &Header {
-        &self.header
+    fn into_iter(self) -> Self::IntoIter {
+        [self.status.into()].into_iter()
     }
+}
 
-    fn parameters(&self) -> Option<Self::Parameters> {
-        Some([self.status.into()])
-    }
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            header,
             status: Status::try_from(status)?,
         })
     }

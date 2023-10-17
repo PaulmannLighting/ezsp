@@ -1,10 +1,10 @@
 use crate::config;
-use crate::frame::header::{Control, Header};
-use crate::frame::Frame;
+use crate::frame::Parameters;
 use crate::status::Status;
+use std::array::IntoIter;
 use std::io::Read;
 
-const ID: u16 = 0x0053;
+pub const ID: u16 = 0x0053;
 
 /// Writes a configuration value to the NCP.
 ///
@@ -14,19 +14,14 @@ const ID: u16 = 0x0053;
 /// will respond with [`Status::Error`]`(`[`Error::InvalidCall`][crate::status::Error::InvalidCall]`)`.
 #[derive(Debug)]
 pub struct Command {
-    header: Header,
     config_id: config::Id,
     value: u16,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(sequence: u8, control: Control, config_id: config::Id, value: u16) -> Self {
-        Self {
-            header: Header::for_frame::<ID>(sequence, control),
-            config_id,
-            value,
-        }
+    pub const fn new(config_id: config::Id, value: u16) -> Self {
+        Self { config_id, value }
     }
 
     #[must_use]
@@ -40,27 +35,26 @@ impl Command {
     }
 }
 
-impl Frame<ID> for Command {
-    type Parameters = [u8; 3];
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = IntoIter<Self::Item, 3>;
 
-    fn header(&self) -> &Header {
-        &self.header
-    }
-
-    fn parameters(&self) -> Option<Self::Parameters> {
+    fn into_iter(self) -> Self::IntoIter {
         let [value_low, value_high] = self.value.to_be_bytes();
-        Some([self.config_id.into(), value_low, value_high])
+        [self.config_id.into(), value_low, value_high].into_iter()
     }
+}
+
+impl Parameters<u16> for Command {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @ [config_id, value @ ..] = [0; 3];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            header,
             config_id: config::Id::try_from(config_id)?,
             value: u16::from_be_bytes(value),
         })
@@ -69,17 +63,13 @@ impl Frame<ID> for Command {
 
 #[derive(Debug)]
 pub struct Response {
-    header: Header,
     status: Status,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(sequence: u8, control: Control, status: Status) -> Self {
-        Self {
-            header: Header::for_frame::<ID>(sequence, control),
-            status,
-        }
+    pub const fn new(status: Status) -> Self {
+        Self { status }
     }
 
     #[must_use]
@@ -88,26 +78,25 @@ impl Response {
     }
 }
 
-impl Frame<ID> for Response {
-    type Parameters = [u8; 1];
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = IntoIter<Self::Item, 1>;
 
-    fn header(&self) -> &Header {
-        &self.header
+    fn into_iter(self) -> Self::IntoIter {
+        [self.status.into()].into_iter()
     }
+}
 
-    fn parameters(&self) -> Option<Self::Parameters> {
-        Some([self.status.into()])
-    }
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            header,
             status: Status::try_from(status)?,
         })
     }

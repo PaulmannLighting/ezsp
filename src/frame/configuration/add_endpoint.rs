@@ -1,9 +1,9 @@
 use crate::frame::Parameters;
 use crate::status::Status;
-use std::io;
 use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
+use std::{array, io, vec};
 
 pub const ID: u16 = 0x0002;
 
@@ -27,7 +27,7 @@ pub struct Command {
 }
 
 impl Command {
-    /// Creates a new [`Command`]
+    /// Creates new [`Command`] payload
     ///
     /// # Errors
     /// Returns a [`TryFromIntError`] if the size of either `input_clusters`
@@ -112,26 +112,26 @@ impl Command {
     }
 }
 
-impl From<Command> for Vec<u8> {
-    fn from(command: Command) -> Self {
-        let mut parameters = Vec::with_capacity(
-            8 + command.input_clusters.len() * 2 + command.output_clusters.len() * 2,
-        );
-        parameters.push(command.endpoint);
-        parameters.extend_from_slice(&command.profile_id.to_be_bytes());
-        parameters.extend_from_slice(&command.device_id.to_be_bytes());
-        parameters.push(command.app_flags);
-        parameters.push(command.input_cluster_count);
-        parameters.push(command.output_cluster_count);
-        command
-            .input_clusters
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let mut parameters =
+            Vec::with_capacity(8 + self.input_clusters.len() * 2 + self.output_clusters.len() * 2);
+        parameters.push(self.endpoint);
+        parameters.extend_from_slice(&self.profile_id.to_be_bytes());
+        parameters.extend_from_slice(&self.device_id.to_be_bytes());
+        parameters.push(self.app_flags);
+        parameters.push(self.input_cluster_count);
+        parameters.push(self.output_cluster_count);
+        self.input_clusters
             .iter()
             .for_each(|cluster| parameters.extend_from_slice(&cluster.to_be_bytes()));
-        command
-            .output_clusters
+        self.output_clusters
             .iter()
             .for_each(|cluster| parameters.extend_from_slice(&cluster.to_be_bytes()));
-        parameters
+        parameters.into_iter()
     }
 }
 
@@ -178,9 +178,12 @@ impl Response {
     }
 }
 
-impl From<Response> for Vec<u8> {
-    fn from(response: Response) -> Self {
-        vec![response.status.into()]
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = array::IntoIter<Self::Item, 1>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        [self.status.into()].into_iter()
     }
 }
 

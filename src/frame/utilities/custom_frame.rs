@@ -1,5 +1,5 @@
+use crate::ezsp_status::EzspStatus;
 use crate::frame::Parameters;
-use crate::status::Status;
 use anyhow::anyhow;
 use std::io::Read;
 use std::sync::Arc;
@@ -82,7 +82,7 @@ impl Parameters<u16> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: Status,
+    status: EzspStatus,
     reply_length: u8,
     reply: Arc<[u8]>,
 }
@@ -92,7 +92,7 @@ impl Response {
     ///
     /// # Errors
     /// Returns an [`anyhow::Error`] if the reply is too long.
-    pub fn new(status: Status, reply: Arc<[u8]>) -> anyhow::Result<Self> {
+    pub fn new(status: EzspStatus, reply: Arc<[u8]>) -> anyhow::Result<Self> {
         Ok(Self {
             status,
             reply_length: reply.len().try_into()?,
@@ -101,7 +101,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn status(&self) -> Status {
+    pub const fn status(&self) -> EzspStatus {
         self.status
     }
 
@@ -141,7 +141,7 @@ impl Parameters<u16> for Response {
         let mut reply = vec![0; reply_length.into()];
         src.read_exact(&mut reply)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: EzspStatus::try_from(status)?,
             reply_length,
             reply: reply.into(),
         })

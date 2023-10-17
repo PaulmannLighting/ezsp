@@ -1,6 +1,6 @@
 use crate::config;
+use crate::ezsp_status::EzspStatus;
 use crate::frame::Parameters;
-use crate::status::Status;
 use std::array::IntoIter;
 use std::io::Read;
 
@@ -11,7 +11,7 @@ pub const ID: u16 = 0x0053;
 /// Configuration values can be modified by the Host after the NCP has reset.
 /// Once the status of the stack changes to EMBER_NETWORK_UP,
 /// configuration values can no longer be modified and this command
-/// will respond with [`Status::Error`]`(`[`Error::InvalidCall`][crate::status::Error::InvalidCall]`)`.
+/// will respond with [`Status::Error`]`(`[`Error::InvalidCall`][crate::ezsp_status::Error::InvalidCall]`)`.
 #[derive(Debug)]
 pub struct Command {
     config_id: config::Id,
@@ -63,17 +63,17 @@ impl Parameters<u16> for Command {
 
 #[derive(Debug)]
 pub struct Response {
-    status: Status,
+    status: EzspStatus,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status) -> Self {
+    pub const fn new(status: EzspStatus) -> Self {
         Self { status }
     }
 
     #[must_use]
-    pub const fn status(&self) -> Status {
+    pub const fn status(&self) -> EzspStatus {
         self.status
     }
 }
@@ -97,7 +97,7 @@ impl Parameters<u16> for Response {
         let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: EzspStatus::try_from(status)?,
         })
     }
 }

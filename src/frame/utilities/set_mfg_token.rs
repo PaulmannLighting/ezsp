@@ -1,6 +1,6 @@
+use crate::ezsp_status::EzspStatus;
 use crate::frame::Parameters;
 use crate::mfg_token;
-use crate::status::Status;
 use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
@@ -82,17 +82,17 @@ impl Parameters<u16> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: Status,
+    status: EzspStatus,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status) -> Self {
+    pub const fn new(status: EzspStatus) -> Self {
         Self { status }
     }
 
     #[must_use]
-    pub const fn status(&self) -> Status {
+    pub const fn status(&self) -> EzspStatus {
         self.status
     }
 }
@@ -116,7 +116,7 @@ impl Parameters<u16> for Response {
         let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: EzspStatus::try_from(status)?,
         })
     }
 }

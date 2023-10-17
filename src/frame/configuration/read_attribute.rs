@@ -1,5 +1,5 @@
+use crate::ezsp_status::EzspStatus;
 use crate::frame::Parameters;
-use crate::status::Status;
 use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
@@ -106,7 +106,7 @@ impl Parameters<u16> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: Status,
+    status: EzspStatus,
     data_type: u8,
     read_length: u8,
     data: Arc<[u8]>,
@@ -117,7 +117,11 @@ impl Response {
     ///
     /// # Errors
     /// Returns an [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
-    pub fn new(status: Status, data_type: u8, data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
+    pub fn new(
+        status: EzspStatus,
+        data_type: u8,
+        data: Arc<[u8]>,
+    ) -> Result<Self, TryFromIntError> {
         Ok(Self {
             status,
             data_type,
@@ -127,7 +131,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn status(&self) -> Status {
+    pub const fn status(&self) -> EzspStatus {
         self.status
     }
 
@@ -173,7 +177,7 @@ impl Parameters<u16> for Response {
         let mut data = vec![0; read_length.into()];
         src.read_exact(&mut data)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: EzspStatus::try_from(status)?,
             data_type,
             read_length,
             data: data.into(),

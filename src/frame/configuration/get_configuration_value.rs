@@ -1,6 +1,6 @@
 use crate::config;
+use crate::ezsp_status::EzspStatus;
 use crate::frame::Parameters;
-use crate::status::Status;
 use num_traits::ToPrimitive;
 use std::array::IntoIter;
 use std::io::Read;
@@ -55,18 +55,18 @@ impl Parameters<u16> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: Status,
+    status: EzspStatus,
     value: u16,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, value: u16) -> Self {
+    pub const fn new(status: EzspStatus, value: u16) -> Self {
         Self { status, value }
     }
 
     #[must_use]
-    pub const fn status(&self) -> &Status {
+    pub const fn status(&self) -> &EzspStatus {
         &self.status
     }
 
@@ -101,7 +101,7 @@ impl Parameters<u16> for Response {
         let mut buffer @ [status, value @ ..] = [0; 3];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: EzspStatus::try_from(status)?,
             value: u16::from_be_bytes(value),
         })
     }

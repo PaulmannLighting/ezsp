@@ -10,7 +10,7 @@ pub use spi_err::SpiErr;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 #[repr(u8)]
-pub enum Status {
+pub enum EzspStatus {
     Success = 0x00,
     SpiErr(SpiErr),
     AshInProgress = 0x20,
@@ -28,7 +28,7 @@ pub enum Status {
     NoError = 0xFF,
 }
 
-impl FromPrimitive for Status {
+impl FromPrimitive for EzspStatus {
     fn from_i64(n: i64) -> Option<Self> {
         u64::try_from(n).ok().and_then(Self::from_u64)
     }
@@ -55,7 +55,7 @@ impl FromPrimitive for Status {
     }
 }
 
-impl ToPrimitive for Status {
+impl ToPrimitive for EzspStatus {
     fn to_i64(&self) -> Option<i64> {
         match self {
             Self::Success => Some(0x00),
@@ -97,13 +97,13 @@ impl ToPrimitive for Status {
     }
 }
 
-impl From<Status> for u8 {
-    fn from(status: Status) -> Self {
+impl From<EzspStatus> for u8 {
+    fn from(status: EzspStatus) -> Self {
         status.to_u8().expect("could not convert Status to u8")
     }
 }
 
-impl TryFrom<u8> for Status {
+impl TryFrom<u8> for EzspStatus {
     type Error = anyhow::Error;
 
     fn try_from(value: u8) -> Result<Self, <Self as TryFrom<u8>>::Error> {

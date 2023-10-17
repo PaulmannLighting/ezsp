@@ -1,5 +1,5 @@
+use crate::ezsp_status::EzspStatus;
 use crate::frame::Parameters;
-use crate::status::Status;
 use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
@@ -13,7 +13,7 @@ pub const ID: u16 = 0x0002;
 /// Endpoints can be added by the Host after the NCP has reset.
 /// Once the status of the stack changes to EMBER_NETWORK_UP,
 /// endpoints can no longer be added and this command
-/// will respond with [`Status::Error`]`(`[`Error::InvalidCall`][crate::status::Error::InvalidCall]`)`.
+/// will respond with [`Status::Error`]`(`[`Error::InvalidCall`][crate::ezsp_status::Error::InvalidCall]`)`.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     endpoint: u8,
@@ -163,17 +163,17 @@ impl Parameters<u16> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: Status,
+    status: EzspStatus,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status) -> Self {
+    pub const fn new(status: EzspStatus) -> Self {
         Self { status }
     }
 
     #[must_use]
-    pub const fn status(&self) -> Status {
+    pub const fn status(&self) -> EzspStatus {
         self.status
     }
 }
@@ -197,7 +197,7 @@ impl Parameters<u16> for Response {
         let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: EzspStatus::try_from(status)?,
         })
     }
 }

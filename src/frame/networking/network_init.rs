@@ -1,9 +1,15 @@
+use crate::ezsp_status::EzspStatus;
 use crate::network_init_bitmask::NetworkInitBitmask;
-use crate::status::Status;
 use std::array::IntoIter;
 
 pub const ID: u16 = 0x0017;
 
+/// Resume network operation after a reboot.
+///
+/// The node retains its original type.
+/// This should be called on startup whether or not the node was previously part of a network.
+/// EMBER_NOT_JOINED is returned if the node is not part of a network.
+/// This command accepts options to control the network initialization.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     network_init_bitmask: NetworkInitBitmask,
@@ -31,12 +37,12 @@ impl IntoIterator for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: Status,
+    status: EzspStatus,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status) -> Self {
+    pub const fn new(status: EzspStatus) -> Self {
         Self { status }
     }
 }

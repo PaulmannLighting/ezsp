@@ -1,73 +1,66 @@
-use crate::frame::header::{Control, Header};
-use crate::frame::Frame;
-use never::Never;
+use crate::frame::Parameters;
 use std::io::Read;
+use std::iter::{empty, Empty};
 
-const ID: u16 = 0x0005;
+pub const ID: u16 = 0x0005;
 
 /// Allows the Host to control the broadcast behaviour of a routing device used by the NCP.
 #[derive(Debug, Eq, PartialEq)]
-pub struct Command {
-    header: Header,
-}
+pub struct Command;
 
 impl Command {
     #[must_use]
-    pub const fn new(sequence: u8, control: Control) -> Self {
-        Self {
-            header: Header::for_frame::<ID>(sequence, control),
-        }
+    pub const fn new() -> Self {
+        Self {}
     }
 }
 
-impl Frame<ID> for Command {
-    type Parameters = Never;
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = Empty<Self::Item>;
 
-    fn header(&self) -> &Header {
-        &self.header
+    fn into_iter(self) -> Self::IntoIter {
+        empty()
     }
+}
 
-    fn parameters(&self) -> Option<Self::Parameters> {
-        None
-    }
+impl Parameters<u16> for Command {
+    const FRAME_ID: u16 = ID;
 
-    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    fn read_from<R>(_: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        Self::read_header(src).map(|header| Self { header })
+        Ok(Self {})
     }
 }
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct Response {
-    header: Header,
-}
+pub struct Response;
 
 impl Response {
     #[must_use]
-    pub const fn new(sequence: u8, control: Control) -> Self {
-        Self {
-            header: Header::for_frame::<ID>(sequence, control),
-        }
+    pub const fn new() -> Self {
+        Self {}
     }
 }
 
-impl Frame<ID> for Response {
-    type Parameters = Never;
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = Empty<Self::Item>;
 
-    fn header(&self) -> &Header {
-        &self.header
+    fn into_iter(self) -> Self::IntoIter {
+        empty()
     }
+}
 
-    fn parameters(&self) -> Option<Self::Parameters> {
-        None
-    }
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
 
-    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    fn read_from<R>(_: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        Self::read_header(src).map(|header| Self { header })
+        Ok(Self {})
     }
 }

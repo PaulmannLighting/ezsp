@@ -1,62 +1,55 @@
 use crate::counter::Counter;
-use crate::frame::header::{Control, Header};
-use crate::frame::Frame;
+use crate::frame::Parameters;
 use anyhow::anyhow;
-use never::Never;
+use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{empty, Empty, FlatMap};
 
-const ID: u16 = 0x0065;
+pub const ID: u16 = 0x0065;
 const TYPE_COUNT: usize = Counter::TypeCount as usize;
 
 /// Retrieves and clears Ember counters.
 ///
 /// See the [`Counter`] enumeration for the counter types.
 #[derive(Debug, Eq, PartialEq)]
-pub struct Command {
-    header: Header,
-}
+pub struct Command;
 
 impl Command {
     #[must_use]
-    pub const fn new(sequence: u8, control: Control) -> Self {
-        Self {
-            header: Header::for_frame::<ID>(sequence, control),
-        }
+    pub const fn new() -> Self {
+        Self {}
     }
 }
 
-impl Frame<ID> for Command {
-    type Parameters = Never;
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = Empty<Self::Item>;
 
-    fn header(&self) -> &Header {
-        &self.header
+    fn into_iter(self) -> Self::IntoIter {
+        empty()
     }
+}
 
-    fn parameters(&self) -> Option<Self::Parameters> {
-        None
-    }
+impl Parameters<u16> for Command {
+    const FRAME_ID: u16 = ID;
 
-    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    fn read_from<R>(_: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        Self::read_header(src).map(|header| Self { header })
+        Ok(Self {})
     }
 }
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    header: Header,
     values: [u16; TYPE_COUNT],
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(sequence: u8, control: Control, values: [u16; TYPE_COUNT]) -> Self {
-        Self {
-            header: Header::for_frame::<ID>(sequence, control),
-            values,
-        }
+    pub const fn new(values: [u16; TYPE_COUNT]) -> Self {
+        Self { values }
     }
 
     #[must_use]
@@ -65,26 +58,24 @@ impl Response {
     }
 }
 
-impl Frame<ID> for Response {
-    type Parameters = Vec<u8>;
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = FlatMap<IntoIter<u16, TYPE_COUNT>, [u8; TYPE_COUNT * 2], fn(&u16) -> [u8; 2]>;
 
-    fn header(&self) -> &Header {
-        &self.header
-    }
-
-    fn parameters(&self) -> Option<Self::Parameters> {
-        let mut parameters = Vec::with_capacity(2 * (Counter::TypeCount as usize));
+    fn into_iter(self) -> Self::IntoIter {
         self.values
-            .iter()
-            .for_each(|value| parameters.extend_from_slice(&value.to_be_bytes()));
-        Some(parameters)
+            .into_iter()
+            .flat_map(|value| value.to_be_bytes())
     }
+}
+
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer = [0; TYPE_COUNT * 2];
         src.read_exact(&mut buffer)?;
         let values: Vec<u16> = buffer
@@ -98,7 +89,6 @@ impl Frame<ID> for Response {
             })
             .collect();
         Ok(Self {
-            header,
             values: values
                 .try_into()
                 .map_err(|_| anyhow!("values size != {TYPE_COUNT}"))?,

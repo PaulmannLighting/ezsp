@@ -1,64 +1,54 @@
-use crate::frame::header::{Control, Header};
-use crate::frame::Frame;
-use never::Never;
+use crate::frame::Parameters;
+use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{empty, Empty};
 
-const ID: u16 = 0x0013;
+pub const ID: u16 = 0x0013;
 
 /// Allows the HOST to know whether the NCP is running the XNCP library.
 ///
 /// If so, the response contains also the manufacturer ID and the
 /// version number of the XNCP application that is running on the NCP.
 #[derive(Debug, Eq, PartialEq)]
-pub struct Command {
-    header: Header,
-}
+pub struct Command;
 
 impl Command {
     #[must_use]
-    pub const fn new(sequence: u8, control: Control) -> Self {
-        Self {
-            header: Header::for_frame::<ID>(sequence, control),
-        }
+    pub const fn new() -> Self {
+        Self {}
     }
 }
 
-impl Frame<ID> for Command {
-    type Parameters = Never;
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = Empty<Self::Item>;
 
-    fn header(&self) -> &Header {
-        &self.header
+    fn into_iter(self) -> Self::IntoIter {
+        empty()
     }
+}
 
-    fn parameters(&self) -> Option<Self::Parameters> {
-        None
-    }
+impl Parameters<u16> for Command {
+    const FRAME_ID: u16 = ID;
 
-    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    fn read_from<R>(_: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        Self::read_header(src).map(|header| Self { header })
+        Ok(Self {})
     }
 }
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    header: Header,
     manufacturer_id: u16,
     version_number: u16,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(
-        sequence: u8,
-        control: Control,
-        manufacturer_id: u16,
-        version_number: u16,
-    ) -> Self {
+    pub const fn new(manufacturer_id: u16, version_number: u16) -> Self {
         Self {
-            header: Header::for_frame::<ID>(sequence, control),
             manufacturer_id,
             version_number,
         }
@@ -75,35 +65,35 @@ impl Response {
     }
 }
 
-impl Frame<ID> for Response {
-    type Parameters = [u8; 4];
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = IntoIter<Self::Item, 4>;
 
-    fn header(&self) -> &Header {
-        &self.header
-    }
-
-    fn parameters(&self) -> Option<Self::Parameters> {
+    fn into_iter(self) -> Self::IntoIter {
         let [manufacturer_id_low, manufacturer_id_high] = self.manufacturer_id.to_be_bytes();
         let [version_number_low, version_number_high] = self.version_number.to_be_bytes();
-        Some([
+        [
             manufacturer_id_low,
             manufacturer_id_high,
             version_number_low,
             version_number_high,
-        ])
+        ]
+        .into_iter()
     }
+}
+
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer
         @ [manufacturer_id_low, manufacturer_id_high, version_number_low, version_number_high] =
             [0; 4];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            header,
             manufacturer_id: u16::from_be_bytes([manufacturer_id_low, manufacturer_id_high]),
             version_number: u16::from_be_bytes([version_number_low, version_number_high]),
         })

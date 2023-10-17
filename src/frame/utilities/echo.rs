@@ -1,10 +1,10 @@
-use crate::frame::header::{Control, Header};
-use crate::frame::Frame;
+use crate::frame::Parameters;
 use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
+use std::vec::IntoIter;
 
-const ID: u16 = 0x0081;
+pub const ID: u16 = 0x0081;
 
 /// Variable length data from the Host is echoed back by the NCP.
 ///
@@ -12,7 +12,6 @@ const ID: u16 = 0x0081;
 /// for testing the link between the Host and NCP.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    header: Header,
     data_length: u8,
     data: Arc<[u8]>,
 }
@@ -22,9 +21,8 @@ impl Command {
     ///
     /// # Errors
     /// Returns an [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
-    pub fn new(sequence: u8, control: Control, data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
+    pub fn new(data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Header::for_frame::<ID>(sequence, control),
             data_length: data.len().try_into()?,
             data,
         })
@@ -41,31 +39,30 @@ impl Command {
     }
 }
 
-impl Frame<ID> for Command {
-    type Parameters = Vec<u8>;
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = IntoIter<Self::Item>;
 
-    fn header(&self) -> &Header {
-        &self.header
-    }
-
-    fn parameters(&self) -> Option<Self::Parameters> {
+    fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(1 + self.data.len());
         parameters.push(self.data_length);
         parameters.extend_from_slice(&self.data);
-        Some(parameters)
+        parameters.into_iter()
     }
+}
+
+impl Parameters<u16> for Command {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @ [data_length] = [0; 1];
         src.read_exact(&mut buffer)?;
         let mut data = vec![0; data_length.into()];
         src.read_exact(&mut data)?;
         Ok(Self {
-            header,
             data_length,
             data: data.into(),
         })
@@ -74,7 +71,6 @@ impl Frame<ID> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    header: Header,
     echo_length: u8,
     echo: Arc<[u8]>,
 }
@@ -84,9 +80,8 @@ impl Response {
     ///
     /// # Errors
     /// Returns an [`TryFromIntError`] if the size of `echo` exceeds the bounds of an u8.
-    pub fn new(sequence: u8, control: Control, echo: Arc<[u8]>) -> Result<Self, TryFromIntError> {
+    pub fn new(echo: Arc<[u8]>) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            header: Header::for_frame::<ID>(sequence, control),
             echo_length: echo.len().try_into()?,
             echo,
         })
@@ -103,31 +98,30 @@ impl Response {
     }
 }
 
-impl Frame<ID> for Response {
-    type Parameters = Vec<u8>;
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = IntoIter<Self::Item>;
 
-    fn header(&self) -> &Header {
-        &self.header
-    }
-
-    fn parameters(&self) -> Option<Self::Parameters> {
+    fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(1 + self.echo.len());
         parameters.push(self.echo_length);
         parameters.extend_from_slice(&self.echo);
-        Some(parameters)
+        parameters.into_iter()
     }
+}
+
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @ [echo_length] = [0; 1];
         src.read_exact(&mut buffer)?;
         let mut echo = vec![0; echo_length.into()];
         src.read_exact(&mut echo)?;
         Ok(Self {
-            header,
             echo_length,
             echo: echo.into(),
         })

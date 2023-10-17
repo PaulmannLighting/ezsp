@@ -1,9 +1,9 @@
 use crate::event;
-use crate::frame::header::{Control, Header};
-use crate::frame::Frame;
+use crate::frame::Parameters;
+use std::array::IntoIter;
 use std::io::Read;
 
-const ID: u16 = 0x004E;
+pub const ID: u16 = 0x004E;
 
 /// Gets information about a timer.
 ///
@@ -11,17 +11,13 @@ const ID: u16 = 0x004E;
 /// it will be before a previously set timer will generate a callback.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    header: Header,
     timer_id: u8,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(sequence: u8, control: Control, timer_id: u8) -> Self {
-        Self {
-            header: Header::for_frame::<ID>(sequence, control),
-            timer_id,
-        }
+    pub const fn new(timer_id: u8) -> Self {
+        Self { timer_id }
     }
 
     #[must_use]
@@ -30,31 +26,30 @@ impl Command {
     }
 }
 
-impl Frame<ID> for Command {
-    type Parameters = [u8; 1];
+impl IntoIterator for Command {
+    type Item = u8;
+    type IntoIter = IntoIter<Self::Item, 1>;
 
-    fn header(&self) -> &Header {
-        &self.header
+    fn into_iter(self) -> Self::IntoIter {
+        [self.timer_id].into_iter()
     }
+}
 
-    fn parameters(&self) -> Option<Self::Parameters> {
-        Some([self.timer_id])
-    }
+impl Parameters<u16> for Command {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @ [timer_id] = [0; 1];
         src.read_exact(&mut buffer)?;
-        Ok(Self { header, timer_id })
+        Ok(Self { timer_id })
     }
 }
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    header: Header,
     time: u16,
     units: event::Units,
     repeat: bool,
@@ -62,15 +57,8 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(
-        sequence: u8,
-        control: Control,
-        time: u16,
-        units: event::Units,
-        repeat: bool,
-    ) -> Self {
+    pub const fn new(time: u16, units: event::Units, repeat: bool) -> Self {
         Self {
-            header: Header::for_frame::<ID>(sequence, control),
             time,
             units,
             repeat,
@@ -93,27 +81,26 @@ impl Response {
     }
 }
 
-impl Frame<ID> for Response {
-    type Parameters = [u8; 4];
+impl IntoIterator for Response {
+    type Item = u8;
+    type IntoIter = IntoIter<Self::Item, 4>;
 
-    fn header(&self) -> &Header {
-        &self.header
-    }
-
-    fn parameters(&self) -> Option<Self::Parameters> {
+    fn into_iter(self) -> Self::IntoIter {
         let [time_low, time_high] = self.time.to_be_bytes();
-        Some([time_low, time_high, self.units.into(), self.repeat.into()])
+        [time_low, time_high, self.units.into(), self.repeat.into()].into_iter()
     }
+}
+
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
 
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        let header = Self::read_header(src)?;
         let mut buffer @ [time @ .., units, repeat] = [0; 4];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            header,
             time: u16::from_be_bytes(time),
             units: event::Units::try_from(units)?,
             repeat: repeat != 0,

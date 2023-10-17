@@ -13,30 +13,34 @@ pub enum Ash {
 
 impl FromPrimitive for Ash {
     fn from_i64(n: i64) -> Option<Self> {
-        u64::try_from(n).ok().and_then(Self::from_u64)
+        u8::try_from(n).ok().and_then(Self::from_u8)
+    }
+
+    fn from_u8(n: u8) -> Option<Self> {
+        match n {
+            0x50..=0x75 => Error::from_u8(n).map(Self::Error),
+            n => Misc::from_u8(n).map(Self::Misc),
+        }
     }
 
     fn from_u64(n: u64) -> Option<Self> {
-        match n {
-            0x50..=0x75 => Error::from_u64(n).map(Self::Error),
-            n => Misc::from_u64(n).map(Self::Misc),
-        }
+        u8::try_from(n).ok().and_then(Self::from_u8)
     }
 }
 
 impl ToPrimitive for Ash {
     fn to_i64(&self) -> Option<i64> {
+        self.to_u8().map(i64::from)
+    }
+    fn to_u8(&self) -> Option<u8> {
         match self {
-            Self::Error(error) => error.to_i64(),
-            Self::Misc(misc) => misc.to_i64(),
+            Self::Error(error) => error.to_u8(),
+            Self::Misc(misc) => misc.to_u8(),
         }
     }
 
     fn to_u64(&self) -> Option<u64> {
-        match self {
-            Self::Error(error) => error.to_u64(),
-            Self::Misc(misc) => misc.to_u64(),
-        }
+        self.to_u8().map(u64::from)
     }
 }
 

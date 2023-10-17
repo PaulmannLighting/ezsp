@@ -229,9 +229,7 @@ impl TryFrom<u8> for Status {
 }
 
 impl From<Status> for u8 {
-    fn from(ember_status: Status) -> Self {
-        ember_status
-            .to_u8()
-            .expect("could not convert EmberStatus to u8")
+    fn from(status: Status) -> Self {
+        status.to_u8().expect("could not convert EmberStatus to u8")
     }
 }

@@ -107,6 +107,6 @@ impl TryFrom<u8> for EzspStatus {
     type Error = anyhow::Error;
 
     fn try_from(value: u8) -> Result<Self, <Self as TryFrom<u8>>::Error> {
-        Self::from_u8(value).ok_or_else(|| anyhow!("Invalid Status: {value:#04X}"))
+        Self::from_u8(value).ok_or_else(|| anyhow!("Invalid EzspStatus: {value:#04X}"))
     }
 }

@@ -1,4 +1,4 @@
-use crate::ember_status::EmberStatus;
+use crate::ember::Status;
 use crate::frame::Parameters;
 use std::array::IntoIter;
 use std::io::Read;
@@ -47,18 +47,18 @@ impl Parameters<u16> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: EmberStatus,
+    status: Status,
     token_data: [u8; 8],
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus, token_data: [u8; 8]) -> Self {
+    pub const fn new(status: Status, token_data: [u8; 8]) -> Self {
         Self { status, token_data }
     }
 
     #[must_use]
-    pub const fn status(&self) -> EmberStatus {
+    pub const fn status(&self) -> Status {
         self.status
     }
 
@@ -98,7 +98,7 @@ impl Parameters<u16> for Response {
         let mut buffer @ [status, token_data @ ..] = [0; 9];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: EmberStatus::try_from(status)?,
+            status: Status::try_from(status)?,
             token_data,
         })
     }

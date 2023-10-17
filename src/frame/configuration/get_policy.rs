@@ -1,4 +1,4 @@
-use crate::ezsp_status::EzspStatus;
+use crate::ezsp::Status;
 use crate::frame::Parameters;
 use crate::policy;
 use std::array::IntoIter;
@@ -51,17 +51,17 @@ impl Parameters<u16> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: EzspStatus,
+    status: Status,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EzspStatus) -> Self {
+    pub const fn new(status: Status) -> Self {
         Self { status }
     }
 
     #[must_use]
-    pub const fn status(&self) -> EzspStatus {
+    pub const fn status(&self) -> Status {
         self.status
     }
 }
@@ -85,7 +85,7 @@ impl Parameters<u16> for Response {
         let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: EzspStatus::try_from(status)?,
+            status: Status::try_from(status)?,
         })
     }
 }

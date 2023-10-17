@@ -1,4 +1,4 @@
-use crate::ember_status::EmberStatus;
+use crate::ember::Status;
 use crate::frame::Parameters;
 use std::array::IntoIter;
 use std::io::Read;
@@ -42,14 +42,14 @@ impl Parameters<u16> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: EmberStatus,
+    status: Status,
     manufacturer_id: u16,
     version_number: u16,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus, manufacturer_id: u16, version_number: u16) -> Self {
+    pub const fn new(status: Status, manufacturer_id: u16, version_number: u16) -> Self {
         Self {
             status,
             manufacturer_id,
@@ -58,7 +58,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn status(&self) -> EmberStatus {
+    pub const fn status(&self) -> Status {
         self.status
     }
 
@@ -103,7 +103,7 @@ impl Parameters<u16> for Response {
             [0; 5];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: EmberStatus::try_from(status)?,
+            status: Status::try_from(status)?,
             manufacturer_id: u16::from_be_bytes([manufacturer_id_low, manufacturer_id_high]),
             version_number: u16::from_be_bytes([version_number_low, version_number_high]),
         })

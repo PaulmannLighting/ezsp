@@ -12,7 +12,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 #[repr(u8)]
-pub enum EmberStatus {
+pub enum Status {
     Success = 0x00,
     ErrFatal = 0x01,
     BadArgument = 0x02,
@@ -73,7 +73,7 @@ pub enum EmberStatus {
     Application(application::Application),
 }
 
-impl FromPrimitive for EmberStatus {
+impl FromPrimitive for Status {
     fn from_i64(n: i64) -> Option<Self> {
         u8::try_from(n).ok().and_then(Self::from_u8)
     }
@@ -147,7 +147,7 @@ impl FromPrimitive for EmberStatus {
     }
 }
 
-impl ToPrimitive for EmberStatus {
+impl ToPrimitive for Status {
     fn to_i64(&self) -> Option<i64> {
         self.to_u8().map(i64::from)
     }
@@ -220,7 +220,7 @@ impl ToPrimitive for EmberStatus {
     }
 }
 
-impl TryFrom<u8> for EmberStatus {
+impl TryFrom<u8> for Status {
     type Error = anyhow::Error;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
@@ -228,8 +228,8 @@ impl TryFrom<u8> for EmberStatus {
     }
 }
 
-impl From<EmberStatus> for u8 {
-    fn from(ember_status: EmberStatus) -> Self {
+impl From<Status> for u8 {
+    fn from(ember_status: Status) -> Self {
         ember_status
             .to_u8()
             .expect("could not convert EmberStatus to u8")

@@ -1,4 +1,4 @@
-use crate::ezsp_status::EzspStatus;
+use crate::ezsp::Status;
 use crate::frame::Parameters;
 use std::array::IntoIter;
 use std::io::Read;
@@ -8,17 +8,17 @@ pub const ID: u16 = 0x0058;
 /// Indicates that the NCP received an invalid command.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    reason: EzspStatus,
+    reason: Status,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(reason: EzspStatus) -> Self {
+    pub const fn new(reason: Status) -> Self {
         Self { reason }
     }
 
     #[must_use]
-    pub const fn reason(&self) -> EzspStatus {
+    pub const fn reason(&self) -> Status {
         self.reason
     }
 }
@@ -42,7 +42,7 @@ impl Parameters<u16> for Response {
         let mut buffer @ [reason] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            reason: EzspStatus::try_from(reason)?,
+            reason: Status::try_from(reason)?,
         })
     }
 }

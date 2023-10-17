@@ -1,4 +1,4 @@
-use crate::ember_status::EmberStatus;
+use crate::ember::Status;
 use crate::frame::Parameters;
 use crate::network_init_bitmask::NetworkInitBitmask;
 use std::array::IntoIter;
@@ -39,12 +39,12 @@ impl IntoIterator for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: EmberStatus,
+    status: Status,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
+    pub const fn new(status: Status) -> Self {
         Self { status }
     }
 }
@@ -68,7 +68,7 @@ impl Parameters<u16> for Response {
         let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: EmberStatus::try_from(status)?,
+            status: Status::try_from(status)?,
         })
     }
 }

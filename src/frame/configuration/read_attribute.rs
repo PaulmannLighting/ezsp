@@ -1,4 +1,4 @@
-use crate::ember_status::EmberStatus;
+use crate::ember::Status;
 use crate::frame::Parameters;
 use std::io::Read;
 use std::num::TryFromIntError;
@@ -106,7 +106,7 @@ impl Parameters<u16> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: EmberStatus,
+    status: Status,
     data_type: u8,
     read_length: u8,
     data: Arc<[u8]>,
@@ -117,11 +117,7 @@ impl Response {
     ///
     /// # Errors
     /// Returns an [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
-    pub fn new(
-        status: EmberStatus,
-        data_type: u8,
-        data: Arc<[u8]>,
-    ) -> Result<Self, TryFromIntError> {
+    pub fn new(status: Status, data_type: u8, data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
         Ok(Self {
             status,
             data_type,
@@ -131,7 +127,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn status(&self) -> EmberStatus {
+    pub const fn status(&self) -> Status {
         self.status
     }
 
@@ -177,7 +173,7 @@ impl Parameters<u16> for Response {
         let mut data = vec![0; read_length.into()];
         src.read_exact(&mut data)?;
         Ok(Self {
-            status: EmberStatus::try_from(status)?,
+            status: Status::try_from(status)?,
             data_type,
             read_length,
             data: data.into(),

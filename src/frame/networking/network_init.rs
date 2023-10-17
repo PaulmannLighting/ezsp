@@ -24,6 +24,11 @@ impl Command {
             network_init_bitmask,
         }
     }
+
+    #[must_use]
+    pub const fn network_init_bitmask(&self) -> InitBitmask {
+        self.network_init_bitmask
+    }
 }
 
 impl IntoIterator for Command {
@@ -46,6 +51,11 @@ impl Response {
     #[must_use]
     pub const fn new(status: Status) -> Self {
         Self { status }
+    }
+
+    #[must_use]
+    pub const fn status(&self) -> Status {
+        self.status
     }
 }
 

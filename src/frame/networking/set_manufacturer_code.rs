@@ -18,6 +18,11 @@ impl Command {
     pub const fn new(code: u16) -> Self {
         Self { code }
     }
+
+    #[must_use]
+    pub const fn code(&self) -> u16 {
+        self.code
+    }
 }
 
 impl IntoIterator for Command {

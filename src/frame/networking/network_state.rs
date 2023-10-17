@@ -48,6 +48,7 @@ impl Response {
         Self { status }
     }
 
+    #[must_use]
     pub const fn status(&self) -> Status {
         self.status
     }

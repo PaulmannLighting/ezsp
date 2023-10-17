@@ -19,6 +19,11 @@ impl Command {
     pub const fn new(descriptor: u16) -> Self {
         Self { descriptor }
     }
+
+    #[must_use]
+    pub const fn descriptor(&self) -> u16 {
+        self.descriptor
+    }
 }
 
 impl IntoIterator for Command {

@@ -4,6 +4,8 @@ use std::io::Read;
 use std::iter::{empty, Empty};
 
 pub const ID: u16 = 0x0026;
+
+/// Returns the EUI64 ID of the local node.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command;
 

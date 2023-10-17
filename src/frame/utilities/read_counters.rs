@@ -60,7 +60,7 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = FlatMap<IntoIter<u16, TYPE_COUNT>, [u8; TYPE_COUNT * 2], fn(u16) -> [u8; 2]>;
+    type IntoIter = FlatMap<IntoIter<u16, TYPE_COUNT>, [u8; 2], fn(u16) -> [u8; 2]>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.values

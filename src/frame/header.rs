@@ -63,8 +63,8 @@ impl From<[u8; HEADER_SIZE]> for Header {
     }
 }
 
-impl From<&Header> for [u8; HEADER_SIZE] {
-    fn from(header: &Header) -> Self {
+impl From<Header> for [u8; HEADER_SIZE] {
+    fn from(header: Header) -> Self {
         let [id_0, id_1] = header.id.to_be_bytes();
         [
             header.sequence,
@@ -130,8 +130,8 @@ impl From<[u8; LEGACY_HEADER_SIZE]> for LegacyHeader {
     }
 }
 
-impl From<&LegacyHeader> for [u8; LEGACY_HEADER_SIZE] {
-    fn from(header: &LegacyHeader) -> Self {
+impl From<LegacyHeader> for [u8; LEGACY_HEADER_SIZE] {
+    fn from(header: LegacyHeader) -> Self {
         [header.sequence, header.control, header.id]
     }
 }

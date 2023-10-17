@@ -170,7 +170,7 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = array::IntoIter<Self::IntoIter, 1>;
+    type IntoIter = array::IntoIter<Self::Item, 1>;
 
     fn into_iter(self) -> Self::IntoIter {
         [self.status.into()].into_iter()

@@ -85,7 +85,7 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::IntoIter, 3>;
+    type IntoIter = IntoIter<Self::Item, 3>;
 
     fn into_iter(self) -> Self::IntoIter {
         [self.protocol_version, self.stack_type, self.stack_version].into_iter()

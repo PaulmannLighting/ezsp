@@ -6,7 +6,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 pub enum NetworkInitBitmask {
     NoOptions = 0x0000,
     ParentInfoInToken = 0x0001,
-    EndDeviceRejoinOnReboot = 0x002,
+    EndDeviceRejoinOnReboot = 0x0002,
 }
 
 impl From<NetworkInitBitmask> for u16 {

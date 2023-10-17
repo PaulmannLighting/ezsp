@@ -27,6 +27,7 @@ impl Command {
     ///
     /// # Errors
     /// Returns a [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         endpoint: u8,
         cluster: u16,

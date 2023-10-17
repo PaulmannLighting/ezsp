@@ -28,7 +28,7 @@ impl IntoIterator for Command {
     type IntoIter = IntoIter<Self::Item, 1>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.token_id.into()].into_iter()
+        [self.token_id].into_iter()
     }
 }
 

@@ -63,9 +63,7 @@ impl IntoIterator for Response {
     type IntoIter = FlatMap<IntoIter<u16, TYPE_COUNT>, [u8; 2], fn(u16) -> [u8; 2]>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.values
-            .into_iter()
-            .flat_map(|value| value.to_be_bytes())
+        self.values.into_iter().flat_map(u16::to_be_bytes)
     }
 }
 

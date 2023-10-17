@@ -6,6 +6,7 @@ use std::iter::{empty, Empty};
 
 pub const ID: u16 = 0x00FC;
 
+/// Returns the entropy source used for true random number generation.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command;
 

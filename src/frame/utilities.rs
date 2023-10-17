@@ -8,6 +8,7 @@ pub mod echo;
 pub mod get_eui64;
 pub mod get_library_status;
 pub mod get_mfg_token;
+pub mod get_node_id;
 pub mod get_random_number;
 pub mod get_timer;
 pub mod get_token;

@@ -1,7 +1,7 @@
 mod control;
 
 pub use control::Control;
-use std::io::Read;
+use std::io::{Read, Write};
 
 pub const HEADER_SIZE: usize = 5;
 pub const LEGACY_HEADER_SIZE: usize = 3;
@@ -42,13 +42,21 @@ impl Header {
     ///
     /// # Errors
     /// Returns an [`std::io::Error`] on read errors.
-    pub fn read_from<R>(reader: &mut R) -> std::io::Result<Self>
+    pub fn read_from<R>(src: &mut R) -> std::io::Result<Self>
     where
         R: Read,
     {
         let mut buffer = [0; HEADER_SIZE];
-        reader.read_exact(&mut buffer)?;
+        src.read_exact(&mut buffer)?;
         Ok(Self::from(buffer))
+    }
+
+    pub fn write<W>(self, dst: &mut W) -> std::io::Result<()>
+    where
+        W: Write,
+    {
+        let bytes: [u8; HEADER_SIZE] = self.into();
+        dst.write_all(&bytes)
     }
 }
 
@@ -113,13 +121,21 @@ impl LegacyHeader {
     ///
     /// # Errors
     /// Returns an [`std::io::Error`] on read errors.
-    pub fn read_from<R>(reader: &mut R) -> std::io::Result<Self>
+    pub fn read_from<R>(src: &mut R) -> std::io::Result<Self>
     where
         R: Read,
     {
         let mut buffer = [0; LEGACY_HEADER_SIZE];
-        reader.read_exact(&mut buffer)?;
+        src.read_exact(&mut buffer)?;
         Ok(Self::from(buffer))
+    }
+
+    pub fn write<W>(self, dst: &mut W) -> std::io::Result<()>
+    where
+        W: Write,
+    {
+        let bytes: [u8; LEGACY_HEADER_SIZE] = self.into();
+        dst.write_all(&bytes)
     }
 }
 

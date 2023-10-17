@@ -26,7 +26,11 @@ pub trait Parameters<T>: Debug + IntoIterator<Item = u8> + Sized {
     where
         W: Write,
     {
-        dst.write_all(&self.into_iter().collect::<Vec<_>>())
+        for byte in self {
+            dst.write_all(&[byte])?;
+        }
+
+        Ok(())
     }
 }
 
@@ -68,8 +72,8 @@ where
     where
         W: Write,
     {
-        let bytes: Vec<u8> = self.into();
-        dst.write_all(&bytes)
+        self.header.write(dst)?;
+        self.parameters.write_to(dst)
     }
 }
 
@@ -113,6 +117,18 @@ where
     /// Returns the parameters
     pub const fn parameters(&self) -> &P {
         &self.parameters
+    }
+
+    /// Writes the frame to a writer
+    ///
+    /// # Errors
+    /// Returns an [`std::io::Error`] on errors.
+    pub fn write_to<W>(self, dst: &mut W) -> std::io::Result<()>
+    where
+        W: Write,
+    {
+        self.header.write(dst)?;
+        self.parameters.write_to(dst)
     }
 }
 

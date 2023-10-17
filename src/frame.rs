@@ -1,4 +1,4 @@
-use crate::frame::header::{Control, Header, LegacyHeader, HEADER_SIZE, LEGACY_HEADER_SIZE};
+use crate::frame::header::{Control, Header, LegacyHeader};
 use anyhow::anyhow;
 use std::fmt::Debug;
 use std::io::{Read, Write};
@@ -77,18 +77,6 @@ where
     }
 }
 
-impl<P> From<Frame<P>> for Vec<u8>
-where
-    P: Parameters<u16>,
-{
-    fn from(frame: Frame<P>) -> Self {
-        let header: [u8; HEADER_SIZE] = frame.header.into();
-        let mut bytes = Self::from(header);
-        bytes.extend(frame.parameters);
-        bytes
-    }
-}
-
 #[allow(clippy::module_name_repetitions)]
 pub struct LegacyFrame<P>
 where
@@ -129,18 +117,6 @@ where
     {
         self.header.write(dst)?;
         self.parameters.write_to(dst)
-    }
-}
-
-impl<P> From<LegacyFrame<P>> for Vec<u8>
-where
-    P: Parameters<u8>,
-{
-    fn from(frame: LegacyFrame<P>) -> Self {
-        let header: [u8; LEGACY_HEADER_SIZE] = frame.header.into();
-        let mut bytes = Self::from(header);
-        bytes.extend(frame.parameters);
-        bytes
     }
 }
 

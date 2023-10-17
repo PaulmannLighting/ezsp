@@ -3,8 +3,8 @@ mod control;
 pub use control::Control;
 use std::io::{Read, Write};
 
-pub const HEADER_SIZE: usize = 5;
-pub const LEGACY_HEADER_SIZE: usize = 3;
+const HEADER_SIZE: usize = 5;
+const LEGACY_HEADER_SIZE: usize = 3;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Header {
@@ -51,6 +51,10 @@ impl Header {
         Ok(Self::from(buffer))
     }
 
+    /// Write the header to a writer
+    ///
+    /// # Errors
+    /// Returns an [`std::io::Error`] on write errors.
     pub fn write<W>(self, dst: &mut W) -> std::io::Result<()>
     where
         W: Write,
@@ -130,6 +134,10 @@ impl LegacyHeader {
         Ok(Self::from(buffer))
     }
 
+    /// Write the header to a writer
+    ///
+    /// # Errors
+    /// Returns an [`std::io::Error`] on write errors.
     pub fn write<W>(self, dst: &mut W) -> std::io::Result<()>
     where
         W: Write,

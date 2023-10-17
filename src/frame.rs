@@ -9,11 +9,19 @@ pub mod utilities;
 pub trait Parameters<T>: IntoIterator<Item = u8> + Sized {
     const FRAME_ID: T;
 
+    /// Read parameters from a reader
+    ///
+    /// # Errors
+    /// Returns an [`anyhow::Error`] on errors.
     fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read;
 
-    fn write_to<W>(&self, dst: &mut W) -> std::io::Result<()>
+    /// Write parameters to a writer
+    ///
+    /// # Errors
+    /// Returns an [`std::io::Error`] on errors.
+    fn write_to<W>(self, dst: &mut W) -> std::io::Result<()>
     where
         W: Write,
     {
@@ -47,11 +55,15 @@ where
     }
 
     /// Returns the payload
-    pub fn parameters(&self) -> &P {
+    pub const fn parameters(&self) -> &P {
         &self.parameters
     }
 
-    pub fn write_to<W>(&self, dst: &mut W) -> std::io::Result<()>
+    /// Writes the frame to a writer
+    ///
+    /// # Errors
+    /// Returns an [`std::io::Error`] on errors.
+    pub fn write_to<W>(self, dst: &mut W) -> std::io::Result<()>
     where
         W: Write,
     {
@@ -60,14 +72,14 @@ where
     }
 }
 
-impl<P> From<&Frame<P>> for Vec<u8>
+impl<P> From<Frame<P>> for Vec<u8>
 where
     P: Parameters<u16>,
 {
-    fn from(frame: &Frame<P>) -> Self {
+    fn from(frame: Frame<P>) -> Self {
         let header: [u8; HEADER_SIZE] = frame.header.into();
-        let mut bytes = Vec::from(header);
-        bytes.extend(frame.parameters.into_iter());
+        let mut bytes = Self::from(header);
+        bytes.extend(frame.parameters);
         bytes
     }
 }
@@ -98,7 +110,7 @@ where
     }
 
     /// Returns the parameters
-    pub fn parameters(&self) -> &P {
+    pub const fn parameters(&self) -> &P {
         &self.parameters
     }
 }
@@ -109,8 +121,8 @@ where
 {
     fn from(frame: LegacyFrame<P>) -> Self {
         let header: [u8; LEGACY_HEADER_SIZE] = frame.header.into();
-        let mut bytes = Vec::from(header);
-        bytes.extend(frame.parameters.into_iter());
+        let mut bytes = Self::from(header);
+        bytes.extend(frame.parameters);
         bytes
     }
 }
@@ -122,6 +134,10 @@ pub enum Response {
 }
 
 impl Response {
+    /// Read a response from a reader
+    ///
+    /// # Errors
+    /// Returns an [`anyhow::Error`] on errors.
     pub fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
@@ -137,7 +153,7 @@ impl Response {
                 header,
                 parameters: { configuration::get_configuration_value::Response::read_from(src)? },
             })),
-            id => return Err(anyhow!("invalid frame ID: {id}")),
+            id => Err(anyhow!("invalid frame ID: {id}")),
         }
     }
 }
@@ -147,6 +163,10 @@ pub enum LegacyResponse {
 }
 
 impl LegacyResponse {
+    /// Read a legacy response from a reader
+    ///
+    /// # Errors
+    /// Returns an [`anyhow::Error`] on errors.
     pub fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
@@ -158,7 +178,7 @@ impl LegacyResponse {
                 header,
                 parameters: configuration::version::Response::read_from(src)?,
             })),
-            id => return Err(anyhow!("invalid frame ID: {id}")),
+            id => Err(anyhow!("invalid frame ID: {id}")),
         }
     }
 }

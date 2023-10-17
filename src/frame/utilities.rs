@@ -13,6 +13,7 @@ pub mod get_phy_interface_count;
 pub mod get_random_number;
 pub mod get_timer;
 pub mod get_token;
+pub mod get_true_random_entropy_source;
 pub mod get_xncp_info;
 pub mod invalid_command;
 pub mod no_callbacks;

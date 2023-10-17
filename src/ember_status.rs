@@ -3,7 +3,9 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
-pub enum EmberStatus {}
+pub enum EmberStatus {
+    Success = 0x00,
+}
 
 impl From<EmberStatus> for u8 {
     fn from(ember_status: EmberStatus) -> Self {

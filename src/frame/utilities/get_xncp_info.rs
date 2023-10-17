@@ -1,3 +1,4 @@
+use crate::ember_status::EmberStatus;
 use crate::frame::Parameters;
 use std::array::IntoIter;
 use std::io::Read;
@@ -41,17 +42,24 @@ impl Parameters<u16> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
+    status: EmberStatus,
     manufacturer_id: u16,
     version_number: u16,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(manufacturer_id: u16, version_number: u16) -> Self {
+    pub const fn new(status: EmberStatus, manufacturer_id: u16, version_number: u16) -> Self {
         Self {
+            status,
             manufacturer_id,
             version_number,
         }
+    }
+
+    #[must_use]
+    pub const fn status(&self) -> EmberStatus {
+        self.status
     }
 
     #[must_use]
@@ -67,12 +75,13 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 4>;
+    type IntoIter = IntoIter<Self::Item, 5>;
 
     fn into_iter(self) -> Self::IntoIter {
         let [manufacturer_id_low, manufacturer_id_high] = self.manufacturer_id.to_be_bytes();
         let [version_number_low, version_number_high] = self.version_number.to_be_bytes();
         [
+            self.status.into(),
             manufacturer_id_low,
             manufacturer_id_high,
             version_number_low,
@@ -89,11 +98,12 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer
-        @ [manufacturer_id_low, manufacturer_id_high, version_number_low, version_number_high] =
-            [0; 4];
+        let mut buffer @
+        [status, manufacturer_id_low, manufacturer_id_high, version_number_low, version_number_high] =
+            [0; 5];
         src.read_exact(&mut buffer)?;
         Ok(Self {
+            status: EmberStatus::try_from(status)?,
             manufacturer_id: u16::from_be_bytes([manufacturer_id_low, manufacturer_id_high]),
             version_number: u16::from_be_bytes([version_number_low, version_number_high]),
         })

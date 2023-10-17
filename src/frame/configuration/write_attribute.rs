@@ -1,4 +1,4 @@
-use crate::ezsp_status::EzspStatus;
+use crate::ember_status::EmberStatus;
 use crate::frame::Parameters;
 use std::io::Read;
 use std::num::TryFromIntError;
@@ -154,17 +154,17 @@ impl Parameters<u16> for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: EzspStatus,
+    status: EmberStatus,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EzspStatus) -> Self {
+    pub const fn new(status: EmberStatus) -> Self {
         Self { status }
     }
 
     #[must_use]
-    pub const fn status(&self) -> EzspStatus {
+    pub const fn status(&self) -> EmberStatus {
         self.status
     }
 }
@@ -188,7 +188,7 @@ impl Parameters<u16> for Response {
         let mut buffer @ [status] = [0; 1];
         src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: EzspStatus::try_from(status)?,
+            status: EmberStatus::try_from(status)?,
         })
     }
 }

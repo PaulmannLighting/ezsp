@@ -1,6 +1,8 @@
-use crate::ezsp_status::EzspStatus;
+use crate::ember_status::EmberStatus;
+use crate::frame::Parameters;
 use crate::network_init_bitmask::NetworkInitBitmask;
 use std::array::IntoIter;
+use std::io::Read;
 
 pub const ID: u16 = 0x0017;
 
@@ -37,12 +39,12 @@ impl IntoIterator for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    status: EzspStatus,
+    status: EmberStatus,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EzspStatus) -> Self {
+    pub const fn new(status: EmberStatus) -> Self {
         Self { status }
     }
 }
@@ -53,5 +55,20 @@ impl IntoIterator for Response {
 
     fn into_iter(self) -> Self::IntoIter {
         [self.status.into()].into_iter()
+    }
+}
+
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let mut buffer @ [status] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            status: EmberStatus::try_from(status)?,
+        })
     }
 }

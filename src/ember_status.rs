@@ -73,152 +73,165 @@ pub enum EmberStatus {
     Application(application::Application),
 }
 
+impl FromPrimitive for EmberStatus {
+    fn from_i64(n: i64) -> Option<Self> {
+        u8::try_from(n).ok().and_then(Self::from_u8)
+    }
+
+    fn from_u8(n: u8) -> Option<Self> {
+        match n {
+            0x00 => Some(Self::Success),
+            0x01 => Some(Self::ErrFatal),
+            0x02 => Some(Self::BadArgument),
+            0x04..=0x07 => eeprom::Eeprom::from_u8(n).map(Self::Eeprom),
+            0x18 => Some(Self::NoBuffers),
+            0x20..=0x27 => serial::Serial::from_u8(n).map(Self::Serial),
+            0x31..=0x42 => mac::Mac::from_u8(n).map(Self::Mac),
+            0x43..=0x45 | 0x48..=0x4A => sim_eeprom::SimEeprom::from_u8(n).map(Self::SimEeprom),
+            0x46..=0x4C | 0x58..=0x5A => err::Err::from_u8(n).map(Self::Err),
+            0x66 => Some(Self::DeliveryFailed),
+            0x69 => Some(Self::BindingIndexOutOfRange),
+            0x6A => Some(Self::AddressTableIndexOutOfRange),
+            0x6C => Some(Self::InvalidBindingIndex),
+            0x70 => Some(Self::InvalidCall),
+            0x71 => Some(Self::CostNotKnown),
+            0x72 => Some(Self::MaxMessageLimitReached),
+            0x74 => Some(Self::MessageTooLong),
+            0x75 => Some(Self::BindingIsActive),
+            0x76 => Some(Self::AddressTableEntryIsActive),
+            0x80..=0x84 => adc::Adc::from_u8(n).map(Self::Adc),
+            0x85 => Some(Self::SleepInterrupted),
+            0x88..=0x8F => phy::Phy::from_u8(n).map(Self::Phy),
+            0x90 => Some(Self::NetworkUp),
+            0x91 => Some(Self::NetworkDown),
+            0x93 => Some(Self::NotJoined),
+            0x94 => Some(Self::JoinFailed),
+            0x95 => Some(Self::InvalidSecurityLevel),
+            0x96 => Some(Self::MoveFailed),
+            0x98 => Some(Self::CannotJoinAsRouter),
+            0x99 => Some(Self::NodeIdChanged),
+            0x9A => Some(Self::PanIdChanged),
+            0x9C => Some(Self::NetworkOpened),
+            0x9D => Some(Self::NetworkClosed),
+            0xAB => Some(Self::NoBeacons),
+            0xAC => Some(Self::ReceivedKeyInTheClear),
+            0xAD => Some(Self::NoNetworkKeyReceived),
+            0xAE => Some(Self::NoLinkKeyReceived),
+            0xAF => Some(Self::PreconfiguredKeyRequired),
+            0xA1 => Some(Self::NetworkBusy),
+            0xA3 => Some(Self::InvalidEndpoint),
+            0xA4 => Some(Self::BindingHasChanged),
+            0xA5 => Some(Self::InsufficientRandomData),
+            0xA6 => Some(Self::ApsEncryptionError),
+            0xA8 => Some(Self::SecurityStateNotSet),
+            0xA9 => Some(Self::SourceRouteFailure),
+            0xAA => Some(Self::ManyToOneRouteFailure),
+            0xB0 => Some(Self::StackAndHardwareMismatch),
+            0xB1 => Some(Self::IndexOutOfRange),
+            0xB3 => Some(Self::KeyTableInvalidAddress),
+            0xB4 => Some(Self::TableFull),
+            0xB5 => Some(Self::LibraryNotPresent),
+            0xB6 => Some(Self::TableEntryErased),
+            0xB7 => Some(Self::SecurityConfigurationInvalid),
+            0xB8 => Some(Self::TooSoonForSwitchKey),
+            0xBA => Some(Self::OperationInProgress),
+            0xBB => Some(Self::KeyNotAuthorized),
+            0xBD => Some(Self::SecurityDataInvalid),
+            0xF0..=0xFF => application::Application::from_u8(n).map(Self::Application),
+            _ => None,
+        }
+    }
+
+    fn from_u64(n: u64) -> Option<Self> {
+        u8::try_from(n).ok().and_then(Self::from_u8)
+    }
+}
+
+impl ToPrimitive for EmberStatus {
+    fn to_i64(&self) -> Option<i64> {
+        self.to_u8().map(i64::from)
+    }
+
+    fn to_u8(&self) -> Option<u8> {
+        match self {
+            Self::Success => Some(0x00),
+            Self::ErrFatal => Some(0x01),
+            Self::BadArgument => Some(0x02),
+            Self::Eeprom(eeprom) => eeprom.to_u8(),
+            Self::NoBuffers => Some(0x18),
+            Self::Serial(serial) => serial.to_u8(),
+            Self::Mac(mac) => mac.to_u8(),
+            Self::SimEeprom(sim_eeprom) => sim_eeprom.to_u8(),
+            Self::Err(err) => err.to_u8(),
+            Self::DeliveryFailed => Some(0x66),
+            Self::BindingIndexOutOfRange => Some(0x69),
+            Self::AddressTableIndexOutOfRange => Some(0x6A),
+            Self::InvalidBindingIndex => Some(0x6C),
+            Self::InvalidCall => Some(0x70),
+            Self::CostNotKnown => Some(0x71),
+            Self::MaxMessageLimitReached => Some(0x72),
+            Self::MessageTooLong => Some(0x74),
+            Self::BindingIsActive => Some(0x75),
+            Self::AddressTableEntryIsActive => Some(0x76),
+            Self::Adc(adc) => adc.to_u8(),
+            Self::SleepInterrupted => Some(0x85),
+            Self::Phy(phy) => phy.to_u8(),
+            Self::NetworkUp => Some(0x90),
+            Self::NetworkDown => Some(0x91),
+            Self::NotJoined => Some(0x93),
+            Self::JoinFailed => Some(0x94),
+            Self::InvalidSecurityLevel => Some(0x95),
+            Self::MoveFailed => Some(0x96),
+            Self::CannotJoinAsRouter => Some(0x98),
+            Self::NodeIdChanged => Some(0x99),
+            Self::PanIdChanged => Some(0x9A),
+            Self::NetworkOpened => Some(0x9C),
+            Self::NetworkClosed => Some(0x9D),
+            Self::NoBeacons => Some(0xAB),
+            Self::ReceivedKeyInTheClear => Some(0xAC),
+            Self::NoNetworkKeyReceived => Some(0xAD),
+            Self::NoLinkKeyReceived => Some(0xAE),
+            Self::PreconfiguredKeyRequired => Some(0xAF),
+            Self::NetworkBusy => Some(0xA1),
+            Self::InvalidEndpoint => Some(0xA3),
+            Self::BindingHasChanged => Some(0xA4),
+            Self::InsufficientRandomData => Some(0xA5),
+            Self::ApsEncryptionError => Some(0xA6),
+            Self::SecurityStateNotSet => Some(0xA8),
+            Self::SourceRouteFailure => Some(0xA9),
+            Self::ManyToOneRouteFailure => Some(0xAA),
+            Self::StackAndHardwareMismatch => Some(0xB0),
+            Self::IndexOutOfRange => Some(0xB1),
+            Self::KeyTableInvalidAddress => Some(0xB3),
+            Self::TableFull => Some(0xB4),
+            Self::LibraryNotPresent => Some(0xB5),
+            Self::TableEntryErased => Some(0xB6),
+            Self::SecurityConfigurationInvalid => Some(0xB7),
+            Self::TooSoonForSwitchKey => Some(0xB8),
+            Self::OperationInProgress => Some(0xBA),
+            Self::KeyNotAuthorized => Some(0xBB),
+            Self::SecurityDataInvalid => Some(0xBD),
+            Self::Application(application) => application.to_u8(),
+        }
+    }
+
+    fn to_u64(&self) -> Option<u64> {
+        self.to_u8().map(u64::from)
+    }
+}
+
 impl TryFrom<u8> for EmberStatus {
     type Error = anyhow::Error;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        match value {
-            0x00 => Ok(Self::Success),
-            0x01 => Ok(Self::ErrFatal),
-            0x02 => Ok(Self::BadArgument),
-            0x04..=0x07 => eeprom::Eeprom::from_u8(value)
-                .ok_or_else(|| anyhow!("invalid EEPROM value: {value}"))
-                .map(Self::Eeprom),
-            0x18 => Ok(Self::NoBuffers),
-            0x20..=0x27 => serial::Serial::from_u8(value)
-                .ok_or_else(|| anyhow!("invalid SERIAL value: {value}"))
-                .map(Self::Serial),
-            0x31..=0x42 => mac::Mac::from_u8(value)
-                .ok_or_else(|| anyhow!("invalid MAC value: {value}"))
-                .map(Self::Mac),
-            0x43..=0x45 | 0x48..=0x4A => sim_eeprom::SimEeprom::from_u8(value)
-                .ok_or_else(|| anyhow!("invalid SIM_EEPROM value: {value}"))
-                .map(Self::SimEeprom),
-            0x46..=0x4C | 0x58..=0x5A => err::Err::from_u8(value)
-                .ok_or_else(|| anyhow!("invalid ERR value: {value}"))
-                .map(Self::Err),
-            0x66 => Ok(Self::DeliveryFailed),
-            0x69 => Ok(Self::BindingIndexOutOfRange),
-            0x6A => Ok(Self::AddressTableIndexOutOfRange),
-            0x6C => Ok(Self::InvalidBindingIndex),
-            0x70 => Ok(Self::InvalidCall),
-            0x71 => Ok(Self::CostNotKnown),
-            0x72 => Ok(Self::MaxMessageLimitReached),
-            0x74 => Ok(Self::MessageTooLong),
-            0x75 => Ok(Self::BindingIsActive),
-            0x76 => Ok(Self::AddressTableEntryIsActive),
-            0x80..=0x84 => adc::Adc::from_u8(value)
-                .ok_or_else(|| anyhow!("invalid ADC value: {value}"))
-                .map(Self::Adc),
-            0x85 => Ok(Self::SleepInterrupted),
-            0x88..=0x8F => phy::Phy::from_u8(value)
-                .ok_or_else(|| anyhow!("invalid PHY value: {value}"))
-                .map(Self::Phy),
-            0x90 => Ok(Self::NetworkUp),
-            0x91 => Ok(Self::NetworkDown),
-            0x93 => Ok(Self::NotJoined),
-            0x94 => Ok(Self::JoinFailed),
-            0x95 => Ok(Self::InvalidSecurityLevel),
-            0x96 => Ok(Self::MoveFailed),
-            0x98 => Ok(Self::CannotJoinAsRouter),
-            0x99 => Ok(Self::NodeIdChanged),
-            0x9A => Ok(Self::PanIdChanged),
-            0x9C => Ok(Self::NetworkOpened),
-            0x9D => Ok(Self::NetworkClosed),
-            0xAB => Ok(Self::NoBeacons),
-            0xAC => Ok(Self::ReceivedKeyInTheClear),
-            0xAD => Ok(Self::NoNetworkKeyReceived),
-            0xAE => Ok(Self::NoLinkKeyReceived),
-            0xAF => Ok(Self::PreconfiguredKeyRequired),
-            0xA1 => Ok(Self::NetworkBusy),
-            0xA3 => Ok(Self::InvalidEndpoint),
-            0xA4 => Ok(Self::BindingHasChanged),
-            0xA5 => Ok(Self::InsufficientRandomData),
-            0xA6 => Ok(Self::ApsEncryptionError),
-            0xA8 => Ok(Self::SecurityStateNotSet),
-            0xA9 => Ok(Self::SourceRouteFailure),
-            0xAA => Ok(Self::ManyToOneRouteFailure),
-            0xB0 => Ok(Self::StackAndHardwareMismatch),
-            0xB1 => Ok(Self::IndexOutOfRange),
-            0xB3 => Ok(Self::KeyTableInvalidAddress),
-            0xB4 => Ok(Self::TableFull),
-            0xB5 => Ok(Self::LibraryNotPresent),
-            0xB6 => Ok(Self::TableEntryErased),
-            0xB7 => Ok(Self::SecurityConfigurationInvalid),
-            0xB8 => Ok(Self::TooSoonForSwitchKey),
-            0xBA => Ok(Self::OperationInProgress),
-            0xBB => Ok(Self::KeyNotAuthorized),
-            0xBD => Ok(Self::SecurityDataInvalid),
-            0xF0..=0xFF => application::Application::from_u8(value)
-                .ok_or_else(|| anyhow!("invalid PHY value: {value}"))
-                .map(Self::Application),
-            n => Err(anyhow!("invalid EmberStatus: {n:#04X}")),
-        }
+        Self::from_u8(value).ok_or_else(|| anyhow!("invalid EmberStatus: {value:#04X}"))
     }
 }
 
-#[allow(clippy::fallible_impl_from, clippy::unwrap_used)]
 impl From<EmberStatus> for u8 {
     fn from(ember_status: EmberStatus) -> Self {
-        match ember_status {
-            EmberStatus::Success => 0x00,
-            EmberStatus::ErrFatal => 0x01,
-            EmberStatus::BadArgument => 0x02,
-            EmberStatus::Eeprom(eeprom) => eeprom.to_u8().unwrap(),
-            EmberStatus::NoBuffers => 0x18,
-            EmberStatus::Serial(serial) => serial.to_u8().unwrap(),
-            EmberStatus::Mac(mac) => mac.to_u8().unwrap(),
-            EmberStatus::SimEeprom(sim_eeprom) => sim_eeprom.to_u8().unwrap(),
-            EmberStatus::Err(err) => err.to_u8().unwrap(),
-            EmberStatus::DeliveryFailed => 0x66,
-            EmberStatus::BindingIndexOutOfRange => 0x69,
-            EmberStatus::AddressTableIndexOutOfRange => 0x6A,
-            EmberStatus::InvalidBindingIndex => 0x6C,
-            EmberStatus::InvalidCall => 0x70,
-            EmberStatus::CostNotKnown => 0x71,
-            EmberStatus::MaxMessageLimitReached => 0x72,
-            EmberStatus::MessageTooLong => 0x74,
-            EmberStatus::BindingIsActive => 0x75,
-            EmberStatus::AddressTableEntryIsActive => 0x76,
-            EmberStatus::Adc(adc) => adc.to_u8().unwrap(),
-            EmberStatus::SleepInterrupted => 0x85,
-            EmberStatus::Phy(phy) => phy.to_u8().unwrap(),
-            EmberStatus::NetworkUp => 0x90,
-            EmberStatus::NetworkDown => 0x91,
-            EmberStatus::NotJoined => 0x93,
-            EmberStatus::JoinFailed => 0x94,
-            EmberStatus::InvalidSecurityLevel => 0x95,
-            EmberStatus::MoveFailed => 0x96,
-            EmberStatus::CannotJoinAsRouter => 0x98,
-            EmberStatus::NodeIdChanged => 0x99,
-            EmberStatus::PanIdChanged => 0x9A,
-            EmberStatus::NetworkOpened => 0x9C,
-            EmberStatus::NetworkClosed => 0x9D,
-            EmberStatus::NoBeacons => 0xAB,
-            EmberStatus::ReceivedKeyInTheClear => 0xAC,
-            EmberStatus::NoNetworkKeyReceived => 0xAD,
-            EmberStatus::NoLinkKeyReceived => 0xAE,
-            EmberStatus::PreconfiguredKeyRequired => 0xAF,
-            EmberStatus::NetworkBusy => 0xA1,
-            EmberStatus::InvalidEndpoint => 0xA3,
-            EmberStatus::BindingHasChanged => 0xA4,
-            EmberStatus::InsufficientRandomData => 0xA5,
-            EmberStatus::ApsEncryptionError => 0xA6,
-            EmberStatus::SecurityStateNotSet => 0xA8,
-            EmberStatus::SourceRouteFailure => 0xA9,
-            EmberStatus::ManyToOneRouteFailure => 0xAA,
-            EmberStatus::StackAndHardwareMismatch => 0xB0,
-            EmberStatus::IndexOutOfRange => 0xB1,
-            EmberStatus::KeyTableInvalidAddress => 0xB3,
-            EmberStatus::TableFull => 0xB4,
-            EmberStatus::LibraryNotPresent => 0xB5,
-            EmberStatus::TableEntryErased => 0xB6,
-            EmberStatus::SecurityConfigurationInvalid => 0xB7,
-            EmberStatus::TooSoonForSwitchKey => 0xB8,
-            EmberStatus::OperationInProgress => 0xBA,
-            EmberStatus::KeyNotAuthorized => 0xBB,
-            EmberStatus::SecurityDataInvalid => 0xBD,
-            EmberStatus::Application(application) => application.to_u8().unwrap(),
-        }
+        ember_status
+            .to_u8()
+            .expect("could not convert EmberStatus to u8")
     }
 }

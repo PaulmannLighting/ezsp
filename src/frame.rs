@@ -1,12 +1,13 @@
 use crate::frame::header::{Control, Header, LegacyHeader, HEADER_SIZE, LEGACY_HEADER_SIZE};
 use anyhow::anyhow;
+use std::fmt::Debug;
 use std::io::{Read, Write};
 
 pub mod configuration;
 pub mod header;
 pub mod utilities;
 
-pub trait Parameters<T>: IntoIterator<Item = u8> + Sized {
+pub trait Parameters<T>: Debug + IntoIterator<Item = u8> + Sized {
     const FRAME_ID: T;
 
     /// Read parameters from a reader

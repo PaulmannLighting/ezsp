@@ -5,6 +5,7 @@ pub mod custom_frame_handler;
 pub mod debug_write;
 pub mod delay_test;
 pub mod echo;
+pub mod get_eui64;
 pub mod get_library_status;
 pub mod get_mfg_token;
 pub mod get_random_number;

@@ -5,6 +5,7 @@ use std::io::{Read, Write};
 
 pub mod configuration;
 pub mod header;
+pub mod networking;
 pub mod utilities;
 
 pub trait Parameters<T>: Debug + IntoIterator<Item = u8> + Sized {

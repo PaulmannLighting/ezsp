@@ -6,6 +6,7 @@ pub mod mac;
 pub mod phy;
 pub mod serial;
 pub mod sim_eeprom;
+pub mod zigbee;
 
 use anyhow::anyhow;
 use num_traits::{FromPrimitive, ToPrimitive};

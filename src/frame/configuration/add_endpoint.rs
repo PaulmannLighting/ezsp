@@ -1,9 +1,12 @@
 use crate::ezsp::Status;
 use crate::frame::Parameters;
+use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{once, Chain, Copied, FlatMap, Once};
 use std::num::TryFromIntError;
+use std::slice::Iter;
 use std::sync::Arc;
-use std::{array, io, vec};
+use std::{io, vec};
 
 pub const ID: u16 = 0x0002;
 
@@ -114,24 +117,35 @@ impl Command {
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = vec::IntoIter<Self::Item>;
+    type IntoIter = Chain<
+        Chain<
+            Chain<Chain<Chain<Once<u8>, IntoIter<u8, 2>>, IntoIter<u8, 2>>, IntoIter<u8, 3>>,
+            FlatMap<Copied<Iter<'static, u16>>, [u8; 2], fn(u16) -> [u8; 2]>,
+        >,
+        FlatMap<Copied<Iter<'static, u16>>, [u8; 2], fn(u16) -> [u8; 2]>,
+    >;
 
     fn into_iter(self) -> Self::IntoIter {
-        let mut parameters =
-            Vec::with_capacity(8 + self.input_clusters.len() * 2 + self.output_clusters.len() * 2);
-        parameters.push(self.endpoint);
-        parameters.extend_from_slice(&self.profile_id.to_be_bytes());
-        parameters.extend_from_slice(&self.device_id.to_be_bytes());
-        parameters.push(self.app_flags);
-        parameters.push(self.input_cluster_count);
-        parameters.push(self.output_cluster_count);
-        self.input_clusters
-            .iter()
-            .for_each(|cluster| parameters.extend_from_slice(&cluster.to_be_bytes()));
-        self.output_clusters
-            .iter()
-            .for_each(|cluster| parameters.extend_from_slice(&cluster.to_be_bytes()));
-        parameters.into_iter()
+        once(self.endpoint)
+            .chain(self.profile_id.to_be_bytes())
+            .chain(self.device_id.to_be_bytes())
+            .chain([
+                self.app_flags,
+                self.input_cluster_count,
+                self.output_cluster_count,
+            ])
+            .chain(
+                self.input_clusters
+                    .into_iter()
+                    .copied()
+                    .flat_map(u16::to_be_bytes as fn(u16) -> [u8; 2]),
+            )
+            .chain(
+                self.output_clusters
+                    .into_iter()
+                    .copied()
+                    .flat_map(u16::to_be_bytes as fn(u16) -> [u8; 2]),
+            )
     }
 }
 
@@ -180,10 +194,10 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = array::IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.status.into()].into_iter()
+        once(self.status.into())
     }
 }
 

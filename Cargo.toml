@@ -11,3 +11,4 @@ never = "0.1.0"
 num-derive = "0.4.0"
 num-traits = "0.2.16"
 serialport = "4.2.2"
+siliconlabs = { git = "ssh://git@github.com/PaulmannLighting/siliconlabs.git", version = "0.1.0" }

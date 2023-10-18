@@ -1,5 +1,6 @@
 mod ash;
 mod error;
+pub mod network;
 mod spi_err;
 
 use anyhow::anyhow;

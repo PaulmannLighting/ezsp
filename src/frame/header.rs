@@ -3,8 +3,8 @@ mod control;
 pub use control::Control;
 use std::io::{Read, Write};
 
-const HEADER_SIZE: usize = 5;
-const LEGACY_HEADER_SIZE: usize = 3;
+pub const HEADER_SIZE: usize = 5;
+pub const LEGACY_HEADER_SIZE: usize = 3;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Header {

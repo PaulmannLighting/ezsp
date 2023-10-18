@@ -21,7 +21,7 @@ impl TryFrom<u16> for InitBitmask {
     type Error = anyhow::Error;
 
     fn try_from(value: u16) -> Result<Self, Self::Error> {
-        Self::from_u16(value).ok_or_else(|| anyhow!("Invalid Units: {value:#04X}"))
+        Self::from_u16(value).ok_or_else(|| anyhow!("Invalid InitBitmask: {value:#04X}"))
     }
 }
 
@@ -44,6 +44,6 @@ impl TryFrom<u8> for Status {
     type Error = anyhow::Error;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::from_u8(value).ok_or_else(|| anyhow!("Invalid Units: {value:#04X}"))
+        Self::from_u8(value).ok_or_else(|| anyhow!("Invalid Status: {value:#04X}"))
     }
 }

@@ -1,8 +1,8 @@
 use crate::ezsp::Status;
 use crate::frame::Parameters;
 use crate::{decision, policy};
-use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{once, Chain, Once};
 
 pub const ID: u16 = 0x0055;
 
@@ -35,10 +35,10 @@ impl Command {
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 2>;
+    type IntoIter = Chain<Once<Self::Item>, Once<Self::Item>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.policy_id.into(), self.decision_id.into()].into_iter()
+        once(self.policy_id.into()).chain(once(self.decision_id.into()))
     }
 }
 
@@ -77,10 +77,10 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.status.into()].into_iter()
+        once(self.status.into())
     }
 }
 

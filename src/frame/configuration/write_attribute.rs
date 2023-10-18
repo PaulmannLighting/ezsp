@@ -1,9 +1,10 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
 use std::io::Read;
+use std::iter::{once, Once};
 use std::num::TryFromIntError;
 use std::sync::Arc;
-use std::{array, vec};
+use std::vec::IntoIter;
 
 pub const ID: u16 = 0x0109;
 
@@ -106,7 +107,7 @@ impl Command {
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = vec::IntoIter<Self::Item>;
+    type IntoIter = IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(12 + self.data.len());
@@ -131,18 +132,27 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @
-        [endpoint, cluster_low, cluster_high, attribute_id_low, attribute_id_high, mask, manufacturer_code_low, manufacturer_code_high, override_read_only_and_data_type, just_test, data_type, data_length] =
-            [0; 12];
+        let mut buffer @ [endpoint] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        let mut cluster = [0; 2];
+        src.read_exact(&mut cluster)?;
+        let mut attribute_id = [0; 2];
+        src.read_exact(&mut attribute_id)?;
+        let mut buffer @ [mask] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        let mut manufacturer_code = [0; 2];
+        src.read_exact(&mut manufacturer_code)?;
+        let mut buffer @ [override_read_only_and_data_type, just_test, data_type, data_length] =
+            [0; 4];
         src.read_exact(&mut buffer)?;
         let mut data = vec![0; data_length.into()];
         src.read_exact(&mut data)?;
         Ok(Self {
             endpoint,
-            cluster: u16::from_be_bytes([cluster_low, cluster_high]),
-            attribute_id: u16::from_be_bytes([attribute_id_low, attribute_id_high]),
+            cluster: u16::from_be_bytes(cluster),
+            attribute_id: u16::from_be_bytes(attribute_id),
             mask,
-            manufacturer_code: u16::from_be_bytes([manufacturer_code_low, manufacturer_code_high]),
+            manufacturer_code: u16::from_be_bytes(manufacturer_code),
             override_read_only_and_data_type: override_read_only_and_data_type != 0,
             just_test: just_test != 0,
             data_type,
@@ -171,10 +181,10 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = array::IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.status.into()].into_iter()
+        once(self.status.into())
     }
 }
 

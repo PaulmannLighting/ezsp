@@ -3,6 +3,7 @@ use crate::event;
 use crate::frame::Parameters;
 use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{once, Chain, Once};
 
 pub const ID: u16 = 0x000E;
 
@@ -52,18 +53,16 @@ impl Command {
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 5>;
+    type IntoIter = Chain<
+        Chain<Chain<Once<Self::Item>, IntoIter<Self::Item, 2>>, Once<Self::Item>>,
+        Once<Self::Item>,
+    >;
 
     fn into_iter(self) -> Self::IntoIter {
-        let [time_low, time_high] = self.time.to_be_bytes();
-        [
-            self.timer_id,
-            time_low,
-            time_high,
-            self.units.into(),
-            self.repeat.into(),
-        ]
-        .into_iter()
+        once(self.timer_id)
+            .chain(self.time.to_be_bytes())
+            .chain(once(self.units.into()))
+            .chain(once(self.repeat.into()))
     }
 }
 
@@ -104,10 +103,10 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.status.into()].into_iter()
+        once(self.status.into())
     }
 }
 

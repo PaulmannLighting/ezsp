@@ -1,8 +1,7 @@
 use crate::frame::Parameters;
 use crate::network::Status;
-use std::array::IntoIter;
 use std::io::Read;
-use std::iter::{empty, Empty};
+use std::iter::{empty, once, Empty, Once};
 
 pub const ID: u16 = 0x0018;
 
@@ -56,10 +55,10 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.status.into()].into_iter()
+        once(self.status.into())
     }
 }
 

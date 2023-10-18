@@ -3,6 +3,7 @@ use crate::frame::Parameters;
 use crate::network::InitBitmask;
 use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{once, Once};
 
 pub const ID: u16 = 0x0017;
 
@@ -42,6 +43,21 @@ impl IntoIterator for Command {
     }
 }
 
+impl Parameters<u16> for Command {
+    const FRAME_ID: u16 = ID;
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let mut buffer = [0; 2];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            network_init_bitmask: InitBitmask::try_from(u16::from_be_bytes(buffer))?,
+        })
+    }
+}
+
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     status: Status,
@@ -61,10 +77,10 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.status.into()].into_iter()
+        once(self.status.into())
     }
 }
 

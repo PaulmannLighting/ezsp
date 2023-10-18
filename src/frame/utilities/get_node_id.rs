@@ -42,8 +42,14 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn new(node_id: u16) -> Self {
         Self { node_id }
+    }
+
+    #[must_use]
+    pub const fn node_id(&self) -> u16 {
+        self.node_id
     }
 }
 

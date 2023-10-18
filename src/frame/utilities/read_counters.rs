@@ -60,7 +60,7 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = FlatMap<IntoIter<u16, TYPE_COUNT>, [u8; 2], fn(u16) -> [u8; 2]>;
+    type IntoIter = FlatMap<IntoIter<u16, TYPE_COUNT>, [Self::Item; 2], fn(u16) -> [Self::Item; 2]>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.values.into_iter().flat_map(u16::to_be_bytes)
@@ -78,13 +78,7 @@ impl Parameters<u16> for Response {
         src.read_exact(&mut buffer)?;
         let values: Vec<u16> = buffer
             .chunks_exact(2)
-            .filter_map(|chunk| {
-                if chunk.len() == 2 {
-                    Some(u16::from_be_bytes([chunk[0], chunk[1]]))
-                } else {
-                    None
-                }
-            })
+            .map(|chunk| u16::from_be_bytes([chunk[0], chunk[1]]))
             .collect();
         Ok(Self {
             values: values

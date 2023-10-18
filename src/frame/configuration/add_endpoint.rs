@@ -144,16 +144,20 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @
-        [endpoint, profile_id_low, profile_id_high, device_id_low, device_id_high, app_flags, input_cluster_count, output_cluster_count] =
-            [0; 8];
+        let mut buffer @ [endpoint] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        let mut profile_id = [0; 2];
+        src.read_exact(&mut profile_id)?;
+        let mut device_id = [0; 2];
+        src.read_exact(&mut device_id)?;
+        let mut buffer @ [app_flags, input_cluster_count, output_cluster_count] = [0; 3];
         src.read_exact(&mut buffer)?;
         let input_clusters = Self::read_clusters(src, input_cluster_count.into())?;
         let output_clusters = Self::read_clusters(src, output_cluster_count.into())?;
         Ok(Self {
             endpoint,
-            profile_id: u16::from_be_bytes([profile_id_low, profile_id_high]),
-            device_id: u16::from_be_bytes([device_id_low, device_id_high]),
+            profile_id: u16::from_be_bytes(profile_id),
+            device_id: u16::from_be_bytes(device_id),
             app_flags,
             input_cluster_count,
             output_cluster_count,

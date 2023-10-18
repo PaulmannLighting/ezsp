@@ -27,7 +27,7 @@ impl IntoIterator for Command {
     type IntoIter = IntoIter<Self::Item, 1>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.library_id].into_iter()
+        self.library_id.to_be_bytes().into_iter()
     }
 }
 
@@ -66,7 +66,7 @@ impl IntoIterator for Response {
     type IntoIter = IntoIter<Self::Item, 1>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.status].into_iter()
+        self.status.to_be_bytes().into_iter()
     }
 }
 

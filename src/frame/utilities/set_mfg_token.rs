@@ -2,9 +2,10 @@ use crate::ember::Status;
 use crate::frame::Parameters;
 use crate::mfg_token;
 use std::io::Read;
+use std::iter::{once, Once};
 use std::num::TryFromIntError;
 use std::sync::Arc;
-use std::{array, vec};
+use std::vec::IntoIter;
 
 pub const ID: u16 = 0x000C;
 
@@ -51,7 +52,7 @@ impl Command {
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = vec::IntoIter<Self::Item>;
+    type IntoIter = IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(2 + self.token_data.len());
@@ -99,10 +100,10 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = array::IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.status.into()].into_iter()
+        once(self.status.into())
     }
 }
 

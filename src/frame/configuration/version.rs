@@ -1,6 +1,6 @@
 use crate::frame::Parameters;
-use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{once, Chain, Once};
 
 pub const ID: u8 = 0x00;
 
@@ -27,10 +27,10 @@ impl Command {
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.desired_protocol_version].into_iter()
+        once(self.desired_protocol_version)
     }
 }
 
@@ -85,10 +85,12 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 3>;
+    type IntoIter = Chain<Chain<Once<Self::Item>, Once<Self::Item>>, Once<Self::Item>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.protocol_version, self.stack_type, self.stack_version].into_iter()
+        once(self.protocol_version)
+            .chain(once(self.stack_type))
+            .chain(once(self.stack_version))
     }
 }
 

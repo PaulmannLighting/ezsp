@@ -2,9 +2,10 @@ use crate::ezsp::Status;
 use crate::frame::Parameters;
 use crate::value;
 use std::io::Read;
+use std::iter::{once, Once};
 use std::num::TryFromIntError;
 use std::sync::Arc;
-use std::{array, vec};
+use std::vec::IntoIter;
 
 pub const ID: u16 = 0x00AA;
 
@@ -28,10 +29,10 @@ impl Command {
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = array::IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.value_id.into()].into_iter()
+        once(self.value_id.into())
     }
 }
 
@@ -88,7 +89,7 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = vec::IntoIter<Self::Item>;
+    type IntoIter = IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(2 + self.value.len());

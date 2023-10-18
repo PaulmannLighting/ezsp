@@ -1,9 +1,9 @@
 use crate::config;
 use crate::ezsp::Status;
 use crate::frame::Parameters;
-use num_traits::ToPrimitive;
 use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{once, Chain, Once};
 
 pub const ID: u16 = 0x0052;
 
@@ -27,14 +27,10 @@ impl Command {
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self
-            .config_id
-            .to_u8()
-            .expect("could not convert config id to u8")]
-        .into_iter()
+        once(self.config_id.into())
     }
 }
 
@@ -78,16 +74,10 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 3>;
+    type IntoIter = Chain<Once<Self::Item>, IntoIter<Self::Item, 2>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let [value_low, value_high] = self.value.to_be_bytes();
-        [
-            self.status.to_u8().expect("could not convert status to u8"),
-            value_low,
-            value_high,
-        ]
-        .into_iter()
+        once(self.status.into()).chain(self.value.to_be_bytes())
     }
 }
 

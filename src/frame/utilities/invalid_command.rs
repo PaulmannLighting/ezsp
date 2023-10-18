@@ -1,7 +1,7 @@
 use crate::ezsp::Status;
 use crate::frame::Parameters;
-use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{once, Once};
 
 pub const ID: u16 = 0x0058;
 
@@ -25,10 +25,10 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.reason.into()].into_iter()
+        once(self.reason.into())
     }
 }
 

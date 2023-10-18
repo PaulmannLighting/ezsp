@@ -1,6 +1,7 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
 use std::io::Read;
+use std::iter::{once, Chain, Once};
 use std::num::TryFromIntError;
 use std::sync::Arc;
 use std::{array, vec};
@@ -63,23 +64,23 @@ impl Command {
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = array::IntoIter<Self::Item, 8>;
+    type IntoIter = Chain<
+        Chain<
+            Chain<
+                Chain<Once<Self::Item>, array::IntoIter<Self::Item, 2>>,
+                array::IntoIter<Self::Item, 2>,
+            >,
+            Once<Self::Item>,
+        >,
+        array::IntoIter<Self::Item, 2>,
+    >;
 
     fn into_iter(self) -> Self::IntoIter {
-        let [cluster_low, cluster_high] = self.cluster.to_be_bytes();
-        let [attribute_id_low, attribute_id_high] = self.attribute_id.to_be_bytes();
-        let [manufacturer_code_low, manufacturer_code_high] = self.manufacturer_code.to_be_bytes();
-        [
-            self.endpoint,
-            cluster_low,
-            cluster_high,
-            attribute_id_low,
-            attribute_id_high,
-            self.mask,
-            manufacturer_code_low,
-            manufacturer_code_high,
-        ]
-        .into_iter()
+        once(self.endpoint)
+            .chain(self.cluster.to_be_bytes())
+            .chain(self.attribute_id.to_be_bytes())
+            .chain(once(self.mask))
+            .chain(self.manufacturer_code.to_be_bytes())
     }
 }
 
@@ -90,16 +91,22 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @
-        [endpoint, cluster_low, cluster_high, attribute_low, attribute_high, mask, manufacturer_code_low, manufacturer_code_high] =
-            [0; 8];
+        let mut buffer @ [endpoint] = [0; 1];
         src.read_exact(&mut buffer)?;
+        let mut cluster = [0; 2];
+        src.read_exact(&mut cluster)?;
+        let mut attribute_id = [0; 2];
+        src.read_exact(&mut attribute_id)?;
+        let mut buffer @ [mask] = [0; 1];
+        src.read_exact(&mut buffer)?;
+        let mut manufacturer_code = [0; 2];
+        src.read_exact(&mut manufacturer_code)?;
         Ok(Self {
             endpoint,
-            cluster: u16::from_be_bytes([cluster_low, cluster_high]),
-            attribute_id: u16::from_be_bytes([attribute_low, attribute_high]),
+            cluster: u16::from_be_bytes(cluster),
+            attribute_id: u16::from_be_bytes(attribute_id),
             mask,
-            manufacturer_code: u16::from_be_bytes([manufacturer_code_low, manufacturer_code_high]),
+            manufacturer_code: u16::from_be_bytes(manufacturer_code),
         })
     }
 }

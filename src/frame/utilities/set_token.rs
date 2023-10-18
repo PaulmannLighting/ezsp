@@ -2,19 +2,21 @@ use crate::ember::Status;
 use crate::frame::Parameters;
 use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{once, Chain, Once};
 
 pub const ID: u16 = 0x0009;
+const TOKEN_DATA_SIZE: usize = 8;
 
 /// Sets a token (8 bytes of non-volatile storage) in the Simulated EEPROM of the NCP.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     token_id: u8,
-    token_data: [u8; 8],
+    token_data: [u8; TOKEN_DATA_SIZE],
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(token_id: u8, token_data: [u8; 8]) -> Self {
+    pub const fn new(token_id: u8, token_data: [u8; TOKEN_DATA_SIZE]) -> Self {
         Self {
             token_id,
             token_data,
@@ -34,21 +36,10 @@ impl Command {
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 9>;
+    type IntoIter = Chain<Once<Self::Item>, IntoIter<Self::Item, TOKEN_DATA_SIZE>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [
-            self.token_id,
-            self.token_data[0],
-            self.token_data[1],
-            self.token_data[2],
-            self.token_data[3],
-            self.token_data[4],
-            self.token_data[5],
-            self.token_data[6],
-            self.token_data[7],
-        ]
-        .into_iter()
+        once(self.token_id).chain(self.token_data)
     }
 }
 
@@ -59,7 +50,7 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [token_id, token_data @ ..] = [0; 9];
+        let mut buffer @ [token_id, token_data @ ..] = [0; 1 + TOKEN_DATA_SIZE];
         src.read_exact(&mut buffer)?;
         Ok(Self {
             token_id,
@@ -87,10 +78,10 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.status.into()].into_iter()
+        once(self.status.into())
     }
 }
 

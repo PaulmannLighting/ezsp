@@ -33,6 +33,11 @@ impl Response {
     pub const fn new(interface_count: u8) -> Self {
         Self { interface_count }
     }
+
+    #[must_use]
+    pub const fn interface_count(&self) -> u8 {
+        self.interface_count
+    }
 }
 
 impl IntoIterator for Response {
@@ -40,6 +45,6 @@ impl IntoIterator for Response {
     type IntoIter = IntoIter<Self::Item, 1>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.interface_count].into_iter()
+        self.interface_count.to_be_bytes().into_iter()
     }
 }

@@ -2,7 +2,7 @@ use crate::ember::Status;
 use crate::frame::Parameters;
 use std::array::IntoIter;
 use std::io::Read;
-use std::iter::{empty, Empty};
+use std::iter::{empty, once, Chain, Empty, Once};
 
 pub const ID: u16 = 0x0013;
 
@@ -75,19 +75,13 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 5>;
+    type IntoIter =
+        Chain<Chain<Once<Self::Item>, IntoIter<Self::Item, 2>>, IntoIter<Self::Item, 2>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let [manufacturer_id_low, manufacturer_id_high] = self.manufacturer_id.to_be_bytes();
-        let [version_number_low, version_number_high] = self.version_number.to_be_bytes();
-        [
-            self.status.into(),
-            manufacturer_id_low,
-            manufacturer_id_high,
-            version_number_low,
-            version_number_high,
-        ]
-        .into_iter()
+        once(self.status.into())
+            .chain(self.manufacturer_id.to_be_bytes())
+            .chain(self.version_number.to_be_bytes())
     }
 }
 

@@ -2,6 +2,7 @@ use crate::ember::Status;
 use crate::frame::Parameters;
 use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{once, Chain, Once};
 
 pub const ID: u16 = 0x000A;
 
@@ -28,7 +29,7 @@ impl IntoIterator for Command {
     type IntoIter = IntoIter<Self::Item, 1>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.token_id].into_iter()
+        self.token_id.to_be_bytes().into_iter()
     }
 }
 
@@ -70,21 +71,10 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 9>;
+    type IntoIter = Chain<Once<Self::Item>, IntoIter<Self::Item, 8>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [
-            self.status.into(),
-            self.token_data[0],
-            self.token_data[1],
-            self.token_data[2],
-            self.token_data[3],
-            self.token_data[4],
-            self.token_data[5],
-            self.token_data[6],
-            self.token_data[7],
-        ]
-        .into_iter()
+        once(self.status.into()).chain(self.token_data)
     }
 }
 

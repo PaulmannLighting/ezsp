@@ -36,7 +36,7 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = Chain<IntoIter<u8, 1>, IntoIter<u8, 1>>;
+    type IntoIter = Chain<IntoIter<Self::Item, 1>, IntoIter<Self::Item, 1>>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.channel

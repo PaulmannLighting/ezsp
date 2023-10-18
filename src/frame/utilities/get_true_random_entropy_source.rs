@@ -1,8 +1,7 @@
 use crate::entropy_source::EntropySource;
 use crate::frame::Parameters;
-use std::array::IntoIter;
 use std::io::Read;
-use std::iter::{empty, Empty};
+use std::iter::{empty, once, Empty, Once};
 
 pub const ID: u16 = 0x00FC;
 
@@ -51,9 +50,9 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.entropy_source.into()].into_iter()
+        once(self.entropy_source.into())
     }
 }

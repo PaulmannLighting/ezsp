@@ -68,3 +68,14 @@ impl IntoIterator for Response {
         empty()
     }
 }
+
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
+
+    fn read_from<R>(_: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        Ok(Self {})
+    }
+}

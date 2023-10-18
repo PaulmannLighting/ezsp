@@ -3,6 +3,7 @@ use crate::frame::Parameters;
 use siliconlabs::Status;
 use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{once, Chain, Once};
 
 pub const ID: u16 = 0x001A;
 pub const ALL_CHANNELS: u32 = 0x07FF_F800;
@@ -54,20 +55,13 @@ impl Command {
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 6>;
+    type IntoIter =
+        Chain<Chain<Once<Self::Item>, IntoIter<Self::Item, 4>>, IntoIter<Self::Item, 1>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let [channel_mask_0, channel_mask_1, channel_mask_2, channel_mask_3] =
-            self.channel_mask.to_be_bytes();
-        [
-            self.scan_type.into(),
-            channel_mask_0,
-            channel_mask_1,
-            channel_mask_2,
-            channel_mask_3,
-            self.duration,
-        ]
-        .into_iter()
+        once(self.scan_type.into())
+            .chain(self.channel_mask.to_be_bytes())
+            .chain(self.duration.to_be_bytes())
     }
 }
 
@@ -110,8 +104,7 @@ impl IntoIterator for Response {
     type IntoIter = IntoIter<Self::Item, 4>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let status: u32 = self.status.into();
-        status.to_be_bytes().into_iter()
+        u32::from(self.status).to_be_bytes().into_iter()
     }
 }
 

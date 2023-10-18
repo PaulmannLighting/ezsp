@@ -1,7 +1,7 @@
 use crate::counter::Counter;
 use crate::frame::Parameters;
-use std::array::IntoIter;
 use std::io::Read;
+use std::iter::{once, Once};
 
 pub const ID: u16 = 0x00F2;
 
@@ -25,10 +25,10 @@ impl Response {
 
 impl IntoIterator for Response {
     type Item = u8;
-    type IntoIter = IntoIter<Self::Item, 1>;
+    type IntoIter = Once<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        [self.typ.into()].into_iter()
+        once(self.typ.into())
     }
 }
 

@@ -114,3 +114,18 @@ impl IntoIterator for Response {
         status.to_be_bytes().into_iter()
     }
 }
+
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let mut buffer = [0; 4];
+        src.read_exact(&mut buffer)?;
+        Ok(Self {
+            status: Status::try_from(u32::from_be_bytes(buffer))?,
+        })
+    }
+}

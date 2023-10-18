@@ -108,3 +108,17 @@ impl Parameters<u8> for Response {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Command;
+    use crate::frame::LegacyFrame;
+
+    #[test]
+    fn test_command_serialization() {
+        let command = Command::new(4);
+        let frame = LegacyFrame::new(1, 0, command);
+        let bytes: Vec<u8> = frame.into();
+        assert_eq!(bytes, vec![0x01, 0x00, 0x00, 0x04]);
+    }
+}

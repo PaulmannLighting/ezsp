@@ -2,7 +2,7 @@ use crate::ember::zigbee::Network;
 use crate::frame::Parameters;
 use std::array::IntoIter;
 use std::io::Read;
-use std::iter::{Chain, Once};
+use std::iter::Chain;
 
 pub const ID: u16 = 0x001B;
 
@@ -45,22 +45,7 @@ impl Response {
 impl IntoIterator for Response {
     type Item = u8;
     type IntoIter = Chain<
-        Chain<
-            Chain<
-                Chain<
-                    Chain<
-                        Chain<
-                            Chain<Once<Self::Item>, IntoIter<Self::Item, 2>>,
-                            IntoIter<Self::Item, 8>,
-                        >,
-                        Once<Self::Item>,
-                    >,
-                    IntoIter<Self::Item, 1>,
-                >,
-                IntoIter<Self::Item, 1>,
-            >,
-            IntoIter<Self::Item, 1>,
-        >,
+        Chain<<Network as IntoIterator>::IntoIter, IntoIter<Self::Item, 1>>,
         IntoIter<Self::Item, 1>,
     >;
 

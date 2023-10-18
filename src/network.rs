@@ -13,7 +13,7 @@ impl From<InitBitmask> for u16 {
     fn from(init_bitmask: InitBitmask) -> Self {
         init_bitmask
             .to_u16()
-            .expect("could not convert Units to u8")
+            .expect("could not convert InitBitmask to u8")
     }
 }
 
@@ -36,7 +36,7 @@ pub enum Status {
 
 impl From<Status> for u8 {
     fn from(status: Status) -> Self {
-        status.to_u8().expect("could not convert Units to u8")
+        status.to_u8().expect("could not convert Status to u8")
     }
 }
 

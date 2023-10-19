@@ -1,4 +1,5 @@
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::Chain;
@@ -53,11 +54,11 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [channel, max_rssi_value @ ..] = [0; 2];
-        src.read_exact(&mut buffer)?;
+        let channel = src.read_u8()?;
+        let max_rssi_value = src.read_i8()?;
         Ok(Self {
             channel,
-            max_rssi_value: i8::from_be_bytes(max_rssi_value),
+            max_rssi_value,
         })
     }
 }

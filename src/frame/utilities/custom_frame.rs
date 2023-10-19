@@ -1,5 +1,6 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use anyhow::anyhow;
 use std::io::Read;
 use std::sync::Arc;
@@ -69,10 +70,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [payload_length] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        let mut payload = vec![0; payload_length.into()];
-        src.read_exact(&mut payload)?;
+        let payload_length = src.read_u8()?;
+        let payload = src.read_vec_exact(payload_length)?;
         Ok(Self {
             payload_length,
             payload: payload.into(),
@@ -136,12 +135,10 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status, reply_length] = [0; 2];
-        src.read_exact(&mut buffer)?;
-        let mut reply = vec![0; reply_length.into()];
-        src.read_exact(&mut reply)?;
+        let [status, reply_length] = src.read_array_exact()?;
+        let reply = src.read_vec_exact(reply_length)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: status.try_into()?,
             reply_length,
             reply: reply.into(),
         })

@@ -1,5 +1,6 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
 use std::num::TryFromIntError;
@@ -91,22 +92,17 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [endpoint] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        let mut cluster = [0; 2];
-        src.read_exact(&mut cluster)?;
-        let mut attribute_id = [0; 2];
-        src.read_exact(&mut attribute_id)?;
-        let mut buffer @ [mask] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        let mut manufacturer_code = [0; 2];
-        src.read_exact(&mut manufacturer_code)?;
+        let endpoint = src.read_u8()?;
+        let cluster = src.read_u16_be()?;
+        let attribute_id = src.read_u16_be()?;
+        let mask = src.read_u8()?;
+        let manufacturer_code = src.read_u16_be()?;
         Ok(Self {
             endpoint,
-            cluster: u16::from_be_bytes(cluster),
-            attribute_id: u16::from_be_bytes(attribute_id),
+            cluster,
+            attribute_id,
             mask,
-            manufacturer_code: u16::from_be_bytes(manufacturer_code),
+            manufacturer_code,
         })
     }
 }
@@ -175,12 +171,10 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status, data_type, read_length] = [0; 3];
-        src.read_exact(&mut buffer)?;
-        let mut data = vec![0; read_length.into()];
-        src.read_exact(&mut data)?;
+        let [status, data_type, read_length] = src.read_array_exact()?;
+        let data = src.read_vec_exact(read_length)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: status.try_into()?,
             data_type,
             read_length,
             data: data.into(),

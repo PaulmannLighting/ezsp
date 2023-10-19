@@ -1,3 +1,4 @@
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
@@ -70,19 +71,16 @@ impl Network {
     where
         R: Read,
     {
-        let mut buffer @ [channel] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        let mut pan_id = [0; 2];
-        src.read_exact(&mut pan_id)?;
-        let mut extended_pan_id = [0; 8];
-        src.read_exact(&mut extended_pan_id)?;
-        let mut buffer @ [allowing_join, stack_profile, nwk_update_id] = [0; 3];
-        src.read_exact(&mut buffer)?;
+        let channel = src.read_u8()?;
+        let pan_id = src.read_u16_be()?;
+        let extended_pan_id = src.read_u64_be()?;
+        let allowing_join = src.read_bool()?;
+        let [stack_profile, nwk_update_id] = src.read_array_exact()?;
         Ok(Self {
             channel,
-            pan_id: u16::from_be_bytes(pan_id),
-            extended_pan_id: u64::from_be_bytes(extended_pan_id),
-            allowing_join: allowing_join != 0,
+            pan_id,
+            extended_pan_id,
+            allowing_join,
             stack_profile,
             nwk_update_id,
         })

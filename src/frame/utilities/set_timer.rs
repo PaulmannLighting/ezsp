@@ -1,6 +1,7 @@
 use crate::ember::Status;
 use crate::event;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
@@ -73,13 +74,15 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [timer_id, time @ .., units, repeat] = [0; 5];
-        src.read_exact(&mut buffer)?;
+        let timer_id = src.read_u8()?;
+        let time = src.read_u16_be()?;
+        let units = src.read_u8()?;
+        let repeat = src.read_bool()?;
         Ok(Self {
             timer_id,
-            time: u16::from_be_bytes(time),
-            units: event::Units::try_from(units)?,
-            repeat: repeat != 0,
+            time,
+            units: units.try_into()?,
+            repeat,
         })
     }
 }
@@ -117,10 +120,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

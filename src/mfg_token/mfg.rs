@@ -2,7 +2,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::ToPrimitive;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, FromPrimitive, ToPrimitive)]
-pub enum Manufacturing {
+pub enum Mfg {
     CustomVersion = 0x00,
     String = 0x01,
     BoardName = 0x02,
@@ -17,8 +17,8 @@ pub enum Manufacturing {
     CTune = 0x0D,
 }
 
-impl From<Manufacturing> for u8 {
-    fn from(manufacturing: Manufacturing) -> Self {
+impl From<Mfg> for u8 {
+    fn from(manufacturing: Mfg) -> Self {
         manufacturing
             .to_u8()
             .expect("could not convert Manufacturing to u8")

@@ -1,6 +1,7 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
-use crate::mfg_token;
+use crate::mfg_token::Id;
+use crate::util::ReadExt;
 use std::io::Read;
 use std::iter::{once, Once};
 use std::num::TryFromIntError;
@@ -12,11 +13,14 @@ pub const ID: u16 = 0x000C;
 /// Sets a manufacturing token in the Customer Information Block (CIB)
 /// area of the NCP if that token currently unset (fully erased).
 ///
-/// Cannot be used with EZSP_STACK_CAL_DATA, EZSP_STACK_CAL_FILTER,
-/// EZSP_MFG_ASH_CONFIG, or EZSP_MFG_CBKE_DATA token.
+/// Cannot be used with
+/// [`Id::Stack`]`(`[`Stack::CalData`](crate::mfg_token::stack::Stack::CalData)`)`,
+/// [`Id::Stack`]`(`[`Stack::CalFilter`](crate::mfg_token::stack::Stack::CalFilter)`)`,
+/// [`Id::Mfg`]`(`[`Mfg::AshConfig`](crate::mfg_token::mfg::Mfg::AshConfig)`)`, or
+/// [`Id::Mfg`]`(`[`Mfg::CbkeData`](crate::mfg_token::mfg::Mfg::CbkeData)`)` token.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    token_id: mfg_token::Id,
+    token_id: Id,
     token_data_length: u8,
     token_data: Arc<[u8]>,
 }
@@ -26,7 +30,7 @@ impl Command {
     ///
     /// # Errors
     /// Returns an [`TryFromIntError`] if the size of `token_data` exceeds the bounds of an u8.
-    pub fn new(token_id: mfg_token::Id, token_data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
+    pub fn new(token_id: Id, token_data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
         Ok(Self {
             token_id,
             token_data_length: token_data.len().try_into()?,
@@ -35,7 +39,7 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn token_id(&self) -> mfg_token::Id {
+    pub const fn token_id(&self) -> Id {
         self.token_id
     }
 
@@ -69,12 +73,10 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [token_id, token_data_length] = [0; 2];
-        src.read_exact(&mut buffer)?;
-        let mut token_data = vec![0; token_data_length.into()];
-        src.read_exact(&mut token_data)?;
+        let [token_id, token_data_length] = src.read_array_exact()?;
+        let token_data = src.read_vec_exact(token_data_length)?;
         Ok(Self {
-            token_id: mfg_token::Id::try_from(token_id)?,
+            token_id: token_id.try_into()?,
             token_data_length,
             token_data: token_data.into(),
         })
@@ -114,10 +116,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

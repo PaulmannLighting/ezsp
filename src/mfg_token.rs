@@ -1,14 +1,14 @@
-mod manufacturing;
+mod mfg;
 mod stack;
 
 use anyhow::anyhow;
-use manufacturing::Manufacturing;
+use mfg::Mfg;
 use num_traits::{FromPrimitive, ToPrimitive};
 use stack::Stack;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Id {
-    Mfg(Manufacturing),
+    Mfg(Mfg),
     Stack(Stack),
 }
 
@@ -18,7 +18,7 @@ impl FromPrimitive for Id {
     }
 
     fn from_u64(n: u64) -> Option<Self> {
-        Manufacturing::from_u64(n)
+        Mfg::from_u64(n)
             .map(Self::Mfg)
             .or_else(|| Stack::from_u64(n).map(Self::Stack))
     }

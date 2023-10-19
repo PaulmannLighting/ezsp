@@ -1,5 +1,6 @@
 use crate::ezsp::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use crate::{decision, policy};
 use std::io::Read;
 use std::iter::{once, Chain, Once};
@@ -49,11 +50,10 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [policy_id, decision_id] = [0; 2];
-        src.read_exact(&mut buffer)?;
+        let [policy_id, decision_id] = src.read_array_exact()?;
         Ok(Self {
-            policy_id: policy::Id::try_from(policy_id)?,
-            decision_id: decision::Id::try_from(decision_id)?,
+            policy_id: policy_id.try_into()?,
+            decision_id: decision_id.try_into()?,
         })
     }
 }
@@ -91,10 +91,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

@@ -1,5 +1,6 @@
 use crate::ezsp::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::io;
 use std::io::Read;
 use std::iter::{once, Once};
@@ -13,9 +14,9 @@ pub const ID: u16 = 0x0002;
 ///
 /// The NCP does not remember these settings after a reset.
 /// Endpoints can be added by the Host after the NCP has reset.
-/// Once the status of the stack changes to EMBER_NETWORK_UP,
-/// endpoints can no longer be added and this command
-/// will respond with [`Status::Error`]`(`[`Error::InvalidCall`][crate::ezsp::Error::InvalidCall]`)`.
+/// Once the status of the stack changes to [`crate::ember::Status::NetworkUp`],
+/// endpoints can no longer be added and this command will respond with
+/// [`Status::Error`]`(`[`Error::InvalidCall`][`crate::ezsp::error::Error::InvalidCall`]`)`.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     endpoint: u8,
@@ -95,13 +96,12 @@ impl Command {
         &self.output_clusters
     }
 
-    fn read_clusters<R>(reader: &mut R, count: usize) -> io::Result<Vec<u16>>
+    fn read_clusters<R>(src: &mut R, count: usize) -> io::Result<Vec<u16>>
     where
         R: Read,
     {
-        let mut clusters = vec![0; 2 * count];
-        reader.read_exact(&mut clusters)?;
-        Ok(clusters
+        Ok(src
+            .read_vec_exact(2 * count)?
             .chunks_exact(2)
             .filter_map(|chunk| {
                 if chunk.len() == 2 {
@@ -144,20 +144,16 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [endpoint] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        let mut profile_id = [0; 2];
-        src.read_exact(&mut profile_id)?;
-        let mut device_id = [0; 2];
-        src.read_exact(&mut device_id)?;
-        let mut buffer @ [app_flags, input_cluster_count, output_cluster_count] = [0; 3];
-        src.read_exact(&mut buffer)?;
+        let endpoint = src.read_u8()?;
+        let profile_id = src.read_u16_be()?;
+        let device_id = src.read_u16_be()?;
+        let [app_flags, input_cluster_count, output_cluster_count] = src.read_array_exact()?;
         let input_clusters = Self::read_clusters(src, input_cluster_count.into())?;
         let output_clusters = Self::read_clusters(src, output_cluster_count.into())?;
         Ok(Self {
             endpoint,
-            profile_id: u16::from_be_bytes(profile_id),
-            device_id: u16::from_be_bytes(device_id),
+            profile_id,
+            device_id,
             app_flags,
             input_cluster_count,
             output_cluster_count,
@@ -200,10 +196,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

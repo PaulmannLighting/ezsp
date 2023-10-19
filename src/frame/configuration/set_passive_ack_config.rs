@@ -1,5 +1,6 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
 
@@ -48,8 +49,7 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [config, min_acks_needed] = [0; 2];
-        src.read_exact(&mut buffer)?;
+        let [config, min_acks_needed] = src.read_array_exact()?;
         Ok(Self {
             config,
             min_acks_needed,
@@ -90,10 +90,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

@@ -1,5 +1,6 @@
 use crate::ezsp::network::scan::Type;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use siliconlabs::Status;
 use std::array::IntoIter;
 use std::io::Read;
@@ -72,11 +73,12 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [scan_type, channel_mask @ .., duration] = [0; 6];
-        src.read_exact(&mut buffer)?;
+        let scan_type = src.read_u8()?;
+        let channel_mask = src.read_u32_be()?;
+        let duration = src.read_u8()?;
         Ok(Self {
-            scan_type: Type::try_from(scan_type)?,
-            channel_mask: u32::from_be_bytes(channel_mask),
+            scan_type: scan_type.try_into()?,
+            channel_mask,
             duration,
         })
     }
@@ -115,10 +117,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer = [0; 4];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(u32::from_be_bytes(buffer))?,
+            status: src.read_u32_be()?.try_into()?,
         })
     }
 }

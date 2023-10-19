@@ -1,4 +1,5 @@
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 
@@ -38,10 +39,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer = [0; 2];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            token_address: u16::from_be_bytes(buffer),
+            token_address: src.read_u16_be()?,
         })
     }
 }

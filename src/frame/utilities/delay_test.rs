@@ -1,4 +1,5 @@
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::{empty, Empty};
@@ -39,10 +40,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer = [0; 2];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            delay: u16::from_be_bytes(buffer),
+            delay: src.read_u16_be()?,
         })
     }
 }

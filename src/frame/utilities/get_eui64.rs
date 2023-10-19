@@ -1,4 +1,5 @@
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::{empty, Empty};
@@ -64,10 +65,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer = [0; 8];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            eui64: u64::from_be_bytes(buffer),
+            eui64: src.read_u64_be()?,
         })
     }
 }

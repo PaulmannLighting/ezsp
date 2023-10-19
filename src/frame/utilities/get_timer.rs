@@ -1,5 +1,6 @@
 use crate::event;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
@@ -43,9 +44,9 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [timer_id] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        Ok(Self { timer_id })
+        Ok(Self {
+            timer_id: src.read_u8()?,
+        })
     }
 }
 
@@ -102,12 +103,13 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [time @ .., units, repeat] = [0; 4];
-        src.read_exact(&mut buffer)?;
+        let time = src.read_u16_be()?;
+        let units = src.read_u8()?;
+        let repeat = src.read_bool()?;
         Ok(Self {
-            time: u16::from_be_bytes(time),
-            units: event::Units::try_from(units)?,
-            repeat: repeat != 0,
+            time,
+            units: units.try_into()?,
+            repeat,
         })
     }
 }

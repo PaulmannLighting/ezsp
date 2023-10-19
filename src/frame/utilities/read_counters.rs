@@ -1,5 +1,6 @@
 use crate::counter::Counter;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use anyhow::anyhow;
 use std::array::IntoIter;
 use std::io::Read;
@@ -74,14 +75,12 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer = [0; TYPE_COUNT * 2];
-        src.read_exact(&mut buffer)?;
-        let values: Vec<u16> = buffer
-            .chunks_exact(2)
-            .map(|chunk| u16::from_be_bytes([chunk[0], chunk[1]]))
-            .collect();
         Ok(Self {
-            values: values
+            values: src
+                .read_array_exact::<{ TYPE_COUNT * 2 }>()?
+                .chunks_exact(2)
+                .map(|chunk| u16::from_be_bytes([chunk[0], chunk[1]]))
+                .collect::<Vec<_>>()
                 .try_into()
                 .map_err(|_| anyhow!("values size != {TYPE_COUNT}"))?,
         })

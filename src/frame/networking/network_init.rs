@@ -1,6 +1,7 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
 use crate::network::InitBitmask;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::{once, Once};
@@ -11,7 +12,7 @@ pub const ID: u16 = 0x0017;
 ///
 /// The node retains its original type.
 /// This should be called on startup whether or not the node was previously part of a network.
-/// EMBER_NOT_JOINED is returned if the node is not part of a network.
+/// [`Status::NotJoined`] is returned if the node is not part of a network.
 /// This command accepts options to control the network initialization.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
@@ -50,10 +51,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer = [0; 2];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            network_init_bitmask: InitBitmask::try_from(u16::from_be_bytes(buffer))?,
+            network_init_bitmask: src.read_u16_be()?.try_into()?,
         })
     }
 }
@@ -91,10 +90,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

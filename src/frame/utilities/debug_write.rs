@@ -1,5 +1,6 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::io::Read;
 use std::iter::{once, Once};
 use std::num::TryFromIntError;
@@ -65,12 +66,11 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [binary_message, message_length] = [0; 2];
-        src.read_exact(&mut buffer)?;
-        let mut message_contents = vec![0; message_length.into()];
-        src.read_exact(&mut message_contents)?;
+        let binary_message = src.read_bool()?;
+        let message_length = src.read_u8()?;
+        let message_contents = src.read_vec_exact(message_length)?;
         Ok(Self {
-            binary_message: binary_message != 0,
+            binary_message,
             message_length,
             message_contents: message_contents.into(),
         })
@@ -110,10 +110,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

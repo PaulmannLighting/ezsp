@@ -1,5 +1,6 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
@@ -50,8 +51,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [token_id, token_data @ ..] = [0; 1 + TOKEN_DATA_SIZE];
-        src.read_exact(&mut buffer)?;
+        let token_id = src.read_u8()?;
+        let token_data = src.read_array_exact::<TOKEN_DATA_SIZE>()?;
         Ok(Self {
             token_id,
             token_data,
@@ -92,10 +93,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

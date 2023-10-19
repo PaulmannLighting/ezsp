@@ -1,5 +1,6 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
@@ -52,11 +53,10 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer = [0; 5];
-        src.read_exact(&mut buffer)?;
-        let [channel_mask @ .., duration] = buffer;
+        let channel_mask = src.read_u32_be()?;
+        let duration = src.read_u8()?;
         Ok(Self {
-            channel_mask: u32::from_be_bytes(channel_mask),
+            channel_mask,
             duration,
         })
     }
@@ -95,11 +95,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer = [0; 1];
-        src.read_exact(&mut buffer)?;
-        let [status] = buffer;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

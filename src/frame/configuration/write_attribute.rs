@@ -1,5 +1,6 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::io::Read;
 use std::iter::{once, Once};
 use std::num::TryFromIntError;
@@ -132,29 +133,23 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [endpoint] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        let mut cluster = [0; 2];
-        src.read_exact(&mut cluster)?;
-        let mut attribute_id = [0; 2];
-        src.read_exact(&mut attribute_id)?;
-        let mut buffer @ [mask] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        let mut manufacturer_code = [0; 2];
-        src.read_exact(&mut manufacturer_code)?;
-        let mut buffer @ [override_read_only_and_data_type, just_test, data_type, data_length] =
-            [0; 4];
-        src.read_exact(&mut buffer)?;
-        let mut data = vec![0; data_length.into()];
-        src.read_exact(&mut data)?;
+        let endpoint = src.read_u8()?;
+        let cluster = src.read_u16_be()?;
+        let attribute_id = src.read_u16_be()?;
+        let mask = src.read_u8()?;
+        let manufacturer_code = src.read_u16_be()?;
+        let override_read_only_and_data_type = src.read_bool()?;
+        let just_test = src.read_bool()?;
+        let [data_type, data_length] = src.read_array_exact()?;
+        let data = src.read_vec_exact(data_length)?;
         Ok(Self {
             endpoint,
-            cluster: u16::from_be_bytes(cluster),
-            attribute_id: u16::from_be_bytes(attribute_id),
+            cluster,
+            attribute_id,
             mask,
-            manufacturer_code: u16::from_be_bytes(manufacturer_code),
-            override_read_only_and_data_type: override_read_only_and_data_type != 0,
-            just_test: just_test != 0,
+            manufacturer_code,
+            override_read_only_and_data_type,
+            just_test,
             data_type,
             data_length,
             data: data.into(),
@@ -195,10 +190,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

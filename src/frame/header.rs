@@ -1,5 +1,6 @@
 mod control;
 
+use crate::util::ReadExt;
 pub use control::Control;
 use std::io::{Read, Write};
 
@@ -46,9 +47,7 @@ impl Header {
     where
         R: Read,
     {
-        let mut buffer = [0; HEADER_SIZE];
-        src.read_exact(&mut buffer)?;
-        Ok(Self::from(buffer))
+        src.read_array_exact::<HEADER_SIZE>().map(Self::from)
     }
 
     /// Write the header to a writer
@@ -129,9 +128,7 @@ impl LegacyHeader {
     where
         R: Read,
     {
-        let mut buffer = [0; LEGACY_HEADER_SIZE];
-        src.read_exact(&mut buffer)?;
-        Ok(Self::from(buffer))
+        src.read_array_exact::<LEGACY_HEADER_SIZE>().map(Self::from)
     }
 
     /// Write the header to a writer

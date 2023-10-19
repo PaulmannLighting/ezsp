@@ -1,5 +1,6 @@
 use crate::ember::zigbee::Network;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::Chain;
@@ -65,12 +66,12 @@ impl Parameters<u16> for Response {
         R: Read,
     {
         let network_found = Network::read_from(src)?;
-        let mut buffer @ [last_hop_lqi, last_hop_rssi] = [0; 2];
-        src.read_exact(&mut buffer)?;
+        let last_hop_lqi = src.read_u8()?;
+        let last_hop_rssi = src.read_i8()?;
         Ok(Self {
             network_found,
             last_hop_lqi,
-            last_hop_rssi: i8::from_be_bytes([last_hop_rssi]),
+            last_hop_rssi,
         })
     }
 }

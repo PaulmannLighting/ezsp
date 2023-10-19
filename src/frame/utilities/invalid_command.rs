@@ -1,5 +1,6 @@
 use crate::ezsp::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::io::Read;
 use std::iter::{once, Once};
 
@@ -39,10 +40,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [reason] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            reason: Status::try_from(reason)?,
+            reason: src.read_u8()?.try_into()?,
         })
     }
 }

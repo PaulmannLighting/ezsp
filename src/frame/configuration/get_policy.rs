@@ -1,6 +1,7 @@
 use crate::ezsp::Status;
 use crate::frame::Parameters;
 use crate::policy;
+use crate::util::ReadExt;
 use std::io::Read;
 use std::iter::{once, Empty, Once};
 
@@ -40,10 +41,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            policy_id: policy::Id::try_from(buffer[0])?,
+            policy_id: src.read_u8()?.try_into()?,
         })
     }
 }
@@ -81,10 +80,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

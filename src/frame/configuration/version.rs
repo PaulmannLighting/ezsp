@@ -1,4 +1,5 @@
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
 
@@ -41,10 +42,8 @@ impl Parameters<u8> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [desired_protocol_version] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            desired_protocol_version,
+            desired_protocol_version: src.read_u8()?.try_into()?,
         })
     }
 }
@@ -101,8 +100,7 @@ impl Parameters<u8> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [protocol_version, stack_type, stack_version] = [0; 3];
-        src.read_exact(&mut buffer)?;
+        let [protocol_version, stack_type, stack_version] = src.read_array_exact()?;
         Ok(Self {
             protocol_version,
             stack_type,

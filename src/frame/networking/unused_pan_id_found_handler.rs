@@ -1,4 +1,5 @@
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::Chain;
@@ -49,13 +50,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut pan_id = [0; 2];
-        src.read_exact(&mut pan_id)?;
-        let mut buffer @ [channel] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        Ok(Self {
-            pan_id: u16::from_be_bytes(pan_id),
-            channel,
-        })
+        let pan_id = src.read_u16_be()?;
+        let channel = src.read_u8()?;
+        Ok(Self { pan_id, channel })
     }
 }

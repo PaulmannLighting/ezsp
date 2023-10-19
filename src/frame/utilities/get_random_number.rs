@@ -1,5 +1,6 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::{empty, once, Chain, Empty, Once};
@@ -81,11 +82,11 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status, value @ ..] = [0; 3];
-        src.read_exact(&mut buffer)?;
+        let status = src.read_u8()?;
+        let value = src.read_u16_be()?;
         Ok(Self {
-            status: Status::try_from(status)?,
-            value: u16::from_be_bytes(value),
+            status: status.try_into()?,
+            value,
         })
     }
 }

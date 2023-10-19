@@ -1,10 +1,12 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
 
 pub const ID: u16 = 0x000A;
+const TOKEN_DATA_SIZE: usize = 8;
 
 /// Retrieves a token (8 bytes of non-volatile storage) from the Simulated EEPROM of the NCP.
 #[derive(Debug, Eq, PartialEq)]
@@ -40,21 +42,21 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [token_id] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        Ok(Self { token_id })
+        Ok(Self {
+            token_id: src.read_u8()?,
+        })
     }
 }
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     status: Status,
-    token_data: [u8; 8],
+    token_data: [u8; TOKEN_DATA_SIZE],
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, token_data: [u8; 8]) -> Self {
+    pub const fn new(status: Status, token_data: [u8; TOKEN_DATA_SIZE]) -> Self {
         Self { status, token_data }
     }
 
@@ -85,10 +87,10 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status, token_data @ ..] = [0; 9];
-        src.read_exact(&mut buffer)?;
+        let status = src.read_u8()?;
+        let token_data = src.read_array_exact::<TOKEN_DATA_SIZE>()?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: status.try_into()?,
             token_data,
         })
     }

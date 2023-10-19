@@ -1,5 +1,6 @@
 use crate::frame::Parameters;
-use crate::mfg_token;
+use crate::mfg_token::Id;
+use crate::util::ReadExt;
 use std::io::Read;
 use std::iter::{once, Once};
 use std::num::TryFromIntError;
@@ -9,20 +10,21 @@ use std::vec::IntoIter;
 pub const ID: u16 = 0x000B;
 
 /// Retrieves a manufacturing token from the Flash Information Area of the NCP
-/// (except for EZSP_STACK_CAL_DATA which is managed by the stack).
+/// (except for [`Id::Stack`]`(`[`CalData`][`crate::mfg_token::stack::Stack::CalData`]`)`
+/// which is managed by the stack).
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    token_id: mfg_token::Id,
+    token_id: Id,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(token_id: mfg_token::Id) -> Self {
+    pub const fn new(token_id: Id) -> Self {
         Self { token_id }
     }
 
     #[must_use]
-    pub const fn token_id(&self) -> mfg_token::Id {
+    pub const fn token_id(&self) -> Id {
         self.token_id
     }
 }
@@ -43,10 +45,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [token_id] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            token_id: mfg_token::Id::try_from(token_id)?,
+            token_id: src.read_u8()?.try_into()?,
         })
     }
 }
@@ -99,10 +99,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [token_data_length] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        let mut token_data = vec![0; token_data_length.into()];
-        src.read_exact(&mut token_data)?;
+        let token_data_length = src.read_u8()?;
+        let token_data = src.read_vec_exact(token_data_length)?;
         Ok(Self {
             token_data_length,
             token_data: token_data.into(),

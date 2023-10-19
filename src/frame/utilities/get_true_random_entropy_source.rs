@@ -1,5 +1,6 @@
 use crate::entropy_source::EntropySource;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::io::Read;
 use std::iter::{empty, once, Empty, Once};
 
@@ -54,5 +55,18 @@ impl IntoIterator for Response {
 
     fn into_iter(self) -> Self::IntoIter {
         once(self.entropy_source.into())
+    }
+}
+
+impl Parameters<u16> for Response {
+    const FRAME_ID: u16 = ID;
+
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        Ok(Self {
+            entropy_source: src.read_u8()?.try_into()?,
+        })
     }
 }

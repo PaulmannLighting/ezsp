@@ -1,4 +1,5 @@
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::{once, Once};
@@ -39,10 +40,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer = [0; 2];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            new_pan: u16::from_be_bytes(buffer),
+            new_pan: src.read_u16_be()?,
         })
     }
 }
@@ -80,10 +79,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: status != 0,
+            status: src.read_bool()?,
         })
     }
 }

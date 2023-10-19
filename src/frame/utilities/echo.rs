@@ -1,4 +1,5 @@
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use std::io::Read;
 use std::num::TryFromIntError;
 use std::sync::Arc;
@@ -58,10 +59,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [data_length] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        let mut data = vec![0; data_length.into()];
-        src.read_exact(&mut data)?;
+        let data_length = src.read_u8()?;
+        let data = src.read_vec_exact(data_length)?;
         Ok(Self {
             data_length,
             data: data.into(),
@@ -117,10 +116,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [echo_length] = [0; 1];
-        src.read_exact(&mut buffer)?;
-        let mut echo = vec![0; echo_length.into()];
-        src.read_exact(&mut echo)?;
+        let echo_length = src.read_u8()?;
+        let echo = src.read_vec_exact(echo_length)?;
         Ok(Self {
             echo_length,
             echo: echo.into(),

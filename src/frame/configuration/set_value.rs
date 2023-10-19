@@ -1,5 +1,6 @@
 use crate::ezsp::Status;
 use crate::frame::Parameters;
+use crate::util::ReadExt;
 use crate::value;
 use std::io::Read;
 use std::iter::{once, Once};
@@ -66,10 +67,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let mut buffer @ [value_id, value_length] = [0; 2];
-        src.read_exact(&mut buffer)?;
-        let mut value = vec![0; value_length.into()];
-        src.read_exact(&mut value)?;
+        let [value_id, value_length] = src.read_array_exact()?;
+        let value = src.read_vec_exact(value_length)?;
         Ok(Self {
             value_id: value::Id::try_from(value_id)?,
             value_length,
@@ -111,10 +110,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

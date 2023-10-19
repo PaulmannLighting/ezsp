@@ -1,5 +1,6 @@
 use crate::frame::Parameters;
 use crate::network::Status;
+use crate::util::ReadExt;
 use std::io::Read;
 use std::iter::{empty, once, Empty, Once};
 
@@ -69,10 +70,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let mut buffer @ [status] = [0; 1];
-        src.read_exact(&mut buffer)?;
         Ok(Self {
-            status: Status::try_from(status)?,
+            status: src.read_u8()?.try_into()?,
         })
     }
 }

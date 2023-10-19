@@ -7,7 +7,7 @@ use std::sync::Arc;
 use std::vec::IntoIter;
 
 pub const ID: u16 = 0x0047;
-const MAX_PAYLOAD_SIZE: u8 = 119;
+pub const MAX_PAYLOAD_SIZE: u8 = 119;
 
 /// Provides the customer a custom EZSP frame.
 ///

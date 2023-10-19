@@ -1,5 +1,5 @@
-mod mfg;
-mod stack;
+pub mod mfg;
+pub mod stack;
 
 use anyhow::anyhow;
 use mfg::Mfg;

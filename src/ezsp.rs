@@ -1,7 +1,7 @@
-mod ash;
-mod error;
+pub mod ash;
+pub mod error;
 pub mod network;
-mod spi_err;
+pub mod spi_err;
 
 use anyhow::anyhow;
 pub use ash::Ash;

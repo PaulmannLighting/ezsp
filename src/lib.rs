@@ -1,5 +1,5 @@
 pub mod config;
-mod counter;
+pub mod counter;
 pub mod decision;
 pub mod dongle;
 pub mod ember;
@@ -12,7 +12,7 @@ pub mod mfg_token;
 pub mod network;
 pub mod policy;
 pub mod protocol;
-mod util;
+pub mod util;
 pub mod value;
 
 pub use error::Error;

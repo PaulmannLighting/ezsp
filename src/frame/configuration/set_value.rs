@@ -1,7 +1,7 @@
 use crate::ezsp::Status;
 use crate::frame::Parameters;
 use crate::util::ReadExt;
-use crate::value;
+use crate::value::Id;
 use std::io::Read;
 use std::iter::{once, Once};
 use std::num::TryFromIntError;
@@ -13,7 +13,7 @@ pub const ID: u16 = 0x00AB;
 /// Writes a value to the NCP.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    value_id: value::Id,
+    value_id: Id,
     value_length: u8,
     value: Arc<[u8]>,
 }
@@ -23,7 +23,7 @@ impl Command {
     ///
     /// # Errors
     /// Returns an [`TryFromIntError`] if the size of `value` exceeds the bounds of an u8.
-    pub fn new(value_id: value::Id, value: Arc<[u8]>) -> Result<Self, TryFromIntError> {
+    pub fn new(value_id: Id, value: Arc<[u8]>) -> Result<Self, TryFromIntError> {
         Ok(Self {
             value_id,
             value_length: value.len().try_into()?,
@@ -32,8 +32,8 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn value_id(&self) -> &value::Id {
-        &self.value_id
+    pub const fn value_id(&self) -> Id {
+        self.value_id
     }
 
     #[must_use]
@@ -70,7 +70,7 @@ impl Parameters<u16> for Command {
         let [value_id, value_length] = src.read_array_exact()?;
         let value = src.read_vec_exact(value_length)?;
         Ok(Self {
-            value_id: value::Id::try_from(value_id)?,
+            value_id: value_id.try_into()?,
             value_length,
             value: value.into(),
         })

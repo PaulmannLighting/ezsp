@@ -1,4 +1,4 @@
-use crate::config;
+use crate::config::Id;
 use crate::ezsp::Status;
 use crate::frame::Parameters;
 use crate::util::ReadExt;
@@ -10,18 +10,18 @@ pub const ID: u16 = 0x0052;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    config_id: config::Id,
+    config_id: Id,
 }
 
 /// Reads a configuration value from the NCP.
 impl Command {
     #[must_use]
-    pub const fn new(config_id: config::Id) -> Self {
+    pub const fn new(config_id: Id) -> Self {
         Self { config_id }
     }
 
     #[must_use]
-    pub const fn config_id(&self) -> config::Id {
+    pub const fn config_id(&self) -> Id {
         self.config_id
     }
 }

@@ -1,6 +1,6 @@
 use crate::ezsp::Status;
 use crate::frame::Parameters;
-use crate::policy;
+use crate::policy::Id;
 use crate::util::ReadExt;
 use std::io::Read;
 use std::iter::{once, Empty, Once};
@@ -10,17 +10,17 @@ pub const ID: u16 = 0x0056;
 /// Allows the Host to read the policies used by the NCP to make fast decisions.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    policy_id: policy::Id,
+    policy_id: Id,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(policy_id: policy::Id) -> Self {
+    pub const fn new(policy_id: Id) -> Self {
         Self { policy_id }
     }
 
     #[must_use]
-    pub const fn policy_id(&self) -> policy::Id {
+    pub const fn policy_id(&self) -> Id {
         self.policy_id
     }
 }

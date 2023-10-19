@@ -1,4 +1,4 @@
-use crate::config;
+use crate::config::Id;
 use crate::ezsp::Status;
 use crate::frame::Parameters;
 use crate::util::ReadExt;
@@ -16,18 +16,18 @@ pub const ID: u16 = 0x0053;
 /// [`Status::Error`]`(`[`Error::InvalidCall`][crate::ezsp::Error::InvalidCall]`)`.
 #[derive(Debug)]
 pub struct Command {
-    config_id: config::Id,
+    config_id: Id,
     value: u16,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(config_id: config::Id, value: u16) -> Self {
+    pub const fn new(config_id: Id, value: u16) -> Self {
         Self { config_id, value }
     }
 
     #[must_use]
-    pub const fn config_id(&self) -> config::Id {
+    pub const fn config_id(&self) -> Id {
         self.config_id
     }
 

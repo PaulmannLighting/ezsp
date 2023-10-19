@@ -1,7 +1,7 @@
 use crate::ezsp::Status;
 use crate::frame::Parameters;
 use crate::util::ReadExt;
-use crate::value;
+use crate::value::Id;
 use std::io::Read;
 use std::iter::{once, Once};
 use std::num::TryFromIntError;
@@ -13,17 +13,17 @@ pub const ID: u16 = 0x00AA;
 /// Reads a value from the NCP.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    value_id: value::Id,
+    value_id: Id,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(value_id: value::Id) -> Self {
+    pub const fn new(value_id: Id) -> Self {
         Self { value_id }
     }
 
     #[must_use]
-    pub const fn value_id(&self) -> value::Id {
+    pub const fn value_id(&self) -> Id {
         self.value_id
     }
 }

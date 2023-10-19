@@ -1,3 +1,4 @@
+use num_traits::FromBytes;
 use std::io::{Read, Result};
 
 pub trait ReadExt: Read {
@@ -13,52 +14,42 @@ pub trait ReadExt: Read {
         Ok(buffer)
     }
 
-    /// Reads a boolean value of one byte
+    /// Reads an boolean of one byte
+    ///
+    /// Refer to [`Read::read_exact`] for further semantics.
     ///
     /// # Errors
     /// Returns an [`std::io::Error`] on read errors.
     fn read_bool(&mut self) -> Result<bool> {
-        Ok(self.read_u8()? != 0)
+        self.read_array_exact::<1>().map(|[byte]| byte != 0)
     }
 
-    /// Reads an `i8`
+    /// Reads an arbitrary number from big-endian bytes
+    ///
+    /// Refer to [`Read::read_exact`] for further semantics.
     ///
     /// # Errors
     /// Returns an [`std::io::Error`] on read errors.
-    fn read_i8(&mut self) -> Result<i8> {
-        self.read_array_exact().map(i8::from_be_bytes)
+    fn read_num_be<N, const SIZE: usize>(&mut self) -> Result<N>
+    where
+        N: FromBytes<Bytes = [u8; SIZE]>,
+    {
+        self.read_array_exact::<SIZE>()
+            .map(|bytes| N::from_be_bytes(&bytes))
     }
 
-    /// Reads an `u8`
+    /// Reads an arbitrary number from little-endian bytes
+    ///
+    /// Refer to [`Read::read_exact`] for further semantics.
     ///
     /// # Errors
     /// Returns an [`std::io::Error`] on read errors.
-    fn read_u8(&mut self) -> Result<u8> {
-        self.read_array_exact().map(u8::from_be_bytes)
-    }
-
-    /// Reads an `u16`
-    ///
-    /// # Errors
-    /// Returns an [`std::io::Error`] on read errors.
-    fn read_u16_be(&mut self) -> Result<u16> {
-        self.read_array_exact().map(u16::from_be_bytes)
-    }
-
-    /// Reads an `u32`
-    ///
-    /// # Errors
-    /// Returns an [`std::io::Error`] on read errors.
-    fn read_u32_be(&mut self) -> Result<u32> {
-        self.read_array_exact().map(u32::from_be_bytes)
-    }
-
-    /// Reads an `u64`
-    ///
-    /// # Errors
-    /// Returns an [`std::io::Error`] on read errors.
-    fn read_u64_be(&mut self) -> Result<u64> {
-        self.read_array_exact().map(u64::from_be_bytes)
+    fn read_num_le<N, const SIZE: usize>(&mut self) -> Result<N>
+    where
+        N: FromBytes<Bytes = [u8; SIZE]>,
+    {
+        self.read_array_exact::<SIZE>()
+            .map(|bytes| N::from_le_bytes(&bytes))
     }
 
     /// Reads a `Vec<u8>` of a given size

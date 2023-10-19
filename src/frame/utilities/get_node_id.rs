@@ -71,7 +71,7 @@ impl Parameters<u16> for Response {
         R: Read,
     {
         Ok(Self {
-            node_id: src.read_u16_be()?,
+            node_id: src.read_num_be()?,
         })
     }
 }

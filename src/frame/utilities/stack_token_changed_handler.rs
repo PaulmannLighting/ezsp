@@ -40,7 +40,7 @@ impl Parameters<u16> for Response {
         R: Read,
     {
         Ok(Self {
-            token_address: src.read_u16_be()?,
+            token_address: src.read_num_be()?,
         })
     }
 }

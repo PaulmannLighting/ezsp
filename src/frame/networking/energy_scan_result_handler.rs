@@ -54,8 +54,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let channel = src.read_u8()?;
-        let max_rssi_value = src.read_i8()?;
+        let channel = src.read_num_be()?;
+        let max_rssi_value = src.read_num_be()?;
         Ok(Self {
             channel,
             max_rssi_value,

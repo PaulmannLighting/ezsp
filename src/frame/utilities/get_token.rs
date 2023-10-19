@@ -43,7 +43,7 @@ impl Parameters<u16> for Command {
         R: Read,
     {
         Ok(Self {
-            token_id: src.read_u8()?,
+            token_id: src.read_num_be()?,
         })
     }
 }
@@ -87,7 +87,7 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let status = src.read_u8()?;
+        let status: u8 = src.read_num_be()?;
         let token_data = src.read_array_exact::<TOKEN_DATA_SIZE>()?;
         Ok(Self {
             status: status.try_into()?,

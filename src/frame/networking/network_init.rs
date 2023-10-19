@@ -51,8 +51,9 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
+        let network_init_bitmask: u16 = src.read_num_be()?;
         Ok(Self {
-            network_init_bitmask: src.read_u16_be()?.try_into()?,
+            network_init_bitmask: network_init_bitmask.try_into()?,
         })
     }
 }
@@ -90,8 +91,9 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
+        let status: u8 = src.read_num_be()?;
         Ok(Self {
-            status: src.read_u8()?.try_into()?,
+            status: status.try_into()?,
         })
     }
 }

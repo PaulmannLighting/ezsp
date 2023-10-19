@@ -53,8 +53,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let config_id = src.read_u8()?;
-        let value = src.read_u16_be()?;
+        let config_id: u8 = src.read_num_be()?;
+        let value = src.read_num_be()?;
         Ok(Self {
             config_id: config_id.try_into()?,
             value,
@@ -95,8 +95,9 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
+        let status: u8 = src.read_num_be()?;
         Ok(Self {
-            status: src.read_u8()?.try_into()?,
+            status: status.try_into()?,
         })
     }
 }

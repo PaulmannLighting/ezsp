@@ -91,8 +91,9 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
+        let status: u8 = src.read_num_be()?;
         Ok(Self {
-            status: src.read_u8()?.try_into()?,
+            status: status.try_into()?,
         })
     }
 }

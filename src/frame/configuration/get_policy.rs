@@ -41,8 +41,9 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
+        let policy_id: u8 = src.read_num_be()?;
         Ok(Self {
-            policy_id: src.read_u8()?.try_into()?,
+            policy_id: policy_id.try_into()?,
         })
     }
 }
@@ -80,8 +81,9 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
+        let status: u8 = src.read_num_be()?;
         Ok(Self {
-            status: src.read_u8()?.try_into()?,
+            status: status.try_into()?,
         })
     }
 }

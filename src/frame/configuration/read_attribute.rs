@@ -92,11 +92,11 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let endpoint = src.read_u8()?;
-        let cluster = src.read_u16_be()?;
-        let attribute_id = src.read_u16_be()?;
-        let mask = src.read_u8()?;
-        let manufacturer_code = src.read_u16_be()?;
+        let endpoint = src.read_num_be()?;
+        let cluster = src.read_num_be()?;
+        let attribute_id = src.read_num_be()?;
+        let mask = src.read_num_be()?;
+        let manufacturer_code = src.read_num_be()?;
         Ok(Self {
             endpoint,
             cluster,

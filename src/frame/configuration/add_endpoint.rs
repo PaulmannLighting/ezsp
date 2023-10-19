@@ -144,9 +144,9 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let endpoint = src.read_u8()?;
-        let profile_id = src.read_u16_be()?;
-        let device_id = src.read_u16_be()?;
+        let endpoint = src.read_num_be()?;
+        let profile_id = src.read_num_be()?;
+        let device_id = src.read_num_be()?;
         let [app_flags, input_cluster_count, output_cluster_count] = src.read_array_exact()?;
         let input_clusters = Self::read_clusters(src, input_cluster_count.into())?;
         let output_clusters = Self::read_clusters(src, output_cluster_count.into())?;
@@ -196,8 +196,9 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
+        let status: u8 = src.read_num_be()?;
         Ok(Self {
-            status: src.read_u8()?.try_into()?,
+            status: status.try_into()?,
         })
     }
 }

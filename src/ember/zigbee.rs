@@ -71,9 +71,9 @@ impl Network {
     where
         R: Read,
     {
-        let channel = src.read_u8()?;
-        let pan_id = src.read_u16_be()?;
-        let extended_pan_id = src.read_u64_be()?;
+        let channel = src.read_num_be()?;
+        let pan_id = src.read_num_be()?;
+        let extended_pan_id = src.read_num_be()?;
         let allowing_join = src.read_bool()?;
         let [stack_profile, nwk_update_id] = src.read_array_exact()?;
         Ok(Self {

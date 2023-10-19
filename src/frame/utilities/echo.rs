@@ -59,7 +59,7 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let data_length = src.read_u8()?;
+        let data_length = src.read_num_be()?;
         let data = src.read_vec_exact(data_length)?;
         Ok(Self {
             data_length,
@@ -116,7 +116,7 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let echo_length = src.read_u8()?;
+        let echo_length = src.read_num_be()?;
         let echo = src.read_vec_exact(echo_length)?;
         Ok(Self {
             echo_length,

@@ -53,8 +53,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let value_id = src.read_u8()?;
-        let characteristics = src.read_u32_be()?;
+        let value_id: u8 = src.read_num_be()?;
+        let characteristics = src.read_num_be()?;
         Ok(Self {
             value_id: value_id.try_into()?,
             characteristics,

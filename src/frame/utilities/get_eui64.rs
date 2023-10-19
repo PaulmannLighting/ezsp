@@ -66,7 +66,7 @@ impl Parameters<u16> for Response {
         R: Read,
     {
         Ok(Self {
-            eui64: src.read_u64_be()?,
+            eui64: src.read_num_be()?,
         })
     }
 }

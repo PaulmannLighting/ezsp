@@ -43,7 +43,7 @@ impl Parameters<u8> for Command {
         R: Read,
     {
         Ok(Self {
-            desired_protocol_version: src.read_u8()?.try_into()?,
+            desired_protocol_version: src.read_num_be()?,
         })
     }
 }

@@ -44,7 +44,7 @@ impl Parameters<u16> for Command {
         R: Read,
     {
         Ok(Self {
-            descriptor: src.read_u16_be()?,
+            descriptor: src.read_num_be()?,
         })
     }
 }

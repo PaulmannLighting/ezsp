@@ -73,9 +73,9 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let scan_type = src.read_u8()?;
-        let channel_mask = src.read_u32_be()?;
-        let duration = src.read_u8()?;
+        let scan_type: u8 = src.read_num_be()?;
+        let channel_mask = src.read_num_be()?;
+        let duration = src.read_num_be()?;
         Ok(Self {
             scan_type: scan_type.try_into()?,
             channel_mask,
@@ -117,8 +117,9 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
+        let status: u32 = src.read_num_be()?;
         Ok(Self {
-            status: src.read_u32_be()?.try_into()?,
+            status: status.try_into()?,
         })
     }
 }

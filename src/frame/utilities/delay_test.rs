@@ -41,7 +41,7 @@ impl Parameters<u16> for Command {
         R: Read,
     {
         Ok(Self {
-            delay: src.read_u16_be()?,
+            delay: src.read_num_be()?,
         })
     }
 }

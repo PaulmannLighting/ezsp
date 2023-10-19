@@ -74,9 +74,9 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let timer_id = src.read_u8()?;
-        let time = src.read_u16_be()?;
-        let units = src.read_u8()?;
+        let timer_id = src.read_num_be()?;
+        let time = src.read_num_be()?;
+        let units: u8 = src.read_num_be()?;
         let repeat = src.read_bool()?;
         Ok(Self {
             timer_id,
@@ -120,8 +120,9 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
+        let status: u8 = src.read_num_be()?;
         Ok(Self {
-            status: src.read_u8()?.try_into()?,
+            status: status.try_into()?,
         })
     }
 }

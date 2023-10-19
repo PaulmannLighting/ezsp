@@ -50,8 +50,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let pan_id = src.read_u16_be()?;
-        let channel = src.read_u8()?;
+        let pan_id = src.read_num_be()?;
+        let channel = src.read_num_be()?;
         Ok(Self { pan_id, channel })
     }
 }

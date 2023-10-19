@@ -67,7 +67,7 @@ impl Parameters<u16> for Command {
         R: Read,
     {
         let binary_message = src.read_bool()?;
-        let message_length = src.read_u8()?;
+        let message_length = src.read_num_be()?;
         let message_contents = src.read_vec_exact(message_length)?;
         Ok(Self {
             binary_message,
@@ -110,8 +110,9 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
+        let status: u8 = src.read_num_be()?;
         Ok(Self {
-            status: src.read_u8()?.try_into()?,
+            status: status.try_into()?,
         })
     }
 }

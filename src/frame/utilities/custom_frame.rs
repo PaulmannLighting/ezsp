@@ -70,7 +70,7 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let payload_length = src.read_u8()?;
+        let payload_length = src.read_num_be()?;
         let payload = src.read_vec_exact(payload_length)?;
         Ok(Self {
             payload_length,

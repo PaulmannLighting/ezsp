@@ -40,7 +40,7 @@ impl Parameters<u16> for Command {
         R: Read,
     {
         Ok(Self {
-            library_id: src.read_u8()?,
+            library_id: src.read_num_be()?,
         })
     }
 }
@@ -79,7 +79,7 @@ impl Parameters<u16> for Response {
         R: Read,
     {
         Ok(Self {
-            status: src.read_u8()?,
+            status: src.read_num_be()?,
         })
     }
 }

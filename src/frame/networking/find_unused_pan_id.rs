@@ -53,8 +53,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let channel_mask = src.read_u32_be()?;
-        let duration = src.read_u8()?;
+        let channel_mask = src.read_num_be()?;
+        let duration = src.read_num_be()?;
         Ok(Self {
             channel_mask,
             duration,
@@ -95,8 +95,9 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
+        let status: u8 = src.read_num_be()?;
         Ok(Self {
-            status: src.read_u8()?.try_into()?,
+            status: status.try_into()?,
         })
     }
 }

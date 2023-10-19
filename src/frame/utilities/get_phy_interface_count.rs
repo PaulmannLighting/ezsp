@@ -71,7 +71,7 @@ impl Parameters<u16> for Response {
         R: Read,
     {
         Ok(Self {
-            interface_count: src.read_u8()?,
+            interface_count: src.read_num_be()?,
         })
     }
 }

@@ -41,7 +41,7 @@ impl Parameters<u16> for Command {
         R: Read,
     {
         Ok(Self {
-            new_pan: src.read_u16_be()?,
+            new_pan: src.read_num_be()?,
         })
     }
 }

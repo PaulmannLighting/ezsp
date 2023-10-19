@@ -40,8 +40,9 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
+        let reason: u8 = src.read_num_be()?;
         Ok(Self {
-            reason: src.read_u8()?.try_into()?,
+            reason: reason.try_into()?,
         })
     }
 }

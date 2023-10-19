@@ -44,8 +44,9 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
+        let value_id: u8 = src.read_num_be()?;
         Ok(Self {
-            value_id: src.read_u8()?.try_into()?,
+            value_id: value_id.try_into()?,
         })
     }
 }

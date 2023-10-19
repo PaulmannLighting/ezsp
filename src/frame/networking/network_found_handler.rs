@@ -66,8 +66,8 @@ impl Parameters<u16> for Response {
         R: Read,
     {
         let network_found = Network::read_from(src)?;
-        let last_hop_lqi = src.read_u8()?;
-        let last_hop_rssi = src.read_i8()?;
+        let last_hop_lqi = src.read_num_be()?;
+        let last_hop_rssi = src.read_num_be()?;
         Ok(Self {
             network_found,
             last_hop_lqi,

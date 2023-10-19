@@ -65,8 +65,9 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
+        let entropy_source: u8 = src.read_num_be()?;
         Ok(Self {
-            entropy_source: src.read_u8()?.try_into()?,
+            entropy_source: entropy_source.try_into()?,
         })
     }
 }

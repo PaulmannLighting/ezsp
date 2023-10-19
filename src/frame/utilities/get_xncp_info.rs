@@ -93,9 +93,9 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let status = src.read_u8()?;
-        let manufacturer_id = src.read_u16_be()?;
-        let version_number = src.read_u16_be()?;
+        let status: u8 = src.read_num_be()?;
+        let manufacturer_id = src.read_num_be()?;
+        let version_number = src.read_num_be()?;
         Ok(Self {
             status: status.try_into()?,
             manufacturer_id,

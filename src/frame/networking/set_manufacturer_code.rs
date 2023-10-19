@@ -43,7 +43,7 @@ impl Parameters<u16> for Command {
         R: Read,
     {
         Ok(Self {
-            code: src.read_u16_be()?,
+            code: src.read_num_be()?,
         })
     }
 }

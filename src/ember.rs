@@ -5,6 +5,7 @@ pub mod err;
 pub mod join_method;
 pub mod mac;
 pub mod network;
+pub mod node;
 pub mod phy;
 pub mod serial;
 pub mod sim_eeprom;

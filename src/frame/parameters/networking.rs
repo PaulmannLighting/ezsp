@@ -18,12 +18,34 @@ pub mod stop_scan;
 pub mod unused_pan_id_found_handler;
 
 #[derive(Debug, Eq, PartialEq)]
-pub enum Command {}
+pub enum Command {
+    FindUnusedPanId(find_unused_pan_id::Command),
+    FormNetwork(form_network::Command),
+    JoinNetwork(join_network::Command),
+    JoinNetworkDirectly(join_network_directly::Command),
+    NetworkInit(network_init::Command),
+    NetworkState(network_state::Command),
+    SetManufacturerCode(set_manufacturer_code::Command),
+    SetPowerDescriptor(set_power_descriptor::Command),
+    StartScan(start_scan::Command),
+    StopScan(stop_scan::Command),
+}
 
 impl Command {
     #[must_use]
     pub const fn id(&self) -> u16 {
-        todo!()
+        match self {
+            Self::FindUnusedPanId(_) => find_unused_pan_id::ID,
+            Self::FormNetwork(_) => form_network::ID,
+            Self::JoinNetwork(_) => join_network::ID,
+            Self::JoinNetworkDirectly(_) => join_network_directly::ID,
+            Self::NetworkInit(_) => network_init::ID,
+            Self::NetworkState(_) => network_state::ID,
+            Self::SetManufacturerCode(_) => set_manufacturer_code::ID,
+            Self::SetPowerDescriptor(_) => set_power_descriptor::ID,
+            Self::StartScan(_) => start_scan::ID,
+            Self::StopScan(_) => stop_scan::ID,
+        }
     }
 }
 
@@ -32,17 +54,50 @@ impl Writable for Command {
     where
         W: Write,
     {
-        match self {}
+        match self {
+            Self::FindUnusedPanId(find_unused_pan_id) => find_unused_pan_id.write_to(dst),
+            Self::FormNetwork(form_network) => form_network.write_to(dst),
+            Self::JoinNetwork(join_network) => join_network.write_to(dst),
+            Self::JoinNetworkDirectly(join_network_directly) => join_network_directly.write_to(dst),
+            Self::NetworkInit(network_init) => network_init.write_to(dst),
+            Self::NetworkState(network_state) => network_state.write_to(dst),
+            Self::SetManufacturerCode(set_manufacturer_code) => set_manufacturer_code.write_to(dst),
+            Self::SetPowerDescriptor(set_power_descriptor) => set_power_descriptor.write_to(dst),
+            Self::StartScan(start_scan) => start_scan.write_to(dst),
+            Self::StopScan(stop_scan) => stop_scan.write_to(dst),
+        }
     }
 }
 
 #[derive(Debug, Eq, PartialEq)]
-pub enum Response {}
+pub enum Response {
+    FindUnusedPanId(find_unused_pan_id::Response),
+    FormNetwork(form_network::Response),
+    JoinNetwork(join_network::Response),
+    JoinNetworkDirectly(join_network_directly::Response),
+    NetworkInit(network_init::Response),
+    NetworkState(network_state::Response),
+    SetManufacturerCode(set_manufacturer_code::Response),
+    SetPowerDescriptor(set_power_descriptor::Response),
+    StartScan(start_scan::Response),
+    StopScan(stop_scan::Response),
+}
 
 impl Response {
     #[must_use]
     pub const fn id(&self) -> u16 {
-        todo!()
+        match self {
+            Self::FindUnusedPanId(_) => find_unused_pan_id::ID,
+            Self::FormNetwork(_) => form_network::ID,
+            Self::JoinNetwork(_) => join_network::ID,
+            Self::JoinNetworkDirectly(_) => join_network_directly::ID,
+            Self::NetworkInit(_) => network_init::ID,
+            Self::NetworkState(_) => network_state::ID,
+            Self::SetManufacturerCode(_) => set_manufacturer_code::ID,
+            Self::SetPowerDescriptor(_) => set_power_descriptor::ID,
+            Self::StartScan(_) => start_scan::ID,
+            Self::StopScan(_) => stop_scan::ID,
+        }
     }
 }
 
@@ -51,17 +106,40 @@ impl Writable for Response {
     where
         W: Write,
     {
-        match self {}
+        match self {
+            Self::FindUnusedPanId(find_unused_pan_id) => find_unused_pan_id.write_to(dst),
+            Self::FormNetwork(form_network) => form_network.write_to(dst),
+            Self::JoinNetwork(join_network) => join_network.write_to(dst),
+            Self::JoinNetworkDirectly(join_network_directly) => join_network_directly.write_to(dst),
+            Self::NetworkInit(network_init) => network_init.write_to(dst),
+            Self::NetworkState(network_state) => network_state.write_to(dst),
+            Self::SetManufacturerCode(set_manufacturer_code) => set_manufacturer_code.write_to(dst),
+            Self::SetPowerDescriptor(set_power_descriptor) => set_power_descriptor.write_to(dst),
+            Self::StartScan(start_scan) => start_scan.write_to(dst),
+            Self::StopScan(stop_scan) => stop_scan.write_to(dst),
+        }
     }
 }
 
 #[derive(Debug, Eq, PartialEq)]
-pub enum Callback {}
+pub enum Callback {
+    EnergyScanResult(energy_scan_result_handler::Response),
+    NetworkFound(network_found_handler::Response),
+    ScanComplete(scan_complete_handler::Response),
+    StackStatus(stack_status_handler::Response),
+    UnusedPanIdFound(unused_pan_id_found_handler::Response),
+}
 
 impl Callback {
     #[must_use]
     pub const fn id(&self) -> u16 {
-        todo!()
+        match self {
+            Self::EnergyScanResult(_) => energy_scan_result_handler::ID,
+            Self::NetworkFound(_) => network_found_handler::ID,
+            Self::ScanComplete(_) => scan_complete_handler::ID,
+            Self::StackStatus(_) => stack_status_handler::ID,
+            Self::UnusedPanIdFound(_) => unused_pan_id_found_handler::ID,
+        }
     }
 }
 
@@ -70,6 +148,16 @@ impl Writable for Callback {
     where
         W: Write,
     {
-        match self {}
+        match self {
+            Self::EnergyScanResult(energy_scan_result_handler) => {
+                energy_scan_result_handler.write_to(dst)
+            }
+            Self::NetworkFound(network_found_handler) => network_found_handler.write_to(dst),
+            Self::ScanComplete(scan_complete_handler) => scan_complete_handler.write_to(dst),
+            Self::StackStatus(stack_status_handler) => stack_status_handler.write_to(dst),
+            Self::UnusedPanIdFound(unused_pan_id_found_handler) => {
+                unused_pan_id_found_handler.write_to(dst)
+            }
+        }
     }
 }

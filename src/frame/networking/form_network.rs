@@ -1,39 +1,46 @@
-use crate::ember::Status;
+use crate::ember::{network, Status};
 use crate::frame::Parameters;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
-use std::iter::{empty, once, Empty, Once};
+use std::iter::{once, Once};
 
 pub const ID: u16 = 0x001E;
 
 /// Forms a new network by becoming the coordinator.
 #[derive(Debug, Eq, PartialEq)]
-pub struct Command;
+pub struct Command {
+    parameters: network::Parameters,
+}
 
 impl Command {
     #[must_use]
-    pub const fn new() -> Self {
-        Self {}
+    pub const fn new(parameters: network::Parameters) -> Self {
+        Self { parameters }
+    }
+
+    #[must_use]
+    pub const fn parameters(&self) -> &network::Parameters {
+        &self.parameters
     }
 }
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = Empty<Self::Item>;
+    type IntoIter = <network::Parameters as IntoIterator>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        empty()
+        self.parameters.into_iter()
     }
 }
 
 impl Parameters<u16> for Command {
     const FRAME_ID: u16 = ID;
 
-    fn read_from<R>(_: &mut R) -> anyhow::Result<Self>
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
-        Ok(Self {})
+        network::Parameters::read_from(src).map(Self::new)
     }
 }
 

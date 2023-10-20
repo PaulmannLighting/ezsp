@@ -1,5 +1,5 @@
 use crate::frame::Parameters;
-use crate::util::ReadExt;
+use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::sync::Arc;
 use std::vec::IntoIter;
@@ -54,8 +54,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let payload_length = src.read_num_be()?;
-        let payload = src.read_vec_exact(payload_length)?;
+        let payload_length: u8 = src.read_num_be()?;
+        let payload = src.read_vec_exact(payload_length.into())?;
         Ok(Self {
             payload_length,
             payload: payload.into(),

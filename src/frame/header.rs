@@ -1,7 +1,7 @@
 mod control;
 
-use crate::util::ReadExt;
 pub use control::Control;
+use rw_exact_ext::ReadExactExt;
 use std::io::{Read, Write};
 
 pub const HEADER_SIZE: usize = 5;

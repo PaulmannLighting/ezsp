@@ -1,6 +1,6 @@
 use crate::ezsp::network::scan::Type;
 use crate::frame::Parameters;
-use crate::util::ReadExt;
+use rw_exact_ext::ReadExactExt;
 use siliconlabs::Status;
 use std::array::IntoIter;
 use std::io::Read;

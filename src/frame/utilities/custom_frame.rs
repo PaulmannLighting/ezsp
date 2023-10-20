@@ -1,7 +1,7 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
-use crate::util::ReadExt;
 use anyhow::anyhow;
+use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::sync::Arc;
 use std::vec::IntoIter;
@@ -70,8 +70,8 @@ impl Parameters<u16> for Command {
     where
         R: Read,
     {
-        let payload_length = src.read_num_be()?;
-        let payload = src.read_vec_exact(payload_length)?;
+        let payload_length: u8 = src.read_num_be()?;
+        let payload = src.read_vec_exact(payload_length.into())?;
         Ok(Self {
             payload_length,
             payload: payload.into(),
@@ -136,7 +136,7 @@ impl Parameters<u16> for Response {
         R: Read,
     {
         let [status, reply_length] = src.read_array_exact()?;
-        let reply = src.read_vec_exact(reply_length)?;
+        let reply = src.read_vec_exact(reply_length.into())?;
         Ok(Self {
             status: status.try_into()?,
             reply_length,

@@ -1,6 +1,6 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
-use crate::util::ReadExt;
+use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
 use std::num::TryFromIntError;
@@ -67,8 +67,8 @@ impl Parameters<u16> for Command {
         R: Read,
     {
         let binary_message = src.read_bool()?;
-        let message_length = src.read_num_be()?;
-        let message_contents = src.read_vec_exact(message_length)?;
+        let message_length: u8 = src.read_num_be()?;
+        let message_contents = src.read_vec_exact(message_length.into())?;
         Ok(Self {
             binary_message,
             message_length,

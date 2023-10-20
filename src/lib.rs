@@ -12,7 +12,6 @@ pub mod mfg_token;
 pub mod network;
 pub mod policy;
 pub mod protocol;
-pub mod util;
 pub mod value;
 
 pub use error::Error;

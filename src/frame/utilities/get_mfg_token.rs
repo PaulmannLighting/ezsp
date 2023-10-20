@@ -1,6 +1,6 @@
 use crate::frame::Parameters;
 use crate::mfg_token::Id;
-use crate::util::ReadExt;
+use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
 use std::num::TryFromIntError;
@@ -100,8 +100,8 @@ impl Parameters<u16> for Response {
     where
         R: Read,
     {
-        let token_data_length = src.read_num_be()?;
-        let token_data = src.read_vec_exact(token_data_length)?;
+        let token_data_length: u8 = src.read_num_be()?;
+        let token_data = src.read_vec_exact(token_data_length.into())?;
         Ok(Self {
             token_data_length,
             token_data: token_data.into(),

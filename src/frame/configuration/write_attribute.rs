@@ -1,6 +1,6 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
-use crate::util::ReadExt;
+use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
 use std::num::TryFromIntError;
@@ -141,7 +141,7 @@ impl Parameters<u16> for Command {
         let override_read_only_and_data_type = src.read_bool()?;
         let just_test = src.read_bool()?;
         let [data_type, data_length] = src.read_array_exact()?;
-        let data = src.read_vec_exact(data_length)?;
+        let data = src.read_vec_exact(data_length.into())?;
         Ok(Self {
             endpoint,
             cluster,

@@ -1,5 +1,5 @@
 use crate::frame::Parameters;
-use crate::util::ReadExt;
+use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
 use std::io::Read;
 

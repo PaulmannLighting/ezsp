@@ -1,6 +1,6 @@
 use crate::frame::Parameters;
 use crate::network::Status;
-use crate::util::ReadExt;
+use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{empty, once, Empty, Once};
 

@@ -1,6 +1,6 @@
 use crate::entropy_source::EntropySource;
 use crate::frame::Parameters;
-use crate::util::ReadExt;
+use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{empty, once, Empty, Once};
 

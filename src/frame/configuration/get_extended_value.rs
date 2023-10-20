@@ -1,7 +1,7 @@
 use crate::ezsp::Status;
 use crate::frame::Parameters;
-use crate::util::ReadExt;
 use crate::value;
+use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
 use std::num::TryFromIntError;
@@ -119,7 +119,7 @@ impl Parameters<u16> for Response {
         R: Read,
     {
         let [status, value_length] = src.read_array_exact()?;
-        let value = src.read_vec_exact(value_length)?;
+        let value = src.read_vec_exact(value_length.into())?;
         Ok(Self {
             status: status.try_into()?,
             value_length,

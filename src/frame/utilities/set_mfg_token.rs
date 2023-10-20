@@ -1,7 +1,7 @@
 use crate::ember::Status;
 use crate::frame::Parameters;
 use crate::mfg_token::Id;
-use crate::util::ReadExt;
+use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
 use std::num::TryFromIntError;
@@ -74,7 +74,7 @@ impl Parameters<u16> for Command {
         R: Read,
     {
         let [token_id, token_data_length] = src.read_array_exact()?;
-        let token_data = src.read_vec_exact(token_data_length)?;
+        let token_data = src.read_vec_exact(token_data_length.into())?;
         Ok(Self {
             token_id: token_id.try_into()?,
             token_data_length,

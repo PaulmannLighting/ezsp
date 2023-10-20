@@ -54,7 +54,7 @@ impl Header {
     ///
     /// # Errors
     /// Returns an [`std::io::Error`] on write errors.
-    pub fn write<W>(self, dst: &mut W) -> std::io::Result<()>
+    pub fn write_to<W>(self, dst: &mut W) -> std::io::Result<()>
     where
         W: Write,
     {
@@ -135,7 +135,7 @@ impl LegacyHeader {
     ///
     /// # Errors
     /// Returns an [`std::io::Error`] on write errors.
-    pub fn write<W>(self, dst: &mut W) -> std::io::Result<()>
+    pub fn write_to<W>(self, dst: &mut W) -> std::io::Result<()>
     where
         W: Write,
     {

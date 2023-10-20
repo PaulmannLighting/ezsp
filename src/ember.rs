@@ -1,5 +1,6 @@
 pub mod adc;
 pub mod application;
+pub mod beacon;
 pub mod eeprom;
 pub mod err;
 pub mod join_method;

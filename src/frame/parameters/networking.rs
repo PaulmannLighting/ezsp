@@ -5,6 +5,7 @@ pub mod energy_scan_result_handler;
 pub mod find_unused_pan_id;
 pub mod form_network;
 pub mod join_network;
+pub mod join_network_directly;
 pub mod network_found_handler;
 pub mod network_init;
 pub mod network_state;

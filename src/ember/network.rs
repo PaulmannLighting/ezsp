@@ -18,6 +18,7 @@ pub struct Parameters {
 
 impl Parameters {
     #[must_use]
+    #[allow(clippy::too_many_arguments)]
     pub const fn new(
         extended_pan_id: u64,
         pan_id: u16,
@@ -80,6 +81,10 @@ impl Parameters {
         self.channels
     }
 
+    /// Read [`Parameters`] from a reader.
+    ///
+    /// # Errors
+    /// Returns an [`anyhow::Error`] on read errors.
     pub fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
     where
         R: Read,

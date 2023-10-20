@@ -1,6 +1,6 @@
 use crate::ezsp::Status;
+use crate::ezsp::{decision, policy};
 use crate::read_write::Readable;
-use crate::{decision, policy};
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Chain, Once};

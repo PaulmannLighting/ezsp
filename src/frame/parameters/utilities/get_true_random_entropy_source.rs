@@ -1,4 +1,4 @@
-use crate::entropy_source::EntropySource;
+use crate::ember::entropy::Source;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
@@ -37,12 +37,12 @@ impl Readable for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    entropy_source: EntropySource,
+    entropy_source: Source,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(entropy_source: EntropySource) -> Self {
+    pub const fn new(entropy_source: Source) -> Self {
         Self { entropy_source }
     }
 }

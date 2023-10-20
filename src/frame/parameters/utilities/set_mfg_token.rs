@@ -1,5 +1,5 @@
 use crate::ember::Status;
-use crate::mfg_token::Id;
+use crate::ezsp::mfg_token::Id;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;

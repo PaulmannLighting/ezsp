@@ -1,4 +1,4 @@
-use crate::config::Id;
+use crate::ezsp::config::Id;
 use crate::ezsp::Status;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;

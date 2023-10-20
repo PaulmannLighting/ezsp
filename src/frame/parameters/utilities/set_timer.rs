@@ -1,5 +1,5 @@
+use crate::ember::event;
 use crate::ember::Status;
-use crate::event;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;

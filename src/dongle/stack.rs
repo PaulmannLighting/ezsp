@@ -1,6 +1,4 @@
-use crate::config;
-use crate::decision;
-use crate::policy;
+use crate::ezsp::{config, decision, policy};
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

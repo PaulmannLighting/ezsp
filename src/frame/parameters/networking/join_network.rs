@@ -1,5 +1,6 @@
+use crate::ember::network::parameters::Parameters;
 use crate::ember::node::Type;
-use crate::ember::{network, Status};
+use crate::ember::Status;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
@@ -14,7 +15,7 @@ pub const ID: u16 = 0x001F;
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     note_type: Type,
-    parameters: network::Parameters,
+    parameters: Parameters,
 }
 
 impl Command {
@@ -24,14 +25,14 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn parameters(&self) -> &network::Parameters {
+    pub const fn parameters(&self) -> &Parameters {
         &self.parameters
     }
 }
 
 impl IntoIterator for Command {
     type Item = u8;
-    type IntoIter = Chain<Once<Self::Item>, <network::Parameters as IntoIterator>::IntoIter>;
+    type IntoIter = Chain<Once<Self::Item>, <Parameters as IntoIterator>::IntoIter>;
 
     fn into_iter(self) -> Self::IntoIter {
         once(self.note_type.into()).chain(self.parameters)
@@ -44,7 +45,7 @@ impl Readable for Command {
         R: Read,
     {
         let node_type: u8 = src.read_num_be()?;
-        let parameters = network::Parameters::read_from(src)?;
+        let parameters = Parameters::read_from(src)?;
         Ok(Self {
             note_type: node_type.try_into()?,
             parameters,

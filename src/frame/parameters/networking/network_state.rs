@@ -1,4 +1,4 @@
-use crate::network::Status;
+use crate::ezsp::network::Status;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;

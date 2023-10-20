@@ -8,7 +8,7 @@ use std::iter::{once, Chain, Once};
 
 pub const ID: u16 = 0x001A;
 pub const ALL_CHANNELS: u32 = 0x07FF_F800;
-pub const CURRENT_CHANNEL: u32 = 0x00;
+pub const CURRENT_CHANNEL: u32 = 0x0000_0000;
 
 /// This function will start a scan.
 #[derive(Debug, Eq, PartialEq)]

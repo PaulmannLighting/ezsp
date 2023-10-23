@@ -80,6 +80,20 @@ pub enum Status {
     Application(application::Application),
 }
 
+impl Status {
+    /// Checks the ember status for success and returns `Ok(value)` in that case.
+    ///
+    /// # Errors
+    /// Returns `Err(self)` if the `Status` is not [`Status::Success`],
+    pub fn on_success<T>(self, value: T) -> Result<T, Self> {
+        if self == Self::Success {
+            Ok(value)
+        } else {
+            Err(self)
+        }
+    }
+}
+
 impl FromPrimitive for Status {
     fn from_i64(n: i64) -> Option<Self> {
         u8::try_from(n).ok().and_then(Self::from_u8)

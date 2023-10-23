@@ -6,7 +6,7 @@ use std::sync::Mutex;
 use std::thread::JoinHandle;
 use std::time::SystemTime;
 
-mod stack;
+pub mod stack;
 
 // XXX: Mockups
 pub trait BootloaderHandler {}

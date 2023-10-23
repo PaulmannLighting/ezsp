@@ -8,6 +8,7 @@ pub mod find_and_rejoin_network;
 pub mod find_unused_pan_id;
 pub mod form_network;
 pub mod get_network_parameters;
+pub mod get_parent_child_parameters;
 pub mod get_radio_parameters;
 pub mod join_network;
 pub mod join_network_directly;
@@ -31,6 +32,7 @@ pub enum Command {
     FindUnusedPanId(find_unused_pan_id::Command),
     FormNetwork(form_network::Command),
     GetNetworkParameters(get_network_parameters::Command),
+    GetParentChildParameters(get_parent_child_parameters::Command),
     GetRadioParameters(get_radio_parameters::Command),
     JoinNetwork(join_network::Command),
     JoinNetworkDirectly(join_network_directly::Command),
@@ -53,6 +55,7 @@ impl Command {
             Self::FindUnusedPanId(_) => find_unused_pan_id::ID,
             Self::FormNetwork(_) => form_network::ID,
             Self::GetNetworkParameters(_) => get_network_parameters::ID,
+            Self::GetParentChildParameters(_) => get_parent_child_parameters::ID,
             Self::GetRadioParameters(_) => get_radio_parameters::ID,
             Self::JoinNetwork(_) => join_network::ID,
             Self::JoinNetworkDirectly(_) => join_network_directly::ID,
@@ -83,6 +86,9 @@ impl Writable for Command {
             Self::GetNetworkParameters(get_network_parameters) => {
                 get_network_parameters.write_to(dst)
             }
+            Self::GetParentChildParameters(get_parent_child_parameters) => {
+                get_parent_child_parameters.write_to(dst)
+            }
             Self::GetRadioParameters(get_radio_parameters) => get_radio_parameters.write_to(dst),
             Self::JoinNetwork(join_network) => join_network.write_to(dst),
             Self::JoinNetworkDirectly(join_network_directly) => join_network_directly.write_to(dst),
@@ -105,6 +111,7 @@ pub enum Response {
     FindUnusedPanId(find_unused_pan_id::Response),
     FormNetwork(form_network::Response),
     GetNetworkParameters(get_network_parameters::Response),
+    GetParentChildParameters(get_parent_child_parameters::Response),
     GetRadioParameters(get_radio_parameters::Response),
     JoinNetwork(join_network::Response),
     JoinNetworkDirectly(join_network_directly::Response),
@@ -127,6 +134,7 @@ impl Response {
             Self::FindUnusedPanId(_) => find_unused_pan_id::ID,
             Self::FormNetwork(_) => form_network::ID,
             Self::GetNetworkParameters(_) => get_network_parameters::ID,
+            Self::GetParentChildParameters(_) => get_parent_child_parameters::ID,
             Self::GetRadioParameters(_) => get_radio_parameters::ID,
             Self::JoinNetwork(_) => join_network::ID,
             Self::JoinNetworkDirectly(_) => join_network_directly::ID,
@@ -156,6 +164,9 @@ impl Writable for Response {
             Self::FormNetwork(form_network) => form_network.write_to(dst),
             Self::GetNetworkParameters(get_network_parameters) => {
                 get_network_parameters.write_to(dst)
+            }
+            Self::GetParentChildParameters(get_parent_child_parameters) => {
+                get_parent_child_parameters.write_to(dst)
             }
             Self::GetRadioParameters(get_radio_parameters) => get_radio_parameters.write_to(dst),
             Self::JoinNetwork(join_network) => join_network.write_to(dst),

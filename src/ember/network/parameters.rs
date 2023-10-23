@@ -18,8 +18,8 @@ pub struct Parameters {
 }
 
 impl Parameters {
-    #[must_use]
     #[allow(clippy::too_many_arguments)]
+    #[must_use]
     pub const fn new(
         extended_pan_id: u64,
         pan_id: u16,

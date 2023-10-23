@@ -1,6 +1,7 @@
 use crate::read_write::Writable;
 use std::io::Write;
 
+pub mod child_join_handler;
 pub mod energy_scan_result_handler;
 pub mod find_and_rejoin_network;
 pub mod find_unused_pan_id;
@@ -148,6 +149,7 @@ impl Writable for Response {
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Callback {
+    ChildJoin(child_join_handler::Response),
     EnergyScanResult(energy_scan_result_handler::Response),
     NetworkFound(network_found_handler::Response),
     ScanComplete(scan_complete_handler::Response),
@@ -159,6 +161,7 @@ impl Callback {
     #[must_use]
     pub const fn id(&self) -> u16 {
         match self {
+            Self::ChildJoin(_) => child_join_handler::ID,
             Self::EnergyScanResult(_) => energy_scan_result_handler::ID,
             Self::NetworkFound(_) => network_found_handler::ID,
             Self::ScanComplete(_) => scan_complete_handler::ID,
@@ -174,6 +177,7 @@ impl Writable for Callback {
         W: Write,
     {
         match self {
+            Self::ChildJoin(child_join_handler) => child_join_handler.write_to(dst),
             Self::EnergyScanResult(energy_scan_result_handler) => {
                 energy_scan_result_handler.write_to(dst)
             }

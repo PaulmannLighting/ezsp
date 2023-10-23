@@ -1,6 +1,7 @@
 pub mod adc;
 pub mod application;
 pub mod beacon;
+pub mod child;
 pub mod eeprom;
 pub mod entropy;
 pub mod err;

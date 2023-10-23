@@ -6,6 +6,7 @@ pub mod find_unused_pan_id;
 pub mod form_network;
 pub mod join_network;
 pub mod join_network_directly;
+pub mod leave_network;
 pub mod network_found_handler;
 pub mod network_init;
 pub mod network_state;
@@ -23,6 +24,7 @@ pub enum Command {
     FormNetwork(form_network::Command),
     JoinNetwork(join_network::Command),
     JoinNetworkDirectly(join_network_directly::Command),
+    LeaveNetwork(leave_network::Command),
     NetworkInit(network_init::Command),
     NetworkState(network_state::Command),
     SetManufacturerCode(set_manufacturer_code::Command),
@@ -39,6 +41,7 @@ impl Command {
             Self::FormNetwork(_) => form_network::ID,
             Self::JoinNetwork(_) => join_network::ID,
             Self::JoinNetworkDirectly(_) => join_network_directly::ID,
+            Self::LeaveNetwork(_) => leave_network::ID,
             Self::NetworkInit(_) => network_init::ID,
             Self::NetworkState(_) => network_state::ID,
             Self::SetManufacturerCode(_) => set_manufacturer_code::ID,
@@ -59,6 +62,7 @@ impl Writable for Command {
             Self::FormNetwork(form_network) => form_network.write_to(dst),
             Self::JoinNetwork(join_network) => join_network.write_to(dst),
             Self::JoinNetworkDirectly(join_network_directly) => join_network_directly.write_to(dst),
+            Self::LeaveNetwork(leave_network) => leave_network.write_to(dst),
             Self::NetworkInit(network_init) => network_init.write_to(dst),
             Self::NetworkState(network_state) => network_state.write_to(dst),
             Self::SetManufacturerCode(set_manufacturer_code) => set_manufacturer_code.write_to(dst),
@@ -75,6 +79,7 @@ pub enum Response {
     FormNetwork(form_network::Response),
     JoinNetwork(join_network::Response),
     JoinNetworkDirectly(join_network_directly::Response),
+    LeaveNetwork(leave_network::Response),
     NetworkInit(network_init::Response),
     NetworkState(network_state::Response),
     SetManufacturerCode(set_manufacturer_code::Response),
@@ -91,6 +96,7 @@ impl Response {
             Self::FormNetwork(_) => form_network::ID,
             Self::JoinNetwork(_) => join_network::ID,
             Self::JoinNetworkDirectly(_) => join_network_directly::ID,
+            Self::LeaveNetwork(_) => leave_network::ID,
             Self::NetworkInit(_) => network_init::ID,
             Self::NetworkState(_) => network_state::ID,
             Self::SetManufacturerCode(_) => set_manufacturer_code::ID,
@@ -111,6 +117,7 @@ impl Writable for Response {
             Self::FormNetwork(form_network) => form_network.write_to(dst),
             Self::JoinNetwork(join_network) => join_network.write_to(dst),
             Self::JoinNetworkDirectly(join_network_directly) => join_network_directly.write_to(dst),
+            Self::LeaveNetwork(leave_network) => leave_network.write_to(dst),
             Self::NetworkInit(network_init) => network_init.write_to(dst),
             Self::NetworkState(network_state) => network_state.write_to(dst),
             Self::SetManufacturerCode(set_manufacturer_code) => set_manufacturer_code.write_to(dst),

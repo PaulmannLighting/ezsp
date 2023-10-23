@@ -11,6 +11,7 @@ pub mod leave_network;
 pub mod network_found_handler;
 pub mod network_init;
 pub mod network_state;
+pub mod permit_joining;
 pub mod scan_complete_handler;
 pub mod set_manufacturer_code;
 pub mod set_power_descriptor;
@@ -29,6 +30,7 @@ pub enum Command {
     LeaveNetwork(leave_network::Command),
     NetworkInit(network_init::Command),
     NetworkState(network_state::Command),
+    PermitJoining(permit_joining::Command),
     SetManufacturerCode(set_manufacturer_code::Command),
     SetPowerDescriptor(set_power_descriptor::Command),
     StartScan(start_scan::Command),
@@ -47,6 +49,7 @@ impl Command {
             Self::LeaveNetwork(_) => leave_network::ID,
             Self::NetworkInit(_) => network_init::ID,
             Self::NetworkState(_) => network_state::ID,
+            Self::PermitJoining(_) => permit_joining::ID,
             Self::SetManufacturerCode(_) => set_manufacturer_code::ID,
             Self::SetPowerDescriptor(_) => set_power_descriptor::ID,
             Self::StartScan(_) => start_scan::ID,
@@ -71,6 +74,7 @@ impl Writable for Command {
             Self::LeaveNetwork(leave_network) => leave_network.write_to(dst),
             Self::NetworkInit(network_init) => network_init.write_to(dst),
             Self::NetworkState(network_state) => network_state.write_to(dst),
+            Self::PermitJoining(permit_joining) => permit_joining.write_to(dst),
             Self::SetManufacturerCode(set_manufacturer_code) => set_manufacturer_code.write_to(dst),
             Self::SetPowerDescriptor(set_power_descriptor) => set_power_descriptor.write_to(dst),
             Self::StartScan(start_scan) => start_scan.write_to(dst),
@@ -89,6 +93,7 @@ pub enum Response {
     LeaveNetwork(leave_network::Response),
     NetworkInit(network_init::Response),
     NetworkState(network_state::Response),
+    PermitJoining(permit_joining::Response),
     SetManufacturerCode(set_manufacturer_code::Response),
     SetPowerDescriptor(set_power_descriptor::Response),
     StartScan(start_scan::Response),
@@ -107,6 +112,7 @@ impl Response {
             Self::LeaveNetwork(_) => leave_network::ID,
             Self::NetworkInit(_) => network_init::ID,
             Self::NetworkState(_) => network_state::ID,
+            Self::PermitJoining(_) => permit_joining::ID,
             Self::SetManufacturerCode(_) => set_manufacturer_code::ID,
             Self::SetPowerDescriptor(_) => set_power_descriptor::ID,
             Self::StartScan(_) => start_scan::ID,
@@ -131,6 +137,7 @@ impl Writable for Response {
             Self::LeaveNetwork(leave_network) => leave_network.write_to(dst),
             Self::NetworkInit(network_init) => network_init.write_to(dst),
             Self::NetworkState(network_state) => network_state.write_to(dst),
+            Self::PermitJoining(permit_joining) => permit_joining.write_to(dst),
             Self::SetManufacturerCode(set_manufacturer_code) => set_manufacturer_code.write_to(dst),
             Self::SetPowerDescriptor(set_power_descriptor) => set_power_descriptor.write_to(dst),
             Self::StartScan(start_scan) => start_scan.write_to(dst),

@@ -7,6 +7,7 @@ pub mod energy_scan_result_handler;
 pub mod find_and_rejoin_network;
 pub mod find_unused_pan_id;
 pub mod form_network;
+pub mod get_network_parameters;
 pub mod join_network;
 pub mod join_network_directly;
 pub mod leave_network;
@@ -28,6 +29,7 @@ pub enum Command {
     FindAndRejoinNetwork(find_and_rejoin_network::Command),
     FindUnusedPanId(find_unused_pan_id::Command),
     FormNetwork(form_network::Command),
+    GetNetworkParameters(get_network_parameters::Command),
     JoinNetwork(join_network::Command),
     JoinNetworkDirectly(join_network_directly::Command),
     LeaveNetwork(leave_network::Command),
@@ -48,6 +50,7 @@ impl Command {
             Self::FindAndRejoinNetwork(_) => find_and_rejoin_network::ID,
             Self::FindUnusedPanId(_) => find_unused_pan_id::ID,
             Self::FormNetwork(_) => form_network::ID,
+            Self::GetNetworkParameters(_) => get_network_parameters::ID,
             Self::JoinNetwork(_) => join_network::ID,
             Self::JoinNetworkDirectly(_) => join_network_directly::ID,
             Self::LeaveNetwork(_) => leave_network::ID,
@@ -74,6 +77,9 @@ impl Writable for Command {
             }
             Self::FindUnusedPanId(find_unused_pan_id) => find_unused_pan_id.write_to(dst),
             Self::FormNetwork(form_network) => form_network.write_to(dst),
+            Self::GetNetworkParameters(get_network_parameters) => {
+                get_network_parameters.write_to(dst)
+            }
             Self::JoinNetwork(join_network) => join_network.write_to(dst),
             Self::JoinNetworkDirectly(join_network_directly) => join_network_directly.write_to(dst),
             Self::LeaveNetwork(leave_network) => leave_network.write_to(dst),
@@ -94,6 +100,7 @@ pub enum Response {
     FindAndRejoinNetwork(find_and_rejoin_network::Response),
     FindUnusedPanId(find_unused_pan_id::Response),
     FormNetwork(form_network::Response),
+    GetNetworkParameters(get_network_parameters::Response),
     JoinNetwork(join_network::Response),
     JoinNetworkDirectly(join_network_directly::Response),
     LeaveNetwork(leave_network::Response),
@@ -114,6 +121,7 @@ impl Response {
             Self::FindAndRejoinNetwork(_) => find_and_rejoin_network::ID,
             Self::FindUnusedPanId(_) => find_unused_pan_id::ID,
             Self::FormNetwork(_) => form_network::ID,
+            Self::GetNetworkParameters(_) => get_network_parameters::ID,
             Self::JoinNetwork(_) => join_network::ID,
             Self::JoinNetworkDirectly(_) => join_network_directly::ID,
             Self::LeaveNetwork(_) => leave_network::ID,
@@ -140,6 +148,9 @@ impl Writable for Response {
             }
             Self::FindUnusedPanId(find_unused_pan_id) => find_unused_pan_id.write_to(dst),
             Self::FormNetwork(form_network) => form_network.write_to(dst),
+            Self::GetNetworkParameters(get_network_parameters) => {
+                get_network_parameters.write_to(dst)
+            }
             Self::JoinNetwork(join_network) => join_network.write_to(dst),
             Self::JoinNetworkDirectly(join_network_directly) => join_network_directly.write_to(dst),
             Self::LeaveNetwork(leave_network) => leave_network.write_to(dst),

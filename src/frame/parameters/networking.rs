@@ -2,6 +2,7 @@ use crate::read_write::Writable;
 use std::io::Write;
 
 pub mod energy_scan_result_handler;
+pub mod find_and_rejoin_network;
 pub mod find_unused_pan_id;
 pub mod form_network;
 pub mod join_network;
@@ -20,6 +21,7 @@ pub mod unused_pan_id_found_handler;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Command {
+    FindAndRejoinNetwork(find_and_rejoin_network::Command),
     FindUnusedPanId(find_unused_pan_id::Command),
     FormNetwork(form_network::Command),
     JoinNetwork(join_network::Command),
@@ -37,6 +39,7 @@ impl Command {
     #[must_use]
     pub const fn id(&self) -> u16 {
         match self {
+            Self::FindAndRejoinNetwork(_) => find_and_rejoin_network::ID,
             Self::FindUnusedPanId(_) => find_unused_pan_id::ID,
             Self::FormNetwork(_) => form_network::ID,
             Self::JoinNetwork(_) => join_network::ID,
@@ -58,6 +61,9 @@ impl Writable for Command {
         W: Write,
     {
         match self {
+            Self::FindAndRejoinNetwork(find_and_rejoin_network) => {
+                find_and_rejoin_network.write_to(dst)
+            }
             Self::FindUnusedPanId(find_unused_pan_id) => find_unused_pan_id.write_to(dst),
             Self::FormNetwork(form_network) => form_network.write_to(dst),
             Self::JoinNetwork(join_network) => join_network.write_to(dst),
@@ -75,6 +81,7 @@ impl Writable for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Response {
+    FindAndRejoinNetwork(find_and_rejoin_network::Response),
     FindUnusedPanId(find_unused_pan_id::Response),
     FormNetwork(form_network::Response),
     JoinNetwork(join_network::Response),
@@ -92,6 +99,7 @@ impl Response {
     #[must_use]
     pub const fn id(&self) -> u16 {
         match self {
+            Self::FindAndRejoinNetwork(_) => find_and_rejoin_network::ID,
             Self::FindUnusedPanId(_) => find_unused_pan_id::ID,
             Self::FormNetwork(_) => form_network::ID,
             Self::JoinNetwork(_) => join_network::ID,
@@ -113,6 +121,9 @@ impl Writable for Response {
         W: Write,
     {
         match self {
+            Self::FindAndRejoinNetwork(find_and_rejoin_network) => {
+                find_and_rejoin_network.write_to(dst)
+            }
             Self::FindUnusedPanId(find_unused_pan_id) => find_unused_pan_id.write_to(dst),
             Self::FormNetwork(form_network) => form_network.write_to(dst),
             Self::JoinNetwork(join_network) => join_network.write_to(dst),

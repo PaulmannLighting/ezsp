@@ -1,6 +1,7 @@
 use crate::read_write::Writable;
 use std::io::Write;
 
+pub mod child_id;
 pub mod child_join_handler;
 pub mod energy_scan_request;
 pub mod energy_scan_result_handler;
@@ -29,6 +30,7 @@ pub mod unused_pan_id_found_handler;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Command {
+    ChildId(child_id::Command),
     EnergyScanRequest(energy_scan_request::Command),
     FindAndRejoinNetwork(find_and_rejoin_network::Command),
     FindUnusedPanId(find_unused_pan_id::Command),
@@ -54,6 +56,7 @@ impl Command {
     #[must_use]
     pub const fn id(&self) -> u16 {
         match self {
+            Self::ChildId(_) => child_id::ID,
             Self::EnergyScanRequest(_) => energy_scan_request::ID,
             Self::FindAndRejoinNetwork(_) => find_and_rejoin_network::ID,
             Self::FindUnusedPanId(_) => find_unused_pan_id::ID,
@@ -83,6 +86,7 @@ impl Writable for Command {
         W: Write,
     {
         match self {
+            Self::ChildId(child_id) => child_id.write_to(dst),
             Self::EnergyScanRequest(energy_scan_request) => energy_scan_request.write_to(dst),
             Self::FindAndRejoinNetwork(find_and_rejoin_network) => {
                 find_and_rejoin_network.write_to(dst)
@@ -114,6 +118,7 @@ impl Writable for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Response {
+    ChildId(child_id::Response),
     EnergyScanRequest(energy_scan_request::Response),
     FindAndRejoinNetwork(find_and_rejoin_network::Response),
     FindUnusedPanId(find_unused_pan_id::Response),
@@ -139,6 +144,7 @@ impl Response {
     #[must_use]
     pub const fn id(&self) -> u16 {
         match self {
+            Self::ChildId(_) => child_id::ID,
             Self::EnergyScanRequest(_) => energy_scan_request::ID,
             Self::FindAndRejoinNetwork(_) => find_and_rejoin_network::ID,
             Self::FindUnusedPanId(_) => find_unused_pan_id::ID,
@@ -168,6 +174,7 @@ impl Writable for Response {
         W: Write,
     {
         match self {
+            Self::ChildId(child_id) => child_id.write_to(dst),
             Self::EnergyScanRequest(energy_scan_request) => energy_scan_request.write_to(dst),
             Self::FindAndRejoinNetwork(find_and_rejoin_network) => {
                 find_and_rejoin_network.write_to(dst)

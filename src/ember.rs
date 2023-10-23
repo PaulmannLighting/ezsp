@@ -20,6 +20,8 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
+pub const NULL_NODE_ID: u16 = 0xFFFF;
+
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 #[repr(u8)]
 pub enum Status {

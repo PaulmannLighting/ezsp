@@ -1,4 +1,6 @@
 use num_traits::{FromPrimitive, ToPrimitive};
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 
 pub mod bootloader;
 pub mod flash;
@@ -8,6 +10,17 @@ pub enum Err {
     Flash(flash::Flash),
     Bootloader(bootloader::Bootloader),
 }
+
+impl Display for Err {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Flash(flash) => write!(f, "flash: {flash}"),
+            Self::Bootloader(bootloader) => write!(f, "bootloader: {bootloader}"),
+        }
+    }
+}
+
+impl Error for Err {}
 
 impl FromPrimitive for Err {
     fn from_i64(n: i64) -> Option<Self> {

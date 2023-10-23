@@ -16,6 +16,8 @@ pub mod zigbee;
 
 use anyhow::anyhow;
 use num_traits::{FromPrimitive, ToPrimitive};
+use std::error::Error;
+use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 #[repr(u8)]
@@ -90,6 +92,87 @@ impl Status {
             Ok(value)
         } else {
             Err(self)
+        }
+    }
+}
+
+impl Display for Status {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Success => write!(f, "success"),
+            Self::ErrFatal => write!(f, "fatal error"),
+            Self::BadArgument => write!(f, "bad argument"),
+            Self::Eeprom(eeprom) => write!(f, "EEPROM {eeprom}"),
+            Self::NoBuffers => write!(f, "no buffers"),
+            Self::Serial(serial) => write!(f, "serial {serial}"),
+            Self::Mac(mac) => write!(f, "MAC {mac}"),
+            Self::SimEeprom(sim_eeprom) => write!(f, "SIM/EEPROM {sim_eeprom}"),
+            Self::Err(err) => write!(f, "error {err}"),
+            Self::DeliveryFailed => write!(f, "delivery failed"),
+            Self::BindingIndexOutOfRange => write!(f, "binding index out of range"),
+            Self::AddressTableIndexOutOfRange => write!(f, "address table index out of range"),
+            Self::InvalidBindingIndex => write!(f, "invalid binding index"),
+            Self::InvalidCall => write!(f, "invalid call"),
+            Self::CostNotKnown => write!(f, "cost not known"),
+            Self::MaxMessageLimitReached => write!(f, "max message limit reached"),
+            Self::MessageTooLong => write!(f, "message too long"),
+            Self::BindingIsActive => write!(f, "binding is active"),
+            Self::AddressTableEntryIsActive => write!(f, "address table entry is active"),
+            Self::Adc(adc) => write!(f, "ADC {adc}"),
+            Self::SleepInterrupted => write!(f, "sleep interrupted"),
+            Self::Phy(phy) => write!(f, "phy {phy}"),
+            Self::NetworkUp => write!(f, "network up"),
+            Self::NetworkDown => write!(f, "network down"),
+            Self::NotJoined => write!(f, "not joined"),
+            Self::JoinFailed => write!(f, "join failed"),
+            Self::InvalidSecurityLevel => write!(f, "invalid security level"),
+            Self::MoveFailed => write!(f, "move failed"),
+            Self::CannotJoinAsRouter => write!(f, "cannot join as router"),
+            Self::NodeIdChanged => write!(f, "node id changed"),
+            Self::PanIdChanged => write!(f, "PAN ID changed"),
+            Self::NetworkOpened => write!(f, "network opened"),
+            Self::NetworkClosed => write!(f, "network closed"),
+            Self::NoBeacons => write!(f, "no beacons"),
+            Self::ReceivedKeyInTheClear => write!(f, "received key in the clear"),
+            Self::NoNetworkKeyReceived => write!(f, "no network key received"),
+            Self::NoLinkKeyReceived => write!(f, "no link key received"),
+            Self::PreconfiguredKeyRequired => write!(f, "preconfigured key required"),
+            Self::NetworkBusy => write!(f, "network busy"),
+            Self::InvalidEndpoint => write!(f, "invalid endpoint"),
+            Self::BindingHasChanged => write!(f, "binding has changed"),
+            Self::InsufficientRandomData => write!(f, "insufficient random data"),
+            Self::ApsEncryptionError => write!(f, "APS encryption error"),
+            Self::SecurityStateNotSet => write!(f, "security state not set"),
+            Self::SourceRouteFailure => write!(f, "source route failure"),
+            Self::ManyToOneRouteFailure => write!(f, "many to one route failure"),
+            Self::StackAndHardwareMismatch => write!(f, "stack and hardware mismatch"),
+            Self::IndexOutOfRange => write!(f, "index out of range"),
+            Self::KeyTableInvalidAddress => write!(f, "key table invalid address"),
+            Self::TableFull => write!(f, "table full"),
+            Self::LibraryNotPresent => write!(f, "library not present"),
+            Self::TableEntryErased => write!(f, "table entry erased"),
+            Self::SecurityConfigurationInvalid => write!(f, "security configuration invalid"),
+            Self::TooSoonForSwitchKey => write!(f, "too soon for switch key"),
+            Self::OperationInProgress => write!(f, "operation in progress"),
+            Self::KeyNotAuthorized => write!(f, "key not authorized"),
+            Self::SecurityDataInvalid => write!(f, "security data invalid"),
+            Self::Application(application) => write!(f, "application {application}"),
+        }
+    }
+}
+
+impl Error for Status {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::Eeprom(eeprom) => Some(eeprom),
+            Self::Serial(serial) => Some(serial),
+            Self::Mac(mac) => Some(mac),
+            Self::SimEeprom(sim_eeprom) => Some(sim_eeprom),
+            Self::Err(err) => Some(err),
+            Self::Adc(adc) => Some(adc),
+            Self::Phy(phy) => Some(phy),
+            Self::Application(application) => Some(application),
+            _ => None,
         }
     }
 }

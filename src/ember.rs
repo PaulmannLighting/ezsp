@@ -85,7 +85,7 @@ impl Status {
     ///
     /// # Errors
     /// Returns `Err(self)` if the `Status` is not [`Status::Success`],
-    pub fn on_success<T>(self, value: T) -> Result<T, Self> {
+    pub fn map<T>(self, value: T) -> Result<T, Self> {
         if self == Self::Success {
             Ok(value)
         } else {

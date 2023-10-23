@@ -1,4 +1,5 @@
 use crate::ember::join_method::JoinMethod;
+use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
 use std::io::Read;
@@ -80,34 +81,6 @@ impl Parameters {
     pub const fn channels(&self) -> u32 {
         self.channels
     }
-
-    /// Read [`Parameters`] from a reader.
-    ///
-    /// # Errors
-    /// Returns an [`anyhow::Error`] on read errors.
-    pub fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
-    where
-        R: Read,
-    {
-        let extended_pan_id = src.read_num_be()?;
-        let pan_id = src.read_num_be()?;
-        let radio_tx_power = src.read_num_be()?;
-        let radio_channel = src.read_num_be()?;
-        let join_method: u8 = src.read_num_be()?;
-        let nwk_manager_id = src.read_num_be()?;
-        let nwk_update_id = src.read_num_be()?;
-        let channels = src.read_num_be()?;
-        Ok(Self {
-            extended_pan_id,
-            pan_id,
-            radio_tx_power,
-            radio_channel,
-            join_method: join_method.try_into()?,
-            nwk_manager_id,
-            nwk_update_id,
-            channels,
-        })
-    }
 }
 
 impl IntoIterator for Parameters {
@@ -143,5 +116,31 @@ impl IntoIterator for Parameters {
             .chain(self.nwk_manager_id.to_be_bytes())
             .chain(once(self.nwk_update_id))
             .chain(self.channels.to_be_bytes())
+    }
+}
+
+impl Readable for Parameters {
+    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    where
+        R: Read,
+    {
+        let extended_pan_id = src.read_num_be()?;
+        let pan_id = src.read_num_be()?;
+        let radio_tx_power = src.read_num_be()?;
+        let radio_channel = src.read_num_be()?;
+        let join_method: u8 = src.read_num_be()?;
+        let nwk_manager_id = src.read_num_be()?;
+        let nwk_update_id = src.read_num_be()?;
+        let channels = src.read_num_be()?;
+        Ok(Self {
+            extended_pan_id,
+            pan_id,
+            radio_tx_power,
+            radio_channel,
+            join_method: join_method.try_into()?,
+            nwk_manager_id,
+            nwk_update_id,
+            channels,
+        })
     }
 }

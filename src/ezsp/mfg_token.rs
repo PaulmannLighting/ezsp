@@ -1,10 +1,10 @@
-pub mod mfg;
-pub mod stack;
+mod mfg;
+mod stack;
 
 use anyhow::anyhow;
-use mfg::Mfg;
+pub use mfg::Mfg;
 use num_traits::{FromPrimitive, ToPrimitive};
-use stack::Stack;
+pub use stack::Stack;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Id {

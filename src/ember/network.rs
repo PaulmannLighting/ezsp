@@ -1,3 +1,6 @@
 pub mod init;
-pub mod parameters;
-pub mod status;
+mod parameters;
+mod status;
+
+pub use parameters::Parameters;
+pub use status::Status;

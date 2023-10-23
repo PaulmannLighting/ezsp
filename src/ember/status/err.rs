@@ -1,14 +1,16 @@
+mod bootloader;
+mod flash;
+
+pub use bootloader::Bootloader;
+pub use flash::Flash;
 use num_traits::{FromPrimitive, ToPrimitive};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-pub mod bootloader;
-pub mod flash;
-
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 pub enum Err {
-    Flash(flash::Flash),
-    Bootloader(bootloader::Bootloader),
+    Flash(Flash),
+    Bootloader(Bootloader),
 }
 
 impl Display for Err {
@@ -29,8 +31,8 @@ impl FromPrimitive for Err {
 
     fn from_u8(n: u8) -> Option<Self> {
         match n {
-            0x46..=0x4C => flash::Flash::from_u8(n).map(Self::Flash),
-            0x58..=0x5A => bootloader::Bootloader::from_u8(n).map(Self::Bootloader),
+            0x46..=0x4C => Flash::from_u8(n).map(Self::Flash),
+            0x58..=0x5A => Bootloader::from_u8(n).map(Self::Bootloader),
             _ => None,
         }
     }

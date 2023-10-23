@@ -1,8 +1,8 @@
 mod error;
 mod misc;
 
-use error::Error;
-use misc::Misc;
+pub use error::Error;
+pub use misc::Misc;
 use num_traits::{FromPrimitive, ToPrimitive};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]

@@ -1,4 +1,4 @@
-use crate::ember::network::parameters::Parameters;
+use crate::ember::network::Parameters;
 use crate::ember::node::Type;
 use crate::ember::Status;
 use crate::read_write::Readable;

@@ -57,7 +57,7 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let data_length: u8 = src.read_num_be()?;
+        let data_length: u8 = src.read_num_le()?;
         let data = src.read_vec_exact(data_length.into())?;
         Ok(Self {
             data_length,
@@ -112,7 +112,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let echo_length: u8 = src.read_num_be()?;
+        let echo_length: u8 = src.read_num_le()?;
         let echo = src.read_vec_exact(echo_length.into())?;
         Ok(Self {
             echo_length,

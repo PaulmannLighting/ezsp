@@ -79,8 +79,8 @@ impl IntoIterator for Response {
 
     fn into_iter(self) -> Self::IntoIter {
         once(self.status.into())
-            .chain(self.manufacturer_id.to_be_bytes())
-            .chain(self.version_number.to_be_bytes())
+            .chain(self.manufacturer_id.to_le_bytes())
+            .chain(self.version_number.to_le_bytes())
     }
 }
 
@@ -89,9 +89,9 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
-        let manufacturer_id = src.read_num_be()?;
-        let version_number = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
+        let manufacturer_id = src.read_num_le()?;
+        let version_number = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
             manufacturer_id,

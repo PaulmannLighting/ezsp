@@ -41,9 +41,9 @@ impl IntoIterator for Response {
 
     fn into_iter(self) -> Self::IntoIter {
         self.channel
-            .to_be_bytes()
+            .to_le_bytes()
             .into_iter()
-            .chain(self.max_rssi_value.to_be_bytes())
+            .chain(self.max_rssi_value.to_le_bytes())
     }
 }
 
@@ -52,8 +52,8 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let channel = src.read_num_be()?;
-        let max_rssi_value = src.read_num_be()?;
+        let channel = src.read_num_le()?;
+        let max_rssi_value = src.read_num_le()?;
         Ok(Self {
             channel,
             max_rssi_value,

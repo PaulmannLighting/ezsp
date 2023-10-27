@@ -122,17 +122,17 @@ impl IntoIterator for Command {
         let mut parameters =
             Vec::with_capacity(8 + self.input_clusters.len() * 2 + self.output_clusters.len() * 2);
         parameters.push(self.endpoint);
-        parameters.extend_from_slice(&self.profile_id.to_be_bytes());
-        parameters.extend_from_slice(&self.device_id.to_be_bytes());
+        parameters.extend_from_slice(&self.profile_id.to_le_bytes());
+        parameters.extend_from_slice(&self.device_id.to_le_bytes());
         parameters.push(self.app_flags);
         parameters.push(self.input_cluster_count);
         parameters.push(self.output_cluster_count);
         self.input_clusters
             .iter()
-            .for_each(|cluster| parameters.extend_from_slice(&cluster.to_be_bytes()));
+            .for_each(|cluster| parameters.extend_from_slice(&cluster.to_le_bytes()));
         self.output_clusters
             .iter()
-            .for_each(|cluster| parameters.extend_from_slice(&cluster.to_be_bytes()));
+            .for_each(|cluster| parameters.extend_from_slice(&cluster.to_le_bytes()));
         parameters.into_iter()
     }
 }
@@ -142,9 +142,9 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let endpoint = src.read_num_be()?;
-        let profile_id = src.read_num_be()?;
-        let device_id = src.read_num_be()?;
+        let endpoint = src.read_num_le()?;
+        let profile_id = src.read_num_le()?;
+        let device_id = src.read_num_le()?;
         let [app_flags, input_cluster_count, output_cluster_count] = src.read_array_exact()?;
         let input_clusters = Self::read_clusters(src, input_cluster_count.into())?;
         let output_clusters = Self::read_clusters(src, output_cluster_count.into())?;
@@ -192,7 +192,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

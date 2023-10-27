@@ -39,7 +39,7 @@ impl IntoIterator for Command {
 
     fn into_iter(self) -> Self::IntoIter {
         <Bitmask as Into<u16>>::into(self.network_init_bitmask)
-            .to_be_bytes()
+            .to_le_bytes()
             .into_iter()
     }
 }
@@ -49,7 +49,7 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let network_init_bitmask: u16 = src.read_num_be()?;
+        let network_init_bitmask: u16 = src.read_num_le()?;
         Ok(Self {
             network_init_bitmask: network_init_bitmask.try_into()?,
         })
@@ -87,7 +87,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

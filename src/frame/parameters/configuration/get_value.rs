@@ -42,7 +42,7 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let value_id: u8 = src.read_num_be()?;
+        let value_id: u8 = src.read_num_le()?;
         Ok(Self {
             value_id: value_id.try_into()?,
         })

@@ -41,7 +41,7 @@ impl Readable for Command {
         R: Read,
     {
         Ok(Self {
-            desired_protocol_version: src.read_num_be()?,
+            desired_protocol_version: src.read_num_le()?,
         })
     }
 }

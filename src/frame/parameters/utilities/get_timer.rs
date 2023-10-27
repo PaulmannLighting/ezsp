@@ -33,7 +33,7 @@ impl IntoIterator for Command {
     type IntoIter = IntoIter<Self::Item, 1>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.timer_id.to_be_bytes().into_iter()
+        self.timer_id.to_le_bytes().into_iter()
     }
 }
 
@@ -43,7 +43,7 @@ impl Readable for Command {
         R: Read,
     {
         Ok(Self {
-            timer_id: src.read_num_be()?,
+            timer_id: src.read_num_le()?,
         })
     }
 }
@@ -87,7 +87,7 @@ impl IntoIterator for Response {
 
     fn into_iter(self) -> Self::IntoIter {
         self.time
-            .to_be_bytes()
+            .to_le_bytes()
             .into_iter()
             .chain(once(self.units.into()))
             .chain(once(self.repeat.into()))
@@ -99,8 +99,8 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let time = src.read_num_be()?;
-        let units: u8 = src.read_num_be()?;
+        let time = src.read_num_le()?;
+        let units: u8 = src.read_num_le()?;
         let repeat = src.read_bool()?;
         Ok(Self {
             time,

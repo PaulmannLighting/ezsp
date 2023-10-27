@@ -45,7 +45,7 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let index = src.read_num_be()?;
+        let index = src.read_num_le()?;
         let child_data = Data::read_from(src)?;
         Ok(Self { index, child_data })
     }
@@ -82,7 +82,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

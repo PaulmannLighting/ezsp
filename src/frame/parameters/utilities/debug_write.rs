@@ -65,7 +65,7 @@ impl Readable for Command {
         R: Read,
     {
         let binary_message = src.read_bool()?;
-        let message_length: u8 = src.read_num_be()?;
+        let message_length: u8 = src.read_num_le()?;
         let message_contents = src.read_vec_exact(message_length.into())?;
         Ok(Self {
             binary_message,
@@ -106,7 +106,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

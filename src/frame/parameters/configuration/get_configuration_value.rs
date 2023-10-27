@@ -40,7 +40,7 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let config_id: u8 = src.read_num_be()?;
+        let config_id: u8 = src.read_num_le()?;
         Ok(Self {
             config_id: config_id.try_into()?,
         })
@@ -75,7 +75,7 @@ impl IntoIterator for Response {
     type IntoIter = Chain<Once<Self::Item>, IntoIter<Self::Item, 2>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        once(self.status.into()).chain(self.value.to_be_bytes())
+        once(self.status.into()).chain(self.value.to_le_bytes())
     }
 }
 
@@ -84,8 +84,8 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
-        let value = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
+        let value = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
             value,

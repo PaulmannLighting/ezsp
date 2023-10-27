@@ -61,8 +61,8 @@ impl IntoIterator for Command {
 
     fn into_iter(self) -> Self::IntoIter {
         once(self.scan_type.into())
-            .chain(self.channel_mask.to_be_bytes())
-            .chain(self.duration.to_be_bytes())
+            .chain(self.channel_mask.to_le_bytes())
+            .chain(self.duration.to_le_bytes())
     }
 }
 
@@ -71,9 +71,9 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let scan_type: u8 = src.read_num_be()?;
-        let channel_mask = src.read_num_be()?;
-        let duration = src.read_num_be()?;
+        let scan_type: u8 = src.read_num_le()?;
+        let channel_mask = src.read_num_le()?;
+        let duration = src.read_num_le()?;
         Ok(Self {
             scan_type: scan_type.try_into()?,
             channel_mask,
@@ -104,7 +104,7 @@ impl IntoIterator for Response {
     type IntoIter = IntoIter<Self::Item, 4>;
 
     fn into_iter(self) -> Self::IntoIter {
-        u32::from(self.status).to_be_bytes().into_iter()
+        u32::from(self.status).to_le_bytes().into_iter()
     }
 }
 
@@ -113,7 +113,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u32 = src.read_num_be()?;
+        let status: u32 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

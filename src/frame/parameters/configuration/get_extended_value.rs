@@ -42,7 +42,7 @@ impl IntoIterator for Command {
     type IntoIter = Chain<Once<Self::Item>, array::IntoIter<Self::Item, 4>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        once(self.value_id.into()).chain(self.characteristics.to_be_bytes())
+        once(self.value_id.into()).chain(self.characteristics.to_le_bytes())
     }
 }
 
@@ -51,8 +51,8 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let value_id: u8 = src.read_num_be()?;
-        let characteristics = src.read_num_be()?;
+        let value_id: u8 = src.read_num_le()?;
+        let characteristics = src.read_num_le()?;
         Ok(Self {
             value_id: value_id.try_into()?,
             characteristics,

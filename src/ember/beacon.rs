@@ -102,16 +102,16 @@ impl Readable for Data {
     where
         R: Read,
     {
-        let channel = src.read_num_be()?;
-        let lqi = src.read_num_be()?;
-        let rssi = src.read_num_be()?;
-        let depth = src.read_num_be()?;
-        let nwk_update_id = src.read_num_be()?;
-        let power = src.read_num_be()?;
-        let parent_priority = src.read_num_be()?;
-        let pan_id = src.read_num_be()?;
-        let extended_pan_id = src.read_num_be()?;
-        let sender = src.read_num_be()?;
+        let channel = src.read_num_le()?;
+        let lqi = src.read_num_le()?;
+        let rssi = src.read_num_le()?;
+        let depth = src.read_num_le()?;
+        let nwk_update_id = src.read_num_le()?;
+        let power = src.read_num_le()?;
+        let parent_priority = src.read_num_le()?;
+        let pan_id = src.read_num_le()?;
+        let extended_pan_id = src.read_num_le()?;
+        let sender = src.read_num_le()?;
         Ok(Self {
             channel,
             lqi,
@@ -157,14 +157,14 @@ impl IntoIterator for Data {
 
     fn into_iter(self) -> Self::IntoIter {
         once(self.channel)
-            .chain(self.lqi.to_be_bytes())
-            .chain(self.rssi.to_be_bytes())
-            .chain(self.depth.to_be_bytes())
-            .chain(self.nwk_update_id.to_be_bytes())
-            .chain(self.power.to_be_bytes())
-            .chain(self.parent_priority.to_be_bytes())
-            .chain(self.pan_id.to_be_bytes())
-            .chain(self.extended_pan_id.to_be_bytes())
-            .chain(self.sender.to_be_bytes())
+            .chain(self.lqi.to_le_bytes())
+            .chain(self.rssi.to_le_bytes())
+            .chain(self.depth.to_le_bytes())
+            .chain(self.nwk_update_id.to_le_bytes())
+            .chain(self.power.to_le_bytes())
+            .chain(self.parent_priority.to_le_bytes())
+            .chain(self.pan_id.to_le_bytes())
+            .chain(self.extended_pan_id.to_le_bytes())
+            .chain(self.sender.to_le_bytes())
     }
 }

@@ -68,7 +68,7 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let payload_length: u8 = src.read_num_be()?;
+        let payload_length: u8 = src.read_num_le()?;
         let payload = src.read_vec_exact(payload_length.into())?;
         Ok(Self {
             payload_length,

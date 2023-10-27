@@ -128,17 +128,17 @@ impl IntoIterator for Data {
 
     fn into_iter(self) -> Self::IntoIter {
         self.eui64
-            .to_be_bytes()
+            .to_le_bytes()
             .into_iter()
             .chain(once(self.typ.into()))
-            .chain(self.id.to_be_bytes())
-            .chain(self.phy.to_be_bytes())
-            .chain(self.power.to_be_bytes())
-            .chain(self.timeout.to_be_bytes())
-            .chain(self.gpd_ieee_address.to_be_bytes())
-            .chain(self.source_id.to_be_bytes())
-            .chain(self.application_id.to_be_bytes())
-            .chain(self.endpoint.to_be_bytes())
+            .chain(self.id.to_le_bytes())
+            .chain(self.phy.to_le_bytes())
+            .chain(self.power.to_le_bytes())
+            .chain(self.timeout.to_le_bytes())
+            .chain(self.gpd_ieee_address.to_le_bytes())
+            .chain(self.source_id.to_le_bytes())
+            .chain(self.application_id.to_le_bytes())
+            .chain(self.endpoint.to_le_bytes())
     }
 }
 
@@ -147,16 +147,16 @@ impl Readable for Data {
     where
         R: Read,
     {
-        let eui64 = src.read_num_be()?;
-        let typ: u8 = src.read_num_be()?;
-        let id = src.read_num_be()?;
-        let phy = src.read_num_be()?;
-        let power = src.read_num_be()?;
-        let timeout = src.read_num_be()?;
-        let gpd_ieee_address = src.read_num_be()?;
-        let source_id = src.read_num_be()?;
-        let application_id = src.read_num_be()?;
-        let endpoint = src.read_num_be()?;
+        let eui64 = src.read_num_le()?;
+        let typ: u8 = src.read_num_le()?;
+        let id = src.read_num_le()?;
+        let phy = src.read_num_le()?;
+        let power = src.read_num_le()?;
+        let timeout = src.read_num_le()?;
+        let gpd_ieee_address = src.read_num_le()?;
+        let source_id = src.read_num_le()?;
+        let application_id = src.read_num_le()?;
+        let endpoint = src.read_num_le()?;
         Ok(Self {
             eui64,
             typ: typ.try_into()?,

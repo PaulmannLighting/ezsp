@@ -57,7 +57,7 @@ impl IntoIterator for Response {
     type IntoIter = IntoIter<Self::Item, 1>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.interface_count.to_be_bytes().into_iter()
+        self.interface_count.to_le_bytes().into_iter()
     }
 }
 
@@ -67,7 +67,7 @@ impl Readable for Response {
         R: Read,
     {
         Ok(Self {
-            interface_count: src.read_num_be()?,
+            interface_count: src.read_num_le()?,
         })
     }
 }

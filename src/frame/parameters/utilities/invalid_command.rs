@@ -38,7 +38,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let reason: u8 = src.read_num_be()?;
+        let reason: u8 = src.read_num_le()?;
         Ok(Self {
             reason: reason.try_into()?,
         })

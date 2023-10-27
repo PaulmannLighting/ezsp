@@ -107,15 +107,15 @@ impl IntoIterator for Parameters {
 
     fn into_iter(self) -> Self::IntoIter {
         self.extended_pan_id
-            .to_be_bytes()
+            .to_le_bytes()
             .into_iter()
-            .chain(self.pan_id.to_be_bytes())
+            .chain(self.pan_id.to_le_bytes())
             .chain(once(self.radio_tx_power))
             .chain(once(self.radio_channel))
             .chain(once(self.join_method.into()))
-            .chain(self.nwk_manager_id.to_be_bytes())
+            .chain(self.nwk_manager_id.to_le_bytes())
             .chain(once(self.nwk_update_id))
-            .chain(self.channels.to_be_bytes())
+            .chain(self.channels.to_le_bytes())
     }
 }
 
@@ -124,14 +124,14 @@ impl Readable for Parameters {
     where
         R: Read,
     {
-        let extended_pan_id = src.read_num_be()?;
-        let pan_id = src.read_num_be()?;
-        let radio_tx_power = src.read_num_be()?;
-        let radio_channel = src.read_num_be()?;
-        let join_method: u8 = src.read_num_be()?;
-        let nwk_manager_id = src.read_num_be()?;
-        let nwk_update_id = src.read_num_be()?;
-        let channels = src.read_num_be()?;
+        let extended_pan_id = src.read_num_le()?;
+        let pan_id = src.read_num_le()?;
+        let radio_tx_power = src.read_num_le()?;
+        let radio_channel = src.read_num_le()?;
+        let join_method: u8 = src.read_num_le()?;
+        let nwk_manager_id = src.read_num_le()?;
+        let nwk_update_id = src.read_num_le()?;
+        let channels = src.read_num_le()?;
         Ok(Self {
             extended_pan_id,
             pan_id,

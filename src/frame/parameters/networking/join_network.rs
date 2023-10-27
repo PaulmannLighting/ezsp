@@ -44,7 +44,7 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let node_type: u8 = src.read_num_be()?;
+        let node_type: u8 = src.read_num_le()?;
         let parameters = Parameters::read_from(src)?;
         Ok(Self {
             note_type: node_type.try_into()?,
@@ -84,7 +84,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

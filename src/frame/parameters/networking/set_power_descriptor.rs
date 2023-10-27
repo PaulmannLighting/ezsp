@@ -32,7 +32,7 @@ impl IntoIterator for Command {
     type IntoIter = IntoIter<Self::Item, 2>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.descriptor.to_be_bytes().into_iter()
+        self.descriptor.to_le_bytes().into_iter()
     }
 }
 
@@ -42,7 +42,7 @@ impl Readable for Command {
         R: Read,
     {
         Ok(Self {
-            descriptor: src.read_num_be()?,
+            descriptor: src.read_num_le()?,
         })
     }
 }

@@ -74,8 +74,8 @@ impl IntoIterator for Response {
     fn into_iter(self) -> Self::IntoIter {
         once(self.index)
             .chain(once(self.joining.into()))
-            .chain(self.child_id.to_be_bytes())
-            .chain(self.child_eui64.to_be_bytes())
+            .chain(self.child_id.to_le_bytes())
+            .chain(self.child_eui64.to_le_bytes())
             .chain(once(self.child_type.into()))
     }
 }
@@ -85,11 +85,11 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let index = src.read_num_be()?;
+        let index = src.read_num_le()?;
         let joining = src.read_bool()?;
-        let child_id = src.read_num_be()?;
-        let child_eui64 = src.read_num_be()?;
-        let child_type: u8 = src.read_num_be()?;
+        let child_id = src.read_num_le()?;
+        let child_eui64 = src.read_num_le()?;
+        let child_type: u8 = src.read_num_le()?;
         Ok(Self {
             index,
             joining,

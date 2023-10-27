@@ -41,7 +41,7 @@ impl Readable for Command {
         R: Read,
     {
         Ok(Self {
-            duration: src.read_num_be()?,
+            duration: src.read_num_le()?,
         })
     }
 }
@@ -77,7 +77,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

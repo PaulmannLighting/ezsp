@@ -40,7 +40,7 @@ impl Readable for Command {
         R: Read,
     {
         Ok(Self {
-            child_index: src.read_num_be()?,
+            child_index: src.read_num_le()?,
         })
     }
 }
@@ -76,7 +76,7 @@ impl IntoIterator for Response {
     type IntoIter = IntoIter<Self::Item, 2>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.child_id.to_be_bytes().into_iter()
+        self.child_id.to_le_bytes().into_iter()
     }
 }
 
@@ -86,7 +86,7 @@ impl Readable for Response {
         R: Read,
     {
         Ok(Self {
-            child_id: src.read_num_be()?,
+            child_id: src.read_num_le()?,
         })
     }
 }

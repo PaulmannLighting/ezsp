@@ -76,7 +76,7 @@ impl From<[u8; HEADER_SIZE]> for Header {
 
 impl From<Header> for [u8; HEADER_SIZE] {
     fn from(header: Header) -> Self {
-        let [id_0, id_1] = header.id.to_be_bytes();
+        let [id_0, id_1] = header.id.to_le_bytes();
         [
             header.sequence,
             header.control.low(),

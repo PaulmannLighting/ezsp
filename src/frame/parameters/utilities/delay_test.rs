@@ -29,7 +29,7 @@ impl IntoIterator for Command {
     type IntoIter = IntoIter<Self::Item, 2>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.delay.to_be_bytes().into_iter()
+        self.delay.to_le_bytes().into_iter()
     }
 }
 
@@ -39,7 +39,7 @@ impl Readable for Command {
         R: Read,
     {
         Ok(Self {
-            delay: src.read_num_be()?,
+            delay: src.read_num_le()?,
         })
     }
 }

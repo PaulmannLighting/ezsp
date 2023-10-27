@@ -41,7 +41,7 @@ impl Readable for Command {
         R: Read,
     {
         Ok(Self {
-            child_count: src.read_num_be()?,
+            child_count: src.read_num_le()?,
         })
     }
 }
@@ -96,8 +96,8 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
-        let node_type: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
+        let node_type: u8 = src.read_num_le()?;
         let parameters = Parameters::read_from(src)?;
         Ok(Self {
             status: status.try_into()?,

@@ -75,8 +75,8 @@ impl IntoIterator for Response {
 
     fn into_iter(self) -> Self::IntoIter {
         once(self.child_count)
-            .chain(self.parent_eui64.to_be_bytes())
-            .chain(self.parent_node_id.to_be_bytes())
+            .chain(self.parent_eui64.to_le_bytes())
+            .chain(self.parent_node_id.to_le_bytes())
     }
 }
 
@@ -85,9 +85,9 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let child_count = src.read_num_be()?;
-        let parent_eui64 = src.read_num_be()?;
-        let parent_node_id = src.read_num_be()?;
+        let child_count = src.read_num_le()?;
+        let parent_eui64 = src.read_num_le()?;
+        let parent_node_id = src.read_num_le()?;
         Ok(Self {
             child_count,
             parent_eui64,

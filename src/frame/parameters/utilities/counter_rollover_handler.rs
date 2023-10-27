@@ -38,7 +38,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let typ: u8 = src.read_num_be()?;
+        let typ: u8 = src.read_num_le()?;
         Ok(Self {
             typ: typ.try_into()?,
         })

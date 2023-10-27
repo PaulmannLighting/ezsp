@@ -71,9 +71,9 @@ impl Network {
     where
         R: Read,
     {
-        let channel = src.read_num_be()?;
-        let pan_id = src.read_num_be()?;
-        let extended_pan_id = src.read_num_be()?;
+        let channel = src.read_num_le()?;
+        let pan_id = src.read_num_le()?;
+        let extended_pan_id = src.read_num_le()?;
         let allowing_join = src.read_bool()?;
         let [stack_profile, nwk_update_id] = src.read_array_exact()?;
         Ok(Self {
@@ -102,10 +102,10 @@ impl IntoIterator for Network {
 
     fn into_iter(self) -> Self::IntoIter {
         once(self.channel)
-            .chain(self.pan_id.to_be_bytes())
-            .chain(self.extended_pan_id.to_be_bytes())
+            .chain(self.pan_id.to_le_bytes())
+            .chain(self.extended_pan_id.to_le_bytes())
             .chain(once(self.allowing_join.into()))
-            .chain(self.stack_profile.to_be_bytes())
-            .chain(self.nwk_update_id.to_be_bytes())
+            .chain(self.stack_profile.to_le_bytes())
+            .chain(self.nwk_update_id.to_le_bytes())
     }
 }

@@ -43,7 +43,7 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let token_id: u8 = src.read_num_be()?;
+        let token_id: u8 = src.read_num_le()?;
         Ok(Self {
             token_id: token_id.try_into()?,
         })
@@ -96,7 +96,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let token_data_length: u8 = src.read_num_be()?;
+        let token_data_length: u8 = src.read_num_le()?;
         let token_data = src.read_vec_exact(token_data_length.into())?;
         Ok(Self {
             token_data_length,

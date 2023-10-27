@@ -31,7 +31,7 @@ impl IntoIterator for Command {
     type IntoIter = IntoIter<Self::Item, 1>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.token_id.to_be_bytes().into_iter()
+        self.token_id.to_le_bytes().into_iter()
     }
 }
 
@@ -41,7 +41,7 @@ impl Readable for Command {
         R: Read,
     {
         Ok(Self {
-            token_id: src.read_num_be()?,
+            token_id: src.read_num_le()?,
         })
     }
 }
@@ -83,7 +83,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         let token_data = src.read_array_exact::<TOKEN_DATA_SIZE>()?;
         Ok(Self {
             status: status.try_into()?,

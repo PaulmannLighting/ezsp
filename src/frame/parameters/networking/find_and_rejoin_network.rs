@@ -51,7 +51,7 @@ impl IntoIterator for Command {
     type IntoIter = Chain<Once<Self::Item>, IntoIter<Self::Item, 4>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        once(self.have_current_network_key.into()).chain(self.channel_mask.to_be_bytes())
+        once(self.have_current_network_key.into()).chain(self.channel_mask.to_le_bytes())
     }
 }
 
@@ -61,7 +61,7 @@ impl Readable for Command {
         R: Read,
     {
         let have_current_network_key = src.read_bool()?;
-        let channel_mask = src.read_num_be()?;
+        let channel_mask = src.read_num_le()?;
         Ok(Self {
             have_current_network_key,
             channel_mask,
@@ -100,7 +100,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

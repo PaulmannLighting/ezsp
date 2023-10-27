@@ -60,11 +60,11 @@ impl IntoIterator for Command {
 
     fn into_iter(self) -> Self::IntoIter {
         self.target
-            .to_be_bytes()
+            .to_le_bytes()
             .into_iter()
-            .chain(self.scan_channels.to_be_bytes())
-            .chain(self.scan_duration.to_be_bytes())
-            .chain(self.scan_count.to_be_bytes())
+            .chain(self.scan_channels.to_le_bytes())
+            .chain(self.scan_duration.to_le_bytes())
+            .chain(self.scan_count.to_le_bytes())
     }
 }
 
@@ -73,10 +73,10 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let target = src.read_num_be()?;
-        let scan_channels = src.read_num_be()?;
-        let scan_duration = src.read_num_be()?;
-        let scan_count = src.read_num_be()?;
+        let target = src.read_num_le()?;
+        let scan_channels = src.read_num_le()?;
+        let scan_duration = src.read_num_le()?;
+        let scan_count = src.read_num_le()?;
         Ok(Self {
             target,
             scan_channels,
@@ -117,7 +117,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

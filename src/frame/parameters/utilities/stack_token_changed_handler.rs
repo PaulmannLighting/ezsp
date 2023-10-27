@@ -28,7 +28,7 @@ impl IntoIterator for Response {
     type IntoIter = IntoIter<Self::Item, 2>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.token_address.to_be_bytes().into_iter()
+        self.token_address.to_le_bytes().into_iter()
     }
 }
 
@@ -38,7 +38,7 @@ impl Readable for Response {
         R: Read,
     {
         Ok(Self {
-            token_address: src.read_num_be()?,
+            token_address: src.read_num_le()?,
         })
     }
 }

@@ -78,10 +78,10 @@ impl IntoIterator for Command {
 
     fn into_iter(self) -> Self::IntoIter {
         once(self.endpoint)
-            .chain(self.cluster.to_be_bytes())
-            .chain(self.attribute_id.to_be_bytes())
+            .chain(self.cluster.to_le_bytes())
+            .chain(self.attribute_id.to_le_bytes())
             .chain(once(self.mask))
-            .chain(self.manufacturer_code.to_be_bytes())
+            .chain(self.manufacturer_code.to_le_bytes())
     }
 }
 
@@ -90,11 +90,11 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let endpoint = src.read_num_be()?;
-        let cluster = src.read_num_be()?;
-        let attribute_id = src.read_num_be()?;
-        let mask = src.read_num_be()?;
-        let manufacturer_code = src.read_num_be()?;
+        let endpoint = src.read_num_le()?;
+        let cluster = src.read_num_le()?;
+        let attribute_id = src.read_num_le()?;
+        let mask = src.read_num_le()?;
+        let manufacturer_code = src.read_num_le()?;
         Ok(Self {
             endpoint,
             cluster,

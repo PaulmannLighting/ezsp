@@ -39,7 +39,7 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let policy_id: u8 = src.read_num_be()?;
+        let policy_id: u8 = src.read_num_le()?;
         Ok(Self {
             policy_id: policy_id.try_into()?,
         })
@@ -77,7 +77,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

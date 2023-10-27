@@ -49,7 +49,7 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let token_id = src.read_num_be()?;
+        let token_id = src.read_num_le()?;
         let token_data = src.read_array_exact::<TOKEN_DATA_SIZE>()?;
         Ok(Self {
             token_id,
@@ -89,7 +89,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

@@ -72,7 +72,7 @@ impl IntoIterator for Command {
     fn into_iter(self) -> Self::IntoIter {
         once(self.local_node_type.into())
             .chain(self.beacon)
-            .chain(self.radio_tx_power.to_be_bytes())
+            .chain(self.radio_tx_power.to_le_bytes())
             .chain(once(self.clear_beacons_after_network_up.into()))
     }
 }
@@ -82,9 +82,9 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let local_node_type = src.read_num_be::<u8, 1>()?;
+        let local_node_type = src.read_num_le::<u8, 1>()?;
         let beacon = Data::read_from(src)?;
-        let radio_tx_power = src.read_num_be()?;
+        let radio_tx_power = src.read_num_le()?;
         let clear_beacons_after_network_up = src.read_bool()?;
         Ok(Self {
             local_node_type: local_node_type.try_into()?,
@@ -127,7 +127,7 @@ impl Readable for Response {
         R: Read,
     {
         Ok(Self {
-            status: src.read_num_be::<u8, 1>()?.try_into()?,
+            status: src.read_num_le::<u8, 1>()?.try_into()?,
         })
     }
 }

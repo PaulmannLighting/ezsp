@@ -53,8 +53,8 @@ impl IntoIterator for Response {
     fn into_iter(self) -> Self::IntoIter {
         self.network_found
             .into_iter()
-            .chain(self.last_hop_lqi.to_be_bytes())
-            .chain(self.last_hop_rssi.to_be_bytes())
+            .chain(self.last_hop_lqi.to_le_bytes())
+            .chain(self.last_hop_rssi.to_le_bytes())
     }
 }
 
@@ -64,8 +64,8 @@ impl Readable for Response {
         R: Read,
     {
         let network_found = Network::read_from(src)?;
-        let last_hop_lqi = src.read_num_be()?;
-        let last_hop_rssi = src.read_num_be()?;
+        let last_hop_lqi = src.read_num_le()?;
+        let last_hop_rssi = src.read_num_le()?;
         Ok(Self {
             network_found,
             last_hop_lqi,

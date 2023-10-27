@@ -37,9 +37,9 @@ impl IntoIterator for Response {
 
     fn into_iter(self) -> Self::IntoIter {
         self.pan_id
-            .to_be_bytes()
+            .to_le_bytes()
             .into_iter()
-            .chain(self.channel.to_be_bytes())
+            .chain(self.channel.to_le_bytes())
     }
 }
 
@@ -48,8 +48,8 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let pan_id = src.read_num_be()?;
-        let channel = src.read_num_be()?;
+        let pan_id = src.read_num_le()?;
+        let channel = src.read_num_le()?;
         Ok(Self { pan_id, channel })
     }
 }

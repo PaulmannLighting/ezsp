@@ -40,9 +40,9 @@ impl IntoIterator for Command {
 
     fn into_iter(self) -> Self::IntoIter {
         self.channel_mask
-            .to_be_bytes()
+            .to_le_bytes()
             .into_iter()
-            .chain(self.duration.to_be_bytes())
+            .chain(self.duration.to_le_bytes())
     }
 }
 
@@ -51,8 +51,8 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let channel_mask = src.read_num_be()?;
-        let duration = src.read_num_be()?;
+        let channel_mask = src.read_num_le()?;
+        let duration = src.read_num_le()?;
         Ok(Self {
             channel_mask,
             duration,
@@ -91,7 +91,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

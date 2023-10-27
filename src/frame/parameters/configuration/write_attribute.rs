@@ -113,10 +113,10 @@ impl IntoIterator for Command {
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(12 + self.data.len());
         parameters.push(self.endpoint);
-        parameters.extend_from_slice(&self.cluster.to_be_bytes());
-        parameters.extend_from_slice(&self.attribute_id.to_be_bytes());
+        parameters.extend_from_slice(&self.cluster.to_le_bytes());
+        parameters.extend_from_slice(&self.attribute_id.to_le_bytes());
         parameters.push(self.mask);
-        parameters.extend_from_slice(&self.manufacturer_code.to_be_bytes());
+        parameters.extend_from_slice(&self.manufacturer_code.to_le_bytes());
         parameters.push(self.override_read_only_and_data_type.into());
         parameters.push(self.just_test.into());
         parameters.push(self.data_type);
@@ -131,11 +131,11 @@ impl Readable for Command {
     where
         R: Read,
     {
-        let endpoint = src.read_num_be()?;
-        let cluster = src.read_num_be()?;
-        let attribute_id = src.read_num_be()?;
-        let mask = src.read_num_be()?;
-        let manufacturer_code = src.read_num_be()?;
+        let endpoint = src.read_num_le()?;
+        let cluster = src.read_num_le()?;
+        let attribute_id = src.read_num_le()?;
+        let mask = src.read_num_le()?;
+        let manufacturer_code = src.read_num_le()?;
         let override_read_only_and_data_type = src.read_bool()?;
         let just_test = src.read_bool()?;
         let [data_type, data_length] = src.read_array_exact()?;
@@ -186,7 +186,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let status: u8 = src.read_num_be()?;
+        let status: u8 = src.read_num_le()?;
         Ok(Self {
             status: status.try_into()?,
         })

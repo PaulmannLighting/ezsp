@@ -61,7 +61,7 @@ impl Readable for Response {
     where
         R: Read,
     {
-        let entropy_source: u8 = src.read_num_be()?;
+        let entropy_source: u8 = src.read_num_le()?;
         Ok(Self {
             entropy_source: entropy_source.try_into()?,
         })

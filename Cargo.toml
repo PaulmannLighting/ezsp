@@ -12,3 +12,4 @@ num-traits = "0.2.16"
 rw-exact-ext = { version = "0.1.7", features = ["num-traits"] }
 serialport = "4.2.2"
 siliconlabs = { git = "ssh://git@github.com/PaulmannLighting/siliconlabs.git", version = "0.1.0" }
+ashv2 = {git = "ssh://git@github.com/PaulmannLighting/ashv2.git", version = "0.1.0" }

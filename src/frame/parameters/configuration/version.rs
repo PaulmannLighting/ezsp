@@ -109,12 +109,14 @@ impl Readable for Response {
 mod tests {
     use super::Command;
     use crate::frame::LegacyFrame;
+    use crate::read_write::Writable;
 
     #[test]
     fn test_command_serialization() {
         let command = Command::new(4);
         let frame = LegacyFrame::new(1, 0, command.into());
-        let bytes: Vec<u8> = frame.into();
-        assert_eq!(bytes, vec![0x01, 0x00, 0x00, 0x04]);
+        let mut buffer = Vec::new();
+        frame.write_to(&mut buffer).expect("Could not write frame.");
+        assert_eq!(buffer, vec![0x01, 0x00, 0x00, 0x04]);
     }
 }

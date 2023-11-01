@@ -1,5 +1,5 @@
 pub mod header;
-mod legacy_parameters;
+pub mod legacy_parameters;
 pub mod parameters;
 
 use crate::frame::header::{Control, Header, LegacyHeader};

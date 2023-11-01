@@ -44,11 +44,16 @@ impl Readable for Frame {
         R: Read,
     {
         let header = Header::read_from(src)?;
+        let parameters = match header.id() {
+            parameters::networking::network_init::ID => Parameters::Response(
+                parameters::Response::Networking(parameters::networking::Response::NetworkInit(
+                    parameters::networking::network_init::Response::read_from(src)?,
+                )),
+            ),
+            n => return Err(anyhow!("Invalid header id: {n:#04X}")),
+        };
 
-        match header.id() {
-            // TODO: implement
-            n => Err(anyhow!("Invalid header id: {n:#04X}")),
-        }
+        Ok(Self { header, parameters })
     }
 }
 

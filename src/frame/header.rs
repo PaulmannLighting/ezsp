@@ -68,7 +68,7 @@ impl From<[u8; HEADER_SIZE]> for Header {
         let [sequence, control_low, control_high, id_0, id_1] = bytes;
         Self::new(
             sequence,
-            Control::new(control_low, control_high),
+            Control::new(control_low.into(), control_high.into()),
             u16::from_be_bytes([id_0, id_1]),
         )
     }
@@ -79,8 +79,8 @@ impl From<Header> for [u8; HEADER_SIZE] {
         let [id_0, id_1] = header.id.to_le_bytes();
         [
             header.sequence,
-            header.control.low(),
-            header.control.high(),
+            header.control.low().into(),
+            header.control.high().into(),
             id_0,
             id_1,
         ]

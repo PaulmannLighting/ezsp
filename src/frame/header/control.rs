@@ -1,8 +1,8 @@
-use crate::frame::header::control::high_byte::HighByte;
-use crate::frame::header::control::low_byte::LowByte;
+mod high_byte;
+mod low_byte;
 
-pub mod high_byte;
-pub mod low_byte;
+pub use high_byte::HighByte;
+pub use low_byte::LowByte;
 
 #[derive(Debug, Default, Eq, PartialEq)]
 pub struct Control {

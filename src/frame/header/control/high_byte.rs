@@ -1,3 +1,8 @@
+mod frame_format_version;
+
+pub use frame_format_version::FrameFormatVersion;
+use num_traits::FromPrimitive;
+
 const VERSION_1: u8 = 0b01;
 
 #[derive(Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq)]
@@ -5,12 +10,12 @@ pub struct HighByte(u8);
 
 impl HighByte {
     #[must_use]
-    pub const fn frame_format_version(self) -> u8 {
-        self.0 & 0b0000_0011
+    pub fn frame_format_version(self) -> Option<FrameFormatVersion> {
+        FrameFormatVersion::from_u8(self.0 & 0b0000_0011)
     }
 
-    pub fn set_frame_format_version(&mut self, version: u8) {
-        self.0 &= (0xFF ^ 0b000_0011) | version;
+    pub fn set_frame_format_version(&mut self, version: FrameFormatVersion) {
+        self.0 &= (0xFF ^ 0b000_0011) | <FrameFormatVersion as Into<u8>>::into(version);
     }
 }
 

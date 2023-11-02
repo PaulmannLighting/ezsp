@@ -25,7 +25,7 @@ impl HighByte {
 
 impl Default for HighByte {
     fn default() -> Self {
-        Self(FrameFormatVersion::One.into())
+        Self(bit_swap(FrameFormatVersion::One.into()))
     }
 }
 

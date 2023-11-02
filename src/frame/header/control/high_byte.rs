@@ -1,9 +1,13 @@
 mod frame_format_version;
 
+use crate::frame::header::control::high_byte::frame_format_version::{
+    bit_swap, FRAME_FORMAT_VERSION_MASK_HIGH, FRAME_FORMAT_VERSION_MASK_LOW,
+};
 pub use frame_format_version::FrameFormatVersion;
 use num_traits::FromPrimitive;
 
-const VERSION_1: u8 = 0b01;
+const FRAME_FORMAT_VERSION_MASK: u8 =
+    FRAME_FORMAT_VERSION_MASK_LOW + FRAME_FORMAT_VERSION_MASK_HIGH;
 
 #[derive(Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq)]
 pub struct HighByte(u8);
@@ -11,17 +15,17 @@ pub struct HighByte(u8);
 impl HighByte {
     #[must_use]
     pub fn frame_format_version(self) -> Option<FrameFormatVersion> {
-        FrameFormatVersion::from_u8(self.0 & 0b0000_0011)
+        FrameFormatVersion::from_u8(bit_swap(self.0 & FRAME_FORMAT_VERSION_MASK))
     }
 
     pub fn set_frame_format_version(&mut self, version: FrameFormatVersion) {
-        self.0 &= (0xFF ^ 0b000_0011) | <FrameFormatVersion as Into<u8>>::into(version);
+        self.0 &= (0xFF ^ FRAME_FORMAT_VERSION_MASK) | bit_swap(version.into());
     }
 }
 
 impl Default for HighByte {
     fn default() -> Self {
-        Self(VERSION_1)
+        Self(FrameFormatVersion::One.into())
     }
 }
 

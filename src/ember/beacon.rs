@@ -19,6 +19,7 @@ pub struct Data {
 }
 
 impl Data {
+    #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub const fn new(
         channel: u8,

@@ -6,11 +6,11 @@ pub struct HighByte(u8);
 impl HighByte {
     #[must_use]
     pub const fn frame_format_version(self) -> u8 {
-        self.0 & 0b11
+        self.0 & 0b0000_0011
     }
 
     pub fn set_frame_format_version(&mut self, version: u8) {
-        self.0 &= (0xFF ^ 0b11) | version;
+        self.0 &= (0xFF ^ 0b000_0011) | version;
     }
 }
 

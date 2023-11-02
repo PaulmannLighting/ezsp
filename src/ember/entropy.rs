@@ -19,7 +19,7 @@ impl From<Source> for u8 {
 impl TryFrom<u8> for Source {
     type Error = anyhow::Error;
 
-    fn try_from(value: u8) -> Result<Self, <Source as TryFrom<u8>>::Error> {
+    fn try_from(value: u8) -> Result<Self, <Self as TryFrom<u8>>::Error> {
         Self::from_u8(value).ok_or_else(|| anyhow!("Invalid Id: {value:#04X}"))
     }
 }

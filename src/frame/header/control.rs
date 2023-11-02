@@ -2,7 +2,7 @@ mod high_byte;
 mod low_byte;
 
 pub use high_byte::HighByte;
-pub use low_byte::LowByte;
+pub use low_byte::{CallbackType, LowByte, SleepMode};
 
 #[derive(Debug, Default, Eq, PartialEq)]
 pub struct Control {

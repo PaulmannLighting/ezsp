@@ -20,6 +20,7 @@ pub struct Data {
 }
 
 impl Data {
+    #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub const fn new(
         eui64: u64,

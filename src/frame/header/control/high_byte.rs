@@ -4,7 +4,8 @@ const VERSION_1: u8 = 0b01;
 pub struct HighByte(u8);
 
 impl HighByte {
-    pub const fn frame_format_version(&self) -> u8 {
+    #[must_use]
+    pub const fn frame_format_version(self) -> u8 {
         self.0 & 0b11
     }
 

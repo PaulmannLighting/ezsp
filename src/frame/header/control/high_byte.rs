@@ -64,4 +64,25 @@ mod tests {
         let byte: u8 = high_byte.into();
         assert_eq!(byte, 0b0000_0000);
     }
+
+    #[test]
+    fn get_frame_format_version() {
+        let high_byte = HighByte(0b0000_0000);
+        assert_eq!(
+            high_byte.frame_format_version(),
+            Some(FrameFormatVersion::Zero)
+        );
+
+        let high_byte = HighByte(0b0000_0001);
+        assert_eq!(
+            high_byte.frame_format_version(),
+            Some(FrameFormatVersion::One)
+        );
+
+        let high_byte = HighByte(0b0000_0010);
+        assert_eq!(high_byte.frame_format_version(), None);
+
+        let high_byte = HighByte(0b0000_0011);
+        assert_eq!(high_byte.frame_format_version(), None);
+    }
 }

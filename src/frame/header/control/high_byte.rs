@@ -40,3 +40,28 @@ impl From<u8> for HighByte {
         Self(value)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{FrameFormatVersion, HighByte};
+
+    #[test]
+    fn test_default() {
+        let high_byte = HighByte::default();
+        let byte: u8 = high_byte.into();
+        assert_eq!(byte, 0b0000_0001);
+    }
+
+    #[test]
+    fn test_set_frame_format_version() {
+        let mut high_byte = HighByte::default();
+
+        high_byte.set_frame_format_version(FrameFormatVersion::One);
+        let byte: u8 = high_byte.into();
+        assert_eq!(byte, 0b0000_0001);
+
+        high_byte.set_frame_format_version(FrameFormatVersion::Zero);
+        let byte: u8 = high_byte.into();
+        assert_eq!(byte, 0b0000_0000);
+    }
+}

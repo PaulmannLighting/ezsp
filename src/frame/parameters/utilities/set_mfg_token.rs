@@ -1,11 +1,10 @@
 use crate::ember::Status;
 use crate::ezsp::mfg_token::Id;
 use crate::read_write::Readable;
+use crate::types::ByteVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
-use std::num::TryFromIntError;
-use std::sync::Arc;
 use std::vec::IntoIter;
 
 pub const ID: u16 = 0x000C;
@@ -21,8 +20,7 @@ pub const ID: u16 = 0x000C;
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     token_id: Id,
-    token_data_length: u8,
-    token_data: Arc<[u8]>,
+    token_data: ByteVec,
 }
 
 impl Command {
@@ -30,12 +28,11 @@ impl Command {
     ///
     /// # Errors
     /// Returns an [`TryFromIntError`] if the size of `token_data` exceeds the bounds of an u8.
-    pub fn new(token_id: Id, token_data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
-        Ok(Self {
+    pub fn new(token_id: Id, token_data: ByteVec) -> Self {
+        Self {
             token_id,
-            token_data_length: token_data.len().try_into()?,
             token_data,
-        })
+        }
     }
 
     #[must_use]
@@ -45,7 +42,7 @@ impl Command {
 
     #[must_use]
     pub const fn token_data_length(&self) -> u8 {
-        self.token_data_length
+        self.token_data.len() as u8
     }
 
     #[must_use]
@@ -61,7 +58,7 @@ impl IntoIterator for Command {
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(2 + self.token_data.len());
         parameters.push(self.token_id.into());
-        parameters.push(self.token_data_length);
+        parameters.push(self.token_data_length());
         parameters.extend_from_slice(&self.token_data);
         parameters.into_iter()
     }
@@ -72,11 +69,9 @@ impl Readable for Command {
         R: Read,
     {
         let [token_id, token_data_length] = src.read_array_exact()?;
-        let token_data = src.read_vec_exact(token_data_length.into())?;
         Ok(Self {
             token_id: token_id.try_into()?,
-            token_data_length,
-            token_data: token_data.into(),
+            token_data: unsafe { src.read_heapless_vec_exact(token_data_length as usize)? },
         })
     }
 }

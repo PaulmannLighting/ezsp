@@ -7,6 +7,7 @@ pub mod frame;
 pub mod protocol;
 pub mod read_write;
 pub mod transaction;
+pub mod types;
 
 pub use error::Error;
 pub use protocol::Protocol;

@@ -1,11 +1,10 @@
 use crate::ezsp::value::Id;
 use crate::ezsp::Status;
 use crate::read_write::Readable;
+use crate::types::ByteVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
-use std::num::TryFromIntError;
-use std::sync::Arc;
 use std::vec::IntoIter;
 
 pub const ID: u16 = 0x00AB;
@@ -14,21 +13,13 @@ pub const ID: u16 = 0x00AB;
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     value_id: Id,
-    value_length: u8,
-    value: Arc<[u8]>,
+    value: ByteVec,
 }
 
 impl Command {
-    /// Crates new [`Command`] payload
-    ///
-    /// # Errors
-    /// Returns an [`TryFromIntError`] if the size of `value` exceeds the bounds of an u8.
-    pub fn new(value_id: Id, value: Arc<[u8]>) -> Result<Self, TryFromIntError> {
-        Ok(Self {
-            value_id,
-            value_length: value.len().try_into()?,
-            value,
-        })
+    /// Crates new [`Command`] payload.
+    pub fn new(value_id: Id, value: ByteVec) -> Self {
+        Self { value_id, value }
     }
 
     #[must_use]
@@ -38,7 +29,7 @@ impl Command {
 
     #[must_use]
     pub const fn value_length(&self) -> u8 {
-        self.value_length
+        self.value.len() as u8
     }
 
     #[must_use]
@@ -54,7 +45,7 @@ impl IntoIterator for Command {
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(2 + self.value.len());
         parameters.push(self.value_id.into());
-        parameters.push(self.value_length);
+        parameters.push(self.value_length());
         parameters.extend_from_slice(&self.value);
         parameters.into_iter()
     }
@@ -66,11 +57,9 @@ impl Readable for Command {
         R: Read,
     {
         let [value_id, value_length] = src.read_array_exact()?;
-        let value = src.read_vec_exact(value_length.into())?;
         Ok(Self {
             value_id: value_id.try_into()?,
-            value_length,
-            value: value.into(),
+            value: unsafe { src.read_heapless_vec_exact(value_length as usize)? },
         })
     }
 }

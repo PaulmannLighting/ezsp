@@ -1,10 +1,9 @@
 use crate::ember::Status;
 use crate::read_write::Readable;
+use crate::types::ByteVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
-use std::num::TryFromIntError;
-use std::sync::Arc;
 use std::vec::IntoIter;
 
 pub const ID: u16 = 0x0012;
@@ -13,21 +12,16 @@ pub const ID: u16 = 0x0012;
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     binary_message: bool,
-    message_length: u8,
-    message_contents: Arc<[u8]>,
+    message_contents: ByteVec,
 }
 
 impl Command {
     /// Creates new [`Command`] payload
-    ///
-    /// # Errors
-    /// Returns an [`TryFromIntError`] if the size of `message_contents` exceeds the bounds of an u8.
-    pub fn new(binary_message: bool, message_contents: Arc<[u8]>) -> Result<Self, TryFromIntError> {
-        Ok(Self {
+    pub fn new(binary_message: bool, message_contents: ByteVec) -> Self {
+        Self {
             binary_message,
-            message_length: message_contents.len().try_into()?,
             message_contents,
-        })
+        }
     }
 
     #[must_use]
@@ -37,7 +31,7 @@ impl Command {
 
     #[must_use]
     pub const fn message_length(&self) -> u8 {
-        self.message_length
+        self.message_contents.len() as u8
     }
 
     #[must_use]
@@ -53,7 +47,7 @@ impl IntoIterator for Command {
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(2 + self.message_contents.len());
         parameters.push(self.binary_message.into());
-        parameters.push(self.message_length);
+        parameters.push(self.message_length());
         parameters.extend_from_slice(&self.message_contents);
         parameters.into_iter()
     }
@@ -66,11 +60,9 @@ impl Readable for Command {
     {
         let binary_message = src.read_bool()?;
         let message_length: u8 = src.read_num_le()?;
-        let message_contents = src.read_vec_exact(message_length.into())?;
         Ok(Self {
             binary_message,
-            message_length,
-            message_contents: message_contents.into(),
+            message_contents: unsafe { src.read_heapless_vec_exact(message_length as usize)? },
         })
     }
 }

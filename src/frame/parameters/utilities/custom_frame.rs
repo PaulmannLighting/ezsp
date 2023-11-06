@@ -1,9 +1,9 @@
 use crate::ember::Status;
 use crate::read_write::Readable;
+use crate::types::ByteVec;
 use anyhow::anyhow;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
-use std::sync::Arc;
 use std::vec::IntoIter;
 
 pub const ID: u16 = 0x0047;
@@ -17,7 +17,7 @@ pub const MAX_PAYLOAD_SIZE: u8 = 119;
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     payload_length: u8,
-    payload: Arc<[u8]>,
+    payload: heapless::Vec<u8, 256>,
 }
 
 impl Command {
@@ -25,7 +25,7 @@ impl Command {
     ///
     /// # Errors
     /// Returns an [`anyhow::Error`] if the payload exceeds [`MAX_PAYLOAD_SIZE`].
-    pub fn new(payload: Arc<[u8]>) -> anyhow::Result<Self> {
+    pub fn new(payload: heapless::Vec<u8, 256>) -> anyhow::Result<Self> {
         let payload_length: u8 = payload.len().try_into()?;
 
         if payload_length > MAX_PAYLOAD_SIZE {
@@ -69,10 +69,10 @@ impl Readable for Command {
         R: Read,
     {
         let payload_length: u8 = src.read_num_le()?;
-        let payload = src.read_vec_exact(payload_length.into())?;
+        let payload = unsafe { src.read_heapless_vec_exact(payload_length.into())? };
         Ok(Self {
             payload_length,
-            payload: payload.into(),
+            payload,
         })
     }
 }
@@ -80,21 +80,13 @@ impl Readable for Command {
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     status: Status,
-    reply_length: u8,
-    reply: Arc<[u8]>,
+    reply: ByteVec,
 }
 
 impl Response {
     /// Creates a new response
-    ///
-    /// # Errors
-    /// Returns an [`anyhow::Error`] if the reply is too long.
-    pub fn new(status: Status, reply: Arc<[u8]>) -> anyhow::Result<Self> {
-        Ok(Self {
-            status,
-            reply_length: reply.len().try_into()?,
-            reply,
-        })
+    pub fn new(status: Status, reply: ByteVec) -> Self {
+        Self { status, reply }
     }
 
     #[must_use]
@@ -104,7 +96,7 @@ impl Response {
 
     #[must_use]
     pub const fn reply_length(&self) -> u8 {
-        self.reply_length
+        self.reply.len() as u8
     }
 
     #[must_use]
@@ -120,7 +112,7 @@ impl IntoIterator for Response {
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(2 + self.reply.len());
         parameters.push(self.status.into());
-        parameters.push(self.reply_length);
+        parameters.push(self.reply_length());
         parameters.extend_from_slice(&self.reply);
         parameters.into_iter()
     }
@@ -132,11 +124,9 @@ impl Readable for Response {
         R: Read,
     {
         let [status, reply_length] = src.read_array_exact()?;
-        let reply = src.read_vec_exact(reply_length.into())?;
         Ok(Self {
             status: status.try_into()?,
-            reply_length,
-            reply: reply.into(),
+            reply: unsafe { src.read_heapless_vec_exact(reply_length as usize)? },
         })
     }
 }

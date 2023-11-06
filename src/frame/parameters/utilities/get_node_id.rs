@@ -1,3 +1,4 @@
+use crate::ember::types::NodeId;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
@@ -37,7 +38,7 @@ impl Readable for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    node_id: u16,
+    node_id: NodeId,
 }
 
 impl Response {

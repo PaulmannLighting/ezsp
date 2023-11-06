@@ -1,8 +1,7 @@
 use crate::read_write::Readable;
+use crate::types::ByteVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
-use std::num::TryFromIntError;
-use std::sync::Arc;
 use std::vec::IntoIter;
 
 pub const ID: u16 = 0x0081;
@@ -13,25 +12,18 @@ pub const ID: u16 = 0x0081;
 /// for testing the link between the Host and NCP.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    data_length: u8,
-    data: Arc<[u8]>,
+    data: ByteVec,
 }
 
 impl Command {
     /// Crates a new [`Command`]
-    ///
-    /// # Errors
-    /// Returns an [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
-    pub fn new(data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
-        Ok(Self {
-            data_length: data.len().try_into()?,
-            data,
-        })
+    pub fn new(data: ByteVec) -> Self {
+        Self { data }
     }
 
     #[must_use]
     pub const fn data_length(&self) -> u8 {
-        self.data_length
+        self.data.len() as u8
     }
 
     #[must_use]
@@ -46,7 +38,7 @@ impl IntoIterator for Command {
 
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(1 + self.data.len());
-        parameters.push(self.data_length);
+        parameters.push(self.data_length());
         parameters.extend_from_slice(&self.data);
         parameters.into_iter()
     }
@@ -58,35 +50,26 @@ impl Readable for Command {
         R: Read,
     {
         let data_length: u8 = src.read_num_le()?;
-        let data = src.read_vec_exact(data_length.into())?;
         Ok(Self {
-            data_length,
-            data: data.into(),
+            data: unsafe { src.read_heapless_vec_exact(data_length as usize)? },
         })
     }
 }
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    echo_length: u8,
-    echo: Arc<[u8]>,
+    echo: ByteVec,
 }
 
 impl Response {
-    /// Crates a new [`Response`]
-    ///
-    /// # Errors
-    /// Returns an [`TryFromIntError`] if the size of `echo` exceeds the bounds of an u8.
-    pub fn new(echo: Arc<[u8]>) -> Result<Self, TryFromIntError> {
-        Ok(Self {
-            echo_length: echo.len().try_into()?,
-            echo,
-        })
+    /// Crates a new [`Response`].
+    pub fn new(echo: ByteVec) -> Self {
+        Self { echo }
     }
 
     #[must_use]
     pub const fn echo_length(&self) -> u8 {
-        self.echo_length
+        self.echo.len() as u8
     }
 
     #[must_use]
@@ -101,7 +84,7 @@ impl IntoIterator for Response {
 
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(1 + self.echo.len());
-        parameters.push(self.echo_length);
+        parameters.push(self.echo_length());
         parameters.extend_from_slice(&self.echo);
         parameters.into_iter()
     }
@@ -113,10 +96,8 @@ impl Readable for Response {
         R: Read,
     {
         let echo_length: u8 = src.read_num_le()?;
-        let echo = src.read_vec_exact(echo_length.into())?;
         Ok(Self {
-            echo_length,
-            echo: echo.into(),
+            echo: unsafe { src.read_heapless_vec_exact(echo_length as usize)? },
         })
     }
 }

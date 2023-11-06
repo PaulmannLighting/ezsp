@@ -1,11 +1,11 @@
 use crate::ezsp::value::Id;
 use crate::ezsp::Status;
 use crate::read_write::Readable;
+use crate::types::ByteVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
 use std::num::TryFromIntError;
-use std::sync::Arc;
 use std::vec::IntoIter;
 
 pub const ID: u16 = 0x00AA;
@@ -53,7 +53,7 @@ impl Readable for Command {
 pub struct Response {
     status: Status,
     value_length: u8,
-    value: Arc<[u8]>,
+    value: ByteVec,
 }
 
 impl Response {
@@ -61,10 +61,10 @@ impl Response {
     ///
     /// # Errors
     /// Returns an [`TryFromIntError`] if the size of `value` exceeds the bounds of an u8.
-    pub fn new(status: Status, value: Arc<[u8]>) -> Result<Self, TryFromIntError> {
+    pub fn new(status: Status, value: ByteVec) -> Result<Self, TryFromIntError> {
         Ok(Self {
             status,
-            value_length: value.len().try_into()?,
+            value_length: value.len() as u8,
             value,
         })
     }
@@ -104,11 +104,10 @@ impl Readable for Response {
         R: Read,
     {
         let [status, value_length] = src.read_array_exact()?;
-        let value = src.read_vec_exact(value_length.into())?;
         Ok(Self {
             status: status.try_into()?,
             value_length,
-            value: value.into(),
+            value: unsafe { src.read_heapless_vec_exact(value_length as usize)? },
         })
     }
 }

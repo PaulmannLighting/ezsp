@@ -1,32 +1,25 @@
 use crate::read_write::Readable;
+use crate::types::ByteVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
-use std::sync::Arc;
 use std::vec::IntoIter;
 
 pub const ID: u16 = 0x0054;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    payload_length: u8,
-    payload: Arc<[u8]>,
+    payload: ByteVec,
 }
 
 impl Response {
     /// Creates new response parameters
-    ///
-    /// # Errors
-    /// Returns an [`anyhow::Error`] if the payload exceeds its maximum size.
-    pub fn new(payload: Arc<[u8]>) -> anyhow::Result<Self> {
-        Ok(Self {
-            payload_length: payload.len().try_into()?,
-            payload,
-        })
+    pub fn new(payload: ByteVec) -> Self {
+        Self { payload }
     }
 
     #[must_use]
     pub const fn payload_length(&self) -> u8 {
-        self.payload_length
+        self.payload.len() as u8
     }
 
     #[must_use]
@@ -41,7 +34,7 @@ impl IntoIterator for Response {
 
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(1 + self.payload.len());
-        parameters.push(self.payload_length);
+        parameters.push(self.payload_length());
         parameters.extend_from_slice(&self.payload);
         parameters.into_iter()
     }
@@ -53,10 +46,8 @@ impl Readable for Response {
         R: Read,
     {
         let payload_length: u8 = src.read_num_le()?;
-        let payload = src.read_vec_exact(payload_length.into())?;
         Ok(Self {
-            payload_length,
-            payload: payload.into(),
+            payload: unsafe { src.read_heapless_vec_exact(payload_length as usize)? },
         })
     }
 }

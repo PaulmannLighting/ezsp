@@ -1,10 +1,9 @@
 use crate::ember::Status;
 use crate::read_write::Readable;
+use crate::types::ByteVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
-use std::num::TryFromIntError;
-use std::sync::Arc;
 use std::vec::IntoIter;
 
 pub const ID: u16 = 0x0109;
@@ -20,15 +19,11 @@ pub struct Command {
     override_read_only_and_data_type: bool,
     just_test: bool,
     data_type: u8,
-    data_length: u8,
-    data: Arc<[u8]>,
+    data: ByteVec,
 }
 
 impl Command {
-    /// Crates new [`Command`] payload
-    ///
-    /// # Errors
-    /// Returns a [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
+    /// Crates new [`Command`] payload.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         endpoint: u8,
@@ -39,9 +34,9 @@ impl Command {
         override_read_only_and_data_type: bool,
         just_test: bool,
         data_type: u8,
-        data: Arc<[u8]>,
-    ) -> Result<Self, TryFromIntError> {
-        Ok(Self {
+        data: ByteVec,
+    ) -> Self {
+        Self {
             endpoint,
             cluster,
             attribute_id,
@@ -50,9 +45,8 @@ impl Command {
             override_read_only_and_data_type,
             just_test,
             data_type,
-            data_length: data.len().try_into()?,
             data,
-        })
+        }
     }
 
     #[must_use]
@@ -97,7 +91,7 @@ impl Command {
 
     #[must_use]
     pub const fn data_length(&self) -> u8 {
-        self.data_length
+        self.data.len() as u8
     }
 
     #[must_use]
@@ -120,7 +114,7 @@ impl IntoIterator for Command {
         parameters.push(self.override_read_only_and_data_type.into());
         parameters.push(self.just_test.into());
         parameters.push(self.data_type);
-        parameters.push(self.data_length);
+        parameters.push(self.data_length());
         parameters.extend_from_slice(&self.data);
         parameters.into_iter()
     }
@@ -139,7 +133,6 @@ impl Readable for Command {
         let override_read_only_and_data_type = src.read_bool()?;
         let just_test = src.read_bool()?;
         let [data_type, data_length] = src.read_array_exact()?;
-        let data = src.read_vec_exact(data_length.into())?;
         Ok(Self {
             endpoint,
             cluster,
@@ -149,8 +142,7 @@ impl Readable for Command {
             override_read_only_and_data_type,
             just_test,
             data_type,
-            data_length,
-            data: data.into(),
+            data: unsafe { src.read_heapless_vec_exact(data_length as usize)? },
         })
     }
 }

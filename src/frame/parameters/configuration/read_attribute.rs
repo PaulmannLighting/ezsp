@@ -1,10 +1,10 @@
 use crate::ember::Status;
 use crate::read_write::Readable;
+use crate::types::ByteVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
 use std::num::TryFromIntError;
-use std::sync::Arc;
 use std::{array, vec};
 
 pub const ID: u16 = 0x0108;
@@ -110,7 +110,7 @@ pub struct Response {
     status: Status,
     data_type: u8,
     read_length: u8,
-    data: Arc<[u8]>,
+    data: ByteVec,
 }
 
 impl Response {
@@ -118,13 +118,13 @@ impl Response {
     ///
     /// # Errors
     /// Returns an [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
-    pub fn new(status: Status, data_type: u8, data: Arc<[u8]>) -> Result<Self, TryFromIntError> {
-        Ok(Self {
+    pub fn new(status: Status, data_type: u8, data: ByteVec) -> Self {
+        Self {
             status,
             data_type,
-            read_length: data.len().try_into()?,
+            read_length: data.len() as u8,
             data,
-        })
+        }
     }
 
     #[must_use]
@@ -168,12 +168,11 @@ impl Readable for Response {
         R: Read,
     {
         let [status, data_type, read_length] = src.read_array_exact()?;
-        let data = src.read_vec_exact(read_length.into())?;
         Ok(Self {
             status: status.try_into()?,
             data_type,
             read_length,
-            data: data.into(),
+            data: unsafe { src.read_heapless_vec_exact(read_length as usize)? },
         })
     }
 }

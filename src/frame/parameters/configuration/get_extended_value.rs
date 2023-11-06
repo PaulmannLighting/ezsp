@@ -1,11 +1,10 @@
 use crate::ezsp::value;
 use crate::ezsp::Status;
 use crate::read_write::Readable;
+use crate::types::ByteVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
-use std::num::TryFromIntError;
-use std::sync::Arc;
 use std::{array, vec};
 
 pub const ID: u16 = 0x003;
@@ -63,8 +62,7 @@ impl Readable for Command {
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     status: Status,
-    value_length: u8,
-    value: Arc<[u8]>,
+    value: ByteVec,
 }
 
 impl Response {
@@ -72,12 +70,8 @@ impl Response {
     ///
     /// # Errors
     /// Returns an [`TryFromIntError`] if the size of `value` exceeds the bounds of an u8.
-    pub fn new(status: Status, value: Arc<[u8]>) -> Result<Self, TryFromIntError> {
-        Ok(Self {
-            status,
-            value_length: value.len().try_into()?,
-            value,
-        })
+    pub fn new(status: Status, value: ByteVec) -> Self {
+        Self { status, value }
     }
 
     #[must_use]
@@ -87,7 +81,7 @@ impl Response {
 
     #[must_use]
     pub const fn value_length(&self) -> u8 {
-        self.value_length
+        self.value.len() as u8
     }
 
     #[must_use]
@@ -103,7 +97,7 @@ impl IntoIterator for Response {
     fn into_iter(self) -> Self::IntoIter {
         let mut bytes = Vec::with_capacity(2 + self.value.len());
         bytes.push(self.status.into());
-        bytes.push(self.value_length);
+        bytes.push(self.value_length());
         bytes.extend_from_slice(&self.value);
         bytes.into_iter()
     }
@@ -115,11 +109,9 @@ impl Readable for Response {
         R: Read,
     {
         let [status, value_length] = src.read_array_exact()?;
-        let value = src.read_vec_exact(value_length.into())?;
         Ok(Self {
             status: status.try_into()?,
-            value_length,
-            value: value.into(),
+            value: unsafe { src.read_heapless_vec_exact(value_length as usize)? },
         })
     }
 }

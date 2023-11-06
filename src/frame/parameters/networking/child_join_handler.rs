@@ -1,4 +1,5 @@
 use crate::ember::node::Type;
+use crate::ember::types::{Eui64, NodeId};
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
@@ -22,8 +23,8 @@ impl Response {
     pub const fn new(
         index: u8,
         joining: bool,
-        child_id: u16,
-        child_eui64: u64,
+        child_id: NodeId,
+        child_eui64: Eui64,
         child_type: Type,
     ) -> Self {
         Self {

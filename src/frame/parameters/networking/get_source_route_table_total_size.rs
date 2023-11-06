@@ -40,6 +40,11 @@ impl Response {
             source_route_table_total_size,
         }
     }
+
+    #[must_use]
+    pub const fn source_route_table_total_size(&self) -> u8 {
+        self.source_route_table_total_size
+    }
 }
 
 impl TryFrom<&[u8]> for Response {

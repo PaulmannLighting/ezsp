@@ -1,4 +1,7 @@
-use crate::Protocol;
+use crate::frame::parameters::{configuration, networking};
+use crate::transaction::{Response, Transaction};
+use crate::types::ByteSizedVec;
+use crate::{transaction, Protocol};
 use serialport::SerialPort;
 use stack::Stack;
 use std::collections::HashMap;
@@ -71,4 +74,16 @@ where
     output_clusters: Vec<u8>,
     fragmentation_aps_counter: HashMap<u8, u8>,
     concentrator_type: Concentrator,
+}
+
+impl<B, T, P, S> Dongle<B, T, P, S>
+where
+    B: BootloaderHandler,
+    T: ZigBeeTransportReceive,
+    P: Protocol,
+    S: SerialPort,
+{
+    pub fn new() -> Self {
+        todo!()
+    }
 }

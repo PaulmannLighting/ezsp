@@ -1,6 +1,6 @@
 use crate::ezsp::mfg_token::Id;
 use crate::read_write::Readable;
-use crate::types::ByteVec;
+use crate::types::ByteSizedVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
@@ -51,20 +51,18 @@ impl Readable for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    token_data: ByteVec,
+    token_data: ByteSizedVec<u8>,
 }
 
 impl Response {
-    /// Creates a new [`Response`]
-    ///
-    /// # Errors
-    /// Returns an [`TryFromIntError`] if the size of `token_data` exceeds the bounds of an u8.
-    pub fn new(token_data: ByteVec) -> Self {
+    #[must_use]
+    pub fn new(token_data: ByteSizedVec<u8>) -> Self {
         Self { token_data }
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn token_data_length(&self) -> u8 {
+    pub fn token_data_length(&self) -> u8 {
         self.token_data.len() as u8
     }
 

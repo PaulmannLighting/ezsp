@@ -1,11 +1,10 @@
 use crate::ezsp::Status;
 use crate::read_write::Readable;
+use crate::types::ByteSizedVec;
 use rw_exact_ext::ReadExactExt;
 use std::io;
 use std::io::Read;
 use std::iter::{once, Once};
-use std::num::TryFromIntError;
-use std::sync::Arc;
 use std::vec::IntoIter;
 
 pub const ID: u16 = 0x0002;
@@ -23,37 +22,29 @@ pub struct Command {
     profile_id: u16,
     device_id: u16,
     app_flags: u8,
-    input_cluster_count: u8,
-    output_cluster_count: u8,
-    input_clusters: Arc<[u16]>,
-    output_clusters: Arc<[u16]>,
+    input_clusters: ByteSizedVec<u16>,
+    output_clusters: ByteSizedVec<u16>,
 }
 
 impl Command {
-    /// Creates new [`Command`] payload
-    ///
-    /// # Errors
-    /// Returns a [`TryFromIntError`] if the size of either `input_clusters`
-    /// or `output_clusters` exceeds the bounds of an u8.
     #[allow(clippy::too_many_arguments)]
+    #[must_use]
     pub fn new(
         endpoint: u8,
         profile_id: u16,
         device_id: u16,
         app_flags: u8,
-        input_clusters: Arc<[u16]>,
-        output_clusters: Arc<[u16]>,
-    ) -> Result<Self, TryFromIntError> {
-        Ok(Self {
+        input_clusters: ByteSizedVec<u16>,
+        output_clusters: ByteSizedVec<u16>,
+    ) -> Self {
+        Self {
             endpoint,
             profile_id,
             device_id,
             app_flags,
-            input_cluster_count: input_clusters.len().try_into()?,
-            output_cluster_count: output_clusters.len().try_into()?,
             input_clusters,
             output_clusters,
-        })
+        }
     }
 
     #[must_use]
@@ -76,14 +67,16 @@ impl Command {
         self.app_flags
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn input_cluster_count(&self) -> u8 {
-        self.input_cluster_count
+    pub fn input_cluster_count(&self) -> u8 {
+        self.input_clusters.len() as u8
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn output_cluster_count(&self) -> u8 {
-        self.output_cluster_count
+    pub fn output_cluster_count(&self) -> u8 {
+        self.output_clusters.len() as u8
     }
 
     #[must_use]
@@ -96,7 +89,7 @@ impl Command {
         &self.output_clusters
     }
 
-    fn read_clusters<R>(src: &mut R, count: usize) -> io::Result<Vec<u16>>
+    fn read_clusters<R>(src: &mut R, count: usize) -> io::Result<ByteSizedVec<u16>>
     where
         R: Read,
     {
@@ -125,8 +118,8 @@ impl IntoIterator for Command {
         parameters.extend_from_slice(&self.profile_id.to_le_bytes());
         parameters.extend_from_slice(&self.device_id.to_le_bytes());
         parameters.push(self.app_flags);
-        parameters.push(self.input_cluster_count);
-        parameters.push(self.output_cluster_count);
+        parameters.push(self.input_cluster_count());
+        parameters.push(self.output_cluster_count());
         self.input_clusters
             .iter()
             .for_each(|cluster| parameters.extend_from_slice(&cluster.to_le_bytes()));
@@ -146,17 +139,13 @@ impl Readable for Command {
         let profile_id = src.read_num_le()?;
         let device_id = src.read_num_le()?;
         let [app_flags, input_cluster_count, output_cluster_count] = src.read_array_exact()?;
-        let input_clusters = Self::read_clusters(src, input_cluster_count.into())?;
-        let output_clusters = Self::read_clusters(src, output_cluster_count.into())?;
         Ok(Self {
             endpoint,
             profile_id,
             device_id,
             app_flags,
-            input_cluster_count,
-            output_cluster_count,
-            input_clusters: input_clusters.into(),
-            output_clusters: output_clusters.into(),
+            input_clusters: Self::read_clusters(src, input_cluster_count as usize)?,
+            output_clusters: Self::read_clusters(src, output_cluster_count as usize)?,
         })
     }
 }

@@ -1,7 +1,7 @@
 use crate::ember::Status;
 use crate::ezsp::mfg_token::Id;
 use crate::read_write::Readable;
-use crate::types::ByteVec;
+use crate::types::ByteSizedVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
@@ -20,15 +20,12 @@ pub const ID: u16 = 0x000C;
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     token_id: Id,
-    token_data: ByteVec,
+    token_data: ByteSizedVec<u8>,
 }
 
 impl Command {
-    /// Creates a new [`Command`]
-    ///
-    /// # Errors
-    /// Returns an [`TryFromIntError`] if the size of `token_data` exceeds the bounds of an u8.
-    pub fn new(token_id: Id, token_data: ByteVec) -> Self {
+    #[must_use]
+    pub fn new(token_id: Id, token_data: ByteSizedVec<u8>) -> Self {
         Self {
             token_id,
             token_data,
@@ -40,8 +37,9 @@ impl Command {
         self.token_id
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn token_data_length(&self) -> u8 {
+    pub fn token_data_length(&self) -> u8 {
         self.token_data.len() as u8
     }
 

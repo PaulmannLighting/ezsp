@@ -1,11 +1,10 @@
 use crate::ezsp::value::Id;
 use crate::ezsp::Status;
 use crate::read_write::Readable;
-use crate::types::ByteVec;
+use crate::types::ByteSizedVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
-use std::num::TryFromIntError;
 use std::vec::IntoIter;
 
 pub const ID: u16 = 0x00AA;
@@ -52,21 +51,13 @@ impl Readable for Command {
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     status: Status,
-    value_length: u8,
-    value: ByteVec,
+    value: ByteSizedVec<u8>,
 }
 
 impl Response {
-    /// Creates a new [`Response`]
-    ///
-    /// # Errors
-    /// Returns an [`TryFromIntError`] if the size of `value` exceeds the bounds of an u8.
-    pub fn new(status: Status, value: ByteVec) -> Result<Self, TryFromIntError> {
-        Ok(Self {
-            status,
-            value_length: value.len() as u8,
-            value,
-        })
+    #[must_use]
+    pub fn new(status: Status, value: ByteSizedVec<u8>) -> Self {
+        Self { status, value }
     }
 
     #[must_use]
@@ -74,9 +65,10 @@ impl Response {
         self.status
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn value_length(&self) -> u8 {
-        self.value_length
+    pub fn value_length(&self) -> u8 {
+        self.value.len() as u8
     }
 
     #[must_use]
@@ -92,7 +84,7 @@ impl IntoIterator for Response {
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(2 + self.value.len());
         parameters.push(self.status.into());
-        parameters.push(self.value_length);
+        parameters.push(self.value_length());
         parameters.extend_from_slice(&self.value);
         parameters.into_iter()
     }
@@ -106,7 +98,6 @@ impl Readable for Response {
         let [status, value_length] = src.read_array_exact()?;
         Ok(Self {
             status: status.try_into()?,
-            value_length,
             value: unsafe { src.read_heapless_vec_exact(value_length as usize)? },
         })
     }

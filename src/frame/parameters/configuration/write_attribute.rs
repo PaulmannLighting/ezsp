@@ -1,6 +1,6 @@
 use crate::ember::Status;
 use crate::read_write::Readable;
-use crate::types::ByteVec;
+use crate::types::ByteSizedVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
@@ -19,12 +19,12 @@ pub struct Command {
     override_read_only_and_data_type: bool,
     just_test: bool,
     data_type: u8,
-    data: ByteVec,
+    data: ByteSizedVec<u8>,
 }
 
 impl Command {
-    /// Crates new [`Command`] payload.
     #[allow(clippy::too_many_arguments)]
+    #[must_use]
     pub fn new(
         endpoint: u8,
         cluster: u16,
@@ -34,7 +34,7 @@ impl Command {
         override_read_only_and_data_type: bool,
         just_test: bool,
         data_type: u8,
-        data: ByteVec,
+        data: ByteSizedVec<u8>,
     ) -> Self {
         Self {
             endpoint,
@@ -89,8 +89,9 @@ impl Command {
         self.data_type
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn data_length(&self) -> u8 {
+    pub fn data_length(&self) -> u8 {
         self.data.len() as u8
     }
 

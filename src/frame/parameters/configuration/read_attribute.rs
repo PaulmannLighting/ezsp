@@ -1,10 +1,9 @@
 use crate::ember::Status;
 use crate::read_write::Readable;
-use crate::types::ByteVec;
+use crate::types::ByteSizedVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
-use std::num::TryFromIntError;
 use std::{array, vec};
 
 pub const ID: u16 = 0x0108;
@@ -109,20 +108,15 @@ impl Readable for Command {
 pub struct Response {
     status: Status,
     data_type: u8,
-    read_length: u8,
-    data: ByteVec,
+    data: ByteSizedVec<u8>,
 }
 
 impl Response {
-    /// Crates a new [`Response`]
-    ///
-    /// # Errors
-    /// Returns an [`TryFromIntError`] if the size of `data` exceeds the bounds of an u8.
-    pub fn new(status: Status, data_type: u8, data: ByteVec) -> Self {
+    #[must_use]
+    pub fn new(status: Status, data_type: u8, data: ByteSizedVec<u8>) -> Self {
         Self {
             status,
             data_type,
-            read_length: data.len() as u8,
             data,
         }
     }
@@ -137,9 +131,10 @@ impl Response {
         self.data_type
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn read_length(&self) -> u8 {
-        self.read_length
+    pub fn read_length(&self) -> u8 {
+        self.data.len() as u8
     }
 
     #[must_use]
@@ -156,7 +151,7 @@ impl IntoIterator for Response {
         let mut parameters = Vec::with_capacity(3 + self.data.len());
         parameters.push(self.status.into());
         parameters.push(self.data_type);
-        parameters.push(self.read_length);
+        parameters.push(self.read_length());
         parameters.extend_from_slice(&self.data);
         parameters.into_iter()
     }
@@ -171,7 +166,6 @@ impl Readable for Response {
         Ok(Self {
             status: status.try_into()?,
             data_type,
-            read_length,
             data: unsafe { src.read_heapless_vec_exact(read_length as usize)? },
         })
     }

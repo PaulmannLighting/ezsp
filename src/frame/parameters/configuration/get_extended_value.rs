@@ -1,7 +1,7 @@
 use crate::ezsp::value;
 use crate::ezsp::Status;
 use crate::read_write::Readable;
-use crate::types::ByteVec;
+use crate::types::ByteSizedVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
@@ -62,15 +62,12 @@ impl Readable for Command {
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     status: Status,
-    value: ByteVec,
+    value: ByteSizedVec<u8>,
 }
 
 impl Response {
-    /// Creates a new [`Response`]
-    ///
-    /// # Errors
-    /// Returns an [`TryFromIntError`] if the size of `value` exceeds the bounds of an u8.
-    pub fn new(status: Status, value: ByteVec) -> Self {
+    #[must_use]
+    pub fn new(status: Status, value: ByteSizedVec<u8>) -> Self {
         Self { status, value }
     }
 
@@ -79,8 +76,9 @@ impl Response {
         &self.status
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn value_length(&self) -> u8 {
+    pub fn value_length(&self) -> u8 {
         self.value.len() as u8
     }
 

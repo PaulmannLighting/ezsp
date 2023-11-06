@@ -1,7 +1,7 @@
 use crate::ezsp::value::Id;
 use crate::ezsp::Status;
 use crate::read_write::Readable;
-use crate::types::ByteVec;
+use crate::types::ByteSizedVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
@@ -13,12 +13,12 @@ pub const ID: u16 = 0x00AB;
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     value_id: Id,
-    value: ByteVec,
+    value: ByteSizedVec<u8>,
 }
 
 impl Command {
-    /// Crates new [`Command`] payload.
-    pub fn new(value_id: Id, value: ByteVec) -> Self {
+    #[must_use]
+    pub fn new(value_id: Id, value: ByteSizedVec<u8>) -> Self {
         Self { value_id, value }
     }
 
@@ -27,8 +27,9 @@ impl Command {
         self.value_id
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn value_length(&self) -> u8 {
+    pub fn value_length(&self) -> u8 {
         self.value.len() as u8
     }
 

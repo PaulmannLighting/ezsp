@@ -1,5 +1,5 @@
 use crate::read_write::Readable;
-use crate::types::ByteVec;
+use crate::types::ByteSizedVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::vec::IntoIter;
@@ -8,17 +8,18 @@ pub const ID: u16 = 0x0054;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    payload: ByteVec,
+    payload: ByteSizedVec<u8>,
 }
 
 impl Response {
-    /// Creates new response parameters
-    pub fn new(payload: ByteVec) -> Self {
+    #[must_use]
+    pub fn new(payload: ByteSizedVec<u8>) -> Self {
         Self { payload }
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn payload_length(&self) -> u8 {
+    pub fn payload_length(&self) -> u8 {
         self.payload.len() as u8
     }
 

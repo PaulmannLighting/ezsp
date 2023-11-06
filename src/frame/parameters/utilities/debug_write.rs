@@ -1,6 +1,6 @@
 use crate::ember::Status;
 use crate::read_write::Readable;
-use crate::types::ByteVec;
+use crate::types::ByteSizedVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{once, Once};
@@ -12,12 +12,12 @@ pub const ID: u16 = 0x0012;
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     binary_message: bool,
-    message_contents: ByteVec,
+    message_contents: ByteSizedVec<u8>,
 }
 
 impl Command {
-    /// Creates new [`Command`] payload
-    pub fn new(binary_message: bool, message_contents: ByteVec) -> Self {
+    #[must_use]
+    pub fn new(binary_message: bool, message_contents: ByteSizedVec<u8>) -> Self {
         Self {
             binary_message,
             message_contents,
@@ -29,8 +29,9 @@ impl Command {
         self.binary_message
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn message_length(&self) -> u8 {
+    pub fn message_length(&self) -> u8 {
         self.message_contents.len() as u8
     }
 

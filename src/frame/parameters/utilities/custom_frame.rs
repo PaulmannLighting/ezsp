@@ -1,7 +1,6 @@
 use crate::ember::Status;
 use crate::read_write::Readable;
-use crate::types::ByteVec;
-use anyhow::anyhow;
+use crate::types::ByteSizedVec;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::vec::IntoIter;
@@ -16,33 +15,19 @@ pub const MAX_PAYLOAD_SIZE: u8 = 119;
 /// emberXNcpIncomingCustomEzspMessageCallback() callback function.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    payload_length: u8,
-    payload: heapless::Vec<u8, 256>,
+    payload: ByteSizedVec<u8>,
 }
 
 impl Command {
-    /// Creates new command payload
-    ///
-    /// # Errors
-    /// Returns an [`anyhow::Error`] if the payload exceeds [`MAX_PAYLOAD_SIZE`].
-    pub fn new(payload: heapless::Vec<u8, 256>) -> anyhow::Result<Self> {
-        let payload_length: u8 = payload.len().try_into()?;
-
-        if payload_length > MAX_PAYLOAD_SIZE {
-            return Err(anyhow!(
-                "payload size exceeded: {payload_length} > {MAX_PAYLOAD_SIZE}"
-            ));
-        }
-
-        Ok(Self {
-            payload_length,
-            payload,
-        })
+    #[must_use]
+    pub fn new(payload: ByteSizedVec<u8>) -> Self {
+        Self { payload }
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn payload_length(&self) -> u8 {
-        self.payload_length
+    pub fn payload_length(&self) -> u8 {
+        self.payload.len() as u8
     }
 
     #[must_use]
@@ -57,7 +42,7 @@ impl IntoIterator for Command {
 
     fn into_iter(self) -> Self::IntoIter {
         let mut parameters = Vec::with_capacity(1 + self.payload.len());
-        parameters.push(self.payload_length);
+        parameters.push(self.payload_length());
         parameters.extend_from_slice(&self.payload);
         parameters.into_iter()
     }
@@ -69,10 +54,8 @@ impl Readable for Command {
         R: Read,
     {
         let payload_length: u8 = src.read_num_le()?;
-        let payload = unsafe { src.read_heapless_vec_exact(payload_length.into())? };
         Ok(Self {
-            payload_length,
-            payload,
+            payload: unsafe { src.read_heapless_vec_exact(payload_length.into())? },
         })
     }
 }
@@ -80,12 +63,12 @@ impl Readable for Command {
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
     status: Status,
-    reply: ByteVec,
+    reply: ByteSizedVec<u8>,
 }
 
 impl Response {
-    /// Creates a new response
-    pub fn new(status: Status, reply: ByteVec) -> Self {
+    #[must_use]
+    pub fn new(status: Status, reply: ByteSizedVec<u8>) -> Self {
         Self { status, reply }
     }
 
@@ -94,8 +77,9 @@ impl Response {
         self.status
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
-    pub const fn reply_length(&self) -> u8 {
+    pub fn reply_length(&self) -> u8 {
         self.reply.len() as u8
     }
 

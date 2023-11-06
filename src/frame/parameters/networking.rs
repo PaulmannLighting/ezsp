@@ -12,6 +12,7 @@ pub mod get_child_data;
 pub mod get_network_parameters;
 pub mod get_parent_child_parameters;
 pub mod get_radio_parameters;
+pub mod get_source_route_table_entry;
 pub mod get_source_route_table_filled_size;
 pub mod get_source_route_table_total_size;
 pub mod id;

@@ -1,4 +1,5 @@
 #![feature(mutex_unpoison)]
+#![feature(buf_read_has_data_left)]
 extern crate core;
 
 pub mod counter;

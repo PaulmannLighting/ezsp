@@ -5,6 +5,7 @@ pub mod entropy;
 mod error;
 pub mod event;
 pub mod join_method;
+pub mod neighbor;
 pub mod network;
 pub mod node;
 mod status;

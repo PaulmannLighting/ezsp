@@ -29,7 +29,7 @@ impl IntoIterator for Command {
 }
 
 impl Readable for Command {
-    fn read_from<R>(_: &mut R) -> anyhow::Result<Self>
+    fn try_read<R>(_: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
@@ -83,13 +83,13 @@ impl IntoIterator for Response {
 }
 
 impl Readable for Response {
-    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    fn try_read<R>(src: &mut R) -> Result<Self, crate::Error>
     where
         R: Read,
     {
         let status: u8 = src.read_num_le()?;
         let node_type: u8 = src.read_num_le()?;
-        let parameters = Parameters::read_from(src)?;
+        let parameters = Parameters::try_read(src)?;
         Ok(Self {
             status: status.try_into()?,
             node_type: node_type.try_into()?,

@@ -1,4 +1,7 @@
+use crate::read_write::Readable;
 use crate::Error;
+use rw_exact_ext::ReadExactExt;
+use std::io::Read;
 use std::iter::{empty, Empty};
 
 pub const ID: u16 = 0x00C3;
@@ -47,19 +50,11 @@ impl Response {
     }
 }
 
-impl TryFrom<&[u8]> for Response {
-    type Error = Error;
-
-    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
-        if bytes.len() == 1 {
-            Ok(Self {
-                source_route_table_total_size: bytes[0],
-            })
-        } else {
-            Err(Error::InvalidSize {
-                expected: 1,
-                found: bytes.len(),
-            })
-        }
+impl Readable for Response {
+    fn try_read<R>(src: &mut R) -> Result<Self, crate::Error>
+    where
+        R: Read,
+    {
+        Ok(Self::new(src.read_num_le()?))
     }
 }

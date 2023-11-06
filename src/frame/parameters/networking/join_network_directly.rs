@@ -78,12 +78,12 @@ impl IntoIterator for Command {
 }
 
 impl Readable for Command {
-    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    fn try_read<R>(src: &mut R) -> Result<Self, crate::Error>
     where
         R: Read,
     {
         let local_node_type = src.read_num_le::<u8, 1>()?;
-        let beacon = Data::read_from(src)?;
+        let beacon = Data::try_read(src)?;
         let radio_tx_power = src.read_num_le()?;
         let clear_beacons_after_network_up = src.read_bool()?;
         Ok(Self {
@@ -122,7 +122,7 @@ impl IntoIterator for Response {
 }
 
 impl Readable for Response {
-    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    fn try_read<R>(src: &mut R) -> Result<Self, crate::Error>
     where
         R: Read,
     {

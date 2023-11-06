@@ -120,7 +120,7 @@ impl IntoIterator for Parameters {
 }
 
 impl Readable for Parameters {
-    fn read_from<R>(src: &mut R) -> anyhow::Result<Self>
+    fn try_read<R>(src: &mut R) -> Result<Self, crate::Error>
     where
         R: Read,
     {

@@ -25,7 +25,7 @@ impl IntoIterator for Command {
 }
 
 impl Readable for Command {
-    fn read_from<R>(_: &mut R) -> anyhow::Result<Self>
+    fn try_read<R>(_: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {
@@ -53,7 +53,7 @@ impl IntoIterator for Response {
 }
 
 impl Readable for Response {
-    fn read_from<R>(_: &mut R) -> anyhow::Result<Self>
+    fn try_read<R>(_: &mut R) -> anyhow::Result<Self>
     where
         R: Read,
     {

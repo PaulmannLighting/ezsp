@@ -1,6 +1,8 @@
 use crate::ember::types::NodeId;
 use crate::ember::Status;
-use crate::Error;
+use crate::read_write::Readable;
+use rw_exact_ext::ReadExactExt;
+use std::io::Read;
 use std::iter::{empty, Empty};
 
 pub const ID: u16 = 0x00C1;
@@ -64,21 +66,14 @@ impl Response {
     }
 }
 
-impl TryFrom<&[u8]> for Response {
-    type Error = Error;
-
-    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
-        if bytes.len() == 4 {
-            Ok(Self::new(
-                Status::try_from(bytes[0])?,
-                NodeId::from_le_bytes([bytes[1], bytes[2]]),
-                bytes[3],
-            ))
-        } else {
-            Err(Error::InvalidSize {
-                expected: 4,
-                found: bytes.len(),
-            })
-        }
+impl Readable for Response {
+    fn try_read<R>(src: &mut R) -> Result<Self, crate::Error>
+    where
+        R: Read,
+    {
+        let status: u8 = src.read_num_le()?;
+        let destination: NodeId = src.read_num_le()?;
+        let closer_index: u8 = src.read_num_le()?;
+        Ok(Self::new(status.try_into()?, destination, closer_index))
     }
 }

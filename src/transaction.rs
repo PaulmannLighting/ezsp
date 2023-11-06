@@ -1,3 +1,4 @@
+use crate::frame::header::Header;
 use crate::read_write::{Readable, Writable};
 use std::fmt::Debug;
 use std::future::Future;
@@ -9,7 +10,7 @@ use std::task::{Context, Poll, Waker};
 pub struct Transaction<C, R>
 where
     C: Debug + Writable,
-    R: Debug + Readable,
+    R: Clone + Debug + Readable,
 {
     command: C,
     response: Response<R>,
@@ -18,7 +19,7 @@ where
 impl<C, R> Transaction<C, R>
 where
     C: Debug + Writable,
-    R: Debug + Readable,
+    R: Clone + Debug + Readable,
 {
     #[must_use]
     pub const fn new(command: C) -> Self {
@@ -27,12 +28,17 @@ where
             response: Response::<R>::new(),
         }
     }
+
+    #[must_use]
+    pub fn clone_response(&self) -> Response<R> {
+        self.response.clone()
+    }
 }
 
 #[derive(Clone, Debug)]
 pub struct Response<R>
 where
-    R: Readable,
+    R: Clone + Debug + Readable,
 {
     response: Arc<Mutex<Option<R>>>,
     waker: Arc<Mutex<Option<Waker>>>,
@@ -40,7 +46,7 @@ where
 
 impl<R> Response<R>
 where
-    R: Readable,
+    R: Clone + Debug + Readable,
 {
     pub fn new() -> Self {
         Self {
@@ -52,7 +58,7 @@ where
 
 impl<R> Default for Response<R>
 where
-    R: Readable,
+    R: Clone + Debug + Readable,
 {
     fn default() -> Self {
         Self::new()
@@ -61,7 +67,7 @@ where
 
 impl<R> Future for Response<R>
 where
-    R: Debug + Readable,
+    R: Clone + Debug + Readable,
 {
     type Output = R;
 
@@ -80,5 +86,17 @@ where
                 .replace(cx.waker().clone());
             Poll::Pending
         }
+    }
+}
+
+pub trait TransactionHandler {
+    fn next_header(&mut self) -> Header;
+
+    fn send_transaction<C, R>(&mut self, transaction: Transaction<C, R>) -> Response<R>
+    where
+        C: Debug + Writable,
+        R: Clone + Debug + Readable,
+    {
+        todo!()
     }
 }

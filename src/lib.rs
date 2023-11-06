@@ -1,3 +1,6 @@
+#![feature(mutex_unpoison)]
+extern crate core;
+
 pub mod counter;
 pub mod dongle;
 pub mod ember;

@@ -1,7 +1,4 @@
-use crate::frame::parameters::{configuration, networking};
-use crate::transaction::{Response, Transaction};
-use crate::types::ByteSizedVec;
-use crate::{transaction, Protocol};
+use crate::Protocol;
 use serialport::SerialPort;
 use stack::Stack;
 use std::collections::HashMap;

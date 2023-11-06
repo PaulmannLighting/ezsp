@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use super::super::Error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
@@ -18,9 +18,9 @@ impl From<Bitmask> for u16 {
 }
 
 impl TryFrom<u16> for Bitmask {
-    type Error = anyhow::Error;
+    type Error = Error;
 
     fn try_from(value: u16) -> Result<Self, Self::Error> {
-        Self::from_u16(value).ok_or_else(|| anyhow!("Invalid InitBitmask: {value:#04X}"))
+        Self::from_u16(value).ok_or(Error::InvalidNetworkInitBitmask(value))
     }
 }

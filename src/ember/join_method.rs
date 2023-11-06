@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use super::Error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
@@ -19,9 +19,9 @@ impl From<JoinMethod> for u8 {
 }
 
 impl TryFrom<u8> for JoinMethod {
-    type Error = anyhow::Error;
+    type Error = Error;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::from_u8(value).ok_or_else(|| anyhow!("Invalid JoinMethod: {value:#04X}"))
+        Self::from_u8(value).ok_or(Error::InvalidJoinMethod(value))
     }
 }

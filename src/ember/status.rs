@@ -7,8 +7,8 @@ mod phy;
 mod serial;
 mod sim_eeprom;
 
+use super::Error;
 pub use adc::Adc;
-use anyhow::anyhow;
 pub use application::Application;
 pub use eeprom::Eeprom;
 pub use err::{Bootloader, Err, Flash};
@@ -17,7 +17,6 @@ use num_traits::{FromPrimitive, ToPrimitive};
 pub use phy::Phy;
 pub use serial::Serial;
 pub use sim_eeprom::SimEeprom;
-use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
@@ -162,8 +161,8 @@ impl Display for Status {
     }
 }
 
-impl Error for Status {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
+impl std::error::Error for Status {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Eeprom(eeprom) => Some(eeprom),
             Self::Serial(serial) => Some(serial),
@@ -175,6 +174,12 @@ impl Error for Status {
             Self::Application(application) => Some(application),
             _ => None,
         }
+    }
+}
+
+impl From<Status> for u8 {
+    fn from(status: Status) -> Self {
+        status.to_u8().expect("could not convert EmberStatus to u8")
     }
 }
 
@@ -326,15 +331,9 @@ impl ToPrimitive for Status {
 }
 
 impl TryFrom<u8> for Status {
-    type Error = anyhow::Error;
+    type Error = Error;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::from_u8(value).ok_or_else(|| anyhow!("invalid EmberStatus: {value:#04X}"))
-    }
-}
-
-impl From<Status> for u8 {
-    fn from(status: Status) -> Self {
-        status.to_u8().expect("could not convert EmberStatus to u8")
+        Self::from_u8(value).ok_or(Error::InvalidStatus(value))
     }
 }

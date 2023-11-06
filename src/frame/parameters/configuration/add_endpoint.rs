@@ -98,7 +98,7 @@ impl Command {
             .chunks_exact(2)
             .filter_map(|chunk| {
                 if chunk.len() == 2 {
-                    Some(u16::from_be_bytes([chunk[0], chunk[1]]))
+                    Some(u16::from_le_bytes([chunk[0], chunk[1]]))
                 } else {
                     None
                 }

@@ -1,6 +1,8 @@
 use crate::read_write::Writable;
 use std::io::Write;
 
+mod callback;
+mod command;
 pub mod configuration;
 pub mod networking;
 pub mod utilities;

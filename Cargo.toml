@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.75"
 num-derive = "0.4.0"
 num-traits = "0.2.16"
 rw-exact-ext = { git = "ssh://git@github.com/PaulmannLighting/rw-exact-ext.git", version = "0.1.9", features = ["num-traits", "heapless"] }

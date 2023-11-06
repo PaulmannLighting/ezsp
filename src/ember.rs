@@ -2,7 +2,6 @@ pub mod beacon;
 pub mod child;
 mod constants;
 pub mod entropy;
-mod error;
 pub mod event;
 pub mod join_method;
 pub mod neighbor;

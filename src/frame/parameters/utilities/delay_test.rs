@@ -64,7 +64,7 @@ impl IntoIterator for Response {
 }
 
 impl Readable for Response {
-    fn try_read<R>(_: &mut R) -> anyhow::Result<Self>
+    fn try_read<R>(_: &mut R) -> Result<Self, crate::Error>
     where
         R: Read,
     {

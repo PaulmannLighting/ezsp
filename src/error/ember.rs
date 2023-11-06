@@ -28,7 +28,7 @@ impl Display for Error {
                 write!(f, "invalid network status: {status:#04X}")
             }
             Self::InvalidNodeType(typ) => write!(f, "invalid node type: {typ:#04X}"),
-            Self::InvalidStatus(status) => write!(f, "invalid ember status: {status:#04X}"),
+            Self::InvalidStatus(status) => write!(f, "invalid status: {status:#04X}"),
         }
     }
 }

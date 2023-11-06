@@ -1,6 +1,5 @@
 use crate::counter::Counter;
 use crate::read_write::Readable;
-use anyhow::anyhow;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
 use std::io::Read;
@@ -32,7 +31,7 @@ impl IntoIterator for Command {
 }
 
 impl Readable for Command {
-    fn try_read<R>(_: &mut R) -> anyhow::Result<Self>
+    fn try_read<R>(_: &mut R) -> Result<Self, crate::Error>
     where
         R: Read,
     {
@@ -77,8 +76,7 @@ impl Readable for Response {
                 .chunks_exact(2)
                 .map(|chunk| u16::from_be_bytes([chunk[0], chunk[1]]))
                 .collect::<Vec<_>>()
-                .try_into()
-                .map_err(|_| anyhow!("values size != {TYPE_COUNT}"))?,
+                .try_into()?,
         })
     }
 }

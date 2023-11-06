@@ -7,6 +7,7 @@ pub mod join_method;
 pub mod network;
 pub mod node;
 mod status;
+pub mod types;
 pub mod zigbee;
 
 pub use constants::NULL_NODE_ID;

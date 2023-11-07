@@ -1,3 +1,4 @@
+use crate::ember::types::Eui64;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
@@ -37,12 +38,12 @@ impl Readable for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    eui64: u64,
+    eui64: Eui64,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(eui64: u64) -> Self {
+    pub const fn new(eui64: Eui64) -> Self {
         Self { eui64 }
     }
 }

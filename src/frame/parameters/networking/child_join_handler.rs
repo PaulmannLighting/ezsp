@@ -14,7 +14,7 @@ pub struct Response {
     index: u8,
     joining: bool,
     child_id: u16,
-    child_eui64: u64,
+    child_eui64: Eui64,
     child_type: Type,
 }
 

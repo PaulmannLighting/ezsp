@@ -1,4 +1,5 @@
 use crate::ember::node::Type;
+use crate::ember::types::Eui64;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
@@ -7,7 +8,7 @@ use std::iter::{once, Chain, Once};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Data {
-    eui64: u64,
+    eui64: Eui64,
     typ: Type,
     id: u16,
     phy: u8,
@@ -23,7 +24,7 @@ impl Data {
     #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub const fn new(
-        eui64: u64,
+        eui64: Eui64,
         typ: Type,
         id: u16,
         phy: u8,

@@ -1,6 +1,7 @@
 use crate::ember::types::NodeId;
 use crate::ember::Status;
 use crate::read_write::Readable;
+use crate::Error;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
 use std::iter::{empty, Empty};
@@ -67,7 +68,7 @@ impl Response {
 }
 
 impl Readable for Response {
-    fn try_read<R>(src: &mut R) -> Result<Self, crate::Error>
+    fn try_read<R>(src: &mut R) -> Result<Self, Error>
     where
         R: Read,
     {

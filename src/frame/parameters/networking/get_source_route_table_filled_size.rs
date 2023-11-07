@@ -51,7 +51,7 @@ impl Response {
 }
 
 impl Readable for Response {
-    fn try_read<R>(src: &mut R) -> Result<Self, crate::Error>
+    fn try_read<R>(src: &mut R) -> Result<Self, Error>
     where
         R: Read,
     {

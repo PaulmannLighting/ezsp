@@ -1,3 +1,4 @@
+use crate::ember::types::PanId;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
 use std::io::Read;
@@ -6,7 +7,7 @@ use std::iter::{once, Chain, Once};
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Network {
     channel: u8,
-    pan_id: u16,
+    pan_id: PanId,
     extended_pan_id: u64,
     allowing_join: bool,
     stack_profile: u8,
@@ -17,7 +18,7 @@ impl Network {
     #[must_use]
     pub const fn new(
         channel: u8,
-        pan_id: u16,
+        pan_id: PanId,
         extended_pan_id: u64,
         allowing_join: bool,
         stack_profile: u8,
@@ -39,7 +40,7 @@ impl Network {
     }
 
     #[must_use]
-    pub const fn pan_id(&self) -> u16 {
+    pub const fn pan_id(&self) -> PanId {
         self.pan_id
     }
 

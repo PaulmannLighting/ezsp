@@ -1,3 +1,4 @@
+use crate::ember::types::NodeId;
 use crate::ember::NULL_NODE_ID;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
@@ -47,22 +48,22 @@ impl Readable for Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    child_id: u16,
+    child_id: NodeId,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(child_id: u16) -> Self {
+    pub const fn new(child_id: NodeId) -> Self {
         Self { child_id }
     }
 
     #[must_use]
-    pub const fn child_id(&self) -> u16 {
+    pub const fn child_id(&self) -> NodeId {
         self.child_id
     }
 
     #[must_use]
-    pub const fn effective_child_id(&self) -> Option<u16> {
+    pub const fn effective_child_id(&self) -> Option<NodeId> {
         if self.child_id == NULL_NODE_ID {
             None
         } else {

@@ -1,9 +1,9 @@
 use crate::ember::types::Eui64;
-use crate::read_write::{Readable, Writable};
+use crate::read_write::Readable;
 use crate::Error;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
-use std::io::{Read, Write};
+use std::io::Read;
 use std::iter::Chain;
 
 #[derive(Debug, Eq, PartialEq)]
@@ -114,19 +114,5 @@ impl Readable for TableEntry {
             age,
             long_id,
         })
-    }
-}
-
-impl Writable for TableEntry {
-    fn write_to<W>(self, dst: &mut W) -> std::io::Result<()>
-    where
-        W: Write,
-    {
-        dst.write_all(&self.short_id.to_le_bytes())?;
-        dst.write_all(&self.average_lqi.to_le_bytes())?;
-        dst.write_all(&self.in_cost.to_le_bytes())?;
-        dst.write_all(&self.out_cost.to_le_bytes())?;
-        dst.write_all(&self.age.to_le_bytes())?;
-        dst.write_all(&self.long_id.to_le_bytes())
     }
 }

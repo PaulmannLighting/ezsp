@@ -1,3 +1,4 @@
+use crate::ember::types::NodeId;
 use crate::ember::Status;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
@@ -13,7 +14,7 @@ pub const ID: u16 = 0x009C;
 /// See ezsp-utils.h for related macros emberSetNetworkManagerRequest() and emberChangeChannelRequest().
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
-    target: u16,
+    target: NodeId,
     scan_channels: u32,
     scan_duration: u8,
     scan_count: u16,
@@ -21,7 +22,12 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(target: u16, scan_channels: u32, scan_duration: u8, scan_count: u16) -> Self {
+    pub const fn new(
+        target: NodeId,
+        scan_channels: u32,
+        scan_duration: u8,
+        scan_count: u16,
+    ) -> Self {
         Self {
             target,
             scan_channels,
@@ -31,7 +37,7 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn target(&self) -> u16 {
+    pub const fn target(&self) -> NodeId {
         self.target
     }
 

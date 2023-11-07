@@ -1,4 +1,5 @@
 use crate::ember::join_method::JoinMethod;
+use crate::ember::types::PanId;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
@@ -8,7 +9,7 @@ use std::iter::{once, Chain, Once};
 #[derive(Debug, Eq, PartialEq)]
 pub struct Parameters {
     extended_pan_id: u64,
-    pan_id: u16,
+    pan_id: PanId,
     radio_tx_power: u8,
     radio_channel: u8,
     join_method: JoinMethod,
@@ -22,7 +23,7 @@ impl Parameters {
     #[must_use]
     pub const fn new(
         extended_pan_id: u64,
-        pan_id: u16,
+        pan_id: PanId,
         radio_tx_power: u8,
         radio_channel: u8,
         join_method: JoinMethod,
@@ -48,7 +49,7 @@ impl Parameters {
     }
 
     #[must_use]
-    pub const fn pan_id(&self) -> u16 {
+    pub const fn pan_id(&self) -> PanId {
         self.pan_id
     }
 

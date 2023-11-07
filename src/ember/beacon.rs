@@ -1,3 +1,4 @@
+use crate::ember::types::PanId;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
@@ -13,7 +14,7 @@ pub struct Data {
     nwk_update_id: u8,
     power: i8,
     parent_priority: i8,
-    pan_id: u16,
+    pan_id: PanId,
     extended_pan_id: u64,
     sender: u16,
 }
@@ -29,7 +30,7 @@ impl Data {
         nwk_update_id: u8,
         power: i8,
         parent_priority: i8,
-        pan_id: u16,
+        pan_id: PanId,
         extended_pan_id: u64,
         sender: u16,
     ) -> Self {
@@ -83,7 +84,7 @@ impl Data {
     }
 
     #[must_use]
-    pub const fn pan_id(&self) -> u16 {
+    pub const fn pan_id(&self) -> PanId {
         self.pan_id
     }
 

@@ -13,7 +13,7 @@ pub const ID: u16 = 0x0023;
 pub struct Response {
     index: u8,
     joining: bool,
-    child_id: u16,
+    child_id: NodeId,
     child_eui64: Eui64,
     child_type: Type,
 }
@@ -47,12 +47,12 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn child_id(&self) -> u16 {
+    pub const fn child_id(&self) -> NodeId {
         self.child_id
     }
 
     #[must_use]
-    pub const fn child_eui64(&self) -> u64 {
+    pub const fn child_eui64(&self) -> Eui64 {
         self.child_eui64
     }
 

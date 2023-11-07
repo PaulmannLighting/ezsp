@@ -1,3 +1,4 @@
+use crate::ember::types::PanId;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
@@ -10,18 +11,18 @@ pub const ID: u16 = 0x001C;
 /// found via the find unused panId scan procedure.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    pan_id: u16,
+    pan_id: PanId,
     channel: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(pan_id: u16, channel: u8) -> Self {
+    pub const fn new(pan_id: PanId, channel: u8) -> Self {
         Self { pan_id, channel }
     }
 
     #[must_use]
-    pub const fn pan_id(&self) -> u16 {
+    pub const fn pan_id(&self) -> PanId {
         self.pan_id
     }
 

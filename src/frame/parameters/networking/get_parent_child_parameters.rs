@@ -1,4 +1,4 @@
-use crate::ember::types::Eui64;
+use crate::ember::types::{Eui64, NodeId};
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
@@ -40,12 +40,12 @@ impl Readable for Command {
 pub struct Response {
     child_count: u8,
     parent_eui64: Eui64,
-    parent_node_id: u16,
+    parent_node_id: NodeId,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(child_count: u8, parent_eui64: Eui64, parent_node_id: u16) -> Self {
+    pub const fn new(child_count: u8, parent_eui64: Eui64, parent_node_id: NodeId) -> Self {
         Self {
             child_count,
             parent_eui64,
@@ -59,12 +59,12 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn parent_eui64(&self) -> u64 {
+    pub const fn parent_eui64(&self) -> Eui64 {
         self.parent_eui64
     }
 
     #[must_use]
-    pub const fn parent_node_id(&self) -> u16 {
+    pub const fn parent_node_id(&self) -> NodeId {
         self.parent_node_id
     }
 }

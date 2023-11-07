@@ -1,5 +1,5 @@
 use crate::ember::node::Type;
-use crate::ember::types::Eui64;
+use crate::ember::types::{Eui64, NodeId};
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
@@ -10,11 +10,11 @@ use std::iter::{once, Chain, Once};
 pub struct Data {
     eui64: Eui64,
     typ: Type,
-    id: u16,
+    id: NodeId,
     phy: u8,
     power: u8,
     timeout: u8,
-    gpd_ieee_address: u64,
+    gpd_ieee_address: Eui64,
     source_id: u32,
     application_id: u8,
     endpoint: u8,
@@ -26,11 +26,11 @@ impl Data {
     pub const fn new(
         eui64: Eui64,
         typ: Type,
-        id: u16,
+        id: NodeId,
         phy: u8,
         power: u8,
         timeout: u8,
-        gpd_ieee_address: u64,
+        gpd_ieee_address: Eui64,
         source_id: u32,
         application_id: u8,
         endpoint: u8,
@@ -50,7 +50,7 @@ impl Data {
     }
 
     #[must_use]
-    pub const fn eui64(&self) -> u64 {
+    pub const fn eui64(&self) -> Eui64 {
         self.eui64
     }
 
@@ -60,7 +60,7 @@ impl Data {
     }
 
     #[must_use]
-    pub const fn id(&self) -> u16 {
+    pub const fn id(&self) -> NodeId {
         self.id
     }
 
@@ -80,7 +80,7 @@ impl Data {
     }
 
     #[must_use]
-    pub const fn gpd_ieee_address(&self) -> u64 {
+    pub const fn gpd_ieee_address(&self) -> Eui64 {
         self.gpd_ieee_address
     }
 

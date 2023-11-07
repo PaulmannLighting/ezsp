@@ -1,4 +1,10 @@
+use crate::ember::types::Eui64;
+use crate::read_write::{Readable, Writable};
+use crate::Error;
+use rw_exact_ext::ReadExactExt;
+use std::array::IntoIter;
 use std::io::{Read, Write};
+use std::iter::Chain;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct TableEntry {
@@ -7,17 +13,26 @@ pub struct TableEntry {
     in_cost: u8,
     out_cost: u8,
     age: u8,
+    long_id: Eui64,
 }
 
 impl TableEntry {
     #[must_use]
-    pub const fn new(short_id: u16, average_lqi: u8, in_cost: u8, out_cost: u8, age: u8) -> Self {
+    pub const fn new(
+        short_id: u16,
+        average_lqi: u8,
+        in_cost: u8,
+        out_cost: u8,
+        age: u8,
+        long_id: Eui64,
+    ) -> Self {
         Self {
             short_id,
             average_lqi,
             in_cost,
             out_cost,
             age,
+            long_id,
         }
     }
 
@@ -45,8 +60,73 @@ impl TableEntry {
     pub const fn age(&self) -> u8 {
         self.age
     }
+
+    #[must_use]
+    pub const fn long_id(&self) -> Eui64 {
+        self.long_id
+    }
 }
 
-impl Write for TableEntry {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {}
+impl IntoIterator for TableEntry {
+    type Item = u8;
+    type IntoIter = Chain<
+        Chain<
+            Chain<
+                Chain<
+                    Chain<IntoIter<Self::Item, 2>, IntoIter<Self::Item, 1>>,
+                    IntoIter<Self::Item, 1>,
+                >,
+                IntoIter<Self::Item, 1>,
+            >,
+            IntoIter<Self::Item, 1>,
+        >,
+        IntoIter<Self::Item, 8>,
+    >;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.short_id
+            .to_le_bytes()
+            .into_iter()
+            .chain(self.average_lqi.to_le_bytes())
+            .chain(self.in_cost.to_le_bytes())
+            .chain(self.out_cost.to_le_bytes())
+            .chain(self.age.to_le_bytes())
+            .chain(self.long_id.to_le_bytes())
+    }
+}
+
+impl Readable for TableEntry {
+    fn try_read<R>(src: &mut R) -> Result<Self, Error>
+    where
+        R: Read,
+    {
+        let short_id = src.read_num_le()?;
+        let average_lqi = src.read_num_le()?;
+        let in_cost = src.read_num_le()?;
+        let out_cost = src.read_num_le()?;
+        let age = src.read_num_le()?;
+        let long_id = src.read_num_le()?;
+        Ok(Self {
+            short_id,
+            average_lqi,
+            in_cost,
+            out_cost,
+            age,
+            long_id,
+        })
+    }
+}
+
+impl Writable for TableEntry {
+    fn write_to<W>(self, dst: &mut W) -> std::io::Result<()>
+    where
+        W: Write,
+    {
+        dst.write_all(&self.short_id.to_le_bytes())?;
+        dst.write_all(&self.average_lqi.to_le_bytes())?;
+        dst.write_all(&self.in_cost.to_le_bytes())?;
+        dst.write_all(&self.out_cost.to_le_bytes())?;
+        dst.write_all(&self.age.to_le_bytes())?;
+        dst.write_all(&self.long_id.to_le_bytes())
+    }
 }

@@ -78,7 +78,7 @@ impl Readable for Response {
         let status: u8 = src.read_num_le()?;
         let return_frame_counter = src.read_num_le()?;
         Ok(Self {
-            status: status.into(),
+            status: status.try_into()?,
             return_frame_counter,
         })
     }

@@ -7,7 +7,7 @@ mod phy;
 mod serial;
 mod sim_eeprom;
 
-use super::Error;
+use super::error::Error;
 pub use adc::Adc;
 pub use application::Application;
 pub use eeprom::Eeprom;

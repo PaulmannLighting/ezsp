@@ -1,4 +1,4 @@
-use crate::counter::Counter;
+use crate::ember::counter::Type;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::io::Read;
@@ -9,17 +9,17 @@ pub const ID: u16 = 0x00F2;
 /// This call is fired when a counter exceeds its threshold.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Response {
-    typ: Counter,
+    typ: Type,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(typ: Counter) -> Self {
+    pub const fn new(typ: Type) -> Self {
         Self { typ }
     }
 
     #[must_use]
-    pub const fn typ(&self) -> Counter {
+    pub const fn typ(&self) -> Type {
         self.typ
     }
 }

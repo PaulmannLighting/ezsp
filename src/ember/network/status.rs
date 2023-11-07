@@ -1,4 +1,4 @@
-use super::super::Error;
+use super::super::error::Error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 

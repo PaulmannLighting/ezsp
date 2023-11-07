@@ -4,8 +4,9 @@ pub mod policy;
 
 pub mod config;
 pub mod decision;
+pub mod error;
 mod status;
 pub mod types;
 pub mod value;
 
-pub use status::{ash, Ash, Error, SpiErr, Status};
+pub use status::{Ash, Error, SpiErr, Status};

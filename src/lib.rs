@@ -1,8 +1,6 @@
-#![feature(mutex_unpoison)]
 #![feature(buf_read_has_data_left)]
 extern crate core;
 
-pub mod counter;
 pub mod dongle;
 pub mod ember;
 pub mod error;

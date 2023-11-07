@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Error {
+    InvalidCounterType(u8),
     InvalidEntropySource(u8),
     InvalidEventUnit(u8),
     InvalidJoinMethod(u8),
@@ -14,6 +15,7 @@ pub enum Error {
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::InvalidCounterType(typ) => write!(f, "invalid counter type: {typ}"),
             Self::InvalidEntropySource(entropy_source) => {
                 write!(f, "invalid entropy source: {entropy_source:#04X}")
             }

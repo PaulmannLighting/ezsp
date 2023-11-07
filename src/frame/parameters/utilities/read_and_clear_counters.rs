@@ -1,4 +1,4 @@
-use crate::counter::Counter;
+use crate::ember::counter::Type;
 use crate::read_write::Readable;
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
@@ -6,7 +6,7 @@ use std::io::Read;
 use std::iter::{empty, Empty, FlatMap};
 
 pub const ID: u16 = 0x0065;
-const TYPE_COUNT: usize = Counter::TypeCount as usize;
+const TYPE_COUNT: usize = Type::TypeCount as usize;
 
 /// Retrieves and clears Ember counters.
 ///
@@ -70,19 +70,12 @@ impl Readable for Response {
     where
         R: Read,
     {
-        Ok(Self {
-            values: src
-                .read_array_exact::<{ TYPE_COUNT * 2 }>()?
-                .chunks_exact(2)
-                .filter_map(|chunk| {
-                    if chunk.len() == 2 {
-                        Some(u16::from_be_bytes([chunk[0], chunk[1]]))
-                    } else {
-                        None
-                    }
-                })
-                .collect::<Vec<_>>()
-                .try_into()?,
-        })
+        let mut values = [0; TYPE_COUNT];
+
+        for item in &mut values {
+            *item = src.read_num_le()?;
+        }
+
+        Ok(Self { values })
     }
 }

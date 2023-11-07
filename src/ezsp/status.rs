@@ -1,4 +1,4 @@
-pub mod ash;
+mod ash;
 mod error;
 mod spi_err;
 
@@ -95,9 +95,9 @@ impl From<Status> for u8 {
 }
 
 impl TryFrom<u8> for Status {
-    type Error = crate::error::ezsp::Error;
+    type Error = super::error::Error;
 
-    fn try_from(value: u8) -> Result<Self, <Self as TryFrom<u8>>::Error> {
-        Self::from_u8(value).ok_or(<Self as TryFrom<u8>>::Error::InvalidStatus(value))
+    fn try_from(value: u8) -> Result<Self, super::error::Error> {
+        Self::from_u8(value).ok_or(super::error::Error::InvalidStatus(value))
     }
 }

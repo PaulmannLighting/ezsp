@@ -1,7 +1,7 @@
 mod mfg;
 mod stack;
 
-use crate::error::ezsp::Error;
+use super::error::Error;
 pub use mfg::Mfg;
 use num_traits::{FromPrimitive, ToPrimitive};
 pub use stack::Stack;

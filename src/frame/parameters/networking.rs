@@ -10,6 +10,7 @@ pub mod find_unused_pan_id;
 pub mod form_network;
 pub mod get_child_data;
 pub mod get_neighbor;
+mod get_neighbor_frame_counter;
 pub mod get_network_parameters;
 pub mod get_parent_child_parameters;
 pub mod get_radio_parameters;

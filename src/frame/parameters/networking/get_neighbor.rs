@@ -50,6 +50,23 @@ pub struct Response {
     value: TableEntry,
 }
 
+impl Response {
+    #[must_use]
+    pub const fn new(status: Status, value: TableEntry) -> Self {
+        Self { status, value }
+    }
+
+    #[must_use]
+    pub const fn status(&self) -> Status {
+        self.status
+    }
+
+    #[must_use]
+    pub const fn value(&self) -> &TableEntry {
+        &self.value
+    }
+}
+
 impl IntoIterator for Response {
     type Item = u8;
     type IntoIter = Chain<
@@ -80,6 +97,10 @@ impl Readable for Response {
         R: Read,
     {
         let status: u8 = src.read_num_le()?;
-        Ok(Self::new(status.into(), TableEntry::try_read(src)?))
+        let value = TableEntry::try_read(src)?;
+        Ok(Self {
+            status: status.try_into()?,
+            value,
+        })
     }
 }

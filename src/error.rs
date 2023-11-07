@@ -1,15 +1,15 @@
+pub use crate::ember::error::Error as EmberError;
+pub use crate::ezsp::error::Error as EzspError;
 use std::fmt::{Display, Formatter};
-
-pub mod ember;
-pub mod ezsp;
 
 #[derive(Debug)]
 pub enum Error {
     AshError(ashv2::Error),
-    Ember(ember::Error),
-    Ezsp(ezsp::Error),
+    Ember(EmberError),
+    Ezsp(EzspError),
     InvalidSize { expected: usize, found: usize },
     Io(std::io::Error),
+    SiliconLabs(siliconlabs::Error),
 }
 
 impl Display for Error {
@@ -22,6 +22,7 @@ impl Display for Error {
                 write!(f, "Expected {expected} bytes, but found {found} bytes.")
             }
             Self::Io(error) => Display::fmt(error, f),
+            Self::SiliconLabs(error) => Display::fmt(error, f),
         }
     }
 }
@@ -33,6 +34,7 @@ impl std::error::Error for Error {
             Self::Ember(error) => Some(error),
             Self::Ezsp(error) => Some(error),
             Self::Io(error) => Some(error),
+            Self::SiliconLabs(error) => Some(error),
             _ => None,
         }
     }
@@ -44,14 +46,14 @@ impl From<ashv2::Error> for Error {
     }
 }
 
-impl From<ember::Error> for Error {
-    fn from(error: ember::Error) -> Self {
+impl From<EmberError> for Error {
+    fn from(error: EmberError) -> Self {
         Self::Ember(error)
     }
 }
 
-impl From<ezsp::Error> for Error {
-    fn from(error: ezsp::Error) -> Self {
+impl From<EzspError> for Error {
+    fn from(error: EzspError) -> Self {
         Self::Ezsp(error)
     }
 }
@@ -59,5 +61,11 @@ impl From<ezsp::Error> for Error {
 impl From<std::io::Error> for Error {
     fn from(error: std::io::Error) -> Self {
         Self::Io(error)
+    }
+}
+
+impl From<siliconlabs::Error> for Error {
+    fn from(error: siliconlabs::Error) -> Self {
+        Self::SiliconLabs(error)
     }
 }

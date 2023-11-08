@@ -1,6 +1,5 @@
-mod deserializer;
-mod error;
-mod serializer;
+pub mod deserializer;
+pub mod serializer;
 
-pub use error::Error;
+pub use deserializer::from_bytes;
 pub use serializer::to_bytes;

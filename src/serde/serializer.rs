@@ -1,4 +1,6 @@
-use super::error::Error;
+mod error;
+
+pub use error::Error;
 use serde::{ser, Serialize};
 
 type Result<T> = std::result::Result<T, Error>;

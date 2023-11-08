@@ -3,14 +3,12 @@ use std::fmt::{Debug, Display, Formatter};
 #[derive(Debug)]
 pub enum Error {
     Custom(String),
-    CannotSerializeMap,
 }
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Custom(string) => write!(f, "{string}"),
-            Self::CannotSerializeMap => write!(f, "cannot serialize map"),
         }
     }
 }

@@ -1,15 +1,12 @@
 use crate::ember::node::Type;
 use crate::ember::types::{Eui64, NodeId};
-use crate::read_write::Readable;
-use rw_exact_ext::ReadExactExt;
-use std::array::IntoIter;
-use std::io::Read;
-use std::iter::{once, Chain, Once};
+use num_traits::FromPrimitive;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Data {
     eui64: Eui64,
-    typ: Type,
+    typ: u8,
     id: NodeId,
     phy: u8,
     power: u8,
@@ -23,7 +20,7 @@ pub struct Data {
 impl Data {
     #[allow(clippy::too_many_arguments)]
     #[must_use]
-    pub const fn new(
+    pub fn new(
         eui64: Eui64,
         typ: Type,
         id: NodeId,
@@ -37,7 +34,7 @@ impl Data {
     ) -> Self {
         Self {
             eui64,
-            typ,
+            typ: typ.into(),
             id,
             phy,
             power,
@@ -55,8 +52,8 @@ impl Data {
     }
 
     #[must_use]
-    pub const fn typ(&self) -> Type {
-        self.typ
+    pub fn typ(&self) -> Option<Type> {
+        Type::from_u8(self.typ)
     }
 
     #[must_use]
@@ -97,79 +94,5 @@ impl Data {
     #[must_use]
     pub const fn endpoint(&self) -> u8 {
         self.endpoint
-    }
-}
-
-impl IntoIterator for Data {
-    type Item = u8;
-    type IntoIter = Chain<
-        Chain<
-            Chain<
-                Chain<
-                    Chain<
-                        Chain<
-                            Chain<
-                                Chain<
-                                    Chain<IntoIter<Self::Item, 8>, Once<Self::Item>>,
-                                    IntoIter<Self::Item, 2>,
-                                >,
-                                IntoIter<Self::Item, 1>,
-                            >,
-                            IntoIter<Self::Item, 1>,
-                        >,
-                        IntoIter<Self::Item, 1>,
-                    >,
-                    IntoIter<Self::Item, 8>,
-                >,
-                IntoIter<Self::Item, 4>,
-            >,
-            IntoIter<Self::Item, 1>,
-        >,
-        IntoIter<Self::Item, 1>,
-    >;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.eui64
-            .to_le_bytes()
-            .into_iter()
-            .chain(once(self.typ.into()))
-            .chain(self.id.to_le_bytes())
-            .chain(self.phy.to_le_bytes())
-            .chain(self.power.to_le_bytes())
-            .chain(self.timeout.to_le_bytes())
-            .chain(self.gpd_ieee_address.to_le_bytes())
-            .chain(self.source_id.to_le_bytes())
-            .chain(self.application_id.to_le_bytes())
-            .chain(self.endpoint.to_le_bytes())
-    }
-}
-
-impl Readable for Data {
-    fn try_read<R>(src: &mut R) -> Result<Self, crate::Error>
-    where
-        R: Read,
-    {
-        let eui64 = src.read_num_le()?;
-        let typ: u8 = src.read_num_le()?;
-        let id = src.read_num_le()?;
-        let phy = src.read_num_le()?;
-        let power = src.read_num_le()?;
-        let timeout = src.read_num_le()?;
-        let gpd_ieee_address = src.read_num_le()?;
-        let source_id = src.read_num_le()?;
-        let application_id = src.read_num_le()?;
-        let endpoint = src.read_num_le()?;
-        Ok(Self {
-            eui64,
-            typ: typ.try_into()?,
-            id,
-            phy,
-            power,
-            timeout,
-            gpd_ieee_address,
-            source_id,
-            application_id,
-            endpoint,
-        })
     }
 }

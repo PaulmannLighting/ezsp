@@ -16,3 +16,4 @@ log = "0.4.20"
 heapless = "0.7.16"
 serde = { version = "1.0.192", features = ["derive"] }
 anyhow = "1.0.75"
+byteorder = "1.5.0"

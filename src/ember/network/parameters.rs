@@ -1,18 +1,15 @@
 use crate::ember::join_method::JoinMethod;
 use crate::ember::types::PanId;
-use crate::read_write::Readable;
-use rw_exact_ext::ReadExactExt;
-use std::array::IntoIter;
-use std::io::Read;
-use std::iter::{once, Chain, Once};
+use num_traits::FromPrimitive;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Parameters {
     extended_pan_id: u64,
     pan_id: PanId,
     radio_tx_power: u8,
     radio_channel: u8,
-    join_method: JoinMethod,
+    join_method: u8,
     nwk_manager_id: u16,
     nwk_update_id: u8,
     channels: u32,
@@ -21,7 +18,7 @@ pub struct Parameters {
 impl Parameters {
     #[allow(clippy::too_many_arguments)]
     #[must_use]
-    pub const fn new(
+    pub fn new(
         extended_pan_id: u64,
         pan_id: PanId,
         radio_tx_power: u8,
@@ -36,7 +33,7 @@ impl Parameters {
             pan_id,
             radio_tx_power,
             radio_channel,
-            join_method,
+            join_method: join_method.into(),
             nwk_manager_id,
             nwk_update_id,
             channels,
@@ -64,8 +61,8 @@ impl Parameters {
     }
 
     #[must_use]
-    pub const fn join_method(&self) -> JoinMethod {
-        self.join_method
+    pub fn join_method(&self) -> Option<JoinMethod> {
+        JoinMethod::from_u8(self.join_method)
     }
 
     #[must_use]
@@ -81,67 +78,5 @@ impl Parameters {
     #[must_use]
     pub const fn channels(&self) -> u32 {
         self.channels
-    }
-}
-
-impl IntoIterator for Parameters {
-    type Item = u8;
-    type IntoIter = Chain<
-        Chain<
-            Chain<
-                Chain<
-                    Chain<
-                        Chain<
-                            Chain<IntoIter<Self::Item, 8>, IntoIter<Self::Item, 2>>,
-                            Once<Self::Item>,
-                        >,
-                        Once<Self::Item>,
-                    >,
-                    Once<Self::Item>,
-                >,
-                IntoIter<Self::Item, 2>,
-            >,
-            Once<Self::Item>,
-        >,
-        IntoIter<Self::Item, 4>,
-    >;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.extended_pan_id
-            .to_le_bytes()
-            .into_iter()
-            .chain(self.pan_id.to_le_bytes())
-            .chain(once(self.radio_tx_power))
-            .chain(once(self.radio_channel))
-            .chain(once(self.join_method.into()))
-            .chain(self.nwk_manager_id.to_le_bytes())
-            .chain(once(self.nwk_update_id))
-            .chain(self.channels.to_le_bytes())
-    }
-}
-
-impl Readable for Parameters {
-    fn try_read<R>(src: &mut R) -> Result<Self, crate::Error>
-    where
-        R: Read,
-    {
-        let extended_pan_id = src.read_num_le()?;
-        let pan_id = src.read_num_le()?;
-        let radio_tx_power = src.read_num_le()?;
-        let radio_channel = src.read_num_le()?;
-        let join_method: u8 = src.read_num_le()?;
-        let nwk_manager_id = src.read_num_le()?;
-        let nwk_update_id = src.read_num_le()?;
-        let channels = src.read_num_le()?;
-        Ok(Self {
-            extended_pan_id,
-            pan_id,
-            radio_tx_power,
-            radio_channel,
-            join_method: join_method.try_into()?,
-            nwk_manager_id,
-            nwk_update_id,
-            channels,
-        })
     }
 }

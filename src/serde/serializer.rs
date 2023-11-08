@@ -1,15 +1,18 @@
 mod error;
 
-pub use error::Error;
+pub use error::{Error, Result};
 use serde::{ser, Serialize};
 
-type Result<T> = std::result::Result<T, Error>;
-
-#[derive(Debug)]
 pub struct Serializer {
+    // This string starts empty and JSON is appended as values are serialized.
     output: Vec<u8>,
 }
 
+// By convention, the public API of a Serde serializer is one or more `to_abc`
+// functions such as `to_string`, `to_bytes`, or `to_writer` depending on what
+// Rust types the serializer is able to produce as output.
+//
+// This basic serializer supports only `to_string`.
 pub fn to_bytes<T>(value: &T) -> Result<Vec<u8>>
 where
     T: Serialize,
@@ -47,7 +50,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     // of the primitive types of the data model and map it to JSON by appending
     // into the output string.
     fn serialize_bool(self, v: bool) -> Result<()> {
-        self.output.push(u8::from(v));
+        self.output.push(v.into());
         Ok(())
     }
 
@@ -109,17 +112,15 @@ impl<'a> ser::Serializer for &'a mut Serializer {
 
     // Serialize a char as a single-character string. Other formats may
     // represent this differently.
-    fn serialize_char(self, v: char) -> Result<()> {
-        v.encode_utf8(&mut self.output);
-        Ok(())
+    fn serialize_char(self, _: char) -> Result<()> {
+        unimplemented!()
     }
 
     // This only works for strings that don't require escape sequences but you
     // get the idea. For example it would emit invalid JSON if the input string
     // contains a '"' character.
-    fn serialize_str(self, v: &str) -> Result<()> {
-        self.output.extend_from_slice(v.as_bytes());
-        Ok(())
+    fn serialize_str(self, _: &str) -> Result<()> {
+        unimplemented!()
     }
 
     // Serialize a byte array as an array of bytes. Could also use a base64
@@ -240,7 +241,8 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
-        variant.serialize(&mut *self).map(|()| self)
+        variant.serialize(&mut *self)?;
+        Ok(self)
     }
 
     // Maps are represented in JSON as `{ K: V, K: V, ... }`.
@@ -266,7 +268,8 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant> {
-        variant.serialize(&mut *self).map(|()| self)
+        variant.serialize(&mut *self)?;
+        Ok(self)
     }
 }
 
@@ -376,11 +379,11 @@ impl<'a> ser::SerializeMap for &'a mut Serializer {
     // This can be done by using a different Serializer to serialize the key
     // (instead of `&mut **self`) and having that other serializer only
     // implement `serialize_str` and return an error on any other data type.
-    fn serialize_key<T>(&mut self, key: &T) -> Result<()>
+    fn serialize_key<T>(&mut self, _: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
-        key.serialize(&mut **self)
+        unimplemented!()
     }
 
     // It doesn't make a difference whether the colon is printed at the end of
@@ -404,7 +407,7 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
     type Ok = ();
     type Error = Error;
 
-    fn serialize_field<T>(&mut self, _key: &'static str, value: &T) -> Result<()>
+    fn serialize_field<T>(&mut self, _: &'static str, value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
@@ -422,7 +425,7 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
     type Ok = ();
     type Error = Error;
 
-    fn serialize_field<T>(&mut self, _key: &'static str, value: &T) -> Result<()>
+    fn serialize_field<T>(&mut self, _: &'static str, value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
@@ -445,14 +448,16 @@ mod tests {
         #[derive(Serialize)]
         struct Test {
             int: u16,
-            bytes: [u8; 4],
+            seq: [u8; 4],
+            byte: u8,
         }
 
         let test = Test {
             int: 0x1337,
-            bytes: [1, 2, 3, 4],
+            seq: [0x42, 0xFF, 0x00, 0x07],
+            byte: 0x36,
         };
-        let expected = vec![0x37, 0x13, 1, 2, 3, 4];
+        let expected = vec![0x37, 0x13, 0x42, 0xFF, 0x00, 0x07, 0x36];
         assert_eq!(to_bytes(&test).unwrap(), expected);
     }
 }

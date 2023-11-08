@@ -1,3 +1,6 @@
+use crate::types::EmberNodeId;
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x0030;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -25,3 +28,10 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Response;
+
+impl Response {
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {}
+    }
+}

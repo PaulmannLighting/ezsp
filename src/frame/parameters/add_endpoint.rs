@@ -1,3 +1,6 @@
+use crate::types::EzspStatus;
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x0002;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

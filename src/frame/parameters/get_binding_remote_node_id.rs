@@ -1,3 +1,6 @@
+use crate::types::EmberNodeId;
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x002F;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

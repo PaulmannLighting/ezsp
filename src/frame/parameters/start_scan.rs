@@ -1,3 +1,6 @@
+use crate::types::{sl_status_t, EzspNetworkScanType};
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x001A;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

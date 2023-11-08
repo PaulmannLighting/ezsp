@@ -1,3 +1,6 @@
+use crate::types::bool;
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x00E4;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -19,3 +22,10 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Response;
+
+impl Response {
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {}
+    }
+}

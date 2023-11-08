@@ -1,7 +1,17 @@
+use crate::types::{EmberPublicKeyData, EmberStatus};
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x009E;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Command;
+
+impl Command {
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {}
+    }
+}
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Response {

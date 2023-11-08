@@ -1,3 +1,6 @@
+use crate::types::EmberEUI64;
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x005E;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

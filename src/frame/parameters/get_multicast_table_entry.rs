@@ -1,3 +1,6 @@
+use crate::types::{EmberMulticastTableEntry, EmberStatus};
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x0063;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

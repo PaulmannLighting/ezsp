@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x0000;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

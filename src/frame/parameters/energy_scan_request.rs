@@ -1,3 +1,6 @@
+use crate::types::{EmberNodeId, EmberStatus};
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x009C;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

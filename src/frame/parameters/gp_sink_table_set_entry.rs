@@ -1,3 +1,6 @@
+use crate::types::{EmberGpSinkTableEntry, EmberStatus};
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x00DF;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

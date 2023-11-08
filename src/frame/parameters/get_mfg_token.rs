@@ -1,3 +1,6 @@
+use crate::types::EzspMfgTokenId;
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x000B;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

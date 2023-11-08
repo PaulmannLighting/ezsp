@@ -265,7 +265,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        visitor.visit_seq(ByteStream::new(self))
+        visitor.visit_seq(ByteSequence::new(self))
     }
 
     // Tuples look just like sequences in JSON. Some formats may be able to
@@ -367,19 +367,19 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
 // In order to handle commas correctly when deserializing a JSON array or map,
 // we need to track whether we are on the first element or past the first
 // element.
-struct ByteStream<'a, 'de: 'a> {
+struct ByteSequence<'a, 'de: 'a> {
     de: &'a mut Deserializer<'de>,
 }
 
-impl<'a, 'de> ByteStream<'a, 'de> {
+impl<'a, 'de> ByteSequence<'a, 'de> {
     fn new(de: &'a mut Deserializer<'de>) -> Self {
-        ByteStream { de }
+        ByteSequence { de }
     }
 }
 
 // `SeqAccess` is provided to the `Visitor` to give it the ability to iterate
 // through elements of the sequence.
-impl<'de, 'a> SeqAccess<'de> for ByteStream<'a, 'de> {
+impl<'de, 'a> SeqAccess<'de> for ByteSequence<'a, 'de> {
     type Error = Error;
 
     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>>
@@ -387,6 +387,10 @@ impl<'de, 'a> SeqAccess<'de> for ByteStream<'a, 'de> {
         T: DeserializeSeed<'de>,
     {
         seed.deserialize(&mut *self.de).map(Some)
+    }
+
+    fn size_hint(&self) -> Option<usize> {
+        Some(self.size)
     }
 }
 
@@ -401,13 +405,15 @@ mod tests {
         #[derive(Debug, Eq, PartialEq, Deserialize)]
         struct Test {
             int: u16,
-            bytes: [u8; 4],
+            bytes: [u8; 3],
+            bar: u8,
         }
 
         let bytes: [u8; 6] = [0x37, 0x13, 1, 2, 3, 4];
         let expected = Test {
             int: 0x1337,
-            bytes: [1, 2, 3, 4],
+            bytes: [1, 2, 3],
+            bar: 4,
         };
         assert_eq!(expected, from_bytes(&bytes).unwrap());
     }

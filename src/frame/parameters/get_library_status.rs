@@ -1,3 +1,6 @@
+use crate::types::{EmberLibraryId, EmberLibraryStatus};
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x0001;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

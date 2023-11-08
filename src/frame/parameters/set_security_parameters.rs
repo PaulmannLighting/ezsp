@@ -1,3 +1,6 @@
+use crate::types::{EzspStatus, SecureEzspRandomNumber, SecureEzspSecurityLevel};
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x00CB;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

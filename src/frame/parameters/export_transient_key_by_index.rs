@@ -1,3 +1,8 @@
+use crate::types::{
+    sl_status_t, sl_zb_sec_man_aps_key_metadata_t, sl_zb_sec_man_context_t, sl_zb_sec_man_key_t,
+};
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x0112;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

@@ -1,3 +1,9 @@
+use crate::types::{
+    sl_status_t, sl_zb_sec_man_context_t, sl_zb_sec_man_key_t, sl_zigbee_sec_man_flags_t,
+    EmberEUI64,
+};
+use serde::{Deserialize, Serialize};
+
 pub const ID: u16 = 0x0111;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]

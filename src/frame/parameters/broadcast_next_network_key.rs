@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x0073;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     key: EmberKeyData,
 }
 
@@ -19,7 +18,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
 }
 

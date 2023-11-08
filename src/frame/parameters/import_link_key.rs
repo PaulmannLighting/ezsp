@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x010E;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     index: u8,
     address: EmberEUI64,
     plaintext_key: sl_zb_sec_man_key_t,
@@ -11,7 +10,11 @@ pub struct Command{
 impl Command {
     #[must_use]
     pub const fn new(index: u8, address: EmberEUI64, plaintext_key: sl_zb_sec_man_key_t) -> Self {
-        Self { index, address, plaintext_key }
+        Self {
+            index,
+            address,
+            plaintext_key,
+        }
     }
 
     #[must_use]
@@ -19,12 +22,10 @@ impl Command {
         self.index
     }
 
-
     #[must_use]
     pub const fn address(&self) -> EmberEUI64 {
         self.address
     }
-
 
     #[must_use]
     pub const fn plaintext_key(&self) -> sl_zb_sec_man_key_t {
@@ -33,7 +34,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: sl_status_t,
 }
 

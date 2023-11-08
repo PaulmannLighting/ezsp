@@ -1,12 +1,10 @@
-
 pub const ID: u16 = 0x00FC;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Command;
 
-
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     interface_count: u8,
 }
 

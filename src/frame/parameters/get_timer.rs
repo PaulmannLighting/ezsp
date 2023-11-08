@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x004E;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     timer_id: u8,
 }
 
@@ -19,7 +18,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     time: u16,
     units: EmberEventUnits,
     repeat: bool,
@@ -28,7 +27,11 @@ pub struct Response{
 impl Response {
     #[must_use]
     pub const fn new(time: u16, units: EmberEventUnits, repeat: bool) -> Self {
-        Self { time, units, repeat }
+        Self {
+            time,
+            units,
+            repeat,
+        }
     }
 
     #[must_use]
@@ -36,12 +39,10 @@ impl Response {
         self.time
     }
 
-
     #[must_use]
     pub const fn units(&self) -> EmberEventUnits {
         self.units
     }
-
 
     #[must_use]
     pub const fn repeat(&self) -> bool {

@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x0061;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     node_id: EmberNodeId,
 }
 
@@ -19,7 +18,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
     eui64: EmberEUI64,
 }
@@ -34,7 +33,6 @@ impl Response {
     pub const fn status(&self) -> EmberStatus {
         self.status
     }
-
 
     #[must_use]
     pub const fn eui64(&self) -> EmberEUI64 {

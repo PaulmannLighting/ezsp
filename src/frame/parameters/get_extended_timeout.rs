@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x007F;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     remote_eui64: EmberEUI64,
 }
 
@@ -19,7 +18,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     extended_timeout: bool,
 }
 

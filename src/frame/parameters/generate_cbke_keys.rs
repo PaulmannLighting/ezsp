@@ -1,12 +1,10 @@
-
 pub const ID: u16 = 0x00A4;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Command;
 
-
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
 }
 

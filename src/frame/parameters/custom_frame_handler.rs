@@ -1,20 +1,21 @@
-
 pub const ID: u16 = 0x0054;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Command;
 
-
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     payload_length: u8,
-    payload: uint8_t[],
+    payload: ByteSizedVec<u8>,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(payload_length: u8, payload: uint8_t[]) -> Self {
-        Self { payload_length, payload }
+    pub const fn new(payload_length: u8, payload: ByteSizedVec<u8>) -> Self {
+        Self {
+            payload_length,
+            payload,
+        }
     }
 
     #[must_use]
@@ -22,9 +23,8 @@ impl Response {
         self.payload_length
     }
 
-
     #[must_use]
-    pub const fn payload(&self) -> uint8_t[] {
+    pub const fn payload(&self) -> ByteSizedVec<u8> {
         self.payload
     }
 }

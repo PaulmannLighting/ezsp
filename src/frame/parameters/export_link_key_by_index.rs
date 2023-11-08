@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x010F;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     index: u8,
 }
 
@@ -19,7 +18,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     eui: EmberEUI64,
     plaintext_key: sl_zb_sec_man_key_t,
     key_data: sl_zb_sec_man_aps_key_metadata_t,
@@ -28,8 +27,18 @@ pub struct Response{
 
 impl Response {
     #[must_use]
-    pub const fn new(eui: EmberEUI64, plaintext_key: sl_zb_sec_man_key_t, key_data: sl_zb_sec_man_aps_key_metadata_t, status: sl_status_t) -> Self {
-        Self { eui, plaintext_key, key_data, status }
+    pub const fn new(
+        eui: EmberEUI64,
+        plaintext_key: sl_zb_sec_man_key_t,
+        key_data: sl_zb_sec_man_aps_key_metadata_t,
+        status: sl_status_t,
+    ) -> Self {
+        Self {
+            eui,
+            plaintext_key,
+            key_data,
+            status,
+        }
     }
 
     #[must_use]
@@ -37,18 +46,15 @@ impl Response {
         self.eui
     }
 
-
     #[must_use]
     pub const fn plaintext_key(&self) -> sl_zb_sec_man_key_t {
         self.plaintext_key
     }
 
-
     #[must_use]
     pub const fn key_data(&self) -> sl_zb_sec_man_aps_key_metadata_t {
         self.key_data
     }
-
 
     #[must_use]
     pub const fn status(&self) -> sl_status_t {

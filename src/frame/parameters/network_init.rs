@@ -1,15 +1,16 @@
-
 pub const ID: u16 = 0x0017;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     network_init_struct: EmberNetworkInitStruct,
 }
 
 impl Command {
     #[must_use]
     pub const fn new(network_init_struct: EmberNetworkInitStruct) -> Self {
-        Self { network_init_struct }
+        Self {
+            network_init_struct,
+        }
     }
 
     #[must_use]
@@ -19,7 +20,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
 }
 

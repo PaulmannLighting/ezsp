@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x0041;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     concentrator_type: u16,
     radius: u8,
 }
@@ -10,14 +9,16 @@ pub struct Command{
 impl Command {
     #[must_use]
     pub const fn new(concentrator_type: u16, radius: u8) -> Self {
-        Self { concentrator_type, radius }
+        Self {
+            concentrator_type,
+            radius,
+        }
     }
 
     #[must_use]
     pub const fn concentrator_type(&self) -> u16 {
         self.concentrator_type
     }
-
 
     #[must_use]
     pub const fn radius(&self) -> u8 {
@@ -26,7 +27,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
 }
 

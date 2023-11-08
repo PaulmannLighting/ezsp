@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x0102;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     token: u32,
     index: u32,
 }
@@ -18,7 +17,6 @@ impl Command {
         self.token
     }
 
-
     #[must_use]
     pub const fn index(&self) -> u32 {
         self.index
@@ -26,7 +24,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
     token_data: EmberTokenData,
 }
@@ -41,7 +39,6 @@ impl Response {
     pub const fn status(&self) -> EmberStatus {
         self.status
     }
-
 
     #[must_use]
     pub const fn token_data(&self) -> EmberTokenData {

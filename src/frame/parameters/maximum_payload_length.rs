@@ -1,12 +1,10 @@
-
 pub const ID: u16 = 0x0033;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Command;
 
-
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     aps_length: u8,
 }
 

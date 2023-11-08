@@ -1,12 +1,10 @@
-
 pub const ID: u16 = 0x00D2;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Command;
 
-
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     pan_id: EmberPanId,
     channel: u8,
 }
@@ -21,7 +19,6 @@ impl Response {
     pub const fn pan_id(&self) -> EmberPanId {
         self.pan_id
     }
-
 
     #[must_use]
     pub const fn channel(&self) -> u8 {

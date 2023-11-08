@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x00DD;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     sink_index: u8,
 }
 
@@ -19,7 +18,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
     entry: EmberGpSinkTableEntry,
 }
@@ -34,7 +33,6 @@ impl Response {
     pub const fn status(&self) -> EmberStatus {
         self.status
     }
-
 
     #[must_use]
     pub const fn entry(&self) -> EmberGpSinkTableEntry {

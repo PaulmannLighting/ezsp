@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x00B4;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     channel_mask: u32,
     radio_power_for_scan: int8_t,
     node_type: EmberNodeType,
@@ -10,8 +9,16 @@ pub struct Command{
 
 impl Command {
     #[must_use]
-    pub const fn new(channel_mask: u32, radio_power_for_scan: int8_t, node_type: EmberNodeType) -> Self {
-        Self { channel_mask, radio_power_for_scan, node_type }
+    pub const fn new(
+        channel_mask: u32,
+        radio_power_for_scan: int8_t,
+        node_type: EmberNodeType,
+    ) -> Self {
+        Self {
+            channel_mask,
+            radio_power_for_scan,
+            node_type,
+        }
     }
 
     #[must_use]
@@ -19,12 +26,10 @@ impl Command {
         self.channel_mask
     }
 
-
     #[must_use]
     pub const fn radio_power_for_scan(&self) -> int8_t {
         self.radio_power_for_scan
     }
-
 
     #[must_use]
     pub const fn node_type(&self) -> EmberNodeType {
@@ -33,7 +38,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
 }
 

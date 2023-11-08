@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x00FA;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     phy_index: u8,
     power: int8_t,
 }
@@ -18,7 +17,6 @@ impl Command {
         self.phy_index
     }
 
-
     #[must_use]
     pub const fn power(&self) -> int8_t {
         self.power
@@ -26,7 +24,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
 }
 

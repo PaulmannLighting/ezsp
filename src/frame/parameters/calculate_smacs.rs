@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x009F;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     am_initiator: bool,
     partner_certificate: EmberCertificateData,
     partner_ephemeral_public_key: EmberPublicKeyData,
@@ -10,8 +9,16 @@ pub struct Command{
 
 impl Command {
     #[must_use]
-    pub const fn new(am_initiator: bool, partner_certificate: EmberCertificateData, partner_ephemeral_public_key: EmberPublicKeyData) -> Self {
-        Self { am_initiator, partner_certificate, partner_ephemeral_public_key }
+    pub const fn new(
+        am_initiator: bool,
+        partner_certificate: EmberCertificateData,
+        partner_ephemeral_public_key: EmberPublicKeyData,
+    ) -> Self {
+        Self {
+            am_initiator,
+            partner_certificate,
+            partner_ephemeral_public_key,
+        }
     }
 
     #[must_use]
@@ -19,12 +26,10 @@ impl Command {
         self.am_initiator
     }
 
-
     #[must_use]
     pub const fn partner_certificate(&self) -> EmberCertificateData {
         self.partner_certificate
     }
-
 
     #[must_use]
     pub const fn partner_ephemeral_public_key(&self) -> EmberPublicKeyData {
@@ -33,7 +38,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
 }
 

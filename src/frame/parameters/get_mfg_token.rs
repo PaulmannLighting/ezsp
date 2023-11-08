@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x000B;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     token_id: EzspMfgTokenId,
 }
 
@@ -19,15 +18,18 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     token_data_length: u8,
-    token_data: uint8_t[],
+    token_data: ByteSizedVec<u8>,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(token_data_length: u8, token_data: uint8_t[]) -> Self {
-        Self { token_data_length, token_data }
+    pub const fn new(token_data_length: u8, token_data: ByteSizedVec<u8>) -> Self {
+        Self {
+            token_data_length,
+            token_data,
+        }
     }
 
     #[must_use]
@@ -35,9 +37,8 @@ impl Response {
         self.token_data_length
     }
 
-
     #[must_use]
-    pub const fn token_data(&self) -> uint8_t[] {
+    pub const fn token_data(&self) -> ByteSizedVec<u8> {
         self.token_data
     }
 }

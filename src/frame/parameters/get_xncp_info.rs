@@ -1,12 +1,10 @@
-
 pub const ID: u16 = 0x0013;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Command;
 
-
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
     manufacturer_id: u16,
     version_number: u16,
@@ -15,7 +13,11 @@ pub struct Response{
 impl Response {
     #[must_use]
     pub const fn new(status: EmberStatus, manufacturer_id: u16, version_number: u16) -> Self {
-        Self { status, manufacturer_id, version_number }
+        Self {
+            status,
+            manufacturer_id,
+            version_number,
+        }
     }
 
     #[must_use]
@@ -23,12 +25,10 @@ impl Response {
         self.status
     }
 
-
     #[must_use]
     pub const fn manufacturer_id(&self) -> u16 {
         self.manufacturer_id
     }
-
 
     #[must_use]
     pub const fn version_number(&self) -> u16 {

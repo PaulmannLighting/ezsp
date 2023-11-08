@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x00CE;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     eui: EmberEUI64,
 }
 
@@ -19,7 +18,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
     transient_key_data: EmberTransientKeyData,
 }
@@ -27,14 +26,16 @@ pub struct Response{
 impl Response {
     #[must_use]
     pub const fn new(status: EmberStatus, transient_key_data: EmberTransientKeyData) -> Self {
-        Self { status, transient_key_data }
+        Self {
+            status,
+            transient_key_data,
+        }
     }
 
     #[must_use]
     pub const fn status(&self) -> EmberStatus {
         self.status
     }
-
 
     #[must_use]
     pub const fn transient_key_data(&self) -> EmberTransientKeyData {

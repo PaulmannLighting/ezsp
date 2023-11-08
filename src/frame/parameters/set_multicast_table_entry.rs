@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x0064;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     index: u8,
     value: EmberMulticastTableEntry,
 }
@@ -18,7 +17,6 @@ impl Command {
         self.index
     }
 
-
     #[must_use]
     pub const fn value(&self) -> EmberMulticastTableEntry {
         self.value
@@ -26,7 +24,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
 }
 

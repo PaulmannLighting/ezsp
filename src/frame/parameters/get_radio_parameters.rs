@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x00FD;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     child_count: u8,
 }
 
@@ -19,7 +18,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
     node_type: EmberNodeType,
 }
@@ -34,7 +33,6 @@ impl Response {
     pub const fn status(&self) -> EmberStatus {
         self.status
     }
-
 
     #[must_use]
     pub const fn node_type(&self) -> EmberNodeType {

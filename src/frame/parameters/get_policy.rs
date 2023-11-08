@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x0056;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     policy_id: EzspPolicyId,
 }
 
@@ -19,7 +18,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EzspStatus,
     decision_id: EzspDecisionId,
 }
@@ -27,14 +26,16 @@ pub struct Response{
 impl Response {
     #[must_use]
     pub const fn new(status: EzspStatus, decision_id: EzspDecisionId) -> Self {
-        Self { status, decision_id }
+        Self {
+            status,
+            decision_id,
+        }
     }
 
     #[must_use]
     pub const fn status(&self) -> EzspStatus {
         self.status
     }
-
 
     #[must_use]
     pub const fn decision_id(&self) -> EzspDecisionId {

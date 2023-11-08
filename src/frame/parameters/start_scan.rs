@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x001A;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     scan_type: EzspNetworkScanType,
     channel_mask: u32,
     duration: u8,
@@ -11,7 +10,11 @@ pub struct Command{
 impl Command {
     #[must_use]
     pub const fn new(scan_type: EzspNetworkScanType, channel_mask: u32, duration: u8) -> Self {
-        Self { scan_type, channel_mask, duration }
+        Self {
+            scan_type,
+            channel_mask,
+            duration,
+        }
     }
 
     #[must_use]
@@ -19,12 +22,10 @@ impl Command {
         self.scan_type
     }
 
-
     #[must_use]
     pub const fn channel_mask(&self) -> u32 {
         self.channel_mask
     }
-
 
     #[must_use]
     pub const fn duration(&self) -> u8 {
@@ -33,7 +34,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: sl_status_t,
 }
 

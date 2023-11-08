@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x0075;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     address: EmberEUI64,
     link_key: bool,
 }
@@ -18,7 +17,6 @@ impl Command {
         self.address
     }
 
-
     #[must_use]
     pub const fn link_key(&self) -> bool {
         self.link_key
@@ -26,7 +24,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     index: u8,
 }
 

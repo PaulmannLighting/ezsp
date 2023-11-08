@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x0052;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     config_id: EzspConfigId,
 }
 
@@ -19,7 +18,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EzspStatus,
     value: u16,
 }
@@ -34,7 +33,6 @@ impl Response {
     pub const fn status(&self) -> EzspStatus {
         self.status
     }
-
 
     #[must_use]
     pub const fn value(&self) -> u16 {

@@ -1,12 +1,10 @@
-
 pub const ID: u16 = 0x004D;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Command;
 
-
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     channel_page: u8,
     channel: u8,
     state: EmberDutyCycleState,
@@ -15,8 +13,18 @@ pub struct Response{
 
 impl Response {
     #[must_use]
-    pub const fn new(channel_page: u8, channel: u8, state: EmberDutyCycleState, total_devices: u8) -> Self {
-        Self { channel_page, channel, state, total_devices }
+    pub const fn new(
+        channel_page: u8,
+        channel: u8,
+        state: EmberDutyCycleState,
+        total_devices: u8,
+    ) -> Self {
+        Self {
+            channel_page,
+            channel,
+            state,
+            total_devices,
+        }
     }
 
     #[must_use]
@@ -24,18 +32,15 @@ impl Response {
         self.channel_page
     }
 
-
     #[must_use]
     pub const fn channel(&self) -> u8 {
         self.channel
     }
 
-
     #[must_use]
     pub const fn state(&self) -> EmberDutyCycleState {
         self.state
     }
-
 
     #[must_use]
     pub const fn total_devices(&self) -> u8 {

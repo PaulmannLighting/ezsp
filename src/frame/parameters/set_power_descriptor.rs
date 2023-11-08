@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x0016;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     descriptor: u16,
 }
 
@@ -20,4 +19,3 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Response;
-

@@ -1,8 +1,7 @@
-
 pub const ID: u16 = 0x0115;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command{
+pub struct Command {
     context: sl_zb_sec_man_context_t,
     key: sl_zb_sec_man_key_t,
 }
@@ -18,7 +17,6 @@ impl Command {
         self.context
     }
 
-
     #[must_use]
     pub const fn key(&self) -> sl_zb_sec_man_key_t {
         self.key
@@ -26,7 +24,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: sl_status_t,
 }
 

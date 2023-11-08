@@ -1,12 +1,10 @@
-
 pub const ID: u16 = 0x00EC;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Command;
 
-
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     status: EmberStatus,
     local_cert: EmberCertificate283k1Data,
 }
@@ -21,7 +19,6 @@ impl Response {
     pub const fn status(&self) -> EmberStatus {
         self.status
     }
-
 
     #[must_use]
     pub const fn local_cert(&self) -> EmberCertificate283k1Data {

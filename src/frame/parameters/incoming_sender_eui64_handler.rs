@@ -1,12 +1,10 @@
-
 pub const ID: u16 = 0x0062;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Command;
 
-
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response{
+pub struct Response {
     sender_eui64: EmberEUI64,
 }
 

@@ -1,4 +1,4 @@
-use crate::types::{bool, EmberCertificate283k1Data, EmberPublicKey283k1Data, EmberStatus};
+use crate::types::{EmberCertificate283k1Data, EmberPublicKey283k1Data, EmberStatus};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x00EA;

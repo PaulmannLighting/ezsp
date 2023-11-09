@@ -1,3 +1,4 @@
+pub mod aes;
 pub mod beacon;
 pub mod child;
 mod constants;

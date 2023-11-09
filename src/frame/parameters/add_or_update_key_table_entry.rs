@@ -1,4 +1,4 @@
-use crate::types::{bool, EmberEUI64, EmberKeyData, EmberStatus};
+use crate::types::{EmberEUI64, EmberKeyData, EmberStatus};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0066;

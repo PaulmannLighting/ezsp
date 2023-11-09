@@ -1,24 +1,18 @@
-use crate::types::{EzspStatus, SecureEzspRandomNumber, SecureEzspSecurityLevel};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{SecureEzspSecurityLevel,EzspStatus,SecureEzspRandomNumber};
 
 pub const ID: u16 = 0x00CB;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     security_level: SecureEzspSecurityLevel,
     host_random_number: SecureEzspRandomNumber,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(
-        security_level: SecureEzspSecurityLevel,
-        host_random_number: SecureEzspRandomNumber,
-    ) -> Self {
-        Self {
-            security_level,
-            host_random_number,
-        }
+    pub const fn new(security_level: SecureEzspSecurityLevel, host_random_number: SecureEzspRandomNumber) -> Self {
+        Self { security_level, host_random_number }
     }
 
     #[must_use]
@@ -26,14 +20,15 @@ impl Command {
         self.security_level
     }
 
+
     #[must_use]
     pub const fn host_random_number(&self) -> SecureEzspRandomNumber {
         self.host_random_number
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EzspStatus,
 }
 

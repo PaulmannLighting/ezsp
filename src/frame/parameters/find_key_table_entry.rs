@@ -1,10 +1,10 @@
-use crate::types::{bool, EmberEUI64};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{bool,EmberEUI64};
 
 pub const ID: u16 = 0x0075;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     address: EmberEUI64,
     link_key: bool,
 }
@@ -20,14 +20,15 @@ impl Command {
         self.address
     }
 
+
     #[must_use]
     pub const fn link_key(&self) -> bool {
         self.link_key
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     index: u8,
 }
 

@@ -1,12 +1,10 @@
-use crate::types::{
-    sl_status_t, sl_zb_sec_man_aps_key_metadata_t, sl_zb_sec_man_context_t, sl_zb_sec_man_key_t,
-};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{sl_zb_sec_man_key_t,sl_zb_sec_man_aps_key_metadata_t,sl_zb_sec_man_context_t,sl_status_t};
 
 pub const ID: u16 = 0x0112;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     index: u8,
 }
 
@@ -22,8 +20,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     context: sl_zb_sec_man_context_t,
     plaintext_key: sl_zb_sec_man_key_t,
     key_data: sl_zb_sec_man_aps_key_metadata_t,
@@ -32,18 +30,8 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(
-        context: sl_zb_sec_man_context_t,
-        plaintext_key: sl_zb_sec_man_key_t,
-        key_data: sl_zb_sec_man_aps_key_metadata_t,
-        status: sl_status_t,
-    ) -> Self {
-        Self {
-            context,
-            plaintext_key,
-            key_data,
-            status,
-        }
+    pub const fn new(context: sl_zb_sec_man_context_t, plaintext_key: sl_zb_sec_man_key_t, key_data: sl_zb_sec_man_aps_key_metadata_t, status: sl_status_t) -> Self {
+        Self { context, plaintext_key, key_data, status }
     }
 
     #[must_use]
@@ -51,15 +39,18 @@ impl Response {
         self.context
     }
 
+
     #[must_use]
     pub const fn plaintext_key(&self) -> sl_zb_sec_man_key_t {
         self.plaintext_key
     }
 
+
     #[must_use]
     pub const fn key_data(&self) -> sl_zb_sec_man_aps_key_metadata_t {
         self.key_data
     }
+
 
     #[must_use]
     pub const fn status(&self) -> sl_status_t {

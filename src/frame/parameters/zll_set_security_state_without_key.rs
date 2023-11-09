@@ -1,10 +1,10 @@
-use crate::types::{EmberStatus, EmberZllInitialSecurityState};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberZllInitialSecurityState,EmberStatus};
 
 pub const ID: u16 = 0x00CF;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     security_state: EmberZllInitialSecurityState,
 }
 
@@ -20,8 +20,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

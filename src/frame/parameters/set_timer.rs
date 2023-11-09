@@ -1,10 +1,10 @@
-use crate::types::{bool, EmberEventUnits, EmberStatus};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{bool,EmberEventUnits,EmberStatus};
 
 pub const ID: u16 = 0x000E;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     timer_id: u8,
     time: u16,
     units: EmberEventUnits,
@@ -14,12 +14,7 @@ pub struct Command {
 impl Command {
     #[must_use]
     pub const fn new(timer_id: u8, time: u16, units: EmberEventUnits, repeat: bool) -> Self {
-        Self {
-            timer_id,
-            time,
-            units,
-            repeat,
-        }
+        Self { timer_id, time, units, repeat }
     }
 
     #[must_use]
@@ -27,15 +22,18 @@ impl Command {
         self.timer_id
     }
 
+
     #[must_use]
     pub const fn time(&self) -> u16 {
         self.time
     }
 
+
     #[must_use]
     pub const fn units(&self) -> EmberEventUnits {
         self.units
     }
+
 
     #[must_use]
     pub const fn repeat(&self) -> bool {
@@ -43,8 +41,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

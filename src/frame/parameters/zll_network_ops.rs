@@ -1,10 +1,10 @@
-use crate::types::{int8_t, EmberStatus, EmberZllNetwork, EzspZllNetworkOperation};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberZllNetwork,EmberStatus,int8_t,EzspZllNetworkOperation};
 
 pub const ID: u16 = 0x00B2;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     network_info: EmberZllNetwork,
     op: EzspZllNetworkOperation,
     radio_tx_power: int8_t,
@@ -12,16 +12,8 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(
-        network_info: EmberZllNetwork,
-        op: EzspZllNetworkOperation,
-        radio_tx_power: int8_t,
-    ) -> Self {
-        Self {
-            network_info,
-            op,
-            radio_tx_power,
-        }
+    pub const fn new(network_info: EmberZllNetwork, op: EzspZllNetworkOperation, radio_tx_power: int8_t) -> Self {
+        Self { network_info, op, radio_tx_power }
     }
 
     #[must_use]
@@ -29,10 +21,12 @@ impl Command {
         self.network_info
     }
 
+
     #[must_use]
     pub const fn op(&self) -> EzspZllNetworkOperation {
         self.op
     }
+
 
     #[must_use]
     pub const fn radio_tx_power(&self) -> int8_t {
@@ -40,8 +34,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

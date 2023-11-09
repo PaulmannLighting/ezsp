@@ -1,10 +1,10 @@
-use crate::types::{sl_status_t, sl_zb_sec_man_key_t, EmberEUI64};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{sl_zb_sec_man_key_t,sl_status_t,EmberEUI64};
 
 pub const ID: u16 = 0x010E;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     index: u8,
     address: EmberEUI64,
     plaintext_key: sl_zb_sec_man_key_t,
@@ -13,11 +13,7 @@ pub struct Command {
 impl Command {
     #[must_use]
     pub const fn new(index: u8, address: EmberEUI64, plaintext_key: sl_zb_sec_man_key_t) -> Self {
-        Self {
-            index,
-            address,
-            plaintext_key,
-        }
+        Self { index, address, plaintext_key }
     }
 
     #[must_use]
@@ -25,10 +21,12 @@ impl Command {
         self.index
     }
 
+
     #[must_use]
     pub const fn address(&self) -> EmberEUI64 {
         self.address
     }
+
 
     #[must_use]
     pub const fn plaintext_key(&self) -> sl_zb_sec_man_key_t {
@@ -36,8 +34,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: sl_status_t,
 }
 

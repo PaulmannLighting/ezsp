@@ -1,10 +1,10 @@
-use crate::types::{EmberEUI64, EmberNodeId};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberNodeId,EmberEUI64};
 
 pub const ID: u16 = 0x0060;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     eui64: EmberEUI64,
 }
 
@@ -20,8 +20,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     node_id: EmberNodeId,
 }
 

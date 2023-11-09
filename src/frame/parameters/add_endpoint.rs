@@ -1,22 +1,20 @@
-use crate::ezsp::Status;
-use crate::types::ByteSizedVec;
-use serde::de::{Error, Visitor};
-use serde::ser::SerializeSeq;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt::{Formatter, Write};
+use crate::types::{ByteSizedVec, EzspStatus};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::{Error, FromLeBytes, ToLeBytes};
+use std::array::IntoIter;
+use std::iter::{Chain, Copied, FlatMap};
+use std::slice::Iter;
 
 pub const ID: u16 = 0x0002;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     endpoint: u8,
     profile_id: u16,
     device_id: u16,
     app_flags: u8,
-    input_cluster_count: u8,
-    output_cluster_count: u8,
-    input_cluster_list: ByteSizedVec<u16>,
-    output_cluster_list: ByteSizedVec<u16>,
+    input_clusters: ByteSizedVec<u16>,
+    output_clusters: ByteSizedVec<u16>,
 }
 
 impl Command {
@@ -26,8 +24,6 @@ impl Command {
         profile_id: u16,
         device_id: u16,
         app_flags: u8,
-        input_cluster_count: u8,
-        output_cluster_count: u8,
         input_cluster_list: ByteSizedVec<u16>,
         output_cluster_list: ByteSizedVec<u16>,
     ) -> Self {
@@ -36,10 +32,8 @@ impl Command {
             profile_id,
             device_id,
             app_flags,
-            input_cluster_count,
-            output_cluster_count,
-            input_cluster_list,
-            output_cluster_list,
+            input_clusters: input_cluster_list,
+            output_clusters: output_cluster_list,
         }
     }
 
@@ -65,176 +59,127 @@ impl Command {
 
     #[must_use]
     pub const fn input_cluster_count(&self) -> u8 {
-        self.input_cluster_count
+        self.input_clusters.len() as u8
     }
 
     #[must_use]
     pub const fn output_cluster_count(&self) -> u8 {
-        self.output_cluster_count
+        self.output_clusters.len() as u8
     }
 
     #[must_use]
     pub const fn input_cluster_list(&self) -> &ByteSizedVec<u16> {
-        &self.input_cluster_list
+        &self.input_clusters
     }
 
     #[must_use]
     pub const fn output_cluster_list(&self) -> &ByteSizedVec<u16> {
-        &self.output_cluster_list
+        &self.output_clusters
     }
 }
 
-impl Serialize for Command {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+impl FromLeBytes for Command {
+    fn from_le_bytes<T>(bytes: &mut T) -> le_stream::Result<Self>
     where
-        S: Serializer,
+        T: Iterator<Item = u8>,
     {
-        serializer.serialize_u8(self.endpoint)?;
-        serializer.serialize_u16(self.profile_id)?;
-        serializer.serialize_16(self.device_id)?;
-        serializer.serialize_u8(self.app_flags)?;
+        let endpoint = <u8 as FromLeBytes>::from_le_bytes(bytes)?;
+        let profile_id = <u16 as FromLeBytes>::from_le_bytes(bytes)?;
+        let device_id = <u16 as FromLeBytes>::from_le_bytes(bytes)?;
+        let app_flags = <u8 as FromLeBytes>::from_le_bytes(bytes)?;
+        let input_cluster_count = <u8 as FromLeBytes>::from_le_bytes(bytes)?;
+        let output_cluster_count = <u8 as FromLeBytes>::from_le_bytes(bytes)?;
+        let mut input_clusters = ByteSizedVec::<u16>::new();
+        let mut output_clusters = ByteSizedVec::<u16>::new();
 
-        serializer.serialize_u8(self.input_cluster_list.len() as u8)?;
-        serializer.serialize_u8(self.output_cluster_list.len() as u8)?;
+        let mut buffer = [0; 2];
 
-        let mut seq = serializer.serialize_seq(Some(self.input_cluster_list.len()))?;
-        for element in self.input_cluster_list.iter() {
-            seq.serialize_element(element)?;
+        for _ in 0..input_cluster_count {
+            for byte in &mut buffer {
+                *byte = bytes.next().ok_or(Error::UnexpectedEndOfStream)?;
+            }
+
+            input_clusters
+                .push(u16::from_le_bytes(buffer))
+                .expect("buffer overflow");
         }
 
-        let mut seq = serializer.serialize_seq(Some(self.output_cluster_list.len()))?;
-        for element in self.output_cluster_list.iter() {
-            seq.serialize_element(element)?;
+        for _ in 0..output_cluster_count {
+            for byte in &mut buffer {
+                *byte = bytes.next().ok_or(Error::UnexpectedEndOfStream)?;
+            }
+
+            output_clusters
+                .push(u16::from_le_bytes(buffer))
+                .expect("buffer overflow");
         }
 
-        Ok(())
+        Ok(Self {
+            endpoint,
+            profile_id,
+            device_id,
+            app_flags,
+            input_clusters,
+            output_clusters,
+        })
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+impl ToLeBytes for Command {
+    type Iter = Chain<
+        Chain<
+            Chain<
+                Chain<
+                    Chain<
+                        Chain<Chain<IntoIter<u8, 1>, IntoIter<u8, 2>>, IntoIter<u8, 2>>,
+                        IntoIter<u8, 1>,
+                    >,
+                    IntoIter<u8, 1>,
+                >,
+                IntoIter<u8, 1>,
+            >,
+            FlatMap<Copied<Iter<'static, u16>>, [u8; 2], fn(u16) -> [u8; 2]>,
+        >,
+        FlatMap<Copied<Iter<'static, u16>>, [u8; 2], fn(u16) -> [u8; 2]>,
+    >;
+
+    fn to_le_bytes(&self) -> Self::Iter {
+        self.endpoint
+            .to_le_bytes()
+            .into_iter()
+            .chain(self.profile_id.to_le_bytes())
+            .chain(self.device_id.to_le_bytes())
+            .chain(self.app_flags.to_le_bytes())
+            .chain(self.input_cluster_count().to_le_bytes())
+            .chain(self.output_cluster_count().to_le_bytes())
+            .chain(
+                self.input_clusters
+                    .iter()
+                    .copied()
+                    .flat_map(u16::to_le_bytes as fn(u16) -> [u8; 2]),
+            )
+            .chain(
+                self.output_clusters
+                    .iter()
+                    .copied()
+                    .flat_map(u16::to_le_bytes as fn(u16) -> [u8; 2]),
+            )
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: Status,
+    status: EzspStatus,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status) -> Self {
+    pub const fn new(status: EzspStatus) -> Self {
         Self { status }
     }
 
     #[must_use]
-    pub const fn status(&self) -> Status {
+    pub const fn status(&self) -> EzspStatus {
         self.status
-    }
-}
-use std::fmt;
-
-use serde::de::{self, Deserialize, Deserializer, MapAccess, SeqAccess, Visitor};
-
-impl<'de> Deserialize<'de> for Command {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        enum Field {
-            Endpoint,
-            ProfileId,
-            DeviceId,
-            AppFlags,
-            InputClusters,
-            OutputClusters,
-        }
-
-        // This part could also be generated independently by:
-        //
-        //    #[derive(Deserialize)]
-        //    #[serde(field_identifier, rename_all = "lowercase")]
-        //    enum Field { Secs, Nanos }
-        impl<'de> Deserialize<'de> for Field {
-            fn deserialize<D>(deserializer: D) -> Result<Field, D::Error>
-            where
-                D: Deserializer<'de>,
-            {
-                struct FieldVisitor;
-
-                impl<'de> Visitor<'de> for FieldVisitor {
-                    type Value = Field;
-
-                    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                        formatter.write_str("`secs` or `nanos`")
-                    }
-
-                    fn visit_str<E>(self, value: &str) -> Result<Field, E>
-                    where
-                        E: de::Error,
-                    {
-                        match value {
-                            "endpoint" => Ok(Field::Endpoint),
-                            "profile_id" => Ok(Field::ProfileId),
-                            "device_id" => Ok(Field::DeviceId),
-                            "app_flags" => Ok(Field::AppFlags),
-                            "input_cluster_list" => Ok(Field::InputClusters),
-                            "output_cluster_list" => Ok(Field::OutputClusters),
-                            _ => Err(de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-
-                deserializer.deserialize_identifier(FieldVisitor)
-            }
-        }
-
-        struct DurationVisitor;
-
-        impl<'de> Visitor<'de> for DurationVisitor {
-            type Value = Duration;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("struct Duration")
-            }
-
-            fn visit_seq<V>(self, mut seq: V) -> Result<Duration, V::Error>
-            where
-                V: SeqAccess<'de>,
-            {
-                let secs = seq
-                    .next_element()?
-                    .ok_or_else(|| de::Error::invalid_length(0, &self))?;
-                let nanos = seq
-                    .next_element()?
-                    .ok_or_else(|| de::Error::invalid_length(1, &self))?;
-                Ok(Duration::new(secs, nanos))
-            }
-
-            fn visit_map<V>(self, mut map: V) -> Result<Duration, V::Error>
-            where
-                V: MapAccess<'de>,
-            {
-                let mut secs = None;
-                let mut nanos = None;
-                while let Some(key) = map.next_key()? {
-                    match key {
-                        Field::Secs => {
-                            if secs.is_some() {
-                                return Err(de::Error::duplicate_field("secs"));
-                            }
-                            secs = Some(map.next_value()?);
-                        }
-                        Field::Nanos => {
-                            if nanos.is_some() {
-                                return Err(de::Error::duplicate_field("nanos"));
-                            }
-                            nanos = Some(map.next_value()?);
-                        }
-                    }
-                }
-                let secs = secs.ok_or_else(|| de::Error::missing_field("secs"))?;
-                let nanos = nanos.ok_or_else(|| de::Error::missing_field("nanos"))?;
-                Ok(Duration::new(secs, nanos))
-            }
-        }
-
-        const FIELDS: &'static [&'static str] = &["secs", "nanos"];
-        deserializer.deserialize_struct("Duration", FIELDS, DurationVisitor)
     }
 }

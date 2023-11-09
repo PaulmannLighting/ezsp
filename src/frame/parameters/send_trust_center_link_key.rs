@@ -1,10 +1,10 @@
-use crate::types::{EmberEUI64, EmberNodeId, EmberStatus};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberNodeId,EmberEUI64,EmberStatus};
 
 pub const ID: u16 = 0x0067;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     destination_node_id: EmberNodeId,
     destination_eui64: EmberEUI64,
 }
@@ -12,10 +12,7 @@ pub struct Command {
 impl Command {
     #[must_use]
     pub const fn new(destination_node_id: EmberNodeId, destination_eui64: EmberEUI64) -> Self {
-        Self {
-            destination_node_id,
-            destination_eui64,
-        }
+        Self { destination_node_id, destination_eui64 }
     }
 
     #[must_use]
@@ -23,14 +20,15 @@ impl Command {
         self.destination_node_id
     }
 
+
     #[must_use]
     pub const fn destination_eui64(&self) -> EmberEUI64 {
         self.destination_eui64
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

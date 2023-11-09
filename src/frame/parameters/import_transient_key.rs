@@ -1,13 +1,10 @@
-use crate::types::{
-    sl_status_t, sl_zb_sec_man_context_t, sl_zb_sec_man_key_t, sl_zigbee_sec_man_flags_t,
-    EmberEUI64,
-};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{sl_zb_sec_man_key_t,sl_status_t,sl_zigbee_sec_man_flags_t,sl_zb_sec_man_context_t,EmberEUI64};
 
 pub const ID: u16 = 0x0111;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     context: sl_zb_sec_man_context_t,
     eui64: EmberEUI64,
     plaintext_key: sl_zb_sec_man_key_t,
@@ -16,18 +13,8 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(
-        context: sl_zb_sec_man_context_t,
-        eui64: EmberEUI64,
-        plaintext_key: sl_zb_sec_man_key_t,
-        flags: sl_zigbee_sec_man_flags_t,
-    ) -> Self {
-        Self {
-            context,
-            eui64,
-            plaintext_key,
-            flags,
-        }
+    pub const fn new(context: sl_zb_sec_man_context_t, eui64: EmberEUI64, plaintext_key: sl_zb_sec_man_key_t, flags: sl_zigbee_sec_man_flags_t) -> Self {
+        Self { context, eui64, plaintext_key, flags }
     }
 
     #[must_use]
@@ -35,15 +22,18 @@ impl Command {
         self.context
     }
 
+
     #[must_use]
     pub const fn eui64(&self) -> EmberEUI64 {
         self.eui64
     }
 
+
     #[must_use]
     pub const fn plaintext_key(&self) -> sl_zb_sec_man_key_t {
         self.plaintext_key
     }
+
 
     #[must_use]
     pub const fn flags(&self) -> sl_zigbee_sec_man_flags_t {
@@ -51,8 +41,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: sl_status_t,
     status: sl_status_t,
 }
@@ -67,6 +57,7 @@ impl Response {
     pub const fn status(&self) -> sl_status_t {
         self.status
     }
+
 
     #[must_use]
     pub const fn status(&self) -> sl_status_t {

@@ -1,9 +1,10 @@
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{};
 
 pub const ID: u16 = 0x00F5;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     index: u8,
     sfc: u32,
 }
@@ -19,18 +20,19 @@ impl Command {
         self.index
     }
 
+
     #[must_use]
     pub const fn sfc(&self) -> u32 {
         self.sfc
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response;
 
 impl Response {
     #[must_use]
     pub const fn new() -> Self {
-        Self {}
+        Self {  }
     }
 }

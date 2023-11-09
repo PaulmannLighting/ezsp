@@ -1,10 +1,10 @@
-use crate::types::{EmberStatus, EzspMfgTokenId};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EzspMfgTokenId,EmberStatus};
 
 pub const ID: u16 = 0x000C;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     token_id: EzspMfgTokenId,
     token_data_length: u8,
     token_data: ByteSizedVec<u8>,
@@ -12,16 +12,8 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(
-        token_id: EzspMfgTokenId,
-        token_data_length: u8,
-        token_data: ByteSizedVec<u8>,
-    ) -> Self {
-        Self {
-            token_id,
-            token_data_length,
-            token_data,
-        }
+    pub const fn new(token_id: EzspMfgTokenId, token_data_length: u8, token_data: ByteSizedVec<u8>) -> Self {
+        Self { token_id, token_data_length, token_data }
     }
 
     #[must_use]
@@ -29,10 +21,12 @@ impl Command {
         self.token_id
     }
 
+
     #[must_use]
     pub const fn token_data_length(&self) -> u8 {
         self.token_data_length
     }
+
 
     #[must_use]
     pub const fn token_data(&self) -> ByteSizedVec<u8> {
@@ -40,8 +34,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

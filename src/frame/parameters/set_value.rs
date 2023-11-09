@@ -1,10 +1,10 @@
-use crate::types::{EzspStatus, EzspValueId};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EzspStatus,EzspValueId};
 
 pub const ID: u16 = 0x00AB;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     value_id: EzspValueId,
     value_length: u8,
     value: ByteSizedVec<u8>,
@@ -13,11 +13,7 @@ pub struct Command {
 impl Command {
     #[must_use]
     pub const fn new(value_id: EzspValueId, value_length: u8, value: ByteSizedVec<u8>) -> Self {
-        Self {
-            value_id,
-            value_length,
-            value,
-        }
+        Self { value_id, value_length, value }
     }
 
     #[must_use]
@@ -25,10 +21,12 @@ impl Command {
         self.value_id
     }
 
+
     #[must_use]
     pub const fn value_length(&self) -> u8 {
         self.value_length
     }
+
 
     #[must_use]
     pub const fn value(&self) -> ByteSizedVec<u8> {
@@ -36,8 +34,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EzspStatus,
 }
 

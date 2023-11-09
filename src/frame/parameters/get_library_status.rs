@@ -1,9 +1,9 @@
 use crate::types::{EmberLibraryId, EmberLibraryStatus};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0001;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
     library_id: EmberLibraryId,
 }
@@ -20,7 +20,7 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
     status: EmberLibraryStatus,
 }

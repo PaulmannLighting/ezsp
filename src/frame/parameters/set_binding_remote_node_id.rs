@@ -1,10 +1,10 @@
-use crate::types::EmberNodeId;
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberNodeId};
 
 pub const ID: u16 = 0x0030;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     index: u8,
     node_id: EmberNodeId,
 }
@@ -20,18 +20,19 @@ impl Command {
         self.index
     }
 
+
     #[must_use]
     pub const fn node_id(&self) -> EmberNodeId {
         self.node_id
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response;
 
 impl Response {
     #[must_use]
     pub const fn new() -> Self {
-        Self {}
+        Self {  }
     }
 }

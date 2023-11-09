@@ -1,29 +1,27 @@
-use crate::types::bool;
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{bool};
 
 pub const ID: u16 = 0x00D7;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command;
 
 impl Command {
     #[must_use]
     pub const fn new() -> Self {
-        Self {}
+        Self {  }
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     zll_operation_in_progress: bool,
 }
 
 impl Response {
     #[must_use]
     pub const fn new(zll_operation_in_progress: bool) -> Self {
-        Self {
-            zll_operation_in_progress,
-        }
+        Self { zll_operation_in_progress }
     }
 
     #[must_use]

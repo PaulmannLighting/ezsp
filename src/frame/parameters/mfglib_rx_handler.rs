@@ -1,20 +1,20 @@
-use crate::types::int8_t;
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{int8_t};
 
 pub const ID: u16 = 0x008E;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command;
 
 impl Command {
     #[must_use]
     pub const fn new() -> Self {
-        Self {}
+        Self {  }
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     link_quality: u8,
     rssi: int8_t,
     packet_length: u8,
@@ -23,18 +23,8 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(
-        link_quality: u8,
-        rssi: int8_t,
-        packet_length: u8,
-        packet_contents: ByteSizedVec<u8>,
-    ) -> Self {
-        Self {
-            link_quality,
-            rssi,
-            packet_length,
-            packet_contents,
-        }
+    pub const fn new(link_quality: u8, rssi: int8_t, packet_length: u8, packet_contents: ByteSizedVec<u8>) -> Self {
+        Self { link_quality, rssi, packet_length, packet_contents }
     }
 
     #[must_use]
@@ -42,15 +32,18 @@ impl Response {
         self.link_quality
     }
 
+
     #[must_use]
     pub const fn rssi(&self) -> int8_t {
         self.rssi
     }
 
+
     #[must_use]
     pub const fn packet_length(&self) -> u8 {
         self.packet_length
     }
+
 
     #[must_use]
     pub const fn packet_contents(&self) -> ByteSizedVec<u8> {

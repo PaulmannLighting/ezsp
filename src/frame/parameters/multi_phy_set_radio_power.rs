@@ -1,10 +1,10 @@
-use crate::types::{int8_t, EmberStatus};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{int8_t,EmberStatus};
 
 pub const ID: u16 = 0x00FA;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     phy_index: u8,
     power: int8_t,
 }
@@ -20,14 +20,15 @@ impl Command {
         self.phy_index
     }
 
+
     #[must_use]
     pub const fn power(&self) -> int8_t {
         self.power
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

@@ -1,10 +1,10 @@
-use crate::types::{EmberCertificateData, EmberMessageDigest, EmberSignatureData, EmberStatus};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberSignatureData,EmberMessageDigest,EmberCertificateData,EmberStatus};
 
 pub const ID: u16 = 0x00A3;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     digest: EmberMessageDigest,
     signer_certificate: EmberCertificateData,
     received_sig: EmberSignatureData,
@@ -12,16 +12,8 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(
-        digest: EmberMessageDigest,
-        signer_certificate: EmberCertificateData,
-        received_sig: EmberSignatureData,
-    ) -> Self {
-        Self {
-            digest,
-            signer_certificate,
-            received_sig,
-        }
+    pub const fn new(digest: EmberMessageDigest, signer_certificate: EmberCertificateData, received_sig: EmberSignatureData) -> Self {
+        Self { digest, signer_certificate, received_sig }
     }
 
     #[must_use]
@@ -29,10 +21,12 @@ impl Command {
         self.digest
     }
 
+
     #[must_use]
     pub const fn signer_certificate(&self) -> EmberCertificateData {
         self.signer_certificate
     }
+
 
     #[must_use]
     pub const fn received_sig(&self) -> EmberSignatureData {
@@ -40,8 +34,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

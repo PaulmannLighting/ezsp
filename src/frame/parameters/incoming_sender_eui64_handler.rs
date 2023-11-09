@@ -1,20 +1,20 @@
-use crate::types::EmberEUI64;
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberEUI64};
 
 pub const ID: u16 = 0x0062;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command;
 
 impl Command {
     #[must_use]
     pub const fn new() -> Self {
-        Self {}
+        Self {  }
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     sender_eui64: EmberEUI64,
 }
 

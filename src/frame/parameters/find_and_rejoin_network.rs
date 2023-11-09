@@ -1,10 +1,10 @@
-use crate::types::{bool, EmberStatus};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{bool,EmberStatus};
 
 pub const ID: u16 = 0x0021;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     have_current_network_key: bool,
     channel_mask: u32,
 }
@@ -12,10 +12,7 @@ pub struct Command {
 impl Command {
     #[must_use]
     pub const fn new(have_current_network_key: bool, channel_mask: u32) -> Self {
-        Self {
-            have_current_network_key,
-            channel_mask,
-        }
+        Self { have_current_network_key, channel_mask }
     }
 
     #[must_use]
@@ -23,14 +20,15 @@ impl Command {
         self.have_current_network_key
     }
 
+
     #[must_use]
     pub const fn channel_mask(&self) -> u32 {
         self.channel_mask
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

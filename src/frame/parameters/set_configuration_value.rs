@@ -1,10 +1,10 @@
-use crate::types::{EzspConfigId, EzspStatus};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EzspStatus,EzspConfigId};
 
 pub const ID: u16 = 0x0053;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     config_id: EzspConfigId,
     value: u16,
 }
@@ -20,14 +20,15 @@ impl Command {
         self.config_id
     }
 
+
     #[must_use]
     pub const fn value(&self) -> u16 {
         self.value
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EzspStatus,
 }
 

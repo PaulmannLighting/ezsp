@@ -1,10 +1,10 @@
-use crate::types::{EmberEUI64, EmberStatus};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberEUI64,EmberStatus};
 
 pub const ID: u16 = 0x005C;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     address_table_index: u8,
     eui64: EmberEUI64,
 }
@@ -12,10 +12,7 @@ pub struct Command {
 impl Command {
     #[must_use]
     pub const fn new(address_table_index: u8, eui64: EmberEUI64) -> Self {
-        Self {
-            address_table_index,
-            eui64,
-        }
+        Self { address_table_index, eui64 }
     }
 
     #[must_use]
@@ -23,14 +20,15 @@ impl Command {
         self.address_table_index
     }
 
+
     #[must_use]
     pub const fn eui64(&self) -> EmberEUI64 {
         self.eui64
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

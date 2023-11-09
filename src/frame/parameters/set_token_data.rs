@@ -1,10 +1,10 @@
-use crate::types::{EmberStatus, EmberTokenData};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberTokenData,EmberStatus};
 
 pub const ID: u16 = 0x0103;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     token: u32,
     index: u32,
     token_data: EmberTokenData,
@@ -13,11 +13,7 @@ pub struct Command {
 impl Command {
     #[must_use]
     pub const fn new(token: u32, index: u32, token_data: EmberTokenData) -> Self {
-        Self {
-            token,
-            index,
-            token_data,
-        }
+        Self { token, index, token_data }
     }
 
     #[must_use]
@@ -25,10 +21,12 @@ impl Command {
         self.token
     }
 
+
     #[must_use]
     pub const fn index(&self) -> u32 {
         self.index
     }
+
 
     #[must_use]
     pub const fn token_data(&self) -> EmberTokenData {
@@ -36,8 +34,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

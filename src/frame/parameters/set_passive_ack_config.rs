@@ -1,10 +1,10 @@
-use crate::types::EmberStatus;
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberStatus};
 
 pub const ID: u16 = 0x0105;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     config: u8,
     min_acks_needed: u8,
 }
@@ -12,10 +12,7 @@ pub struct Command {
 impl Command {
     #[must_use]
     pub const fn new(config: u8, min_acks_needed: u8) -> Self {
-        Self {
-            config,
-            min_acks_needed,
-        }
+        Self { config, min_acks_needed }
     }
 
     #[must_use]
@@ -23,14 +20,15 @@ impl Command {
         self.config
     }
 
+
     #[must_use]
     pub const fn min_acks_needed(&self) -> u8 {
         self.min_acks_needed
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

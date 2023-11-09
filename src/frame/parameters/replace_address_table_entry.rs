@@ -1,10 +1,10 @@
-use crate::types::{bool, EmberEUI64, EmberNodeId, EmberStatus};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{bool,EmberNodeId,EmberEUI64,EmberStatus};
 
 pub const ID: u16 = 0x0082;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     address_table_index: u8,
     new_eui64: EmberEUI64,
     new_id: EmberNodeId,
@@ -13,18 +13,8 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(
-        address_table_index: u8,
-        new_eui64: EmberEUI64,
-        new_id: EmberNodeId,
-        new_extended_timeout: bool,
-    ) -> Self {
-        Self {
-            address_table_index,
-            new_eui64,
-            new_id,
-            new_extended_timeout,
-        }
+    pub const fn new(address_table_index: u8, new_eui64: EmberEUI64, new_id: EmberNodeId, new_extended_timeout: bool) -> Self {
+        Self { address_table_index, new_eui64, new_id, new_extended_timeout }
     }
 
     #[must_use]
@@ -32,15 +22,18 @@ impl Command {
         self.address_table_index
     }
 
+
     #[must_use]
     pub const fn new_eui64(&self) -> EmberEUI64 {
         self.new_eui64
     }
 
+
     #[must_use]
     pub const fn new_id(&self) -> EmberNodeId {
         self.new_id
     }
+
 
     #[must_use]
     pub const fn new_extended_timeout(&self) -> bool {
@@ -48,8 +41,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
     old_eui64: EmberEUI64,
     old_id: EmberNodeId,
@@ -58,18 +51,8 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(
-        status: EmberStatus,
-        old_eui64: EmberEUI64,
-        old_id: EmberNodeId,
-        old_extended_timeout: bool,
-    ) -> Self {
-        Self {
-            status,
-            old_eui64,
-            old_id,
-            old_extended_timeout,
-        }
+    pub const fn new(status: EmberStatus, old_eui64: EmberEUI64, old_id: EmberNodeId, old_extended_timeout: bool) -> Self {
+        Self { status, old_eui64, old_id, old_extended_timeout }
     }
 
     #[must_use]
@@ -77,15 +60,18 @@ impl Response {
         self.status
     }
 
+
     #[must_use]
     pub const fn old_eui64(&self) -> EmberEUI64 {
         self.old_eui64
     }
 
+
     #[must_use]
     pub const fn old_id(&self) -> EmberNodeId {
         self.old_id
     }
+
 
     #[must_use]
     pub const fn old_extended_timeout(&self) -> bool {

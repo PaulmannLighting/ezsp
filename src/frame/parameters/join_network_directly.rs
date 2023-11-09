@@ -1,10 +1,10 @@
-use crate::types::{bool, int8_t, EmberBeaconData, EmberNodeType, EmberStatus};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{bool,EmberBeaconData,EmberNodeType,int8_t,EmberStatus};
 
 pub const ID: u16 = 0x003B;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     local_node_type: EmberNodeType,
     beacon: EmberBeaconData,
     radio_tx_power: int8_t,
@@ -13,18 +13,8 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(
-        local_node_type: EmberNodeType,
-        beacon: EmberBeaconData,
-        radio_tx_power: int8_t,
-        clear_beacons_after_network_up: bool,
-    ) -> Self {
-        Self {
-            local_node_type,
-            beacon,
-            radio_tx_power,
-            clear_beacons_after_network_up,
-        }
+    pub const fn new(local_node_type: EmberNodeType, beacon: EmberBeaconData, radio_tx_power: int8_t, clear_beacons_after_network_up: bool) -> Self {
+        Self { local_node_type, beacon, radio_tx_power, clear_beacons_after_network_up }
     }
 
     #[must_use]
@@ -32,15 +22,18 @@ impl Command {
         self.local_node_type
     }
 
+
     #[must_use]
     pub const fn beacon(&self) -> EmberBeaconData {
         self.beacon
     }
 
+
     #[must_use]
     pub const fn radio_tx_power(&self) -> int8_t {
         self.radio_tx_power
     }
+
 
     #[must_use]
     pub const fn clear_beacons_after_network_up(&self) -> bool {
@@ -48,8 +41,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

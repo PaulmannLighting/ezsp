@@ -1,10 +1,10 @@
-use crate::types::{EmberNetworkParameters, EmberNodeType, EmberStatus};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberNetworkParameters,EmberNodeType,EmberStatus};
 
 pub const ID: u16 = 0x001F;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     node_type: EmberNodeType,
     parameters: EmberNetworkParameters,
 }
@@ -12,10 +12,7 @@ pub struct Command {
 impl Command {
     #[must_use]
     pub const fn new(node_type: EmberNodeType, parameters: EmberNetworkParameters) -> Self {
-        Self {
-            node_type,
-            parameters,
-        }
+        Self { node_type, parameters }
     }
 
     #[must_use]
@@ -23,14 +20,15 @@ impl Command {
         self.node_type
     }
 
+
     #[must_use]
     pub const fn parameters(&self) -> EmberNetworkParameters {
         self.parameters
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

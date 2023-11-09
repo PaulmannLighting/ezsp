@@ -1,10 +1,10 @@
-use crate::types::{bool, EmberGpAddress, EmberKeyData};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{bool,EmberKeyData,EmberGpAddress};
 
 pub const ID: u16 = 0x00C9;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     options: u32,
     addr: EmberGpAddress,
     comm_mode: u8,
@@ -19,30 +19,8 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(
-        options: u32,
-        addr: EmberGpAddress,
-        comm_mode: u8,
-        sink_network_address: u16,
-        sink_group_id: u16,
-        assigned_alias: u16,
-        sink_ieee_address: [u8; 8],
-        gpd_key: EmberKeyData,
-        gpd_security_frame_counter: u32,
-        forwarding_radius: u8,
-    ) -> Self {
-        Self {
-            options,
-            addr,
-            comm_mode,
-            sink_network_address,
-            sink_group_id,
-            assigned_alias,
-            sink_ieee_address,
-            gpd_key,
-            gpd_security_frame_counter,
-            forwarding_radius,
-        }
+    pub const fn new(options: u32, addr: EmberGpAddress, comm_mode: u8, sink_network_address: u16, sink_group_id: u16, assigned_alias: u16, sink_ieee_address: [u8; 8], gpd_key: EmberKeyData, gpd_security_frame_counter: u32, forwarding_radius: u8) -> Self {
+        Self { options, addr, comm_mode, sink_network_address, sink_group_id, assigned_alias, sink_ieee_address, gpd_key, gpd_security_frame_counter, forwarding_radius }
     }
 
     #[must_use]
@@ -50,45 +28,54 @@ impl Command {
         self.options
     }
 
+
     #[must_use]
     pub const fn addr(&self) -> EmberGpAddress {
         self.addr
     }
+
 
     #[must_use]
     pub const fn comm_mode(&self) -> u8 {
         self.comm_mode
     }
 
+
     #[must_use]
     pub const fn sink_network_address(&self) -> u16 {
         self.sink_network_address
     }
+
 
     #[must_use]
     pub const fn sink_group_id(&self) -> u16 {
         self.sink_group_id
     }
 
+
     #[must_use]
     pub const fn assigned_alias(&self) -> u16 {
         self.assigned_alias
     }
+
 
     #[must_use]
     pub const fn sink_ieee_address(&self) -> [u8; 8] {
         self.sink_ieee_address
     }
 
+
     #[must_use]
     pub const fn gpd_key(&self) -> EmberKeyData {
         self.gpd_key
     }
 
+
     #[must_use]
     pub const fn gpd_security_frame_counter(&self) -> u32 {
         self.gpd_security_frame_counter
     }
+
 
     #[must_use]
     pub const fn forwarding_radius(&self) -> u8 {
@@ -96,8 +83,8 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     gp_pairing_added: bool,
 }
 

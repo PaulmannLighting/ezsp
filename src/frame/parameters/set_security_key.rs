@@ -1,10 +1,10 @@
-use crate::types::{EmberKeyData, EzspStatus, SecureEzspSecurityType};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberKeyData,EzspStatus,SecureEzspSecurityType};
 
 pub const ID: u16 = 0x00CA;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     key: EmberKeyData,
     security_type: SecureEzspSecurityType,
 }
@@ -20,14 +20,15 @@ impl Command {
         self.key
     }
 
+
     #[must_use]
     pub const fn security_type(&self) -> SecureEzspSecurityType {
         self.security_type
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EzspStatus,
 }
 

@@ -1,24 +1,18 @@
-use crate::types::{EmberKeyData, EmberStatus, EmberZllInitialSecurityState};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberZllInitialSecurityState,EmberKeyData,EmberStatus};
 
 pub const ID: u16 = 0x00B3;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     network_key: EmberKeyData,
     security_state: EmberZllInitialSecurityState,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(
-        network_key: EmberKeyData,
-        security_state: EmberZllInitialSecurityState,
-    ) -> Self {
-        Self {
-            network_key,
-            security_state,
-        }
+    pub const fn new(network_key: EmberKeyData, security_state: EmberZllInitialSecurityState) -> Self {
+        Self { network_key, security_state }
     }
 
     #[must_use]
@@ -26,14 +20,15 @@ impl Command {
         self.network_key
     }
 
+
     #[must_use]
     pub const fn security_state(&self) -> EmberZllInitialSecurityState {
         self.security_state
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

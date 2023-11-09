@@ -1,20 +1,20 @@
-use crate::types::{int8_t, EmberZllAddressAssignment};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberZllAddressAssignment,int8_t};
 
 pub const ID: u16 = 0x00B8;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command;
 
 impl Command {
     #[must_use]
     pub const fn new() -> Self {
-        Self {}
+        Self {  }
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     address_info: EmberZllAddressAssignment,
     last_hop_lqi: u8,
     last_hop_rssi: int8_t,
@@ -22,16 +22,8 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(
-        address_info: EmberZllAddressAssignment,
-        last_hop_lqi: u8,
-        last_hop_rssi: int8_t,
-    ) -> Self {
-        Self {
-            address_info,
-            last_hop_lqi,
-            last_hop_rssi,
-        }
+    pub const fn new(address_info: EmberZllAddressAssignment, last_hop_lqi: u8, last_hop_rssi: int8_t) -> Self {
+        Self { address_info, last_hop_lqi, last_hop_rssi }
     }
 
     #[must_use]
@@ -39,10 +31,12 @@ impl Response {
         self.address_info
     }
 
+
     #[must_use]
     pub const fn last_hop_lqi(&self) -> u8 {
         self.last_hop_lqi
     }
+
 
     #[must_use]
     pub const fn last_hop_rssi(&self) -> int8_t {

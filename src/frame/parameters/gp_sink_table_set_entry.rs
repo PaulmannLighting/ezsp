@@ -1,10 +1,10 @@
-use crate::types::{EmberGpSinkTableEntry, EmberStatus};
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::types::{EmberGpSinkTableEntry,EmberStatus};
 
 pub const ID: u16 = 0x00DF;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Command {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Command{
     sink_index: u8,
     entry: EmberGpSinkTableEntry,
 }
@@ -20,14 +20,15 @@ impl Command {
         self.sink_index
     }
 
+
     #[must_use]
     pub const fn entry(&self) -> EmberGpSinkTableEntry {
         self.entry
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response{
     status: EmberStatus,
 }
 

@@ -4,7 +4,6 @@ pub mod child;
 mod constants;
 pub mod counter;
 pub mod entropy;
-pub mod error;
 pub mod event;
 pub mod join_method;
 pub mod neighbor;

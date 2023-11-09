@@ -1,7 +1,6 @@
 mod mfg;
 mod stack;
 
-use super::error::Error;
 pub use mfg::Mfg;
 use num_traits::{FromPrimitive, ToPrimitive};
 pub use stack::Stack;
@@ -47,9 +46,9 @@ impl ToPrimitive for Id {
 }
 
 impl TryFrom<u8> for Id {
-    type Error = Error;
+    type Error = u8;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::from_u8(value).ok_or(Error::InvalidTokenId(value))
+        Self::from_u8(value).ok_or(value)
     }
 }

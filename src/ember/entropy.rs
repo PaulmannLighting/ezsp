@@ -1,4 +1,3 @@
-use super::error::Error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
@@ -17,9 +16,9 @@ impl From<Source> for u8 {
 }
 
 impl TryFrom<u8> for Source {
-    type Error = Error;
+    type Error = u8;
 
     fn try_from(value: u8) -> Result<Self, <Self as TryFrom<u8>>::Error> {
-        Self::from_u8(value).ok_or(Error::InvalidEntropySource(value))
+        Self::from_u8(value).ok_or(value)
     }
 }

@@ -4,7 +4,6 @@ pub mod policy;
 
 pub mod config;
 pub mod decision;
-pub mod error;
 mod status;
 pub mod types;
 pub mod value;

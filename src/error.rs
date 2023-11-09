@@ -4,8 +4,6 @@ use std::fmt::{Display, Formatter};
 pub enum Error {
     AshError(ashv2::Error),
     Deserialization(crate::serde::deserializer::Error),
-    Ember(crate::ember::error::Error),
-    Ezsp(crate::ezsp::error::Error),
     InvalidSize { expected: usize, found: usize },
     Io(std::io::Error),
     Serialization(crate::serde::serializer::Error),
@@ -17,8 +15,6 @@ impl Display for Error {
         match self {
             Self::AshError(error) => Display::fmt(error, f),
             Self::Deserialization(error) => Display::fmt(error, f),
-            Self::Ember(error) => Display::fmt(error, f),
-            Self::Ezsp(error) => Display::fmt(error, f),
             Self::InvalidSize { expected, found } => {
                 write!(f, "Expected {expected} bytes, but found {found} bytes.")
             }
@@ -56,18 +52,6 @@ impl From<ashv2::Error> for Error {
 impl From<crate::serde::deserializer::Error> for Error {
     fn from(error: crate::serde::deserializer::Error) -> Self {
         Self::Deserialization(error)
-    }
-}
-
-impl From<crate::ember::error::Error> for Error {
-    fn from(error: crate::ember::error::Error) -> Self {
-        Self::Ember(error)
-    }
-}
-
-impl From<crate::ezsp::error::Error> for Error {
-    fn from(error: crate::ezsp::error::Error) -> Self {
-        Self::Ezsp(error)
     }
 }
 

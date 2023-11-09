@@ -95,9 +95,9 @@ impl From<Status> for u8 {
 }
 
 impl TryFrom<u8> for Status {
-    type Error = super::error::Error;
+    type Error = u8;
 
-    fn try_from(value: u8) -> Result<Self, super::error::Error> {
-        Self::from_u8(value).ok_or(super::error::Error::InvalidStatus(value))
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Self::from_u8(value).ok_or(value)
     }
 }

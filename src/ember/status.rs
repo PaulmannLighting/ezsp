@@ -7,7 +7,6 @@ mod phy;
 mod serial;
 mod sim_eeprom;
 
-use super::error::Error;
 pub use adc::Adc;
 pub use application::Application;
 pub use eeprom::Eeprom;
@@ -331,9 +330,9 @@ impl ToPrimitive for Status {
 }
 
 impl TryFrom<u8> for Status {
-    type Error = Error;
+    type Error = u8;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::from_u8(value).ok_or(Error::InvalidStatus(value))
+        Self::from_u8(value).ok_or(value)
     }
 }

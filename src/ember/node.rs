@@ -1,4 +1,3 @@
-use super::error::Error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
@@ -18,9 +17,9 @@ impl From<Type> for u8 {
 }
 
 impl TryFrom<u8> for Type {
-    type Error = Error;
+    type Error = u8;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::from_u8(value).ok_or(Error::InvalidNodeType(value))
+        Self::from_u8(value).ok_or(value)
     }
 }

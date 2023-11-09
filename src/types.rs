@@ -1,7 +1,6 @@
 pub type ByteSizedVec<T> = heapless::Vec<T, { u8::MAX as usize }>;
 pub type EzspStatus = u8;
 pub type EmberEUI64 = u64;
-pub type EmberKeyData = [u8; 16];
 pub type EmberStatus = u8;
 pub type EmberCertificateData = [u8; 48];
 pub type EmberPublicKeyData = [u8; 22];
@@ -15,3 +14,5 @@ pub type EmberSignature283k1Data = [u8; 72];
 pub type EmberMessageDigest = [u8; 16];
 pub type SecureEzspRandomNumber = [u8; 16];
 pub type SecureEzspSessionId = [u8; 8];
+pub type EmberNodeId = u16;
+pub type EmberNodeType = u8;

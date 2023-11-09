@@ -1,6 +1,5 @@
 pub mod scan;
 
-use super::error::Error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
@@ -20,10 +19,10 @@ impl From<InitBitmask> for u16 {
 }
 
 impl TryFrom<u16> for InitBitmask {
-    type Error = Error;
+    type Error = u8;
 
     fn try_from(value: u16) -> Result<Self, Self::Error> {
-        Self::from_u16(value).ok_or(Error::InvalidNetworkInitBitmask(value))
+        Self::from_u16(value).ok_or(value)
     }
 }
 
@@ -43,9 +42,9 @@ impl From<Status> for u8 {
 }
 
 impl TryFrom<u8> for Status {
-    type Error = Error;
+    type Error = u8;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::from_u8(value).ok_or(Error::InvalidNetworkStatus(value))
+        Self::from_u8(value).ok_or(value)
     }
 }

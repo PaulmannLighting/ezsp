@@ -1,4 +1,5 @@
 pub type NodeId = u16;
+pub type NodeType = u8;
 pub type PanId = u16;
 pub type MulticastId = u16;
 pub type Eui64 = u64;

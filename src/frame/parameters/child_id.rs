@@ -1,4 +1,4 @@
-use crate::types::EmberNodeId;
+use crate::ember::types::NodeId;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0106;
@@ -22,17 +22,17 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    child_id: EmberNodeId,
+    child_id: NodeId,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(child_id: EmberNodeId) -> Self {
+    pub const fn new(child_id: NodeId) -> Self {
         Self { child_id }
     }
 
     #[must_use]
-    pub const fn child_id(&self) -> EmberNodeId {
+    pub const fn child_id(&self) -> NodeId {
         self.child_id
     }
 }

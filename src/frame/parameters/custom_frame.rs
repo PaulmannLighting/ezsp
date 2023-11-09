@@ -1,10 +1,11 @@
+use crate::ember::Status;
+use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberStatus};
 
 pub const ID: u16 = 0x0047;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     payload_length: u8,
     payload: ByteSizedVec<u8>,
 }
@@ -12,7 +13,10 @@ pub struct Command{
 impl Command {
     #[must_use]
     pub const fn new(payload_length: u8, payload: ByteSizedVec<u8>) -> Self {
-        Self { payload_length, payload }
+        Self {
+            payload_length,
+            payload,
+        }
     }
 
     #[must_use]
@@ -20,40 +24,40 @@ impl Command {
         self.payload_length
     }
 
-
     #[must_use]
-    pub const fn payload(&self) -> ByteSizedVec<u8> {
-        self.payload
+    pub const fn payload(&self) -> &ByteSizedVec<u8> {
+        &self.payload
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    status: EmberStatus,
+pub struct Response {
+    status: u8,
     reply_length: u8,
     reply: ByteSizedVec<u8>,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus, reply_length: u8, reply: ByteSizedVec<u8>) -> Self {
-        Self { status, reply_length, reply }
+    pub fn new(status: Status, reply_length: u8, reply: ByteSizedVec<u8>) -> Self {
+        Self {
+            status: status.into(),
+            reply_length,
+            reply,
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
-
 
     #[must_use]
     pub const fn reply_length(&self) -> u8 {
         self.reply_length
     }
 
-
     #[must_use]
-    pub const fn reply(&self) -> ByteSizedVec<u8> {
-        self.reply
+    pub const fn reply(&self) -> &ByteSizedVec<u8> {
+        &self.reply
     }
 }

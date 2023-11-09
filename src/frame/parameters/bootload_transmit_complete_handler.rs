@@ -1,4 +1,5 @@
-use crate::types::{ByteSizedVec, EmberStatus};
+use crate::ember::Status;
+use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0093;
@@ -15,28 +16,23 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EmberStatus,
+    status: u8,
     message_length: u8,
     message_contents: ByteSizedVec<u8>,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(
-        status: EmberStatus,
-        message_length: u8,
-        message_contents: ByteSizedVec<u8>,
-    ) -> Self {
+    pub fn new(status: Status, message_length: u8, message_contents: ByteSizedVec<u8>) -> Self {
         Self {
-            status,
+            status: status.into(),
             message_length,
             message_contents,
         }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 
     #[must_use]
@@ -45,7 +41,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn message_contents(&self) -> ByteSizedVec<u8> {
-        self.message_contents
+    pub const fn message_contents(&self) -> &ByteSizedVec<u8> {
+        &self.message_contents
     }
 }

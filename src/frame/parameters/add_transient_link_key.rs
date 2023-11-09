@@ -1,17 +1,18 @@
-use crate::types::{EmberEUI64, EmberKeyData, EmberStatus};
+use crate::ember::types::{Eui64, KeyData};
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x00AF;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
-    partner: EmberEUI64,
-    transient_key: EmberKeyData,
+    partner: Eui64,
+    transient_key: KeyData,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(partner: EmberEUI64, transient_key: EmberKeyData) -> Self {
+    pub const fn new(partner: Eui64, transient_key: KeyData) -> Self {
         Self {
             partner,
             transient_key,
@@ -19,29 +20,30 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn partner(&self) -> EmberEUI64 {
+    pub const fn partner(&self) -> Eui64 {
         self.partner
     }
 
     #[must_use]
-    pub const fn transient_key(&self) -> EmberKeyData {
-        self.transient_key
+    pub const fn transient_key(&self) -> &KeyData {
+        &self.transient_key
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EmberStatus,
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
-        Self { status }
+    pub fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub const fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

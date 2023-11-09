@@ -5,6 +5,7 @@ mod constants;
 pub mod counter;
 pub mod entropy;
 pub mod event;
+pub mod gp;
 pub mod join_method;
 pub mod neighbor;
 pub mod network;

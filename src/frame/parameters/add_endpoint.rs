@@ -1,4 +1,5 @@
-use crate::types::{ByteSizedVec, EzspStatus};
+use crate::ezsp::Status;
+use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::{Error, FromLeBytes, ToLeBytes};
 use std::array::IntoIter;
@@ -169,17 +170,18 @@ impl ToLeBytes for Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EzspStatus,
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EzspStatus) -> Self {
-        Self { status }
+    pub fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EzspStatus {
-        self.status
+    pub const fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

@@ -1,4 +1,5 @@
-use crate::types::{EmberSmacData, EmberStatus};
+use crate::ember::types::SmacData;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x00A0;
@@ -15,37 +16,32 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EmberStatus,
-    initiator_smac: EmberSmacData,
-    responder_smac: EmberSmacData,
+    status: u8,
+    initiator_smac: SmacData,
+    responder_smac: SmacData,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(
-        status: EmberStatus,
-        initiator_smac: EmberSmacData,
-        responder_smac: EmberSmacData,
-    ) -> Self {
+    pub fn new(status: Status, initiator_smac: SmacData, responder_smac: SmacData) -> Self {
         Self {
-            status,
+            status: status.into(),
             initiator_smac,
             responder_smac,
         }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 
     #[must_use]
-    pub const fn initiator_smac(&self) -> EmberSmacData {
-        self.initiator_smac
+    pub const fn initiator_smac(&self) -> &SmacData {
+        &self.initiator_smac
     }
 
     #[must_use]
-    pub const fn responder_smac(&self) -> EmberSmacData {
-        self.responder_smac
+    pub const fn responder_smac(&self) -> &SmacData {
+        &self.responder_smac
     }
 }

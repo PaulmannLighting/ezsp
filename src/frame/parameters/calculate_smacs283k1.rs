@@ -1,4 +1,5 @@
-use crate::types::{EmberCertificate283k1Data, EmberPublicKey283k1Data, EmberStatus};
+use crate::ember::types::{Certificate283k1Data, PublicKey283k1Data};
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x00EA;
@@ -6,16 +7,16 @@ pub const ID: u16 = 0x00EA;
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
     am_initiator: bool,
-    partner_certificate: EmberCertificate283k1Data,
-    partner_ephemeral_public_key: EmberPublicKey283k1Data,
+    partner_certificate: Certificate283k1Data,
+    partner_ephemeral_public_key: PublicKey283k1Data,
 }
 
 impl Command {
     #[must_use]
     pub const fn new(
         am_initiator: bool,
-        partner_certificate: EmberCertificate283k1Data,
-        partner_ephemeral_public_key: EmberPublicKey283k1Data,
+        partner_certificate: Certificate283k1Data,
+        partner_ephemeral_public_key: PublicKey283k1Data,
     ) -> Self {
         Self {
             am_initiator,
@@ -30,29 +31,30 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn partner_certificate(&self) -> EmberCertificate283k1Data {
-        self.partner_certificate
+    pub const fn partner_certificate(&self) -> &Certificate283k1Data {
+        &self.partner_certificate
     }
 
     #[must_use]
-    pub const fn partner_ephemeral_public_key(&self) -> EmberPublicKey283k1Data {
-        self.partner_ephemeral_public_key
+    pub const fn partner_ephemeral_public_key(&self) -> &PublicKey283k1Data {
+        &self.partner_ephemeral_public_key
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EmberStatus,
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
-        Self { status }
+    pub fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

@@ -144,7 +144,7 @@ impl ToLeBytes for Command {
         FlatMap<Copied<Iter<'static, u16>>, [u8; 2], fn(u16) -> [u8; 2]>,
     >;
 
-    fn to_le_bytes(&self) -> Self::Iter {
+    fn to_le_bytes(self) -> Self::Iter {
         self.endpoint
             .to_le_bytes()
             .into_iter()

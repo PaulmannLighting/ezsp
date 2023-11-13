@@ -1,19 +1,25 @@
+use crate::ember::Eui64;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{sl_zb_sec_man_key_t,sl_status_t,EmberEUI64};
+use siliconlabs::zigbee::security::ManKey;
+use siliconlabs::Status;
 
 pub const ID: u16 = 0x010E;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     index: u8,
-    address: EmberEUI64,
-    plaintext_key: sl_zb_sec_man_key_t,
+    address: Eui64,
+    plaintext_key: ManKey,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(index: u8, address: EmberEUI64, plaintext_key: sl_zb_sec_man_key_t) -> Self {
-        Self { index, address, plaintext_key }
+    pub const fn new(index: u8, address: Eui64, plaintext_key: ManKey) -> Self {
+        Self {
+            index,
+            address,
+            plaintext_key,
+        }
     }
 
     #[must_use]
@@ -21,32 +27,31 @@ impl Command {
         self.index
     }
 
-
     #[must_use]
-    pub const fn address(&self) -> EmberEUI64 {
+    pub const fn address(&self) -> Eui64 {
         self.address
     }
 
-
     #[must_use]
-    pub const fn plaintext_key(&self) -> sl_zb_sec_man_key_t {
-        self.plaintext_key
+    pub const fn plaintext_key(&self) -> &ManKey {
+        &self.plaintext_key
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    status: sl_status_t,
+pub struct Response {
+    status: u32,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: sl_status_t) -> Self {
-        Self { status }
+    pub const fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> sl_status_t {
-        self.status
+    pub fn status(&self) -> Result<Status, u32> {
+        Status::try_from(self.status)
     }
 }

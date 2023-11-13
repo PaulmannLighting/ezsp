@@ -1,7 +1,6 @@
 use crate::ember::types::{MessageDigest, Signature283k1Data};
 use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use num_traits::FromPrimitive;
 
 pub const ID: u16 = 0x00B0;
 
@@ -44,8 +43,7 @@ impl Response {
         }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> Option<Status> {
-        Status::from_u8(self.status)
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

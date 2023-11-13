@@ -4,6 +4,7 @@ pub mod binding;
 pub mod child;
 mod constants;
 pub mod counter;
+pub mod current_security;
 mod duty_cycle_state;
 pub mod entropy;
 pub mod event;

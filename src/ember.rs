@@ -18,6 +18,7 @@ pub mod network;
 pub mod node;
 pub mod route;
 mod status;
+pub mod token;
 mod types;
 pub mod zigbee;
 

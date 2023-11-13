@@ -1,6 +1,3 @@
-#![feature(buf_read_has_data_left)]
-extern crate core;
-
 pub mod dongle;
 pub mod ember;
 pub mod error;

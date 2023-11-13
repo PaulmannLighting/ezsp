@@ -5,7 +5,10 @@ pub mod policy;
 pub mod config;
 pub mod decision;
 mod status;
-pub mod types;
+mod types;
 pub mod value;
 
 pub use status::{Ash, Error, SpiErr, Status};
+pub use types::{
+    DecisionId, MfgTokenId, SecureRandomNumber, SecureSessionId, SecurityLevel, SecurityType,
+};

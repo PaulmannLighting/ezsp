@@ -5,22 +5,28 @@ pub mod child;
 mod constants;
 pub mod counter;
 pub mod current_security;
-mod duty_cycle_state;
+pub mod duty_cycle;
 pub mod entropy;
 pub mod event;
 pub mod gp;
 pub mod join_method;
-mod key_struct_bitmask;
+pub mod key;
+pub mod library;
+pub mod multicast;
 pub mod neighbor;
 pub mod network;
 pub mod node;
 mod status;
-pub mod types;
+mod types;
 pub mod zigbee;
 
 pub use constants::NULL_NODE_ID;
-pub use duty_cycle_state::DutyCycleState;
-pub use key_struct_bitmask::KeyStructBitmask;
+pub use key::Bitmask;
 pub use status::{
     Adc, Application, Bootloader, Eeprom, Err, Flash, Mac, Phy, Serial, SimEeprom, Status,
+};
+pub use types::{
+    Certificate283k1Data, CertificateData, Eui64, KeyData, MessageDigest, MulticastId, NodeId,
+    NodeType, PanId, PrivateKey283k1Data, PrivateKeyData, PublicKey283k1Data, PublicKeyData,
+    Signature283k1Data, SignatureData, SmacData,
 };

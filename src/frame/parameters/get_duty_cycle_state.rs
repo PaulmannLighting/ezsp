@@ -1,4 +1,5 @@
-use crate::types::{EmberDutyCycleState, EmberStatus};
+use crate::ember::duty_cycle::State;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0035;
@@ -15,26 +16,24 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EmberStatus,
-    returned_state: EmberDutyCycleState,
+    status: u8,
+    returned_state: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus, returned_state: EmberDutyCycleState) -> Self {
+    pub const fn new(status: Status, returned_state: State) -> Self {
         Self {
-            status,
-            returned_state,
+            status: status.into(),
+            returned_state: returned_state.into(),
         }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 
-    #[must_use]
-    pub const fn returned_state(&self) -> EmberDutyCycleState {
-        self.returned_state
+    pub fn returned_state(&self) -> Result<State, u8> {
+        State::try_from(self.returned_state)
     }
 }

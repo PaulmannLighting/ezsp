@@ -120,3 +120,26 @@ impl ClassificationParams {
         self.beacon_classification_mask
     }
 }
+
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Iterator {
+    beacon: Data,
+    index: u8,
+}
+
+impl Iterator {
+    #[must_use]
+    pub const fn new(beacon: Data, index: u8) -> Self {
+        Self { beacon, index }
+    }
+
+    #[must_use]
+    pub const fn beacon(&self) -> &Data {
+        &self.beacon
+    }
+
+    #[must_use]
+    pub const fn index(&self) -> u8 {
+        self.index
+    }
+}

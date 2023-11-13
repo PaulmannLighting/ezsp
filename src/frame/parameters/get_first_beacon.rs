@@ -1,4 +1,5 @@
-use crate::types::{EmberBeaconIterator, EmberStatus};
+use crate::ember::beacon::Iterator;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x003D;
@@ -15,26 +16,25 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EmberStatus,
-    beacon_iterator: EmberBeaconIterator,
+    status: u8,
+    beacon_iterator: Iterator,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus, beacon_iterator: EmberBeaconIterator) -> Self {
+    pub const fn new(status: Status, beacon_iterator: Iterator) -> Self {
         Self {
-            status,
+            status: status.into(),
             beacon_iterator,
         }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 
     #[must_use]
-    pub const fn beacon_iterator(&self) -> EmberBeaconIterator {
-        self.beacon_iterator
+    pub const fn beacon_iterator(&self) -> &Iterator {
+        &self.beacon_iterator
     }
 }

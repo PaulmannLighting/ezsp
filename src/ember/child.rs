@@ -1,9 +1,9 @@
 use crate::ember::node::Type;
 use crate::ember::types::{Eui64, NodeId};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
 use num_traits::FromPrimitive;
-use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Data {
     eui64: Eui64,
     typ: u8,

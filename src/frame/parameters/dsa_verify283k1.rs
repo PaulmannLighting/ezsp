@@ -1,45 +1,51 @@
+use crate::ember::types::{MessageDigest, Signature283k1Data};
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberSignature283k1Data,EmberMessageDigest,EmberStatus};
+use num_traits::FromPrimitive;
 
 pub const ID: u16 = 0x00B0;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
-    digest: EmberMessageDigest,
-    received_sig: EmberSignature283k1Data,
+pub struct Command {
+    digest: MessageDigest,
+    received_sig: Signature283k1Data,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(digest: EmberMessageDigest, received_sig: EmberSignature283k1Data) -> Self {
-        Self { digest, received_sig }
+    pub const fn new(digest: MessageDigest, received_sig: Signature283k1Data) -> Self {
+        Self {
+            digest,
+            received_sig,
+        }
     }
 
     #[must_use]
-    pub const fn digest(&self) -> EmberMessageDigest {
-        self.digest
+    pub const fn digest(&self) -> &MessageDigest {
+        &self.digest
     }
 
-
     #[must_use]
-    pub const fn received_sig(&self) -> EmberSignature283k1Data {
-        self.received_sig
+    pub const fn received_sig(&self) -> &Signature283k1Data {
+        &self.received_sig
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    status: EmberStatus,
+pub struct Response {
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
-        Self { status }
+    pub const fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
     #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub const fn status(&self) -> Option<Status> {
+        Status::from_u8(self.status)
     }
 }

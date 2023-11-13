@@ -1,7 +1,6 @@
 use crate::ember::types::{CertificateData, MessageDigest, SignatureData};
 use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use num_traits::FromPrimitive;
 
 pub const ID: u16 = 0x00A3;
 

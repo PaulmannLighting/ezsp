@@ -33,27 +33,20 @@ impl Command {
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
     status: u8,
-    value_length: u8,
     value: ByteSizedVec<u8>,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, value_length: u8, value: ByteSizedVec<u8>) -> Self {
+    pub const fn new(status: Status, value: ByteSizedVec<u8>) -> Self {
         Self {
             status: status.into(),
-            value_length,
             value,
         }
     }
 
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub const fn value_length(&self) -> u8 {
-        self.value_length
     }
 
     #[must_use]

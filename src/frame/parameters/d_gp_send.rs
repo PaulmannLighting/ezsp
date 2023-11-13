@@ -11,7 +11,6 @@ pub struct Command {
     use_cca: bool,
     addr: Address,
     gpd_command_id: u8,
-    gpd_asdu_length: u8,
     gpd_asdu: ByteSizedVec<u8>,
     gpep_handle: u8,
     gp_tx_queue_entry_lifetime_ms: u16,
@@ -24,7 +23,6 @@ impl Command {
         use_cca: bool,
         addr: Address,
         gpd_command_id: u8,
-        gpd_asdu_length: u8,
         gpd_asdu: ByteSizedVec<u8>,
         gpep_handle: u8,
         gp_tx_queue_entry_lifetime_ms: u16,
@@ -34,7 +32,6 @@ impl Command {
             use_cca,
             addr,
             gpd_command_id,
-            gpd_asdu_length,
             gpd_asdu,
             gpep_handle,
             gp_tx_queue_entry_lifetime_ms,
@@ -59,11 +56,6 @@ impl Command {
     #[must_use]
     pub const fn gpd_command_id(&self) -> u8 {
         self.gpd_command_id
-    }
-
-    #[must_use]
-    pub const fn gpd_asdu_length(&self) -> u8 {
-        self.gpd_asdu_length
     }
 
     #[must_use]

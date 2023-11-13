@@ -1,17 +1,19 @@
+use crate::ember::types::Eui64;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberEUI64};
 
 pub const ID: u16 = 0x005E;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     address_table_index: u8,
 }
 
 impl Command {
     #[must_use]
     pub const fn new(address_table_index: u8) -> Self {
-        Self { address_table_index }
+        Self {
+            address_table_index,
+        }
     }
 
     #[must_use]
@@ -21,18 +23,18 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    eui64: EmberEUI64,
+pub struct Response {
+    eui64: Eui64,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(eui64: EmberEUI64) -> Self {
+    pub const fn new(eui64: Eui64) -> Self {
         Self { eui64 }
     }
 
     #[must_use]
-    pub const fn eui64(&self) -> EmberEUI64 {
+    pub const fn eui64(&self) -> Eui64 {
         self.eui64
     }
 }

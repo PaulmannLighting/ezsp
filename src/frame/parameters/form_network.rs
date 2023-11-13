@@ -1,38 +1,40 @@
+use crate::ember::network::Parameters;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberNetworkParameters,EmberStatus};
 
 pub const ID: u16 = 0x001E;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
-    parameters: EmberNetworkParameters,
+pub struct Command {
+    parameters: Parameters,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(parameters: EmberNetworkParameters) -> Self {
+    pub const fn new(parameters: Parameters) -> Self {
         Self { parameters }
     }
 
     #[must_use]
-    pub const fn parameters(&self) -> EmberNetworkParameters {
-        self.parameters
+    pub const fn parameters(&self) -> &Parameters {
+        &self.parameters
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    status: EmberStatus,
+pub struct Response {
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
-        Self { status }
+    pub const fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

@@ -1,52 +1,55 @@
+use crate::ember::types::Eui64;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{sl_zb_sec_man_aps_key_metadata_t,sl_zb_sec_man_context_t,EmberEUI64,sl_status_t};
+use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManContext};
+use siliconlabs::Status;
 
 pub const ID: u16 = 0x010C;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
-    context_in: sl_zb_sec_man_context_t,
+pub struct Command {
+    context_in: ManContext,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(context_in: sl_zb_sec_man_context_t) -> Self {
+    pub const fn new(context_in: ManContext) -> Self {
         Self { context_in }
     }
 
     #[must_use]
-    pub const fn context_in(&self) -> sl_zb_sec_man_context_t {
-        self.context_in
+    pub const fn context_in(&self) -> &ManContext {
+        &self.context_in
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    eui: EmberEUI64,
-    key_data: sl_zb_sec_man_aps_key_metadata_t,
-    status: sl_status_t,
+pub struct Response {
+    eui: Eui64,
+    key_data: ManApsKeyMetadata,
+    status: u32,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(eui: EmberEUI64, key_data: sl_zb_sec_man_aps_key_metadata_t, status: sl_status_t) -> Self {
-        Self { eui, key_data, status }
+    pub const fn new(eui: Eui64, key_data: ManApsKeyMetadata, status: Status) -> Self {
+        Self {
+            eui,
+            key_data,
+            status: status.into(),
+        }
     }
 
     #[must_use]
-    pub const fn eui(&self) -> EmberEUI64 {
+    pub const fn eui(&self) -> Eui64 {
         self.eui
     }
 
-
     #[must_use]
-    pub const fn key_data(&self) -> sl_zb_sec_man_aps_key_metadata_t {
-        self.key_data
+    pub const fn key_data(&self) -> &ManApsKeyMetadata {
+        &self.key_data
     }
 
-
-    #[must_use]
-    pub const fn status(&self) -> sl_status_t {
-        self.status
+    pub fn status(&self) -> Result<Status, u32> {
+        Status::try_from(self.status)
     }
 }

@@ -1,5 +1,5 @@
+use crate::ember::DutyCycleState;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberDutyCycleState};
 
 pub const ID: u16 = 0x004D;
 
@@ -9,22 +9,32 @@ pub struct Command;
 impl Command {
     #[must_use]
     pub const fn new() -> Self {
-        Self {  }
+        Self {}
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
+pub struct Response {
     channel_page: u8,
     channel: u8,
-    state: EmberDutyCycleState,
+    state: u8,
     total_devices: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(channel_page: u8, channel: u8, state: EmberDutyCycleState, total_devices: u8) -> Self {
-        Self { channel_page, channel, state, total_devices }
+    pub const fn new(
+        channel_page: u8,
+        channel: u8,
+        state: DutyCycleState,
+        total_devices: u8,
+    ) -> Self {
+        Self {
+            channel_page,
+            channel,
+            state: state.into(),
+            total_devices,
+        }
     }
 
     #[must_use]
@@ -32,18 +42,14 @@ impl Response {
         self.channel_page
     }
 
-
     #[must_use]
     pub const fn channel(&self) -> u8 {
         self.channel
     }
 
-
-    #[must_use]
-    pub const fn state(&self) -> EmberDutyCycleState {
-        self.state
+    pub fn state(&self) -> Result<DutyCycleState, u8> {
+        DutyCycleState::try_from(self.state)
     }
-
 
     #[must_use]
     pub const fn total_devices(&self) -> u8 {

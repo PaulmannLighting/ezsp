@@ -1,9 +1,9 @@
 use crate::ember::join_method::JoinMethod;
 use crate::ember::types::PanId;
+use le_stream::derive::{FromLeBytes, ToLeBytes};
 use num_traits::FromPrimitive;
-use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Parameters {
     extended_pan_id: u64,
     pan_id: PanId,

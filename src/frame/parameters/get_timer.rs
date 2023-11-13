@@ -1,4 +1,4 @@
-use crate::types::{bool, EmberEventUnits};
+use crate::ember::event::Units;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x004E;
@@ -23,16 +23,15 @@ impl Command {
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
     time: u16,
-    units: EmberEventUnits,
+    units: u8,
     repeat: bool,
 }
 
 impl Response {
-    #[must_use]
-    pub const fn new(time: u16, units: EmberEventUnits, repeat: bool) -> Self {
+    pub fn new(time: u16, units: Units, repeat: bool) -> Self {
         Self {
             time,
-            units,
+            units: units.into(),
             repeat,
         }
     }
@@ -42,9 +41,8 @@ impl Response {
         self.time
     }
 
-    #[must_use]
-    pub const fn units(&self) -> EmberEventUnits {
-        self.units
+    pub fn units(&self) -> Result<Units, u8> {
+        Units::try_from(self.units)
     }
 
     #[must_use]

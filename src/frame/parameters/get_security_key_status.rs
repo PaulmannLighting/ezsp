@@ -1,4 +1,4 @@
-use crate::types::{EzspStatus, SecureEzspSecurityType};
+use crate::ezsp::{SecurityType, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x00CD;
@@ -15,26 +15,25 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EzspStatus,
-    return_security_type: SecureEzspSecurityType,
+    status: u8,
+    return_security_type: SecurityType,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EzspStatus, return_security_type: SecureEzspSecurityType) -> Self {
+    pub fn new(status: Status, return_security_type: SecurityType) -> Self {
         Self {
-            status,
+            status: status.into(),
             return_security_type,
         }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EzspStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 
     #[must_use]
-    pub const fn return_security_type(&self) -> SecureEzspSecurityType {
+    pub const fn return_security_type(&self) -> SecurityType {
         self.return_security_type
     }
 }

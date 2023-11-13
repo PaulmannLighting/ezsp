@@ -1,27 +1,27 @@
+use crate::ember::gp::Address;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberGpAddress};
 
 pub const ID: u16 = 0x00DE;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
-    addr: EmberGpAddress,
+pub struct Command {
+    addr: Address,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(addr: EmberGpAddress) -> Self {
+    pub const fn new(addr: Address) -> Self {
         Self { addr }
     }
 
     #[must_use]
-    pub const fn addr(&self) -> EmberGpAddress {
-        self.addr
+    pub const fn addr(&self) -> &Address {
+        &self.addr
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
+pub struct Response {
     index: u8,
 }
 

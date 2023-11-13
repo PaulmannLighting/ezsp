@@ -1,10 +1,10 @@
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberStatus};
 
 pub const ID: u16 = 0x010A;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     options: u8,
     gpm_addr_for_security: u16,
     gpm_addr_for_pairing: u16,
@@ -13,8 +13,18 @@ pub struct Command{
 
 impl Command {
     #[must_use]
-    pub const fn new(options: u8, gpm_addr_for_security: u16, gpm_addr_for_pairing: u16, sink_endpoint: u8) -> Self {
-        Self { options, gpm_addr_for_security, gpm_addr_for_pairing, sink_endpoint }
+    pub const fn new(
+        options: u8,
+        gpm_addr_for_security: u16,
+        gpm_addr_for_pairing: u16,
+        sink_endpoint: u8,
+    ) -> Self {
+        Self {
+            options,
+            gpm_addr_for_security,
+            gpm_addr_for_pairing,
+            sink_endpoint,
+        }
     }
 
     #[must_use]
@@ -22,18 +32,15 @@ impl Command {
         self.options
     }
 
-
     #[must_use]
     pub const fn gpm_addr_for_security(&self) -> u16 {
         self.gpm_addr_for_security
     }
 
-
     #[must_use]
     pub const fn gpm_addr_for_pairing(&self) -> u16 {
         self.gpm_addr_for_pairing
     }
-
 
     #[must_use]
     pub const fn sink_endpoint(&self) -> u8 {
@@ -42,18 +49,19 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    status: EmberStatus,
+pub struct Response {
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
-        Self { status }
+    pub fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

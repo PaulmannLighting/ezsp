@@ -1,10 +1,11 @@
+use crate::ember::gp::sink::TableEntry;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberGpSinkTableEntry,EmberStatus};
 
 pub const ID: u16 = 0x00DD;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     sink_index: u8,
 }
 
@@ -21,25 +22,26 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    status: EmberStatus,
-    entry: EmberGpSinkTableEntry,
+pub struct Response {
+    status: u8,
+    entry: TableEntry,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus, entry: EmberGpSinkTableEntry) -> Self {
-        Self { status, entry }
+    pub fn new(status: Status, entry: TableEntry) -> Self {
+        Self {
+            status: status.into(),
+            entry,
+        }
+    }
+
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 
     #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
-    }
-
-
-    #[must_use]
-    pub const fn entry(&self) -> EmberGpSinkTableEntry {
-        self.entry
+    pub const fn entry(&self) -> &TableEntry {
+        &self.entry
     }
 }

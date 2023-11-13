@@ -1,4 +1,4 @@
-use crate::types::EmberEntropySource;
+use crate::ember::entropy::Source;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x004F;
@@ -15,17 +15,18 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    entropy_source: EmberEntropySource,
+    entropy_source: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(entropy_source: EmberEntropySource) -> Self {
-        Self { entropy_source }
+    pub fn new(entropy_source: Source) -> Self {
+        Self {
+            entropy_source: entropy_source.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn entropy_source(&self) -> EmberEntropySource {
-        self.entropy_source
+    pub fn entropy_source(&self) -> Result<Source, u8> {
+        Source::try_from(self.entropy_source)
     }
 }

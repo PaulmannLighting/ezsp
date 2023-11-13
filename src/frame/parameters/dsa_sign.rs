@@ -6,22 +6,13 @@ pub const ID: u16 = 0x00A6;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
-    message_length: u8,
     message_contents: ByteSizedVec<u8>,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(message_length: u8, message_contents: ByteSizedVec<u8>) -> Self {
-        Self {
-            message_length,
-            message_contents,
-        }
-    }
-
-    #[must_use]
-    pub const fn message_length(&self) -> u8 {
-        self.message_length
+    pub const fn new(message_contents: ByteSizedVec<u8>) -> Self {
+        Self { message_contents }
     }
 
     #[must_use]

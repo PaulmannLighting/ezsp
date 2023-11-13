@@ -1,4 +1,5 @@
-use crate::types::{EmberGpProxyTableEntry, EmberStatus};
+use crate::ember::gp::proxy::TableEntry;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x00C8;
@@ -22,23 +23,25 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EmberStatus,
-    entry: EmberGpProxyTableEntry,
+    status: u8,
+    entry: TableEntry,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus, entry: EmberGpProxyTableEntry) -> Self {
-        Self { status, entry }
+    pub const fn new(status: Status, entry: TableEntry) -> Self {
+        Self {
+            status: status.into(),
+            entry,
+        }
+    }
+
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 
     #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
-    }
-
-    #[must_use]
-    pub const fn entry(&self) -> EmberGpProxyTableEntry {
-        self.entry
+    pub const fn entry(&self) -> &TableEntry {
+        &self.entry
     }
 }

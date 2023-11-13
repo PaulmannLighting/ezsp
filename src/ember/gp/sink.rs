@@ -1,4 +1,6 @@
-use crate::ember::{Eui64, NodeId};
+use crate::ember::gp::security::FrameCounter;
+use crate::ember::key::Data;
+use crate::ember::{gp, Eui64, NodeId};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::FromLeBytes;
 use num_derive::{FromPrimitive, ToPrimitive};
@@ -7,6 +9,8 @@ use num_traits::{FromPrimitive, ToPrimitive};
 // Documentation: https://docs.silabs.com/d/zigbee-stack-api/7.2.2/gp-types-h
 
 pub const LIST_ENTRIES: usize = 2;
+
+pub type Status = u8;
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Address {
@@ -119,5 +123,98 @@ impl ListEntry {
         }
 
         None
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct TableEntry {
+    status: Status,
+    options: u32,
+    gpd: gp::Address,
+    device_id: u8,
+    sink_list: [ListEntry; LIST_ENTRIES],
+    assigned_alias: NodeId,
+    group_cast_radius: u8,
+    security_options: u8,
+    gpd_security_frame_counter: FrameCounter,
+    gpd_key: Data,
+}
+
+impl TableEntry {
+    #[must_use]
+    pub const fn new(
+        status: Status,
+        options: u32,
+        gpd: gp::Address,
+        device_id: u8,
+        sink_list: [ListEntry; LIST_ENTRIES],
+        assigned_alias: NodeId,
+        group_cast_radius: u8,
+        security_options: u8,
+        gpd_security_frame_counter: FrameCounter,
+        gpd_key: Data,
+    ) -> Self {
+        Self {
+            status,
+            options,
+            gpd,
+            device_id,
+            sink_list,
+            assigned_alias,
+            group_cast_radius,
+            security_options,
+            gpd_security_frame_counter,
+            gpd_key,
+        }
+    }
+
+    #[must_use]
+    pub const fn status(&self) -> Status {
+        self.status
+    }
+
+    #[must_use]
+    pub const fn options(&self) -> u32 {
+        self.options
+    }
+
+    #[must_use]
+    pub const fn gpd(&self) -> &gp::Address {
+        &self.gpd
+    }
+
+    #[must_use]
+    pub const fn device_id(&self) -> u8 {
+        self.device_id
+    }
+
+    #[must_use]
+    pub const fn sink_list(&self) -> &[ListEntry; LIST_ENTRIES] {
+        &self.sink_list
+    }
+
+    #[must_use]
+    pub const fn assigned_alias(&self) -> NodeId {
+        self.assigned_alias
+    }
+
+    #[must_use]
+    pub const fn group_cast_radius(&self) -> u8 {
+        self.group_cast_radius
+    }
+
+    #[must_use]
+    pub const fn security_options(&self) -> u8 {
+        self.security_options
+    }
+
+    #[must_use]
+    pub const fn gpd_security_frame_counter(&self) -> FrameCounter {
+        self.gpd_security_frame_counter
+    }
+
+    #[must_use]
+    pub const fn gpd_key(&self) -> &Data {
+        &self.gpd_key
     }
 }

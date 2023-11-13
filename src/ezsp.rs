@@ -9,6 +9,4 @@ mod types;
 pub mod value;
 
 pub use status::{Ash, Error, SpiErr, Status};
-pub use types::{
-    DecisionId, MfgTokenId, SecureRandomNumber, SecureSessionId, SecurityLevel, SecurityType,
-};
+pub use types::{SecureRandomNumber, SecureSessionId, SecurityLevel, SecurityType};

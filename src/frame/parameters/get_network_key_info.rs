@@ -1,5 +1,6 @@
-use crate::types::{sl_status_t, sl_zb_sec_man_network_key_info_t};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+use siliconlabs::zigbee::security::ManNetworkKeyInfo;
+use siliconlabs::Status;
 
 pub const ID: u16 = 0x0116;
 
@@ -15,29 +16,25 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: sl_status_t,
-    network_key_info: sl_zb_sec_man_network_key_info_t,
+    status: u32,
+    network_key_info: ManNetworkKeyInfo,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(
-        status: sl_status_t,
-        network_key_info: sl_zb_sec_man_network_key_info_t,
-    ) -> Self {
+    pub const fn new(status: Status, network_key_info: ManNetworkKeyInfo) -> Self {
         Self {
-            status,
+            status: status.into(),
             network_key_info,
         }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> sl_status_t {
-        self.status
+    pub fn status(&self) -> Result<Status, u32> {
+        Status::try_from(self.status)
     }
 
     #[must_use]
-    pub const fn network_key_info(&self) -> sl_zb_sec_man_network_key_info_t {
-        self.network_key_info
+    pub const fn network_key_info(&self) -> &ManNetworkKeyInfo {
+        &self.network_key_info
     }
 }

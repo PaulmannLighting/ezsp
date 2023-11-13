@@ -1,4 +1,4 @@
-use crate::types::{EmberEUI64, EmberNodeId};
+use crate::ember::{Eui64, NodeId};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0027;
@@ -15,23 +15,23 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    eui64: EmberEUI64,
-    node_id: EmberNodeId,
+    eui64: Eui64,
+    node_id: NodeId,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(eui64: EmberEUI64, node_id: EmberNodeId) -> Self {
+    pub const fn new(eui64: Eui64, node_id: NodeId) -> Self {
         Self { eui64, node_id }
     }
 
     #[must_use]
-    pub const fn eui64(&self) -> EmberEUI64 {
+    pub const fn eui64(&self) -> Eui64 {
         self.eui64
     }
 
     #[must_use]
-    pub const fn node_id(&self) -> EmberNodeId {
+    pub const fn node_id(&self) -> NodeId {
         self.node_id
     }
 }

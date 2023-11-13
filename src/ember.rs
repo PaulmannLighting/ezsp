@@ -16,6 +16,7 @@ pub mod multicast;
 pub mod neighbor;
 pub mod network;
 pub mod node;
+pub mod route;
 mod status;
 mod types;
 pub mod zigbee;

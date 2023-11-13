@@ -1,47 +1,47 @@
-use crate::types::{EzspDecisionId, EzspPolicyId, EzspStatus};
+use crate::ezsp::Status;
+use crate::ezsp::{decision, policy};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0056;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
-    policy_id: EzspPolicyId,
+    policy_id: u8,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(policy_id: EzspPolicyId) -> Self {
-        Self { policy_id }
+    pub const fn new(policy_id: policy::Id) -> Self {
+        Self {
+            policy_id: policy_id.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn policy_id(&self) -> EzspPolicyId {
-        self.policy_id
+    pub fn policy_id(&self) -> Result<policy::Id, u8> {
+        policy::Id::try_from(self.policy_id)
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EzspStatus,
-    decision_id: EzspDecisionId,
+    status: u8,
+    decision_id: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EzspStatus, decision_id: EzspDecisionId) -> Self {
+    pub const fn new(status: Status, decision_id: decision::Id) -> Self {
         Self {
-            status,
-            decision_id,
+            status: status.into(),
+            decision_id: decision_id.into(),
         }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EzspStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 
-    #[must_use]
-    pub const fn decision_id(&self) -> EzspDecisionId {
-        self.decision_id
+    pub fn decision_id(&self) -> Result<decision::Id, u8> {
+        decision::Id::try_from(self.decision_id)
     }
 }

@@ -1,4 +1,4 @@
-use crate::types::EmberStatus;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0049;
@@ -15,19 +15,21 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EmberStatus,
+    status: u8,
     value: u16,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus, value: u16) -> Self {
-        Self { status, value }
+    pub const fn new(status: Status, value: u16) -> Self {
+        Self {
+            status: status.into(),
+            value,
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 
     #[must_use]

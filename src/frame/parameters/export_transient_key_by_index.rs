@@ -1,10 +1,11 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{sl_zb_sec_man_key_t,sl_zb_sec_man_aps_key_metadata_t,sl_zb_sec_man_context_t,sl_status_t};
+use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManContext, ManKey};
+use siliconlabs::Status;
 
 pub const ID: u16 = 0x0112;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     index: u8,
 }
 
@@ -21,39 +22,45 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    context: sl_zb_sec_man_context_t,
-    plaintext_key: sl_zb_sec_man_key_t,
-    key_data: sl_zb_sec_man_aps_key_metadata_t,
-    status: sl_status_t,
+pub struct Response {
+    context: ManContext,
+    plaintext_key: ManKey,
+    key_data: ManApsKeyMetadata,
+    status: u32,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(context: sl_zb_sec_man_context_t, plaintext_key: sl_zb_sec_man_key_t, key_data: sl_zb_sec_man_aps_key_metadata_t, status: sl_status_t) -> Self {
-        Self { context, plaintext_key, key_data, status }
+    pub const fn new(
+        context: ManContext,
+        plaintext_key: ManKey,
+        key_data: ManApsKeyMetadata,
+        status: Status,
+    ) -> Self {
+        Self {
+            context,
+            plaintext_key,
+            key_data,
+            status: status.into(),
+        }
     }
 
     #[must_use]
-    pub const fn context(&self) -> sl_zb_sec_man_context_t {
-        self.context
+    pub const fn context(&self) -> &ManContext {
+        &self.context
     }
 
-
     #[must_use]
-    pub const fn plaintext_key(&self) -> sl_zb_sec_man_key_t {
-        self.plaintext_key
+    pub const fn plaintext_key(&self) -> &ManKey {
+        &self.plaintext_key
     }
 
-
     #[must_use]
-    pub const fn key_data(&self) -> sl_zb_sec_man_aps_key_metadata_t {
-        self.key_data
+    pub const fn key_data(&self) -> &ManApsKeyMetadata {
+        &self.key_data
     }
 
-
-    #[must_use]
-    pub const fn status(&self) -> sl_status_t {
-        self.status
+    pub fn status(&self) -> Result<Status, u32> {
+        Status::try_from(self.status)
     }
 }

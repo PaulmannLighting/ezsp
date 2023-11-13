@@ -1,10 +1,10 @@
+use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{};
 
 pub const ID: u16 = 0x0081;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     data_length: u8,
     data: ByteSizedVec<u8>,
 }
@@ -20,15 +20,14 @@ impl Command {
         self.data_length
     }
 
-
     #[must_use]
-    pub const fn data(&self) -> ByteSizedVec<u8> {
-        self.data
+    pub const fn data(&self) -> &ByteSizedVec<u8> {
+        &self.data
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
+pub struct Response {
     echo_length: u8,
     echo: ByteSizedVec<u8>,
 }
@@ -44,9 +43,8 @@ impl Response {
         self.echo_length
     }
 
-
     #[must_use]
-    pub const fn echo(&self) -> ByteSizedVec<u8> {
-        self.echo
+    pub const fn echo(&self) -> &ByteSizedVec<u8> {
+        &self.echo
     }
 }

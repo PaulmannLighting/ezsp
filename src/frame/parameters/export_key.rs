@@ -1,45 +1,47 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{sl_zb_sec_man_key_t,sl_zb_sec_man_context_t,sl_status_t};
+use siliconlabs::zigbee::security::{ManContext, ManKey};
+use siliconlabs::Status;
 
 pub const ID: u16 = 0x0114;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
-    context: sl_zb_sec_man_context_t,
+pub struct Command {
+    context: ManContext,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(context: sl_zb_sec_man_context_t) -> Self {
+    pub const fn new(context: ManContext) -> Self {
         Self { context }
     }
 
     #[must_use]
-    pub const fn context(&self) -> sl_zb_sec_man_context_t {
-        self.context
+    pub const fn context(&self) -> &ManContext {
+        &self.context
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    key: sl_zb_sec_man_key_t,
-    status: sl_status_t,
+pub struct Response {
+    key: ManKey,
+    status: u32,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(key: sl_zb_sec_man_key_t, status: sl_status_t) -> Self {
-        Self { key, status }
+    pub const fn new(key: ManKey, status: Status) -> Self {
+        Self {
+            key,
+            status: status.into(),
+        }
     }
 
     #[must_use]
-    pub const fn key(&self) -> sl_zb_sec_man_key_t {
-        self.key
+    pub const fn key(&self) -> &ManKey {
+        &self.key
     }
 
-
-    #[must_use]
-    pub const fn status(&self) -> sl_status_t {
-        self.status
+    pub fn status(&self) -> Result<Status, u32> {
+        Status::try_from(self.status)
     }
 }

@@ -1,5 +1,4 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{int8s};
 
 pub const ID: u16 = 0x0048;
 
@@ -9,20 +8,23 @@ pub struct Command;
 impl Command {
     #[must_use]
     pub const fn new() -> Self {
-        Self {  }
+        Self {}
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
+pub struct Response {
     channel: u8,
-    max_rssi_value: int8s,
+    max_rssi_value: i8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(channel: u8, max_rssi_value: int8s) -> Self {
-        Self { channel, max_rssi_value }
+    pub const fn new(channel: u8, max_rssi_value: i8) -> Self {
+        Self {
+            channel,
+            max_rssi_value,
+        }
     }
 
     #[must_use]
@@ -30,9 +32,8 @@ impl Response {
         self.channel
     }
 
-
     #[must_use]
-    pub const fn max_rssi_value(&self) -> int8s {
+    pub const fn max_rssi_value(&self) -> i8 {
         self.max_rssi_value
     }
 }

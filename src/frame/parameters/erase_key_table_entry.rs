@@ -1,10 +1,9 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{};
 
 pub const ID: u16 = 0x0076;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     index: u8,
 }
 
@@ -26,6 +25,6 @@ pub struct Response;
 impl Response {
     #[must_use]
     pub const fn new() -> Self {
-        Self {  }
+        Self {}
     }
 }

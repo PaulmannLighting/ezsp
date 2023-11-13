@@ -1,5 +1,6 @@
 pub mod aes;
 pub mod beacon;
+pub mod binding;
 pub mod child;
 mod constants;
 pub mod counter;

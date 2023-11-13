@@ -1,4 +1,5 @@
-use crate::types::{EmberCertificateData, EmberStatus};
+use crate::ember::types::CertificateData;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x00A5;
@@ -15,23 +16,25 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EmberStatus,
-    local_cert: EmberCertificateData,
+    status: u8,
+    local_cert: CertificateData,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus, local_cert: EmberCertificateData) -> Self {
-        Self { status, local_cert }
+    pub const fn new(status: Status, local_cert: CertificateData) -> Self {
+        Self {
+            status: status.into(),
+            local_cert,
+        }
+    }
+
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 
     #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
-    }
-
-    #[must_use]
-    pub const fn local_cert(&self) -> EmberCertificateData {
-        self.local_cert
+    pub const fn local_cert(&self) -> &CertificateData {
+        &self.local_cert
     }
 }

@@ -1,7 +1,7 @@
 use crate::ember::types::PanId;
-use serde::{Deserialize, Serialize};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Data {
     channel: u8,
     lqi: u8,
@@ -92,5 +92,31 @@ impl Data {
     #[must_use]
     pub const fn sender(&self) -> u16 {
         self.sender
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct ClassificationParams {
+    min_rssi_for_receiving_pkts: i8,
+    beacon_classification_mask: u16,
+}
+
+impl ClassificationParams {
+    #[must_use]
+    pub const fn new(min_rssi_for_receiving_pkts: i8, beacon_classification_mask: u16) -> Self {
+        Self {
+            min_rssi_for_receiving_pkts,
+            beacon_classification_mask,
+        }
+    }
+
+    #[must_use]
+    pub const fn min_rssi_for_receiving_pkts(&self) -> i8 {
+        self.min_rssi_for_receiving_pkts
+    }
+
+    #[must_use]
+    pub const fn beacon_classification_mask(&self) -> u16 {
+        self.beacon_classification_mask
     }
 }

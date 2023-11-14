@@ -1,18 +1,21 @@
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{int8_t,EmberStatus};
 
 pub const ID: u16 = 0x008C;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     tx_power_mode: u16,
-    power: int8_t,
+    power: i8,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(tx_power_mode: u16, power: int8_t) -> Self {
-        Self { tx_power_mode, power }
+    pub const fn new(tx_power_mode: u16, power: i8) -> Self {
+        Self {
+            tx_power_mode,
+            power,
+        }
     }
 
     #[must_use]
@@ -20,26 +23,26 @@ impl Command {
         self.tx_power_mode
     }
 
-
     #[must_use]
-    pub const fn power(&self) -> int8_t {
+    pub const fn power(&self) -> i8 {
         self.power
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    status: EmberStatus,
+pub struct Response {
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
-        Self { status }
+    pub fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

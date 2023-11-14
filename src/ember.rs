@@ -13,6 +13,7 @@ pub mod gp;
 pub mod join_method;
 pub mod key;
 pub mod library;
+pub mod mac;
 pub mod message;
 pub mod multicast;
 pub mod neighbor;
@@ -31,6 +32,6 @@ pub use status::{
 };
 pub use types::{
     Certificate283k1Data, CertificateData, Eui64, KeyData, MessageDigest, MulticastId, NodeId,
-    NodeType, PanId, PrivateKey283k1Data, PrivateKeyData, PublicKey283k1Data, PublicKeyData,
+    PanId, PrivateKey283k1Data, PrivateKeyData, PublicKey283k1Data, PublicKeyData,
     Signature283k1Data, SignatureData, SmacData,
 };

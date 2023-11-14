@@ -2,7 +2,7 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-pub type Options = heapless::Vec<Option, 5>;
+pub type Options = heapless::Vec<Option, { std::mem::variant_count::<Option>() }>;
 
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum Option {
@@ -12,6 +12,11 @@ pub enum Option {
     EnableRouteDiscovery = 0x0100,
     ForceRouteDiscovery = 0x0200,
     SourceEui64 = 0x0400,
+    DestinationEui64 = 0x0800,
+    EnableAddressDiscovery = 0x1000,
+    PollResponse = 0x2000,
+    ZdoResponseRequired = 0x4000,
+    Fragment = 0x8000,
 }
 
 impl From<Option> for u16 {

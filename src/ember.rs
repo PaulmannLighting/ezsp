@@ -1,4 +1,5 @@
 pub mod aes;
+pub mod aps;
 pub mod beacon;
 pub mod binding;
 pub mod child;
@@ -12,6 +13,7 @@ pub mod gp;
 pub mod join_method;
 pub mod key;
 pub mod library;
+pub mod message;
 pub mod multicast;
 pub mod neighbor;
 pub mod network;

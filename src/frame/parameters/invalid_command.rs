@@ -1,5 +1,5 @@
+use crate::ezsp::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EzspStatus};
 
 pub const ID: u16 = 0x0058;
 
@@ -9,23 +9,24 @@ pub struct Command;
 impl Command {
     #[must_use]
     pub const fn new() -> Self {
-        Self {  }
+        Self {}
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    reason: EzspStatus,
+pub struct Response {
+    reason: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(reason: EzspStatus) -> Self {
-        Self { reason }
+    pub fn new(reason: Status) -> Self {
+        Self {
+            reason: reason.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn reason(&self) -> EzspStatus {
-        self.reason
+    pub fn reason(&self) -> Result<Status, u8> {
+        Status::try_from(self.reason)
     }
 }

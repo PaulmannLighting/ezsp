@@ -1,5 +1,6 @@
+use crate::ember::binding::TableEntry;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberBindingTableEntry,EmberStatus};
 
 pub const ID: u16 = 0x0031;
 
@@ -9,37 +10,38 @@ pub struct Command;
 impl Command {
     #[must_use]
     pub const fn new() -> Self {
-        Self {  }
+        Self {}
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    entry: EmberBindingTableEntry,
+pub struct Response {
+    entry: TableEntry,
     index: u8,
-    policy_decision: EmberStatus,
+    policy_decision: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(entry: EmberBindingTableEntry, index: u8, policy_decision: EmberStatus) -> Self {
-        Self { entry, index, policy_decision }
+    pub fn new(entry: TableEntry, index: u8, policy_decision: Status) -> Self {
+        Self {
+            entry,
+            index,
+            policy_decision: policy_decision.into(),
+        }
     }
 
     #[must_use]
-    pub const fn entry(&self) -> EmberBindingTableEntry {
-        self.entry
+    pub const fn entry(&self) -> &TableEntry {
+        &self.entry
     }
-
 
     #[must_use]
     pub const fn index(&self) -> u8 {
         self.index
     }
 
-
-    #[must_use]
-    pub const fn policy_decision(&self) -> EmberStatus {
-        self.policy_decision
+    pub fn policy_decision(&self) -> Result<Status, u8> {
+        Status::try_from(self.policy_decision)
     }
 }

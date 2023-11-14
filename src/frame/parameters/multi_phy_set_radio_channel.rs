@@ -1,10 +1,10 @@
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberStatus};
 
 pub const ID: u16 = 0x00FB;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     phy_index: u8,
     page: u8,
     channel: u8,
@@ -13,7 +13,11 @@ pub struct Command{
 impl Command {
     #[must_use]
     pub const fn new(phy_index: u8, page: u8, channel: u8) -> Self {
-        Self { phy_index, page, channel }
+        Self {
+            phy_index,
+            page,
+            channel,
+        }
     }
 
     #[must_use]
@@ -21,12 +25,10 @@ impl Command {
         self.phy_index
     }
 
-
     #[must_use]
     pub const fn page(&self) -> u8 {
         self.page
     }
-
 
     #[must_use]
     pub const fn channel(&self) -> u8 {
@@ -35,18 +37,19 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    status: EmberStatus,
+pub struct Response {
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
-        Self { status }
+    pub fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

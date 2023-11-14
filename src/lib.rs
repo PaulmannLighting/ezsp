@@ -1,5 +1,3 @@
-#![feature(variant_count)]
-
 pub mod dongle;
 pub mod ember;
 pub mod error;

@@ -15,6 +15,7 @@ pub mod key;
 pub mod library;
 pub mod mac;
 pub mod message;
+pub mod multi_phy_nwk;
 pub mod multicast;
 pub mod neighbor;
 pub mod network;

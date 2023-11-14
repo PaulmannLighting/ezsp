@@ -2,7 +2,7 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-pub type Options = heapless::Vec<Option, { std::mem::variant_count::<Option>() }>;
+pub type Options = heapless::Vec<Option, 10>;
 
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum Option {

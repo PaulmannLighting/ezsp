@@ -46,7 +46,7 @@ impl Frame {
         cluster_id: u16,
         source_endpoint: u8,
         destination_endpoint: u8,
-        options: Option,
+        options: Options,
         group_id: u16,
         sequence: u8,
     ) -> Self {
@@ -55,7 +55,7 @@ impl Frame {
             cluster_id,
             source_endpoint,
             destination_endpoint,
-            options: options.into(),
+            options: options.iter().filter_map(|option| option.to_u16()).sum(),
             group_id,
             sequence,
         }

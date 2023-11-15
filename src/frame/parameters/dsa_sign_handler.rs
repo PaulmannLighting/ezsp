@@ -17,15 +17,15 @@ impl Command {
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
     status: u8,
-    message_contents: ByteSizedVec<u8>,
+    message: ByteSizedVec<u8>,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, message_contents: ByteSizedVec<u8>) -> Self {
+    pub const fn new(status: Status, message: ByteSizedVec<u8>) -> Self {
         Self {
             status: status.into(),
-            message_contents,
+            message,
         }
     }
 
@@ -34,7 +34,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn message_contents(&self) -> &ByteSizedVec<u8> {
-        &self.message_contents
+    pub const fn message(&self) -> &ByteSizedVec<u8> {
+        &self.message
     }
 }

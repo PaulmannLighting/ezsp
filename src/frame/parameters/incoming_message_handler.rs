@@ -25,7 +25,7 @@ pub struct Response {
     sender: NodeId,
     binding_index: u8,
     address_index: u8,
-    message_contents: ByteSizedVec<u8>,
+    message: ByteSizedVec<u8>,
 }
 
 impl Response {
@@ -38,7 +38,7 @@ impl Response {
         sender: NodeId,
         binding_index: u8,
         address_index: u8,
-        message_contents: ByteSizedVec<u8>,
+        message: ByteSizedVec<u8>,
     ) -> Self {
         Self {
             typ: typ.into(),
@@ -48,7 +48,7 @@ impl Response {
             sender,
             binding_index,
             address_index,
-            message_contents,
+            message,
         }
     }
 
@@ -87,12 +87,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn message_length(&self) -> u8 {
-        self.message_length
-    }
-
-    #[must_use]
-    pub const fn message_contents(&self) -> &ByteSizedVec<u8> {
-        &self.message_contents
+    pub const fn message(&self) -> &ByteSizedVec<u8> {
+        &self.message
     }
 }

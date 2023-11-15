@@ -8,20 +8,16 @@ pub const ID: u16 = 0x0090;
 pub struct Command {
     broadcast: bool,
     dest_eui64: Eui64,
-    message_contents: ByteSizedVec<u8>,
+    message: ByteSizedVec<u8>,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(
-        broadcast: bool,
-        dest_eui64: Eui64,
-        message_contents: ByteSizedVec<u8>,
-    ) -> Self {
+    pub const fn new(broadcast: bool, dest_eui64: Eui64, message: ByteSizedVec<u8>) -> Self {
         Self {
             broadcast,
             dest_eui64,
-            message_contents,
+            message,
         }
     }
 
@@ -36,8 +32,8 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn message_contents(&self) -> &ByteSizedVec<u8> {
-        &self.message_contents
+    pub const fn message(&self) -> &ByteSizedVec<u8> {
+        &self.message
     }
 }
 

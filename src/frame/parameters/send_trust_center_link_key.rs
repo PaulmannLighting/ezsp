@@ -1,45 +1,48 @@
+use crate::ember::{Eui64, NodeId, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberNodeId,EmberEUI64,EmberStatus};
 
 pub const ID: u16 = 0x0067;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
-    destination_node_id: EmberNodeId,
-    destination_eui64: EmberEUI64,
+pub struct Command {
+    destination_node_id: NodeId,
+    destination_eui64: Eui64,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(destination_node_id: EmberNodeId, destination_eui64: EmberEUI64) -> Self {
-        Self { destination_node_id, destination_eui64 }
+    pub const fn new(destination_node_id: NodeId, destination_eui64: Eui64) -> Self {
+        Self {
+            destination_node_id,
+            destination_eui64,
+        }
     }
 
     #[must_use]
-    pub const fn destination_node_id(&self) -> EmberNodeId {
+    pub const fn destination_node_id(&self) -> NodeId {
         self.destination_node_id
     }
 
-
     #[must_use]
-    pub const fn destination_eui64(&self) -> EmberEUI64 {
+    pub const fn destination_eui64(&self) -> Eui64 {
         self.destination_eui64
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    status: EmberStatus,
+pub struct Response {
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
-        Self { status }
+    pub fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

@@ -17,16 +17,16 @@ impl Command {
 pub struct Response {
     link_quality: u8,
     rssi: i8,
-    packet_contents: ByteSizedVec<u8>,
+    content: ByteSizedVec<u8>,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(link_quality: u8, rssi: i8, packet_contents: ByteSizedVec<u8>) -> Self {
+    pub const fn new(link_quality: u8, rssi: i8, content: ByteSizedVec<u8>) -> Self {
         Self {
             link_quality,
             rssi,
-            packet_contents,
+            content,
         }
     }
 
@@ -41,7 +41,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn packet_contents(&self) -> &ByteSizedVec<u8> {
-        &self.packet_contents
+    pub const fn content(&self) -> &ByteSizedVec<u8> {
+        &self.content
     }
 }

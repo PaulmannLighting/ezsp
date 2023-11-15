@@ -7,15 +7,15 @@ pub const ID: u16 = 0x0012;
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
     binary_message: bool,
-    message_contents: ByteSizedVec<u8>,
+    message: ByteSizedVec<u8>,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(binary_message: bool, message_contents: ByteSizedVec<u8>) -> Self {
+    pub const fn new(binary_message: bool, message: ByteSizedVec<u8>) -> Self {
         Self {
             binary_message,
-            message_contents,
+            message,
         }
     }
 
@@ -25,8 +25,8 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn message_contents(&self) -> &ByteSizedVec<u8> {
-        &self.message_contents
+    pub const fn message(&self) -> &ByteSizedVec<u8> {
+        &self.message
     }
 }
 

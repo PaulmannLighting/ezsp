@@ -23,7 +23,7 @@ pub struct Response {
     aps_frame: Frame,
     message_tag: u8,
     status: u8,
-    message_contents: ByteSizedVec<u8>,
+    message: ByteSizedVec<u8>,
 }
 
 impl Response {
@@ -34,7 +34,7 @@ impl Response {
         aps_frame: Frame,
         message_tag: u8,
         status: Status,
-        message_contents: ByteSizedVec<u8>,
+        message: ByteSizedVec<u8>,
     ) -> Self {
         Self {
             typ: typ.into(),
@@ -42,7 +42,7 @@ impl Response {
             aps_frame,
             message_tag,
             status: status.into(),
-            message_contents,
+            message: message,
         }
     }
 
@@ -70,7 +70,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn message_contents(&self) -> &ByteSizedVec<u8> {
-        &self.message_contents
+    pub const fn message(&self) -> &ByteSizedVec<u8> {
+        &self.message
     }
 }

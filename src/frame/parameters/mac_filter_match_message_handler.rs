@@ -20,7 +20,7 @@ pub struct Response {
     legacy_passthrough_type: u8,
     last_hop_lqi: u8,
     last_hop_rssi: i8,
-    message_contents: ByteSizedVec<u8>,
+    message: ByteSizedVec<u8>,
 }
 
 impl Response {
@@ -30,14 +30,14 @@ impl Response {
         legacy_passthrough_type: PassthroughType,
         last_hop_lqi: u8,
         last_hop_rssi: i8,
-        message_contents: ByteSizedVec<u8>,
+        message: ByteSizedVec<u8>,
     ) -> Self {
         Self {
             filter_index_match,
             legacy_passthrough_type: legacy_passthrough_type.into(),
             last_hop_lqi,
             last_hop_rssi,
-            message_contents,
+            message,
         }
     }
 
@@ -61,7 +61,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn message_contents(&self) -> &ByteSizedVec<u8> {
-        &self.message_contents
+    pub const fn message(&self) -> &ByteSizedVec<u8> {
+        &self.message
     }
 }

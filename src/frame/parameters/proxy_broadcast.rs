@@ -13,7 +13,7 @@ pub struct Command {
     aps_frame: Frame,
     radius: u8,
     message_tag: u8,
-    message_contents: ByteSizedVec<u8>,
+    content: ByteSizedVec<u8>,
 }
 
 impl Command {
@@ -25,7 +25,7 @@ impl Command {
         aps_frame: Frame,
         radius: u8,
         message_tag: u8,
-        message_contents: ByteSizedVec<u8>,
+        content: ByteSizedVec<u8>,
     ) -> Self {
         Self {
             source,
@@ -34,7 +34,7 @@ impl Command {
             aps_frame,
             radius,
             message_tag,
-            message_contents,
+            content: content,
         }
     }
 
@@ -69,8 +69,8 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn message_contents(&self) -> &ByteSizedVec<u8> {
-        &self.message_contents
+    pub const fn content(&self) -> &ByteSizedVec<u8> {
+        &self.content
     }
 }
 

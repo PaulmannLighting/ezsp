@@ -6,18 +6,18 @@ pub const ID: u16 = 0x0089;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
-    packet_contents: ByteSizedVec<u8>,
+    content: ByteSizedVec<u8>,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(packet_contents: ByteSizedVec<u8>) -> Self {
-        Self { packet_contents }
+    pub const fn new(content: ByteSizedVec<u8>) -> Self {
+        Self { content }
     }
 
     #[must_use]
-    pub const fn packet_contents(&self) -> &ByteSizedVec<u8> {
-        &self.packet_contents
+    pub const fn content(&self) -> &ByteSizedVec<u8> {
+        &self.content
     }
 }
 

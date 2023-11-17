@@ -1,18 +1,21 @@
+use crate::ember::NodeId;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberNodeId};
 
 pub const ID: u16 = 0x005D;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     address_table_index: u8,
-    id: EmberNodeId,
+    id: NodeId,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(address_table_index: u8, id: EmberNodeId) -> Self {
-        Self { address_table_index, id }
+    pub const fn new(address_table_index: u8, id: NodeId) -> Self {
+        Self {
+            address_table_index,
+            id,
+        }
     }
 
     #[must_use]
@@ -20,9 +23,8 @@ impl Command {
         self.address_table_index
     }
 
-
     #[must_use]
-    pub const fn id(&self) -> EmberNodeId {
+    pub const fn id(&self) -> NodeId {
         self.id
     }
 }
@@ -33,6 +35,6 @@ pub struct Response;
 impl Response {
     #[must_use]
     pub const fn new() -> Self {
-        Self {  }
+        Self {}
     }
 }

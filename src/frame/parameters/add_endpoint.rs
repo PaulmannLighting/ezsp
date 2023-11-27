@@ -4,7 +4,7 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::{Error, FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0002;
-const ITERATOR_SIZE: usize = 6 + 2 * 265 + 2 * 256;
+const SIZE: usize = 1 + 2 + 2 + 1 + 2 * (2 * u8::MAX as usize);
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
@@ -115,7 +115,7 @@ impl FromLeBytes for Command {
 }
 
 impl ToLeBytes for Command {
-    type Iter = <heapless::Vec<u8, ITERATOR_SIZE> as IntoIterator>::IntoIter;
+    type Iter = <heapless::Vec<u8, SIZE> as IntoIterator>::IntoIter;
 
     fn to_le_bytes(self) -> Self::Iter {
         self.endpoint
@@ -138,7 +138,7 @@ impl ToLeBytes for Command {
                     .copied()
                     .flat_map(u16::to_le_bytes as fn(u16) -> [u8; 2]),
             )
-            .collect::<heapless::Vec<u8, ITERATOR_SIZE>>()
+            .collect::<heapless::Vec<u8, SIZE>>()
             .into_iter()
     }
 }

@@ -1,7 +1,9 @@
 use crate::ember::node::Type;
 use crate::ember::zll::{SecurityAlgorithmData, State};
 use crate::ember::{zigbee, Eui64, NodeId};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
 
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Network {
     zigbee_network: zigbee::Network,
     security_algorithm: SecurityAlgorithmData,

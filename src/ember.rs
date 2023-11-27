@@ -26,6 +26,7 @@ mod status;
 pub mod token;
 mod types;
 pub mod zigbee;
+pub mod zll;
 
 pub use constants::NULL_NODE_ID;
 pub use key::Bitmask;

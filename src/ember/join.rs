@@ -10,8 +10,8 @@ pub enum Decision {
 }
 
 impl From<Decision> for u8 {
-    fn from(bitmask: Decision) -> Self {
-        bitmask.to_u8().expect("could not convert Decision to u8")
+    fn from(decision: Decision) -> Self {
+        decision.to_u8().expect("could not convert Decision to u8")
     }
 }
 
@@ -40,9 +40,7 @@ impl TryFrom<u8> for Method {
 }
 
 impl From<Method> for u8 {
-    fn from(join_method: Method) -> Self {
-        join_method
-            .to_u8()
-            .expect("could not convert JoinMethod to u8.")
+    fn from(method: Method) -> Self {
+        method.to_u8().expect("could not convert Method to u8.")
     }
 }

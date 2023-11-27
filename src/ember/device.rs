@@ -10,8 +10,8 @@ pub enum Update {
 }
 
 impl From<Update> for u8 {
-    fn from(bitmask: Update) -> Self {
-        bitmask.to_u8().expect("could not convert Update to u8")
+    fn from(update: Update) -> Self {
+        update.to_u8().expect("could not convert Update to u8")
     }
 }
 

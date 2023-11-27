@@ -47,8 +47,8 @@ pub enum Type {
 }
 
 impl From<Type> for u8 {
-    fn from(counter: Type) -> Self {
-        counter.to_u8().expect("could not convert Counter to u8")
+    fn from(typ: Type) -> Self {
+        typ.to_u8().expect("could not convert Type to u8")
     }
 }
 

@@ -38,10 +38,8 @@ pub enum Bitmask {
 }
 
 impl From<Bitmask> for u16 {
-    fn from(struct_bitmask: Bitmask) -> Self {
-        struct_bitmask
-            .to_u16()
-            .expect("could not convert StructBitmask to u8")
+    fn from(bitmask: Bitmask) -> Self {
+        bitmask.to_u16().expect("could not convert Bitmask to u8")
     }
 }
 

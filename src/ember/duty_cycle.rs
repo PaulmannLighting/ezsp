@@ -12,10 +12,8 @@ pub enum State {
 }
 
 impl From<State> for u8 {
-    fn from(duty_cycle_state: State) -> Self {
-        duty_cycle_state
-            .to_u8()
-            .expect("could not convert DutyCycleState to u8")
+    fn from(state: State) -> Self {
+        state.to_u8().expect("could not convert State to u8")
     }
 }
 

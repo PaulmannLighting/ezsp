@@ -10,8 +10,8 @@ pub enum Source {
 }
 
 impl From<Source> for u8 {
-    fn from(entropy_source: Source) -> Self {
-        entropy_source.to_u8().expect("could not convert Id to u8")
+    fn from(source: Source) -> Self {
+        source.to_u8().expect("could not convert Source to u8")
     }
 }
 

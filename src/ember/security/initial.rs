@@ -1,4 +1,5 @@
-use crate::ember::{Eui64, KeyData};
+use crate::ember::key::Data;
+use crate::ember::Eui64;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
@@ -36,8 +37,8 @@ impl TryFrom<u16> for Bitmask {
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct State {
     bitmask: u16,
-    preconfigured_key: KeyData,
-    network_key: KeyData,
+    preconfigured_key: Data,
+    network_key: Data,
     network_key_sequence_number: u8,
     preconfigured_trust_center_eui64: Eui64,
 }
@@ -45,8 +46,8 @@ pub struct State {
 impl State {
     pub fn new(
         bitmask: Bitmask,
-        preconfigured_key: KeyData,
-        network_key: KeyData,
+        preconfigured_key: Data,
+        network_key: Data,
         network_key_sequence_number: u8,
         preconfigured_trust_center_eui64: Eui64,
     ) -> Self {
@@ -64,12 +65,12 @@ impl State {
     }
 
     #[must_use]
-    pub const fn preconfigured_key(&self) -> &KeyData {
+    pub const fn preconfigured_key(&self) -> &Data {
         &self.preconfigured_key
     }
 
     #[must_use]
-    pub const fn network_key(&self) -> &KeyData {
+    pub const fn network_key(&self) -> &Data {
         &self.network_key
     }
 

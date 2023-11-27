@@ -1,4 +1,4 @@
-use crate::ember::join_method::JoinMethod;
+use crate::ember::join::Method;
 use crate::ember::types::PanId;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use num_traits::FromPrimitive;
@@ -23,7 +23,7 @@ impl Parameters {
         pan_id: PanId,
         radio_tx_power: u8,
         radio_channel: u8,
-        join_method: JoinMethod,
+        join_method: Method,
         nwk_manager_id: u16,
         nwk_update_id: u8,
         channels: u32,
@@ -61,8 +61,8 @@ impl Parameters {
     }
 
     #[must_use]
-    pub fn join_method(&self) -> Option<JoinMethod> {
-        JoinMethod::from_u8(self.join_method)
+    pub fn join_method(&self) -> Option<Method> {
+        Method::from_u8(self.join_method)
     }
 
     #[must_use]

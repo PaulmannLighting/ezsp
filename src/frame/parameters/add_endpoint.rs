@@ -2,9 +2,9 @@ use crate::ezsp::Status;
 use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::{Error, FromLeBytes, ToLeBytes};
-use std::vec::IntoIter;
 
 pub const ID: u16 = 0x0002;
+const ITERATOR_SIZE: usize = 6 + 2 * 265 + 2 * 256;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Command {
@@ -115,7 +115,7 @@ impl FromLeBytes for Command {
 }
 
 impl ToLeBytes for Command {
-    type Iter = IntoIter<u8>;
+    type Iter = <heapless::Vec<u8, ITERATOR_SIZE> as IntoIterator>::IntoIter;
 
     fn to_le_bytes(self) -> Self::Iter {
         self.endpoint
@@ -138,7 +138,7 @@ impl ToLeBytes for Command {
                     .copied()
                     .flat_map(u16::to_le_bytes as fn(u16) -> [u8; 2]),
             )
-            .collect::<Vec<_>>()
+            .collect::<heapless::Vec<u8, ITERATOR_SIZE>>()
             .into_iter()
     }
 }

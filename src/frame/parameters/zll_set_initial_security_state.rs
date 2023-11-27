@@ -1,45 +1,50 @@
+use crate::ember::key::Data;
+use crate::ember::zll::InitialSecurityState;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberZllInitialSecurityState,EmberKeyData,EmberStatus};
 
 pub const ID: u16 = 0x00B3;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
-    network_key: EmberKeyData,
-    security_state: EmberZllInitialSecurityState,
+pub struct Command {
+    network_key: Data,
+    security_state: InitialSecurityState,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(network_key: EmberKeyData, security_state: EmberZllInitialSecurityState) -> Self {
-        Self { network_key, security_state }
+    pub const fn new(network_key: Data, security_state: InitialSecurityState) -> Self {
+        Self {
+            network_key,
+            security_state,
+        }
     }
 
     #[must_use]
-    pub const fn network_key(&self) -> EmberKeyData {
+    pub const fn network_key(&self) -> Data {
         self.network_key
     }
 
-
     #[must_use]
-    pub const fn security_state(&self) -> EmberZllInitialSecurityState {
-        self.security_state
+    pub const fn security_state(&self) -> &InitialSecurityState {
+        &self.security_state
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    status: EmberStatus,
+pub struct Response {
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
-        Self { status }
+    pub fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

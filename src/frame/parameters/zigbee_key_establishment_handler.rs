@@ -1,38 +1,30 @@
+use crate::ember::key::Status;
+use crate::ember::Eui64;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberKeyStatus,EmberEUI64};
 
 pub const ID: u16 = 0x009B;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command;
-
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {  }
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    partner: EmberEUI64,
-    status: EmberKeyStatus,
+pub struct Response {
+    partner: Eui64,
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(partner: EmberEUI64, status: EmberKeyStatus) -> Self {
-        Self { partner, status }
+    pub fn new(partner: Eui64, status: Status) -> Self {
+        Self {
+            partner,
+            status: status.into(),
+        }
     }
 
     #[must_use]
-    pub const fn partner(&self) -> EmberEUI64 {
+    pub const fn partner(&self) -> Eui64 {
         self.partner
     }
 
-
-    #[must_use]
-    pub const fn status(&self) -> EmberKeyStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

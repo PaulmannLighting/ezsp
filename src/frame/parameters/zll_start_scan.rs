@@ -1,19 +1,24 @@
+use crate::ember::node::Type;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberNodeType,int8_t,EmberStatus};
 
 pub const ID: u16 = 0x00B4;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     channel_mask: u32,
-    radio_power_for_scan: int8_t,
-    node_type: EmberNodeType,
+    radio_power_for_scan: i8,
+    node_type: u8,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(channel_mask: u32, radio_power_for_scan: int8_t, node_type: EmberNodeType) -> Self {
-        Self { channel_mask, radio_power_for_scan, node_type }
+    pub const fn new(channel_mask: u32, radio_power_for_scan: i8, node_type: Type) -> Self {
+        Self {
+            channel_mask,
+            radio_power_for_scan,
+            node_type: node_type.into(),
+        }
     }
 
     #[must_use]
@@ -21,32 +26,30 @@ impl Command {
         self.channel_mask
     }
 
-
     #[must_use]
-    pub const fn radio_power_for_scan(&self) -> int8_t {
+    pub const fn radio_power_for_scan(&self) -> i8 {
         self.radio_power_for_scan
     }
 
-
-    #[must_use]
-    pub const fn node_type(&self) -> EmberNodeType {
-        self.node_type
+    pub fn node_type(&self) -> Result<Type, u8> {
+        Type::try_from(self.node_type)
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    status: EmberStatus,
+pub struct Response {
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
-        Self { status }
+    pub fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

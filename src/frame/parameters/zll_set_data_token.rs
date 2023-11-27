@@ -1,22 +1,22 @@
+use crate::ember::zll::DataToken;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberTokTypeStackZllData};
 
 pub const ID: u16 = 0x00BD;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
-    data: EmberTokTypeStackZllData,
+pub struct Command {
+    data: DataToken,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(data: EmberTokTypeStackZllData) -> Self {
+    pub const fn new(data: DataToken) -> Self {
         Self { data }
     }
 
     #[must_use]
-    pub const fn data(&self) -> EmberTokTypeStackZllData {
-        self.data
+    pub const fn data(&self) -> &DataToken {
+        &self.data
     }
 }
 
@@ -26,6 +26,6 @@ pub struct Response;
 impl Response {
     #[must_use]
     pub const fn new() -> Self {
-        Self {  }
+        Self {}
     }
 }

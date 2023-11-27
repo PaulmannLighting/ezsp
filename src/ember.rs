@@ -20,6 +20,7 @@ pub mod multicast;
 pub mod neighbor;
 pub mod network;
 pub mod node;
+pub mod radio;
 pub mod route;
 pub mod security;
 mod status;

@@ -21,7 +21,7 @@ pub enum Option {
 
 impl From<Option> for u16 {
     fn from(option: Option) -> Self {
-        option.to_u16().expect("could not convert Option to u8")
+        option.to_u16().expect("could not convert Option to u16")
     }
 }
 

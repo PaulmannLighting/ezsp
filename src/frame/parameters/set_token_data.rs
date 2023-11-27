@@ -1,19 +1,24 @@
+use crate::ember::token::Data;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{EmberTokenData,EmberStatus};
 
 pub const ID: u16 = 0x0103;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     token: u32,
     index: u32,
-    token_data: EmberTokenData,
+    token_data: Data,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(token: u32, index: u32, token_data: EmberTokenData) -> Self {
-        Self { token, index, token_data }
+    pub const fn new(token: u32, index: u32, token_data: Data) -> Self {
+        Self {
+            token,
+            index,
+            token_data,
+        }
     }
 
     #[must_use]
@@ -21,32 +26,31 @@ impl Command {
         self.token
     }
 
-
     #[must_use]
     pub const fn index(&self) -> u32 {
         self.index
     }
 
-
     #[must_use]
-    pub const fn token_data(&self) -> EmberTokenData {
-        self.token_data
+    pub const fn token_data(&self) -> &Data {
+        &self.token_data
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
-    status: EmberStatus,
+pub struct Response {
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
-        Self { status }
+    pub fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

@@ -1,10 +1,9 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{};
 
 pub const ID: u16 = 0x005A;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command{
+pub struct Command {
     mode: u8,
 }
 
@@ -21,7 +20,7 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
+pub struct Response {
     remaining_time: u32,
 }
 

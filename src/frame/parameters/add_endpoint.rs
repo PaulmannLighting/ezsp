@@ -2,9 +2,7 @@ use crate::ezsp::Status;
 use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::{Error, FromLeBytes, ToLeBytes};
-use std::array::IntoIter;
-use std::iter::{Chain, Copied, FlatMap};
-use std::slice::Iter;
+use std::vec::IntoIter;
 
 pub const ID: u16 = 0x0002;
 
@@ -56,16 +54,6 @@ impl Command {
     #[must_use]
     pub const fn app_flags(&self) -> u8 {
         self.app_flags
-    }
-
-    #[must_use]
-    pub const fn input_cluster_count(&self) -> u8 {
-        self.input_clusters.len() as u8
-    }
-
-    #[must_use]
-    pub const fn output_cluster_count(&self) -> u8 {
-        self.output_clusters.len() as u8
     }
 
     #[must_use]
@@ -127,22 +115,7 @@ impl FromLeBytes for Command {
 }
 
 impl ToLeBytes for Command {
-    type Iter = Chain<
-        Chain<
-            Chain<
-                Chain<
-                    Chain<
-                        Chain<Chain<IntoIter<u8, 1>, IntoIter<u8, 2>>, IntoIter<u8, 2>>,
-                        IntoIter<u8, 1>,
-                    >,
-                    IntoIter<u8, 1>,
-                >,
-                IntoIter<u8, 1>,
-            >,
-            FlatMap<Copied<Iter<'static, u16>>, [u8; 2], fn(u16) -> [u8; 2]>,
-        >,
-        FlatMap<Copied<Iter<'static, u16>>, [u8; 2], fn(u16) -> [u8; 2]>,
-    >;
+    type Iter = IntoIter<u8>;
 
     fn to_le_bytes(self) -> Self::Iter {
         self.endpoint
@@ -151,8 +124,8 @@ impl ToLeBytes for Command {
             .chain(self.profile_id.to_le_bytes())
             .chain(self.device_id.to_le_bytes())
             .chain(self.app_flags.to_le_bytes())
-            .chain(self.input_cluster_count().to_le_bytes())
-            .chain(self.output_cluster_count().to_le_bytes())
+            .chain((self.input_clusters.len() as u8).to_le_bytes())
+            .chain((self.output_clusters.len() as u8).to_le_bytes())
             .chain(
                 self.input_clusters
                     .iter()
@@ -165,6 +138,8 @@ impl ToLeBytes for Command {
                     .copied()
                     .flat_map(u16::to_le_bytes as fn(u16) -> [u8; 2]),
             )
+            .collect::<Vec<_>>()
+            .into_iter()
     }
 }
 
@@ -181,7 +156,7 @@ impl Response {
         }
     }
 
-    pub const fn status(&self) -> Result<Status, u8> {
+    pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }
 }

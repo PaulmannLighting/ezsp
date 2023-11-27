@@ -11,7 +11,7 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(token_id: Id) -> Self {
+    pub fn new(token_id: Id) -> Self {
         Self {
             token_id: token_id.into(),
         }

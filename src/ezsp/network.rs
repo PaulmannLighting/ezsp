@@ -14,12 +14,12 @@ impl From<InitBitmask> for u16 {
     fn from(init_bitmask: InitBitmask) -> Self {
         init_bitmask
             .to_u16()
-            .expect("could not convert InitBitmask to u8")
+            .expect("could not convert InitBitmask to u16")
     }
 }
 
 impl TryFrom<u16> for InitBitmask {
-    type Error = u8;
+    type Error = u16;
 
     fn try_from(value: u16) -> Result<Self, Self::Error> {
         Self::from_u16(value).ok_or(value)

@@ -36,7 +36,7 @@ pub struct TableEntry {
 }
 
 impl TableEntry {
-    pub const fn new(
+    pub fn new(
         typ: Type,
         local: u8,
         cluster_id: u16,

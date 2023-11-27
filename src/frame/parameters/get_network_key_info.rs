@@ -22,7 +22,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, network_key_info: ManNetworkKeyInfo) -> Self {
+    pub fn new(status: Status, network_key_info: ManNetworkKeyInfo) -> Self {
         Self {
             status: status.into(),
             network_key_info,

@@ -1,5 +1,4 @@
-use crate::ember::types::NodeId;
-use crate::ember::Status;
+use crate::ember::{NodeId, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x009C;

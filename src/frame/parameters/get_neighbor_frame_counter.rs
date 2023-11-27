@@ -28,7 +28,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, return_frame_counter: u32) -> Self {
+    pub fn new(status: Status, return_frame_counter: u32) -> Self {
         Self {
             status: status.into(),
             return_frame_counter,

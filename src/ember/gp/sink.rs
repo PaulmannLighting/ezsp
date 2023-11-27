@@ -120,9 +120,9 @@ impl ListEntry {
                     .map(Payload::Unicast),
                 Type::Unused => None,
             }
+        } else {
+            None
         }
-
-        None
     }
 }
 

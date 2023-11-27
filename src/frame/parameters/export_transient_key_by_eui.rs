@@ -1,4 +1,4 @@
-use crate::ember::types::Eui64;
+use crate::ember::Eui64;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManContext, ManKey};
 use siliconlabs::Status;
@@ -27,12 +27,12 @@ pub struct Response {
     context: ManContext,
     plaintext_key: ManKey,
     key_data: ManApsKeyMetadata,
-    status: Status,
+    status: u32,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(
+    pub fn new(
         context: ManContext,
         plaintext_key: ManKey,
         key_data: ManApsKeyMetadata,
@@ -42,7 +42,7 @@ impl Response {
             context,
             plaintext_key,
             key_data,
-            status,
+            status: status.into(),
         }
     }
 
@@ -61,8 +61,7 @@ impl Response {
         &self.key_data
     }
 
-    #[must_use]
-    pub const fn status(&self) -> &Status {
-        &self.status
+    pub fn status(&self) -> Result<Status, u32> {
+        Status::try_from(self.status)
     }
 }

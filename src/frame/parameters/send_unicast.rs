@@ -8,7 +8,7 @@ pub const ID: u16 = 0x0034;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
-    typ: Outgoing,
+    typ: u8,
     index_or_destination: NodeId,
     aps_frame: Frame,
     tag: u8,
@@ -17,7 +17,7 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(
+    pub fn new(
         typ: Outgoing,
         index_or_destination: NodeId,
         aps_frame: Frame,
@@ -25,7 +25,7 @@ impl Command {
         message: ByteSizedVec<u8>,
     ) -> Self {
         Self {
-            typ,
+            typ: typ.into(),
             index_or_destination,
             aps_frame,
             tag,
@@ -33,9 +33,8 @@ impl Command {
         }
     }
 
-    #[must_use]
-    pub const fn typ(&self) -> Outgoing {
-        self.typ
+    pub fn typ(&self) -> Result<Outgoing, u8> {
+        Outgoing::try_from(self.typ)
     }
 
     #[must_use]

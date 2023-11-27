@@ -1,5 +1,4 @@
-use crate::ember::types::{CertificateData, PublicKeyData};
-use crate::ember::Status;
+use crate::ember::{CertificateData, PublicKeyData, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x009F;

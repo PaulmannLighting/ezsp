@@ -31,7 +31,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(
+    pub fn new(
         context: ManContext,
         plaintext_key: ManKey,
         key_data: ManApsKeyMetadata,

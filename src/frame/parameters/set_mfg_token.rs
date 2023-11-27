@@ -13,7 +13,7 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(token_id: Id, token_data: ByteSizedVec<u8>) -> Self {
+    pub fn new(token_id: Id, token_data: ByteSizedVec<u8>) -> Self {
         Self {
             token_id: token_id.into(),
             token_data,
@@ -37,7 +37,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status) -> Self {
+    pub fn new(status: Status) -> Self {
         Self {
             status: status.into(),
         }

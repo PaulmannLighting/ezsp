@@ -2,7 +2,7 @@ use crate::ember::types::Eui64;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
-use std::num::ParseIntError;
+use std::num::TryFromIntError;
 use std::time::Duration;
 
 pub type Data = [u8; 16];
@@ -64,7 +64,7 @@ pub struct Struct {
 
 impl Struct {
     #[must_use]
-    pub const fn new(
+    pub fn new(
         bitmask: Bitmask,
         typ: Type,
         key: Data,
@@ -150,7 +150,7 @@ impl TransientData {
         bitmask: Bitmask,
         remaining_time: Duration,
         network_index: u8,
-    ) -> Result<Self, ParseIntError> {
+    ) -> Result<Self, TryFromIntError> {
         Ok(Self {
             eui64,
             key_data,
@@ -191,6 +191,7 @@ impl TransientData {
 }
 
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
+#[repr(u8)]
 pub enum Status {
     AppLinkKeyEstablished = 0x01,
     TrustCenterLinkKeyEstablished = 0x03,

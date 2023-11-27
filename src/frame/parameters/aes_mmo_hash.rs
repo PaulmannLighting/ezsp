@@ -34,11 +34,6 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn length(&self) -> u8 {
-        self.data.len() as u8
-    }
-
-    #[must_use]
     pub const fn data(&self) -> &ByteSizedVec<u8> {
         &self.data
     }

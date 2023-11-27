@@ -94,23 +94,23 @@ impl Frame {
             return options;
         }
 
-        if Option::Retry.into() & self.options {
+        if Into::<u16>::into(Option::Retry) & self.options != 0 {
             options.push(Option::Retry).expect("buffer overflow");
         }
 
-        if Option::EnableRouteDiscovery.into() & self.options {
+        if Into::<u16>::into(Option::EnableRouteDiscovery) & self.options != 0 {
             options
                 .push(Option::EnableRouteDiscovery)
                 .expect("buffer overflow");
         }
 
-        if Option::ForceRouteDiscovery.into() & self.options {
+        if Into::<u16>::into(Option::ForceRouteDiscovery) & self.options != 0 {
             options
                 .push(Option::ForceRouteDiscovery)
                 .expect("buffer overflow");
         }
 
-        if Option::SourceEui64.into() & self.options {
+        if Into::<u16>::into(Option::SourceEui64) & self.options != 0 {
             options.push(Option::SourceEui64).expect("buffer overflow");
         }
 

@@ -11,7 +11,7 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(key_type: Type) -> Self {
+    pub fn new(key_type: Type) -> Self {
         Self {
             key_type: key_type.into(),
         }
@@ -30,7 +30,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, key_struct: Struct) -> Self {
+    pub fn new(status: Status, key_struct: Struct) -> Self {
         Self {
             status: status.into(),
             key_struct,

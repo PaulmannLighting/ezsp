@@ -84,7 +84,7 @@ pub struct TableEntry {
 
 impl TableEntry {
     #[must_use]
-    pub const fn new(
+    pub fn new(
         destination: u16,
         next_hop: u16,
         status: Status,
@@ -127,7 +127,7 @@ impl TableEntry {
     }
 
     pub fn route_record_state(&self) -> Result<RouteRecordState, u8> {
-        if let Ok(ConcentratorType::HighRam) = self.concentrator_type {
+        if let Ok(ConcentratorType::HighRam) = self.concentrator_type() {
             RouteRecordState::try_from(self.route_record_state)
         } else {
             Err(self.route_record_state)

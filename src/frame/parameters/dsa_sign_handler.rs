@@ -22,7 +22,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, message: ByteSizedVec<u8>) -> Self {
+    pub fn new(status: Status, message: ByteSizedVec<u8>) -> Self {
         Self {
             status: status.into(),
             message,

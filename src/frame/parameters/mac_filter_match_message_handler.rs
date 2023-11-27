@@ -25,7 +25,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(
+    pub fn new(
         filter_index_match: u8,
         legacy_passthrough_type: PassthroughType,
         last_hop_lqi: u8,

@@ -22,7 +22,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, beacon_iterator: Iterator) -> Self {
+    pub fn new(status: Status, beacon_iterator: Iterator) -> Self {
         Self {
             status: status.into(),
             beacon_iterator,

@@ -1,5 +1,4 @@
-use crate::ember::types::{MessageDigest, Signature283k1Data};
-use crate::ember::Status;
+use crate::ember::{MessageDigest, Signature283k1Data, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x00B0;
@@ -37,7 +36,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status) -> Self {
+    pub fn new(status: Status) -> Self {
         Self {
             status: status.into(),
         }

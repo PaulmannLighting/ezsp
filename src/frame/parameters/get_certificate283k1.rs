@@ -1,5 +1,4 @@
-use crate::ember::types::Certificate283k1Data;
-use crate::ember::Status;
+use crate::ember::{Certificate283k1Data, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x00EC;
@@ -22,7 +21,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, local_cert: Certificate283k1Data) -> Self {
+    pub fn new(status: Status, local_cert: Certificate283k1Data) -> Self {
         Self {
             status: status.into(),
             local_cert,

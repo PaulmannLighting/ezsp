@@ -12,7 +12,7 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(config_id: Id, value: u16) -> Self {
+    pub fn new(config_id: Id, value: u16) -> Self {
         Self {
             config_id: config_id.into(),
             value,

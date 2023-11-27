@@ -1,47 +1,49 @@
-use crate::types::{EmberNetworkParameters, EmberNodeType, EmberStatus};
+use crate::ember::network::Parameters;
+use crate::ember::node::Type;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x001F;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
-    node_type: EmberNodeType,
-    parameters: EmberNetworkParameters,
+    node_type: u8,
+    parameters: Parameters,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(node_type: EmberNodeType, parameters: EmberNetworkParameters) -> Self {
+    pub fn new(node_type: Type, parameters: Parameters) -> Self {
         Self {
-            node_type,
+            node_type: node_type.into(),
             parameters,
         }
     }
 
-    #[must_use]
-    pub const fn node_type(&self) -> EmberNodeType {
-        self.node_type
+    pub fn node_type(&self) -> Result<Type, u8> {
+        Type::try_from(self.node_type)
     }
 
     #[must_use]
-    pub const fn parameters(&self) -> EmberNetworkParameters {
-        self.parameters
+    pub const fn parameters(&self) -> &Parameters {
+        &self.parameters
     }
 }
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
-    status: EmberStatus,
+    status: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: EmberStatus) -> Self {
-        Self { status }
+    pub fn new(status: Status) -> Self {
+        Self {
+            status: status.into(),
+        }
     }
 
-    #[must_use]
-    pub const fn status(&self) -> EmberStatus {
-        self.status
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::try_from(self.status)
     }
 }

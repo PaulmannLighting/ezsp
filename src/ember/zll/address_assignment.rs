@@ -1,7 +1,7 @@
 use crate::ember::{MulticastId, NodeId};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct AddressAssignment {
     node_id: NodeId,
     free_node_id_min: NodeId,

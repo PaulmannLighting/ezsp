@@ -1,18 +1,7 @@
-use crate::ember::types::SmacData;
-use crate::ember::Status;
+use crate::ember::{SmacData, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x00A0;
-
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command;
-
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {

@@ -14,22 +14,26 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(bitmask: Bitmask) -> Self {
+    pub fn new(bitmask: Bitmask) -> Self {
         Self {
             bitmask: bitmask.iter().filter_map(|bitmask| bitmask.to_u16()).sum(),
         }
     }
 
     #[must_use]
-    pub const fn network_init_struct(&self) -> Bitmask {
+    pub fn network_init_struct(&self) -> Bitmask {
         let mut bitmask = Bitmask::new();
 
-        if self.bitmask & InitBitmask::ParentInfoInToken.into() {
-            bitmask.push(InitBitmask::ParentInfoInToken)
+        if self.bitmask & Into::<u16>::into(InitBitmask::ParentInfoInToken) != 0 {
+            bitmask
+                .push(InitBitmask::ParentInfoInToken)
+                .expect("buffer overflow");
         }
 
-        if self.bitmask & InitBitmask::EndDeviceRejoinOnReboot.into() {
-            bitmask.push(InitBitmask::EndDeviceRejoinOnReboot)
+        if self.bitmask & Into::<u16>::into(InitBitmask::EndDeviceRejoinOnReboot) != 0 {
+            bitmask
+                .push(InitBitmask::EndDeviceRejoinOnReboot)
+                .expect("buffer overflow");
         }
 
         bitmask

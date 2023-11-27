@@ -1,10 +1,11 @@
 use crate::ember::types::PanId;
+use le_stream::derive::{FromLeBytes, ToLeBytes};
 use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
 use std::io::Read;
 use std::iter::{once, Chain, Once};
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Network {
     channel: u8,
     pan_id: PanId,

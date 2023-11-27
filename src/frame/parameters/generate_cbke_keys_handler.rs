@@ -1,18 +1,7 @@
-use crate::ember::types::PublicKeyData;
-use crate::ember::Status;
+use crate::ember::{PublicKeyData, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x009E;
-
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command;
-
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
@@ -22,7 +11,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, ephemeral_public_key: PublicKeyData) -> Self {
+    pub fn new(status: Status, ephemeral_public_key: PublicKeyData) -> Self {
         Self {
             status: status.into(),
             ephemeral_public_key,

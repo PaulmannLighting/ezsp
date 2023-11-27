@@ -22,7 +22,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, returned_state: State) -> Self {
+    pub fn new(status: Status, returned_state: State) -> Self {
         Self {
             status: status.into(),
             returned_state: returned_state.into(),

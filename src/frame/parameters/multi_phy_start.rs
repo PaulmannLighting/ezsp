@@ -15,7 +15,7 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(phy_index: u8, page: u8, channel: u8, power: i8, bitmask: Config) -> Self {
+    pub fn new(phy_index: u8, page: u8, channel: u8, power: i8, bitmask: Config) -> Self {
         Self {
             phy_index,
             page,
@@ -46,12 +46,12 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn bitmask(&self) -> Option<Config> {
-        if self.bitmask & Config::BroadcastSupport.into() {
+    pub fn bitmask(&self) -> Option<Config> {
+        if self.bitmask & Into::<u8>::into(Config::BroadcastSupport) != 0 {
             Some(Config::BroadcastSupport)
+        } else {
+            None
         }
-
-        None
     }
 }
 

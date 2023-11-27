@@ -26,7 +26,7 @@ impl Response {
         }
     }
 
-    pub const fn status(&self) -> Result<Status, u8> {
+    pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }
 }

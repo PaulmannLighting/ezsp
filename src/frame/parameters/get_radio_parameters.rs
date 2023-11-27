@@ -29,7 +29,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, node_type: Type) -> Self {
+    pub fn new(status: Status, node_type: Type) -> Self {
         Self {
             status: status.into(),
             node_type: node_type.into(),

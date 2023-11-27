@@ -4,16 +4,6 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 pub const ID: u16 = 0x001C;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command;
-
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
     channel: u8,
     status: u8,
@@ -21,7 +11,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(channel: u8, status: Status) -> Self {
+    pub fn new(channel: u8, status: Status) -> Self {
         Self {
             channel,
             status: status.into(),

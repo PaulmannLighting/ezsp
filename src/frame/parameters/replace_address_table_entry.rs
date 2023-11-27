@@ -58,7 +58,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(
+    pub fn new(
         status: Status,
         old_eui64: Eui64,
         old_id: NodeId,

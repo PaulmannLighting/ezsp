@@ -13,7 +13,7 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(value_id: ExtendedId, characteristics: u32) -> Self {
+    pub fn new(value_id: ExtendedId, characteristics: u32) -> Self {
         Self {
             value_id: value_id.into(),
             characteristics,
@@ -38,7 +38,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, value: ByteSizedVec<u8>) -> Self {
+    pub fn new(status: Status, value: ByteSizedVec<u8>) -> Self {
         Self {
             status: status.into(),
             value,

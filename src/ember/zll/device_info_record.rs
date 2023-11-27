@@ -1,7 +1,7 @@
 use crate::ember::Eui64;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct DeviceInfoRecord {
     ieee_address: Eui64,
     endpoint_id: u8,

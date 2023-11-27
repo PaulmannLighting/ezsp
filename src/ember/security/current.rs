@@ -34,7 +34,7 @@ pub struct State {
 
 impl State {
     #[must_use]
-    pub const fn new(bitmask: Bitmask, trust_center_long_address: Eui64) -> Self {
+    pub fn new(bitmask: Bitmask, trust_center_long_address: Eui64) -> Self {
         Self {
             bitmask: bitmask.into(),
             trust_center_long_address,

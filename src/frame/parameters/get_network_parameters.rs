@@ -1,5 +1,6 @@
 use crate::ember::network::Parameters;
-use crate::ember::{NodeType, Status};
+use crate::ember::node::Type;
+use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0028;
@@ -17,16 +18,16 @@ impl Command {
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
     status: u8,
-    node_type: NodeType,
+    node_type: u8,
     parameters: Parameters,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, node_type: NodeType, parameters: Parameters) -> Self {
+    pub fn new(status: Status, node_type: Type, parameters: Parameters) -> Self {
         Self {
             status: status.into(),
-            node_type,
+            node_type: node_type.into(),
             parameters,
         }
     }
@@ -35,9 +36,8 @@ impl Response {
         Status::try_from(self.status)
     }
 
-    #[must_use]
-    pub const fn node_type(&self) -> NodeType {
-        self.node_type
+    pub fn node_type(&self) -> Result<Type, u8> {
+        Type::try_from(self.node_type)
     }
 
     #[must_use]

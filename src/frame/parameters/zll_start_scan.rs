@@ -13,7 +13,7 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(channel_mask: u32, radio_power_for_scan: i8, node_type: Type) -> Self {
+    pub fn new(channel_mask: u32, radio_power_for_scan: i8, node_type: Type) -> Self {
         Self {
             channel_mask,
             radio_power_for_scan,

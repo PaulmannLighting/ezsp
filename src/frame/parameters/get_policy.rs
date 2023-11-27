@@ -11,7 +11,7 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(policy_id: policy::Id) -> Self {
+    pub fn new(policy_id: policy::Id) -> Self {
         Self {
             policy_id: policy_id.into(),
         }
@@ -30,7 +30,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(status: Status, decision_id: decision::Id) -> Self {
+    pub fn new(status: Status, decision_id: decision::Id) -> Self {
         Self {
             status: status.into(),
             decision_id: decision_id.into(),

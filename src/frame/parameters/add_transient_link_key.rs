@@ -1,6 +1,5 @@
 use crate::ember::key::Data;
-use crate::ember::types::Eui64;
-use crate::ember::Status;
+use crate::ember::{Eui64, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x00AF;
@@ -44,7 +43,7 @@ impl Response {
         }
     }
 
-    pub const fn status(&self) -> Result<Status, u8> {
+    pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }
 }

@@ -1,4 +1,4 @@
-use crate::ember::initial_security::State;
+use crate::ember::security::initial::State;
 use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
@@ -28,7 +28,7 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(success: Status) -> Self {
+    pub fn new(success: Status) -> Self {
         Self {
             success: success.into(),
         }

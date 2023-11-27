@@ -1,18 +1,8 @@
 use crate::ember::node::Type;
-use crate::ember::types::{Eui64, NodeId, NodeType};
+use crate::ember::{Eui64, NodeId};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0023;
-
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command;
-
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
@@ -20,7 +10,7 @@ pub struct Response {
     joining: bool,
     child_id: NodeId,
     child_eui64: Eui64,
-    child_type: NodeType,
+    child_type: u8,
 }
 
 impl Response {
@@ -61,8 +51,7 @@ impl Response {
         self.child_eui64
     }
 
-    #[must_use]
-    pub const fn child_type(&self) -> NodeType {
-        self.child_type
+    pub fn child_type(&self) -> Result<Type, u8> {
+        Type::try_from(self.child_type)
     }
 }

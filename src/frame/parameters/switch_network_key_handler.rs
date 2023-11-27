@@ -1,20 +1,9 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use crate::types::{};
 
 pub const ID: u16 = 0x006E;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command;
-
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {  }
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response{
+pub struct Response {
     sequence_number: u8,
 }
 

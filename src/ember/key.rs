@@ -191,3 +191,88 @@ impl TransientData {
         self.network_index
     }
 }
+
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
+pub enum Status {
+    AppLinkKeyEstablished = 0x01,
+    TrustCenterLinkKeyEstablished = 0x03,
+    KeyEstablishmentTimeout = 0x04,
+    KeyTableFull = 0x05,
+    Tc(Tc),
+}
+
+impl From<Status> for u8 {
+    fn from(status: Status) -> Self {
+        status.to_u8().expect("could not convert Status to u8")
+    }
+}
+
+impl FromPrimitive for Status {
+    fn from_i64(n: i64) -> Option<Self> {
+        Self::from_u64(n.try_into().ok()?)
+    }
+
+    fn from_u64(n: u64) -> Option<Self> {
+        match n {
+            0x01 => Some(Self::AppLinkKeyEstablished),
+            0x03 => Some(Self::TrustCenterLinkKeyEstablished),
+            0x04 => Some(Self::KeyEstablishmentTimeout),
+            0x05 => Some(Self::KeyTableFull),
+            n => Tc::from_u64(n).map(Self::Tc),
+        }
+    }
+}
+
+impl ToPrimitive for Status {
+    fn to_i64(&self) -> Option<i64> {
+        self.to_u64().and_then(|n| n.try_into().ok())
+    }
+
+    fn to_u64(&self) -> Option<u64> {
+        match self {
+            Self::AppLinkKeyEstablished => Some(0x01),
+            Self::TrustCenterLinkKeyEstablished => Some(0x03),
+            Self::KeyEstablishmentTimeout => Some(0x04),
+            Self::KeyTableFull => Some(0x05),
+            Self::Tc(tc) => tc.to_u64(),
+        }
+    }
+}
+
+impl TryFrom<u8> for Status {
+    type Error = u8;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Self::from_u8(value).ok_or(value)
+    }
+}
+
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum Tc {
+    RespondedToKeyRequest = 0x06,
+    AppKeySentToRequester = 0x07,
+    ResponseToKeyRequestFailed = 0x08,
+    RequestKeyTypeNotSupported = 0x09,
+    NoLinkKeyForRequester = 0x0A,
+    RequesterEui64Unknown = 0x0B,
+    ReceivedFirstAppKeyRequest = 0x0C,
+    TimeoutWaitingForSecondAppKeyRequest = 0x0D,
+    NonMatchingAppKeyRequestReceived = 0x0E,
+    FailedToSendAppKeys = 0x0F,
+    FailedToStoreAppKeyRequest = 0x10,
+    RejectedAppKeyRequest = 0x11,
+}
+
+impl From<Tc> for u8 {
+    fn from(tc: Tc) -> Self {
+        tc.to_u8().expect("could not convert Tc to u8")
+    }
+}
+
+impl TryFrom<u8> for Tc {
+    type Error = u8;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Self::from_u8(value).ok_or(value)
+    }
+}

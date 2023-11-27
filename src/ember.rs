@@ -6,6 +6,7 @@ pub mod child;
 mod constants;
 pub mod counter;
 pub mod current_security;
+pub mod device;
 pub mod duty_cycle;
 pub mod entropy;
 pub mod event;

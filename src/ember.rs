@@ -12,6 +12,7 @@ pub mod entropy;
 pub mod event;
 pub mod gp;
 pub mod initial_security;
+pub mod join;
 pub mod join_method;
 pub mod key;
 pub mod library;

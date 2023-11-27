@@ -33,7 +33,7 @@ pub use status::{
     Adc, Application, Bootloader, Eeprom, Err, Flash, Mac, Phy, Serial, SimEeprom, Status,
 };
 pub use types::{
-    Certificate283k1Data, CertificateData, Eui64, KeyData, MessageDigest, MulticastId, NodeId,
-    PanId, PrivateKey283k1Data, PrivateKeyData, PublicKey283k1Data, PublicKeyData,
-    Signature283k1Data, SignatureData, SmacData,
+    Certificate283k1Data, CertificateData, Eui64, MessageDigest, MulticastId, NodeId, PanId,
+    PrivateKey283k1Data, PrivateKeyData, PublicKey283k1Data, PublicKeyData, Signature283k1Data,
+    SignatureData, SmacData,
 };

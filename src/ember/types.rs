@@ -2,7 +2,6 @@ pub type NodeId = u16;
 pub type PanId = u16;
 pub type MulticastId = u16;
 pub type Eui64 = u64;
-pub type KeyData = [u8; 16];
 pub type CertificateData = [u8; 48];
 pub type PublicKeyData = [u8; 22];
 pub type PrivateKeyData = [u8; 21];

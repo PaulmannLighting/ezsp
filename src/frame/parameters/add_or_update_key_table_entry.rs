@@ -1,4 +1,5 @@
-use crate::ember::types::{Eui64, KeyData};
+use crate::ember::key::Data;
+use crate::ember::types::Eui64;
 use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
@@ -8,12 +9,12 @@ pub const ID: u16 = 0x0066;
 pub struct Command {
     address: Eui64,
     link_key: bool,
-    key_data: KeyData,
+    key_data: Data,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(address: Eui64, link_key: bool, key_data: KeyData) -> Self {
+    pub const fn new(address: Eui64, link_key: bool, key_data: Data) -> Self {
         Self {
             address,
             link_key,
@@ -32,7 +33,7 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn key_data(&self) -> &KeyData {
+    pub const fn key_data(&self) -> &Data {
         &self.key_data
     }
 }

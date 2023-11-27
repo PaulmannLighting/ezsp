@@ -1,4 +1,5 @@
-use crate::ember::types::{Eui64, KeyData};
+use crate::ember::key::Data;
+use crate::ember::types::Eui64;
 use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
@@ -7,12 +8,12 @@ pub const ID: u16 = 0x00AF;
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
     partner: Eui64,
-    transient_key: KeyData,
+    transient_key: Data,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(partner: Eui64, transient_key: KeyData) -> Self {
+    pub const fn new(partner: Eui64, transient_key: Data) -> Self {
         Self {
             partner,
             transient_key,
@@ -25,7 +26,7 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn transient_key(&self) -> &KeyData {
+    pub const fn transient_key(&self) -> &Data {
         &self.transient_key
     }
 }

@@ -1,4 +1,4 @@
-use crate::ember::types::KeyData;
+use crate::ember::key::Data;
 use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
@@ -6,17 +6,17 @@ pub const ID: u16 = 0x0073;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
-    key: KeyData,
+    key: Data,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(key: KeyData) -> Self {
+    pub const fn new(key: Data) -> Self {
         Self { key }
     }
 
     #[must_use]
-    pub const fn key(&self) -> &KeyData {
+    pub const fn key(&self) -> &Data {
         &self.key
     }
 }

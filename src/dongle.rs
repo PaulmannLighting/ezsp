@@ -1,4 +1,7 @@
-use crate::Protocol;
+use crate::frame::parameters::add_endpoint;
+use crate::types::ByteSizedVec;
+use crate::{ezsp, Protocol};
+use le_stream::ToLeBytes;
 use serialport::SerialPort;
 use stack::Stack;
 use std::collections::HashMap;
@@ -82,5 +85,41 @@ where
 {
     pub fn new() -> Self {
         todo!()
+    }
+
+    fn write(&mut self, byte: u8) -> std::io::Result<()> {
+        todo!()
+    }
+}
+
+impl<B, T, P, S> Dongle<B, T, P, S>
+where
+    B: BootloaderHandler,
+    T: ZigBeeTransportReceive,
+    P: Protocol,
+    S: SerialPort,
+{
+    pub fn add_endpoint(
+        &mut self,
+        endpoint: u8,
+        profile_id: u16,
+        device_id: u16,
+        app_flags: u8,
+        input_clusters: ByteSizedVec<u16>,
+        output_clusters: ByteSizedVec<u16>,
+    ) -> std::io::Result<ezsp::Status> {
+        let command = add_endpoint::Command::new(
+            endpoint,
+            profile_id,
+            device_id,
+            app_flags,
+            input_clusters,
+            output_clusters,
+        );
+        for byte in command.to_le_bytes() {
+            self.write(byte)?;
+        }
+
+        todo!("Receive response")
     }
 }

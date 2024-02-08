@@ -124,8 +124,16 @@ impl ToLeBytes for Command {
             .chain(self.profile_id.to_le_bytes())
             .chain(self.device_id.to_le_bytes())
             .chain(self.app_flags.to_le_bytes())
-            .chain((self.input_clusters.len() as u8).to_le_bytes())
-            .chain((self.output_clusters.len() as u8).to_le_bytes())
+            .chain(
+                u8::try_from(self.input_clusters.len())
+                    .expect("input clusters size exceeds u8")
+                    .to_le_bytes(),
+            )
+            .chain(
+                u8::try_from(self.output_clusters.len())
+                    .expect("output clusters size exceeds u8")
+                    .to_le_bytes(),
+            )
             .chain(
                 self.input_clusters
                     .iter()

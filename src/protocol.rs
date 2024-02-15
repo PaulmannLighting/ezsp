@@ -22,7 +22,7 @@ pub trait Protocol {
     where
         T: FromLeBytes;
 
-    async fn send_transaction<T>(&mut self, transaction: T) -> Result<T::Response, Error>
+    async fn communicate<T>(&mut self, transaction: T) -> Result<T::Response, Error>
     where
         T: Transaction,
     {

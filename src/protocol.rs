@@ -1,15 +1,10 @@
 mod counters;
 mod error;
+mod transaction;
 
 use error::Error;
 use le_stream::{FromLeBytes, ToLeBytes};
-
-pub trait Transaction {
-    type Command: ToLeBytes;
-    type Response: FromLeBytes;
-
-    fn command(&self) -> Self::Command;
-}
+use transaction::Transaction;
 
 pub trait Protocol {
     const NAME: &'static str;

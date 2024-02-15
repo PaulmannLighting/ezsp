@@ -4,7 +4,6 @@ mod error;
 use error::Error;
 use le_stream::{FromLeBytes, ToLeBytes};
 
-// XXX: Mockup
 pub trait Transaction {
     type Response: FromLeBytes;
 

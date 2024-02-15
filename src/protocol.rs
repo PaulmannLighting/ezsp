@@ -4,7 +4,7 @@ mod transaction;
 
 use error::Error;
 use le_stream::{FromLeBytes, ToLeBytes};
-use transaction::Transaction;
+pub use transaction::Transaction;
 
 pub trait Protocol {
     const NAME: &'static str;

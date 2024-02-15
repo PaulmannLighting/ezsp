@@ -1,13 +1,15 @@
 mod counters;
 mod error;
 
+use crate::frame::Command;
 use error::Error;
 use le_stream::{FromLeBytes, ToLeBytes};
 
 pub trait Transaction {
+    type Command: ToLeBytes;
     type Response: FromLeBytes;
 
-    fn command(&self) -> impl ToLeBytes;
+    fn command(&self) -> Self::Command;
 }
 
 pub trait Protocol {

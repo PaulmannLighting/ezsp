@@ -1,7 +1,6 @@
 mod counters;
 mod error;
 
-use crate::frame::Command;
 use error::Error;
 use le_stream::{FromLeBytes, ToLeBytes};
 

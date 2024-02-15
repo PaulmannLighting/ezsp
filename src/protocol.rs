@@ -2,7 +2,7 @@ mod counters;
 mod error;
 mod transaction;
 
-use error::Error;
+pub use error::Error;
 use le_stream::{FromLeBytes, ToLeBytes};
 pub use transaction::Transaction;
 

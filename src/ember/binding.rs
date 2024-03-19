@@ -56,6 +56,10 @@ impl TableEntry {
         }
     }
 
+    /// Return the table entry type.
+    ///
+    /// # Errors
+    /// Returns the [`u8`] value of the type if it has an invalid value.
     pub fn typ(&self) -> Result<Type, u8> {
         Type::try_from(self.typ)
     }

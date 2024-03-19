@@ -11,7 +11,7 @@ impl From<NetworkOperation> for u8 {
     fn from(network_operation: NetworkOperation) -> Self {
         network_operation
             .to_u8()
-            .expect("could not convert NetworkOperation to u8")
+            .expect("NetworkOperation should always be convertible to u8.")
     }
 }
 

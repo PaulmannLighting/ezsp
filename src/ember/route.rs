@@ -14,7 +14,9 @@ pub enum Status {
 
 impl From<Status> for u8 {
     fn from(status: Status) -> Self {
-        status.to_u8().expect("could not convert Status to u8")
+        status
+            .to_u8()
+            .expect("Status should always be convertible to u8.")
     }
 }
 
@@ -37,7 +39,7 @@ impl From<ConcentratorType> for u8 {
     fn from(concentrator_type: ConcentratorType) -> Self {
         concentrator_type
             .to_u8()
-            .expect("could not convert ConcentratorType to u8")
+            .expect("ConcentratorType should always be convertible to u8.")
     }
 }
 
@@ -60,7 +62,7 @@ impl From<RouteRecordState> for u8 {
     fn from(route_record_state: RouteRecordState) -> Self {
         route_record_state
             .to_u8()
-            .expect("could not convert RouteRecordState to u8")
+            .expect("RouteRecordState should always be convertible to u8.")
     }
 }
 

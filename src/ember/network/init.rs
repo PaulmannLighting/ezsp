@@ -12,7 +12,7 @@ impl From<Bitmask> for u16 {
     fn from(init_bitmask: Bitmask) -> Self {
         init_bitmask
             .to_u16()
-            .expect("could not convert InitBitmask to u8")
+            .expect("InitBitmask should always be convertible to u8.")
     }
 }
 

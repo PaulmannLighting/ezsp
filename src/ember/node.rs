@@ -12,7 +12,8 @@ pub enum Type {
 
 impl From<Type> for u8 {
     fn from(typ: Type) -> Self {
-        typ.to_u8().expect("could not convert Type to u8.")
+        typ.to_u8()
+            .expect("Type should always be convertible to u8.")
     }
 }
 

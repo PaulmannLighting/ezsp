@@ -11,7 +11,9 @@ pub enum Units {
 
 impl From<Units> for u8 {
     fn from(units: Units) -> Self {
-        units.to_u8().expect("could not convert Units to u8")
+        units
+            .to_u8()
+            .expect("Units should always be convertible to u8.")
     }
 }
 

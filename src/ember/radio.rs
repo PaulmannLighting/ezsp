@@ -11,7 +11,7 @@ impl From<PowerMode> for u8 {
     fn from(power_mode: PowerMode) -> Self {
         power_mode
             .to_u8()
-            .expect("could not convert PowerMode to u8.")
+            .expect("PowerMode should always be convertible to u8.")
     }
 }
 

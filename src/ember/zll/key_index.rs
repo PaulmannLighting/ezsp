@@ -10,7 +10,9 @@ pub enum KeyIndex {
 
 impl From<KeyIndex> for u8 {
     fn from(key_index: KeyIndex) -> Self {
-        key_index.to_u8().expect("could not convert KeyIndex to u8")
+        key_index
+            .to_u8()
+            .expect("KeyIndex should always be convertible to u8.")
     }
 }
 

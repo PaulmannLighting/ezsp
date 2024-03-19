@@ -13,6 +13,6 @@ impl From<SleepMode> for u8 {
     fn from(sleep_mode: SleepMode) -> Self {
         sleep_mode
             .to_u8()
-            .expect("Could not convert sleep mode to u8.")
+            .expect("SleepMode should always be convertible to u8.")
     }
 }

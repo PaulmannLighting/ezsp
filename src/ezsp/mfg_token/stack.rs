@@ -9,6 +9,8 @@ pub enum Stack {
 
 impl From<Stack> for u8 {
     fn from(stack: Stack) -> Self {
-        stack.to_u8().expect("could not convert Stack to u8")
+        stack
+            .to_u8()
+            .expect("Stack should always be convertible to u8.")
     }
 }

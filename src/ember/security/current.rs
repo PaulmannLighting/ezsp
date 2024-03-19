@@ -14,7 +14,9 @@ pub enum Bitmask {
 
 impl From<Bitmask> for u16 {
     fn from(bitmask: Bitmask) -> Self {
-        bitmask.to_u16().expect("could not convert Bitmask to u16")
+        bitmask
+            .to_u16()
+            .expect("Bitmask should always be convertible to u16.")
     }
 }
 

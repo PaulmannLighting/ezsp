@@ -11,7 +11,9 @@ pub enum Decision {
 
 impl From<Decision> for u8 {
     fn from(decision: Decision) -> Self {
-        decision.to_u8().expect("could not convert Decision to u8")
+        decision
+            .to_u8()
+            .expect("Decision should always be convertible to u8.")
     }
 }
 
@@ -41,6 +43,8 @@ impl TryFrom<u8> for Method {
 
 impl From<Method> for u8 {
     fn from(method: Method) -> Self {
-        method.to_u8().expect("could not convert Method to u8.")
+        method
+            .to_u8()
+            .expect("Method should always be convertible to u8.")
     }
 }

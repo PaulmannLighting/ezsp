@@ -13,7 +13,7 @@ impl From<PassthroughType> for u8 {
     fn from(passthrough_type: PassthroughType) -> Self {
         passthrough_type
             .to_u8()
-            .expect("could not convert PassthroughType to u8")
+            .expect("PassthroughType should always be convertible to u8.")
     }
 }
 

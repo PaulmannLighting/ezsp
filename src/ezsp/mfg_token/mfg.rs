@@ -21,6 +21,6 @@ impl From<Mfg> for u8 {
     fn from(manufacturing: Mfg) -> Self {
         manufacturing
             .to_u8()
-            .expect("could not convert Manufacturing to u8")
+            .expect("Mfg should always be convertible to u8.")
     }
 }

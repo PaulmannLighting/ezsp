@@ -27,13 +27,13 @@ impl Command {
         if self.bitmask & Into::<u16>::into(InitBitmask::ParentInfoInToken) != 0 {
             bitmask
                 .push(InitBitmask::ParentInfoInToken)
-                .expect("buffer overflow");
+                .expect("Bitmask buffer should have sufficient capacity.");
         }
 
         if self.bitmask & Into::<u16>::into(InitBitmask::EndDeviceRejoinOnReboot) != 0 {
             bitmask
                 .push(InitBitmask::EndDeviceRejoinOnReboot)
-                .expect("buffer overflow");
+                .expect("Bitmask buffer should have sufficient capacity.");
         }
 
         bitmask

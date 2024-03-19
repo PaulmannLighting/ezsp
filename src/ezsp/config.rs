@@ -54,7 +54,7 @@ pub enum Id {
 
 impl From<Id> for u8 {
     fn from(id: Id) -> Self {
-        id.to_u8().expect("could not convert Id to u8")
+        id.to_u8().expect("Id should always be convertible to u8.")
     }
 }
 

@@ -21,7 +21,9 @@ pub enum Option {
 
 impl From<Option> for u16 {
     fn from(option: Option) -> Self {
-        option.to_u16().expect("could not convert Option to u16")
+        option
+            .to_u16()
+            .expect("Option should always be convertible to u16.")
     }
 }
 
@@ -95,23 +97,27 @@ impl Frame {
         }
 
         if Into::<u16>::into(Option::Retry) & self.options != 0 {
-            options.push(Option::Retry).expect("buffer overflow");
+            options
+                .push(Option::Retry)
+                .expect("Options buffer should have sufficient capacity.");
         }
 
         if Into::<u16>::into(Option::EnableRouteDiscovery) & self.options != 0 {
             options
                 .push(Option::EnableRouteDiscovery)
-                .expect("buffer overflow");
+                .expect("Options buffer should have sufficient capacity.");
         }
 
         if Into::<u16>::into(Option::ForceRouteDiscovery) & self.options != 0 {
             options
                 .push(Option::ForceRouteDiscovery)
-                .expect("buffer overflow");
+                .expect("Options buffer should have sufficient capacity.");
         }
 
         if Into::<u16>::into(Option::SourceEui64) & self.options != 0 {
-            options.push(Option::SourceEui64).expect("buffer overflow");
+            options
+                .push(Option::SourceEui64)
+                .expect("Options buffer should have sufficient capacity.");
         }
 
         options

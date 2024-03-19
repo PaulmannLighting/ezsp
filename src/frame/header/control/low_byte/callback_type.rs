@@ -12,6 +12,6 @@ impl From<CallbackType> for u8 {
     fn from(callback_type: CallbackType) -> Self {
         callback_type
             .to_u8()
-            .expect("Could not convert callback type to u8.")
+            .expect("CallbackType should always be convertible to u8.")
     }
 }

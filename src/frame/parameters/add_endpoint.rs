@@ -94,7 +94,7 @@ impl FromLeBytes for Command {
 
             input_clusters
                 .push(u16::from_le_bytes(buffer))
-                .expect("buffer overflow");
+                .expect("Input clusters buffer should have sufficient capacity.");
         }
 
         for _ in 0..output_cluster_count {
@@ -104,7 +104,7 @@ impl FromLeBytes for Command {
 
             output_clusters
                 .push(u16::from_le_bytes(buffer))
-                .expect("buffer overflow");
+                .expect("Output clusters buffer should have sufficient capacity.");
         }
 
         Ok(Self {
@@ -130,12 +130,12 @@ impl ToLeBytes for Command {
             .chain(self.app_flags.to_le_bytes())
             .chain(
                 u8::try_from(self.input_clusters.len())
-                    .expect("input clusters size exceeds u8")
+                    .expect("Input clusters buffer size should never exceed u8.")
                     .to_le_bytes(),
             )
             .chain(
                 u8::try_from(self.output_clusters.len())
-                    .expect("output clusters size exceeds u8")
+                    .expect("Output clusters buffer size should never exceed u8.")
                     .to_le_bytes(),
             )
             .chain(

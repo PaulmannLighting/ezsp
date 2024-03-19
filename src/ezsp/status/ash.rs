@@ -46,6 +46,7 @@ impl ToPrimitive for Ash {
 
 impl From<Ash> for u8 {
     fn from(ash: Ash) -> Self {
-        ash.to_u8().expect("could not convert Ash to u8")
+        ash.to_u8()
+            .expect("Ash should always be convertible to u8.")
     }
 }

@@ -15,7 +15,7 @@ impl From<FrameFormatVersion> for u8 {
     fn from(frame_format_version: FrameFormatVersion) -> Self {
         frame_format_version
             .to_u8()
-            .expect("Could not convert frame format version to u8.")
+            .expect("FrameFormatVersion should always be convertible to u8.")
     }
 }
 

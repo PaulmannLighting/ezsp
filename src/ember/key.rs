@@ -17,7 +17,8 @@ pub enum Type {
 
 impl From<Type> for u8 {
     fn from(typ: Type) -> Self {
-        typ.to_u8().expect("could not convert Type to u8")
+        typ.to_u8()
+            .expect("Method should always be convertible to u8.")
     }
 }
 
@@ -39,7 +40,9 @@ pub enum Bitmask {
 
 impl From<Bitmask> for u16 {
     fn from(bitmask: Bitmask) -> Self {
-        bitmask.to_u16().expect("could not convert Bitmask to u16")
+        bitmask
+            .to_u16()
+            .expect("Bitmask should always be convertible to u16.")
     }
 }
 
@@ -202,7 +205,9 @@ pub enum Status {
 
 impl From<Status> for u8 {
     fn from(status: Status) -> Self {
-        status.to_u8().expect("could not convert Status to u8")
+        status
+            .to_u8()
+            .expect("Status should always be convertible to u8.")
     }
 }
 
@@ -264,7 +269,7 @@ pub enum Tc {
 
 impl From<Tc> for u8 {
     fn from(tc: Tc) -> Self {
-        tc.to_u8().expect("could not convert Tc to u8")
+        tc.to_u8().expect("Tc should always be convertible to u8.")
     }
 }
 

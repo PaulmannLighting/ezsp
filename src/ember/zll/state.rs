@@ -13,7 +13,9 @@ pub enum State {
 
 impl From<State> for u16 {
     fn from(state: State) -> Self {
-        state.to_u16().expect("could not convert State to u16")
+        state
+            .to_u16()
+            .expect("State should always be convertible to u16.")
     }
 }
 

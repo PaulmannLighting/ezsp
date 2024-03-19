@@ -21,6 +21,8 @@ pub enum SpiErr {
 
 impl From<SpiErr> for u8 {
     fn from(spi_err: SpiErr) -> Self {
-        spi_err.to_u8().expect("could not convert SpiErr to u8")
+        spi_err
+            .to_u8()
+            .expect("SpiErr should always be convertible to u8.")
     }
 }

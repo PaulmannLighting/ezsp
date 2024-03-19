@@ -8,7 +8,9 @@ pub enum Config {
 
 impl From<Config> for u8 {
     fn from(config: Config) -> Self {
-        config.to_u8().expect("could not convert Config to u8")
+        config
+            .to_u8()
+            .expect("Config should always be convertible to u8.")
     }
 }
 

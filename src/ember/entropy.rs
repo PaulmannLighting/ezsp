@@ -11,7 +11,9 @@ pub enum Source {
 
 impl From<Source> for u8 {
     fn from(source: Source) -> Self {
-        source.to_u8().expect("could not convert Source to u8")
+        source
+            .to_u8()
+            .expect("Source should always be convertible to u8.")
     }
 }
 

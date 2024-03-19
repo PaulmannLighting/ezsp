@@ -24,7 +24,7 @@ pub enum Id {
 
 impl From<Id> for u8 {
     fn from(id: Id) -> Self {
-        id.to_u8().expect("could not convert ID to u8")
+        id.to_u8().expect("ID should always be convertible to u8.")
     }
 }
 
@@ -49,7 +49,9 @@ pub enum Bitmask {
 
 impl From<Bitmask> for u8 {
     fn from(bitmask: Bitmask) -> Self {
-        bitmask.to_u8().expect("could not convert Bitmask to u8")
+        bitmask
+            .to_u8()
+            .expect("Bitmask should always be convertible to u8.")
     }
 }
 

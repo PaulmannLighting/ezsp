@@ -14,7 +14,9 @@ pub enum Incoming {
 
 impl From<Incoming> for u8 {
     fn from(incoming: Incoming) -> Self {
-        incoming.to_u8().expect("could not convert Incoming to u8")
+        incoming
+            .to_u8()
+            .expect("Incoming should always be convertible to u8.")
     }
 }
 
@@ -37,7 +39,9 @@ pub enum Outgoing {
 
 impl From<Outgoing> for u8 {
     fn from(outgoing: Outgoing) -> Self {
-        outgoing.to_u8().expect("could not convert Outgoing to u8")
+        outgoing
+            .to_u8()
+            .expect("Outgoing should always be convertible to u8.")
     }
 }
 

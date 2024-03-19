@@ -15,6 +15,8 @@ pub enum Error {
 
 impl From<Error> for u8 {
     fn from(error: Error) -> Self {
-        error.to_u8().expect("could not convert Error to u8")
+        error
+            .to_u8()
+            .expect("Error should always be convertible to u8.")
     }
 }

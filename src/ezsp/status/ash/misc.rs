@@ -29,6 +29,7 @@ pub enum Misc {
 
 impl From<Misc> for u8 {
     fn from(misc: Misc) -> Self {
-        misc.to_u8().expect("could not convert Misc to u8")
+        misc.to_u8()
+            .expect("Misc should always be convertible to u8.")
     }
 }

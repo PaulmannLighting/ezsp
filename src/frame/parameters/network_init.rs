@@ -16,7 +16,7 @@ impl Command {
     #[must_use]
     pub fn new(bitmask: Bitmask) -> Self {
         Self {
-            bitmask: bitmask.iter().filter_map(|bitmask| bitmask.to_u16()).sum(),
+            bitmask: bitmask.iter().filter_map(ToPrimitive::to_u16).sum(),
         }
     }
 

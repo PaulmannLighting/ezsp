@@ -62,7 +62,7 @@ impl Frame {
             cluster_id,
             source_endpoint,
             destination_endpoint,
-            options: options.iter().filter_map(|option| option.to_u16()).sum(),
+            options: options.iter().filter_map(ToPrimitive::to_u16).sum(),
             group_id,
             sequence,
         }
@@ -92,7 +92,7 @@ impl Frame {
     pub fn options(&self) -> Options {
         let mut options = Options::new();
 
-        if let Ok(Option::None) = Option::try_from(self.options) {
+        if Option::try_from(self.options) == Ok(Option::None) {
             return options;
         }
 

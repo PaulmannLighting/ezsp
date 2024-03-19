@@ -37,6 +37,7 @@ pub struct TableEntry {
 }
 
 impl TableEntry {
+    #[must_use]
     pub fn new(
         typ: Type,
         local: u8,

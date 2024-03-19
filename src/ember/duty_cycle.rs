@@ -35,7 +35,7 @@ pub struct Limits {
 
 impl Limits {
     #[must_use]
-    pub fn new(vendor_id: u16, vendor_string: [u8; 7]) -> Self {
+    pub const fn new(vendor_id: u16, vendor_string: [u8; 7]) -> Self {
         Self {
             vendor_id,
             vendor_string,

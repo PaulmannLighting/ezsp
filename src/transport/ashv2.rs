@@ -73,9 +73,7 @@ where
             ),
         );
         self.host
-            .communicate::<ResponseHandler<add_endpoint::Response>, add_endpoint::Response, Error>(
-                command.as_slice(),
-            )
+            .communicate::<ResponseHandler<add_endpoint::Response>>(command.as_slice())
             .await
             .and_then(|response| response.status().map_err(Error::InvalidEzspStatus))
     }

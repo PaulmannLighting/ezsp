@@ -1,6 +1,6 @@
 use crate::frame::ResponseFrame;
 use crate::transport::Error;
-use ashv2::{Event, HandleResult, Response};
+use ashv2::{Event, HandleResult, Handler, Response};
 use le_stream::FromLeBytes;
 use log::warn;
 use std::fmt::Debug;
@@ -107,7 +107,7 @@ where
     }
 }
 
-impl<P> Response<Arc<[u8]>> for ResponseHandler<P>
+impl<P> Handler<Arc<[u8]>> for ResponseHandler<P>
 where
     P: FromLeBytes + Debug + Send + Sync,
 {
@@ -148,4 +148,12 @@ where
             }
         }
     }
+}
+
+impl<P> Response for ResponseHandler<P>
+where
+    P: FromLeBytes + Debug + Send + Sync,
+{
+    type Result = P;
+    type Error = Error;
 }

@@ -116,12 +116,20 @@ where
         match event {
             Event::DataReceived(data) => match data {
                 Ok(bytes) => {
-                    self.buffer().extend_from_slice(&bytes);
-                    self.try_parse()
+                    if self.result().is_none() {
+                        self.buffer().extend_from_slice(&bytes);
+                        self.try_parse()
+                    } else {
+                        HandleResult::Completed
+                    }
                 }
                 Err(error) => {
-                    self.result().replace(Err(error.into()));
-                    HandleResult::Reject
+                    if self.result().is_none() {
+                        self.result().replace(Err(error.into()));
+                        HandleResult::Failed
+                    } else {
+                        HandleResult::Completed
+                    }
                 }
             },
             Event::TransmissionCompleted => {

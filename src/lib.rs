@@ -4,6 +4,7 @@ pub mod error;
 pub mod ezsp;
 pub mod frame;
 pub mod protocol;
+pub mod transport;
 pub mod types;
 
 pub use error::Error;

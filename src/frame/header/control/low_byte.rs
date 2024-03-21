@@ -1,4 +1,5 @@
 pub use callback_type::CallbackType;
+use le_stream::FromLeBytes;
 use log::warn;
 use num_traits::FromPrimitive;
 pub use sleep_mode::SleepMode;
@@ -98,5 +99,14 @@ impl From<LowByte> for u8 {
 impl From<u8> for LowByte {
     fn from(value: u8) -> Self {
         Self(value)
+    }
+}
+
+impl FromLeBytes for LowByte {
+    fn from_le_bytes<T>(bytes: &mut T) -> le_stream::Result<Self>
+    where
+        T: Iterator<Item = u8>,
+    {
+        <u8 as FromLeBytes>::from_le_bytes(bytes).map(Self)
     }
 }

@@ -1,13 +1,15 @@
 mod control;
 
 pub use control::Control;
+use le_stream::derive::FromLeBytes;
+use le_stream::FromLeBytes;
 use rw_exact_ext::ReadExactExt;
 use std::io::{Read, Write};
 
 pub const HEADER_SIZE: usize = 5;
 pub const LEGACY_HEADER_SIZE: usize = 3;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Header {
     sequence: u8,
     control: Control,

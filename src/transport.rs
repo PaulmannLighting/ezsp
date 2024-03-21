@@ -3,6 +3,7 @@ mod ashv2;
 use crate::ezsp::Status;
 use crate::types::ByteSizedVec;
 use std::fmt::{Display, Formatter};
+use std::future::Future;
 
 #[derive(Debug)]
 pub enum Error {
@@ -43,7 +44,7 @@ impl std::error::Error for Error {
 }
 
 pub trait Transport {
-    async fn add_endpoint(
+    fn add_endpoint(
         &mut self,
         endpoint: u8,
         profile_id: u16,
@@ -51,5 +52,5 @@ pub trait Transport {
         app_flags: u8,
         input_clusters: ByteSizedVec<u16>,
         output_clusters: ByteSizedVec<u16>,
-    ) -> Result<Status, Error>;
+    ) -> impl Future<Output = Result<Status, Error>>;
 }

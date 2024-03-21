@@ -38,6 +38,7 @@ where
         }
     }
 
+    #[allow(clippy::significant_drop_tightening)]
     fn try_parse(&self) -> HandleResult {
         let buffer = self.buffer();
         let mut bytes = buffer.iter().copied();

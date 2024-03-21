@@ -13,21 +13,21 @@ use serialport::SerialPort;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
-pub struct Ashv2<S>
+pub struct Ashv2<'a, S>
 where
-    S: SerialPort + 'static,
+    S: SerialPort,
 {
-    host: Host<S>,
+    host: Host<'a, S>,
     sequence: u8,
     control: Control,
 }
 
-impl<S> Ashv2<S>
+impl<'a, S> Ashv2<'a, S>
 where
     S: SerialPort,
 {
     #[must_use]
-    pub const fn new(host: Host<S>, control: Control) -> Self {
+    pub const fn new(host: Host<'a, S>, control: Control) -> Self {
         Self {
             host,
             sequence: 0,
@@ -48,7 +48,7 @@ where
     }
 }
 
-impl<S> Transport for Ashv2<S>
+impl<'a, S> Transport for Ashv2<'a, S>
 where
     S: SerialPort,
 {

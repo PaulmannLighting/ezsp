@@ -5,9 +5,7 @@ use le_stream::FromLeBytes;
 use log::warn;
 use std::fmt::Debug;
 use std::future::Future;
-use std::iter::Copied;
 use std::pin::Pin;
-use std::slice::Iter;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::task::{Context, Poll, Waker};
 

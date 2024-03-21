@@ -5,8 +5,9 @@ use crate::frame::header::control::high_byte::frame_format_version::{
 };
 use crate::frame::header::control::LowByte;
 pub use frame_format_version::FrameFormatVersion;
-use le_stream::FromLeBytes;
+use le_stream::{FromLeBytes, ToLeBytes};
 use num_traits::FromPrimitive;
+use std::iter::{once, Once};
 
 const FRAME_FORMAT_VERSION_MASK: u8 =
     FRAME_FORMAT_VERSION_MASK_LOW + FRAME_FORMAT_VERSION_MASK_HIGH;
@@ -95,5 +96,13 @@ impl FromLeBytes for HighByte {
         T: Iterator<Item = u8>,
     {
         <u8 as FromLeBytes>::from_le_bytes(bytes).map(Self)
+    }
+}
+
+impl ToLeBytes for HighByte {
+    type Iter = Once<u8>;
+
+    fn to_le_bytes(self) -> Self::Iter {
+        once(self.0)
     }
 }

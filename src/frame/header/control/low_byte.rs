@@ -1,8 +1,9 @@
 pub use callback_type::CallbackType;
-use le_stream::FromLeBytes;
+use le_stream::{FromLeBytes, ToLeBytes};
 use log::warn;
 use num_traits::FromPrimitive;
 pub use sleep_mode::SleepMode;
+use std::iter::{once, Once};
 
 mod callback_type;
 mod sleep_mode;
@@ -108,5 +109,13 @@ impl FromLeBytes for LowByte {
         T: Iterator<Item = u8>,
     {
         <u8 as FromLeBytes>::from_le_bytes(bytes).map(Self)
+    }
+}
+
+impl ToLeBytes for LowByte {
+    type Iter = Once<u8>;
+
+    fn to_le_bytes(self) -> Self::Iter {
+        once(self.0)
     }
 }

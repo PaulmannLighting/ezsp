@@ -1,7 +1,9 @@
 mod response_handler;
 
 use crate::ezsp::Status;
+use crate::frame::header::Control;
 use crate::frame::parameters::add_endpoint;
+use crate::frame::Header;
 use crate::transport::ashv2::response_handler::ResponseHandler;
 use crate::transport::{Error, Transport};
 use crate::types::ByteSizedVec;
@@ -17,8 +19,7 @@ where
 {
     host: Host<S>,
     sequence: u8,
-    frame_low: u8,
-    frame_high: u8,
+    control: Control,
 }
 
 impl<S> Ashv2<S>
@@ -26,12 +27,11 @@ where
     S: SerialPort,
 {
     #[must_use]
-    pub const fn new(host: Host<S>) -> Self {
+    pub const fn new(host: Host<S>, control: Control) -> Self {
         Self {
             host,
             sequence: 0,
-            frame_low: 0,
-            frame_high: 0,
+            control,
         }
     }
 
@@ -39,8 +39,9 @@ where
     where
         T: ToLeBytes,
     {
-        let mut command = vec![self.sequence, self.frame_low, self.frame_high];
-        self.sequence += 1;
+        let mut command = Vec::new();
+        command.extend(Header::new(self.sequence, self.control, frame_id).to_le_bytes());
+        self.sequence = self.sequence.checked_add(1).unwrap_or(0);
         command.extend_from_slice(&frame_id.to_le_bytes());
         command.extend(parameters.to_le_bytes());
         command

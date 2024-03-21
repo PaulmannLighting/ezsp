@@ -11,7 +11,7 @@ use ashv2::Host;
 use le_stream::ToLeBytes;
 use serialport::SerialPort;
 
-/// Mockup for ASHv2 command implementation.
+/// ASHv2 transport layer implementation.
 #[derive(Debug)]
 pub struct Ashv2<S>
 where

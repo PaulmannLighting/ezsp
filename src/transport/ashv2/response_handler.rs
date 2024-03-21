@@ -5,9 +5,13 @@ use le_stream::FromLeBytes;
 use log::warn;
 use std::fmt::Debug;
 use std::future::Future;
+use std::iter::Copied;
 use std::pin::Pin;
+use std::slice::Iter;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::task::{Context, Poll, Waker};
+
+type ResultType<P> = Option<Result<ResponseFrame<P>, Error>>;
 
 #[derive(Clone, Debug)]
 pub struct ResponseHandler<P>
@@ -16,7 +20,7 @@ where
 {
     waker: Arc<Mutex<Option<Waker>>>,
     buffer: Arc<Mutex<Vec<u8>>>,
-    result: Arc<Mutex<Option<Result<ResponseFrame<P>, Error>>>>,
+    result: Arc<Mutex<ResultType<P>>>,
 }
 
 impl<P> ResponseHandler<P>
@@ -27,7 +31,7 @@ where
     pub const fn new(
         waker: Arc<Mutex<Option<Waker>>>,
         buffer: Arc<Mutex<Vec<u8>>>,
-        result: Arc<Mutex<Option<Result<ResponseFrame<P>, Error>>>>,
+        result: Arc<Mutex<ResultType<P>>>,
     ) -> Self {
         Self {
             waker,
@@ -49,7 +53,7 @@ where
             |frame| {
                 self.result().replace(Ok(frame));
 
-                while let Some(byte) = bytes.next() {
+                for byte in bytes {
                     warn!("Found excess byte in response: {byte:?}");
                 }
 
@@ -93,7 +97,7 @@ where
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         if let Ok(mut result) = self.result.lock() {
             if let Some(result) = result.take() {
-                return Poll::Ready(result.map(|frame| frame.parameters()));
+                return Poll::Ready(result.map(ResponseFrame::parameters));
             }
         }
 
@@ -122,15 +126,15 @@ where
                 }
             },
             Event::TransmissionCompleted => {
-                if let Some(result) = self.result().as_ref() {
-                    if result.is_ok() {
-                        HandleResult::Completed
-                    } else {
-                        HandleResult::Failed
-                    }
-                } else {
-                    HandleResult::Failed
-                }
+                self.result()
+                    .as_ref()
+                    .map_or(HandleResult::Failed, |result| {
+                        if result.is_ok() {
+                            HandleResult::Completed
+                        } else {
+                            HandleResult::Failed
+                        }
+                    })
             }
         }
     }

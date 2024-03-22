@@ -23,20 +23,20 @@ pub trait Ezsp: Transport {
         app_flags: u8,
         input_clusters: ByteSizedVec<u16>,
         output_clusters: ByteSizedVec<u16>,
-    ) -> impl Future<Output = Result<ezsp::Status, Error>>;
+    ) -> impl Future<Output = Result<(), Error>>;
 
     fn add_or_update_key_table_entry(
         &mut self,
         address: ember::Eui64,
         link_key: bool,
         key_data: ember::key::Data,
-    ) -> impl Future<Output = Result<ember::Status, Error>>;
+    ) -> impl Future<Output = Result<(), Error>>;
 
     fn add_transient_link_key(
         &mut self,
         partner: ember::Eui64,
         transient_key: ember::key::Data,
-    ) -> impl Future<Output = Result<ember::Status, Error>>;
+    ) -> impl Future<Output = Result<(), Error>>;
 
     fn address_table_entry_is_active(
         &mut self,
@@ -58,12 +58,10 @@ pub trait Ezsp: Transport {
 
     fn binding_is_active(&mut self, index: u8) -> impl Future<Output = Result<bool, Error>>;
 
-    fn broadcast_network_key_switch(
-        &mut self,
-    ) -> impl Future<Output = Result<ember::Status, Error>>;
+    fn broadcast_network_key_switch(&mut self) -> impl Future<Output = Result<(), Error>>;
 
     fn broadcast_next_network_key(
         &mut self,
         key: ember::key::Data,
-    ) -> impl Future<Output = Result<ember::Status, Error>>;
+    ) -> impl Future<Output = Result<(), Error>>;
 }

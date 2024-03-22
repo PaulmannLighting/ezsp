@@ -1,7 +1,6 @@
 mod response_handler;
 
 use crate::ember;
-use crate::ezsp::Status;
 use crate::frame::parameters::{
     add_endpoint, add_or_update_key_table_entry, add_transient_link_key,
     address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
@@ -89,7 +88,7 @@ where
         app_flags: u8,
         input_clusters: ByteSizedVec<u16>,
         output_clusters: ByteSizedVec<u16>,
-    ) -> Result<Status, Error> {
+    ) -> Result<(), Error> {
         let command = self.next_command(
             add_endpoint::ID,
             add_endpoint::Command::new(
@@ -102,8 +101,11 @@ where
             ),
         );
         self.communicate::<add_endpoint::Response>(command.as_slice())
-            .await
-            .and_then(|response| response.status().map_err(Error::InvalidEzspStatus))
+            .await?
+            .status()
+            .map_err(Error::InvalidEzspStatus)?
+            .ok()
+            .map_err(Into::into)
     }
 
     async fn add_or_update_key_table_entry(
@@ -111,28 +113,34 @@ where
         address: ember::Eui64,
         link_key: bool,
         key_data: ember::key::Data,
-    ) -> Result<ember::Status, Error> {
+    ) -> Result<(), Error> {
         let command = self.next_command(
             add_or_update_key_table_entry::ID,
             add_or_update_key_table_entry::Command::new(address, link_key, key_data),
         );
         self.communicate::<add_or_update_key_table_entry::Response>(command.as_slice())
-            .await
-            .and_then(|response| response.status().map_err(Error::InvalidEmberStatus))
+            .await?
+            .status()
+            .map_err(Error::InvalidEmberStatus)?
+            .ok()
+            .map_err(Into::into)
     }
 
     async fn add_transient_link_key(
         &mut self,
         partner: ember::Eui64,
         transient_key: ember::key::Data,
-    ) -> Result<ember::Status, Error> {
+    ) -> Result<(), Error> {
         let command = self.next_command(
             add_transient_link_key::ID,
             add_transient_link_key::Command::new(partner, transient_key),
         );
         self.communicate::<add_transient_link_key::Response>(command.as_slice())
-            .await
-            .and_then(|response| response.status().map_err(Error::InvalidEmberStatus))
+            .await?
+            .status()
+            .map_err(Error::InvalidEmberStatus)?
+            .ok()
+            .map_err(Into::into)
     }
 
     async fn address_table_entry_is_active(
@@ -168,13 +176,11 @@ where
         let result = self
             .communicate::<aes_mmo_hash::Response>(command.as_slice())
             .await?;
-        let status = result.status().map_err(Error::InvalidEmberStatus)?;
-
-        if status == ember::Status::Success {
-            Ok(result.return_context())
-        } else {
-            Err(Error::Ember(status))
-        }
+        result
+            .status()
+            .map_err(Error::InvalidEmberStatus)?
+            .map(result.return_context())
+            .map_err(Into::into)
     }
 
     async fn binding_is_active(&mut self, index: u8) -> Result<bool, Error> {
@@ -187,23 +193,26 @@ where
             .map(|response| response.active())
     }
 
-    async fn broadcast_network_key_switch(&mut self) -> Result<ember::Status, Error> {
+    async fn broadcast_network_key_switch(&mut self) -> Result<(), Error> {
         let command = self.next_command(broadcast_network_key_switch::ID, ());
         self.communicate::<broadcast_network_key_switch::Response>(command.as_slice())
-            .await
-            .and_then(|response| response.status().map_err(Error::InvalidEmberStatus))
+            .await?
+            .status()
+            .map_err(Error::InvalidEmberStatus)?
+            .ok()
+            .map_err(Into::into)
     }
 
-    async fn broadcast_next_network_key(
-        &mut self,
-        key: ember::key::Data,
-    ) -> Result<ember::Status, Error> {
+    async fn broadcast_next_network_key(&mut self, key: ember::key::Data) -> Result<(), Error> {
         let command = self.next_command(
             broadcast_next_network_key::ID,
             broadcast_next_network_key::Command::new(key),
         );
         self.communicate::<broadcast_next_network_key::Response>(command.as_slice())
-            .await
-            .and_then(|response| response.status().map_err(Error::InvalidEmberStatus))
+            .await?
+            .status()
+            .map_err(Error::InvalidEmberStatus)?
+            .ok()
+            .map_err(Into::into)
     }
 }

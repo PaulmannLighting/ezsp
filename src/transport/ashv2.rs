@@ -13,8 +13,9 @@ use crate::transport::{Ezsp, Transport};
 use crate::types::ByteSizedVec;
 use crate::Error;
 use ashv2::Host;
-use le_stream::ToLeBytes;
+use le_stream::{FromLeBytes, ToLeBytes};
 use serialport::SerialPort;
+use std::fmt::Debug;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
@@ -38,6 +39,24 @@ where
             sequence: 0,
             control,
         }
+    }
+
+    async fn communicate<R>(&mut self, payload: &[u8]) -> Result<R, Error>
+    where
+        R: Clone + Debug + FromLeBytes + Send + Sync + 'a,
+    {
+        self.host
+            .communicate::<ResponseHandler<Control, u16, R>>(payload)
+            .await
+    }
+
+    async fn communicate_legacy<R>(&mut self, payload: &[u8]) -> Result<R, Error>
+    where
+        R: Clone + Debug + FromLeBytes + Send + Sync + 'a,
+    {
+        self.host
+            .communicate::<ResponseHandler<u8, u8, R>>(payload)
+            .await
     }
 }
 
@@ -82,8 +101,7 @@ where
                 output_clusters,
             ),
         );
-        self.host
-            .communicate::<ResponseHandler<add_endpoint::Response>>(command.as_slice())
+        self.communicate::<add_endpoint::Response>(command.as_slice())
             .await
             .and_then(|response| response.status().map_err(Error::InvalidEzspStatus))
     }
@@ -98,10 +116,7 @@ where
             add_or_update_key_table_entry::ID,
             add_or_update_key_table_entry::Command::new(address, link_key, key_data),
         );
-        self.host
-            .communicate::<ResponseHandler<add_or_update_key_table_entry::Response>>(
-                command.as_slice(),
-            )
+        self.communicate::<add_or_update_key_table_entry::Response>(command.as_slice())
             .await
             .and_then(|response| response.status().map_err(Error::InvalidEmberStatus))
     }
@@ -115,8 +130,7 @@ where
             add_transient_link_key::ID,
             add_transient_link_key::Command::new(partner, transient_key),
         );
-        self.host
-            .communicate::<ResponseHandler<add_transient_link_key::Response>>(command.as_slice())
+        self.communicate::<add_transient_link_key::Response>(command.as_slice())
             .await
             .and_then(|response| response.status().map_err(Error::InvalidEmberStatus))
     }
@@ -129,18 +143,14 @@ where
             address_table_entry_is_active::ID,
             address_table_entry_is_active::Command::new(address_table_index),
         );
-        self.host
-            .communicate::<ResponseHandler<address_table_entry_is_active::Response>>(
-                command.as_slice(),
-            )
+        self.communicate::<address_table_entry_is_active::Response>(command.as_slice())
             .await
             .map(|response| response.active())
     }
 
     async fn aes_encrypt(&mut self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
         let command = self.next_command(aes_encrypt::ID, aes_encrypt::Command::new(plaintext, key));
-        self.host
-            .communicate::<ResponseHandler<aes_encrypt::Response>>(command.as_slice())
+        self.communicate::<aes_encrypt::Response>(command.as_slice())
             .await
             .map(|response| response.ciphertext())
     }

@@ -1,7 +1,7 @@
 use crate::frame::ResponseFrame;
 use crate::transport::Error;
 use ashv2::{Event, HandleResult, Handler, Response};
-use le_stream::FromLeBytes;
+use le_stream::{FromLeBytes, ToLeBytes};
 use log::warn;
 use std::fmt::Debug;
 use std::future::Future;
@@ -9,27 +9,31 @@ use std::pin::Pin;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::task::{Context, Poll, Waker};
 
-type ResultType<P> = Option<Result<ResponseFrame<P>, Error>>;
+type ResultType<C, I, P> = Option<Result<ResponseFrame<C, I, P>, Error>>;
 
 #[derive(Clone, Debug)]
-pub struct ResponseHandler<P>
+pub struct ResponseHandler<C, I, P>
 where
+    C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     P: FromLeBytes,
 {
     waker: Arc<Mutex<Option<Waker>>>,
     buffer: Arc<Mutex<Vec<u8>>>,
-    result: Arc<Mutex<ResultType<P>>>,
+    result: Arc<Mutex<ResultType<C, I, P>>>,
 }
 
-impl<P> ResponseHandler<P>
+impl<C, I, P> ResponseHandler<C, I, P>
 where
+    C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     P: FromLeBytes,
 {
     #[must_use]
     pub const fn new(
         waker: Arc<Mutex<Option<Waker>>>,
         buffer: Arc<Mutex<Vec<u8>>>,
-        result: Arc<Mutex<ResultType<P>>>,
+        result: Arc<Mutex<ResultType<C, I, P>>>,
     ) -> Self {
         Self {
             waker,
@@ -67,15 +71,17 @@ where
             .expect("Buffer should never be poisoned.")
     }
 
-    fn result(&self) -> MutexGuard<'_, Option<Result<ResponseFrame<P>, Error>>> {
+    fn result(&self) -> MutexGuard<'_, Option<Result<ResponseFrame<C, I, P>, Error>>> {
         self.result
             .lock()
             .expect("Result should never be poisoned.")
     }
 }
 
-impl<P> Default for ResponseHandler<P>
+impl<C, I, P> Default for ResponseHandler<C, I, P>
 where
+    C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     P: FromLeBytes,
 {
     fn default() -> Self {
@@ -87,8 +93,10 @@ where
     }
 }
 
-impl<P> Future for ResponseHandler<P>
+impl<C, I, P> Future for ResponseHandler<C, I, P>
 where
+    C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     P: FromLeBytes,
 {
     type Output = Result<P, Error>;
@@ -108,8 +116,10 @@ where
     }
 }
 
-impl<P> Handler<Arc<[u8]>> for ResponseHandler<P>
+impl<C, I, P> Handler<Arc<[u8]>> for ResponseHandler<C, I, P>
 where
+    C: Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
+    I: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
     P: FromLeBytes + Debug + Send + Sync,
 {
     fn handle(&self, event: Event<Result<Arc<[u8]>, ashv2::Error>>) -> HandleResult {
@@ -159,8 +169,10 @@ where
     }
 }
 
-impl<P> Response for ResponseHandler<P>
+impl<C, I, P> Response for ResponseHandler<C, I, P>
 where
+    C: Clone + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
+    I: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
     P: FromLeBytes + Clone + Debug + Send + Sync,
 {
     type Result = P;

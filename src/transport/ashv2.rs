@@ -5,6 +5,7 @@ use crate::ezsp::Status;
 use crate::frame::header::Control;
 use crate::frame::parameters::{
     add_endpoint, add_or_update_key_table_entry, add_transient_link_key,
+    address_table_entry_is_active,
 };
 use crate::frame::Header;
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -120,5 +121,21 @@ where
             )
             .await
             .and_then(|response| response.status().map_err(Error::InvalidEmberStatus))
+    }
+
+    async fn address_table_entry_is_active(
+        &mut self,
+        address_table_index: u8,
+    ) -> Result<bool, Error> {
+        let command = self.next_command(
+            address_table_entry_is_active::ID,
+            address_table_entry_is_active::Command::new(address_table_index),
+        );
+        self.host
+            .communicate::<ResponseHandler<address_table_entry_is_active::Response>>(
+                command.as_slice(),
+            )
+            .await
+            .map(|response| response.active())
     }
 }

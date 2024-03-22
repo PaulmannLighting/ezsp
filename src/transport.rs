@@ -34,4 +34,9 @@ pub trait Ezsp: Transport {
         partner: ember::Eui64,
         transient_key: ember::key::Data,
     ) -> impl Future<Output = Result<ember::Status, Error>>;
+
+    fn address_table_entry_is_active(
+        &mut self,
+        address_table_index: u8,
+    ) -> impl Future<Output = Result<bool, Error>>;
 }

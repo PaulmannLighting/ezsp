@@ -17,6 +17,7 @@ impl MmoHashContext {
         &self.result
     }
 
+    #[must_use]
     pub const fn length(&self) -> u32 {
         self.length
     }

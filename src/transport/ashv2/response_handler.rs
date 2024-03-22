@@ -161,7 +161,7 @@ where
 
 impl<P> Response for ResponseHandler<P>
 where
-    P: FromLeBytes + Debug + Send + Sync,
+    P: FromLeBytes + Clone + Debug + Send + Sync,
 {
     type Result = P;
     type Error = Error;

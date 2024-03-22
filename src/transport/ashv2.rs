@@ -3,7 +3,9 @@ mod response_handler;
 use crate::ember;
 use crate::ezsp::Status;
 use crate::frame::header::Control;
-use crate::frame::parameters::{add_endpoint, add_or_update_key_table_entry};
+use crate::frame::parameters::{
+    add_endpoint, add_or_update_key_table_entry, add_transient_link_key,
+};
 use crate::frame::Header;
 use crate::transport::ashv2::response_handler::ResponseHandler;
 use crate::transport::{Ezsp, Transport};
@@ -94,6 +96,23 @@ where
         let command = self.next_command(
             add_or_update_key_table_entry::ID,
             add_or_update_key_table_entry::Command::new(address, link_key, key_data),
+        );
+        self.host
+            .communicate::<ResponseHandler<add_or_update_key_table_entry::Response>>(
+                command.as_slice(),
+            )
+            .await
+            .and_then(|response| response.status().map_err(Error::InvalidEmberStatus))
+    }
+
+    async fn add_transient_link_key(
+        &mut self,
+        partner: ember::Eui64,
+        transient_key: ember::key::Data,
+    ) -> Result<ember::Status, Error> {
+        let command = self.next_command(
+            add_transient_link_key::ID,
+            add_transient_link_key::Command::new(partner, transient_key),
         );
         self.host
             .communicate::<ResponseHandler<add_or_update_key_table_entry::Response>>(

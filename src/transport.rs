@@ -28,4 +28,10 @@ pub trait Ezsp: Transport {
         link_key: bool,
         key_data: ember::key::Data,
     ) -> impl Future<Output = Result<ember::Status, Error>>;
+
+    fn add_transient_link_key(
+        &mut self,
+        partner: ember::Eui64,
+        transient_key: ember::key::Data,
+    ) -> impl Future<Output = Result<ember::Status, Error>>;
 }

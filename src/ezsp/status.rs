@@ -27,6 +27,20 @@ pub enum Status {
     NoError = 0xFF,
 }
 
+impl crate::ember::Status {
+    /// Checks the ember status for success and returns `Ok(value)` in that case.
+    ///
+    /// # Errors
+    /// Returns `Err(self)` if the `Status` is not [`Status::Success`],
+    pub fn map<T>(self, value: T) -> Result<T, Self> {
+        if self == Self::Success {
+            Ok(value)
+        } else {
+            Err(self)
+        }
+    }
+}
+
 impl FromPrimitive for Status {
     fn from_i64(n: i64) -> Option<Self> {
         u8::try_from(n).ok().and_then(Self::from_u8)
@@ -93,16 +107,6 @@ impl From<Status> for u8 {
         status
             .to_u8()
             .expect("Status should always be convertible to u8.")
-    }
-}
-
-impl From<Status> for Result<(), crate::Error> {
-    fn from(status: Status) -> Self {
-        if status == Status::Success {
-            Ok(())
-        } else {
-            Err(status.into())
-        }
     }
 }
 

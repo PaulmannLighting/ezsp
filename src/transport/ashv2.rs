@@ -1,6 +1,7 @@
 mod response_handler;
 
 use crate::ember;
+use crate::error::Resolve;
 use crate::frame::parameters::{
     add_endpoint, add_or_update_key_table_entry, add_transient_link_key,
     address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
@@ -103,9 +104,7 @@ where
         self.communicate::<add_endpoint::Response>(command.as_slice())
             .await?
             .status()
-            .map_err(Error::InvalidEzspStatus)?
-            .ok()
-            .map_err(Into::into)
+            .resolve()
     }
 
     async fn add_or_update_key_table_entry(
@@ -121,9 +120,7 @@ where
         self.communicate::<add_or_update_key_table_entry::Response>(command.as_slice())
             .await?
             .status()
-            .map_err(Error::InvalidEmberStatus)?
-            .ok()
-            .map_err(Into::into)
+            .resolve()
     }
 
     async fn add_transient_link_key(
@@ -138,9 +135,7 @@ where
         self.communicate::<add_transient_link_key::Response>(command.as_slice())
             .await?
             .status()
-            .map_err(Error::InvalidEmberStatus)?
-            .ok()
-            .map_err(Into::into)
+            .resolve()
     }
 
     async fn address_table_entry_is_active(
@@ -176,11 +171,7 @@ where
         let result = self
             .communicate::<aes_mmo_hash::Response>(command.as_slice())
             .await?;
-        result
-            .status()
-            .map_err(Error::InvalidEmberStatus)?
-            .map(result.return_context())
-            .map_err(Into::into)
+        result.status().resolve().map(|()| result.return_context())
     }
 
     async fn binding_is_active(&mut self, index: u8) -> Result<bool, Error> {
@@ -198,9 +189,7 @@ where
         self.communicate::<broadcast_network_key_switch::Response>(command.as_slice())
             .await?
             .status()
-            .map_err(Error::InvalidEmberStatus)?
-            .ok()
-            .map_err(Into::into)
+            .resolve()
     }
 
     async fn broadcast_next_network_key(&mut self, key: ember::key::Data) -> Result<(), Error> {
@@ -211,8 +200,6 @@ where
         self.communicate::<broadcast_next_network_key::Response>(command.as_slice())
             .await?
             .status()
-            .map_err(Error::InvalidEmberStatus)?
-            .ok()
-            .map_err(Into::into)
+            .resolve()
     }
 }

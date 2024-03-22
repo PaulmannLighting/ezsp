@@ -170,7 +170,7 @@ where
         let status = result.status().map_err(Error::InvalidEmberStatus)?;
 
         if status == ember::Status::Success {
-            Ok(result.return_context().clone())
+            Ok(result.return_context())
         } else {
             Err(Error::Ember(status))
         }

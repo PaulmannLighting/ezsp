@@ -1,4 +1,5 @@
 use crate::{ember, ezsp};
+
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
@@ -57,6 +58,32 @@ impl std::error::Error for Error {
             #[cfg(feature = "ashv2")]
             Self::Ashv2(error) => Some(error),
             _ => None,
+        }
+    }
+}
+
+pub trait Resolve {
+    /// Resolve a status result into an error result.
+    ///
+    /// # Errors
+    /// Returns [`Error`] if the status is not success.
+    fn resolve(self) -> Result<(), Error>;
+}
+
+impl Resolve for Result<ezsp::Status, u8> {
+    fn resolve(self) -> Result<(), Error> {
+        match self {
+            Ok(status) => status.ok().map_err(Into::into),
+            Err(status) => Err(Error::InvalidEzspStatus(status)),
+        }
+    }
+}
+
+impl Resolve for Result<ember::Status, u8> {
+    fn resolve(self) -> Result<(), Error> {
+        match self {
+            Ok(status) => status.ok().map_err(Into::into),
+            Err(status) => Err(Error::InvalidEmberStatus(status)),
         }
     }
 }

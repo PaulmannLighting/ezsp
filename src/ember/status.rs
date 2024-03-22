@@ -82,7 +82,7 @@ pub enum Status {
 }
 
 impl Status {
-    /// Checks the ember status for success and returns `Ok(value)` in that case.
+    /// Checks the status for success and returns `Ok(value)` in that case.
     ///
     /// # Errors
     /// Returns `Err(self)` if the `Status` is not [`Status::Success`],
@@ -92,6 +92,14 @@ impl Status {
         } else {
             Err(self)
         }
+    }
+
+    /// Checks the status for success and returns `Ok(())` in that case.
+    ///
+    /// # Errors
+    /// Returns `Err(self)` if the `Status` is not [`Status::Success`],
+    pub fn ok(self) -> Result<(), Self> {
+        self.map(())
     }
 }
 

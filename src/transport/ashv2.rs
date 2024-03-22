@@ -5,6 +5,7 @@ use crate::ezsp::Status;
 use crate::frame::parameters::{
     add_endpoint, add_or_update_key_table_entry, add_transient_link_key,
     address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
+    broadcast_network_key_switch,
 };
 use crate::frame::{Control, Header};
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -184,5 +185,12 @@ where
         self.communicate::<binding_is_active::Response>(command.as_slice())
             .await
             .map(|response| response.active())
+    }
+
+    async fn broadcast_network_key_switch(&mut self) -> Result<ember::Status, Error> {
+        let command = self.next_command(broadcast_network_key_switch::ID, ());
+        self.communicate::<broadcast_network_key_switch::Response>(command.as_slice())
+            .await
+            .and_then(|response| response.status().map_err(Error::InvalidEmberStatus))
     }
 }

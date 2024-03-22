@@ -57,4 +57,8 @@ pub trait Ezsp: Transport {
     ) -> impl Future<Output = Result<ember::aes::MmoHashContext, Error>>;
 
     fn binding_is_active(&mut self, index: u8) -> impl Future<Output = Result<bool, Error>>;
+
+    fn broadcast_network_key_switch(
+        &mut self,
+    ) -> impl Future<Output = Result<ember::Status, Error>>;
 }

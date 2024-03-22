@@ -96,6 +96,16 @@ impl From<Status> for u8 {
     }
 }
 
+impl From<Status> for Result<(), crate::Error> {
+    fn from(status: Status) -> Self {
+        if status == Status::Success {
+            Ok(())
+        } else {
+            Err(status.into())
+        }
+    }
+}
+
 impl TryFrom<u8> for Status {
     type Error = u8;
 

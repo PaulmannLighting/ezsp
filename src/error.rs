@@ -19,6 +19,18 @@ impl From<ashv2::Error> for Error {
     }
 }
 
+impl From<ezsp::Status> for Error {
+    fn from(status: ezsp::Status) -> Self {
+        Self::Ezsp(status)
+    }
+}
+
+impl From<ember::Status> for Error {
+    fn from(status: ember::Status) -> Self {
+        Self::Ember(status)
+    }
+}
+
 impl From<String> for Error {
     fn from(msg: String) -> Self {
         Self::Custom(msg)

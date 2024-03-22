@@ -7,6 +7,7 @@ mod phy;
 mod serial;
 mod sim_eeprom;
 
+use crate::Error;
 pub use adc::Adc;
 pub use application::Application;
 pub use eeprom::Eeprom;
@@ -328,6 +329,16 @@ impl ToPrimitive for Status {
 
     fn to_u64(&self) -> Option<u64> {
         self.to_u8().map(u64::from)
+    }
+}
+
+impl From<Status> for Result<(), Error> {
+    fn from(status: Status) -> Self {
+        if status == Status::Success {
+            Ok(())
+        } else {
+            Err(status.into())
+        }
     }
 }
 

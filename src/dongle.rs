@@ -1,4 +1,3 @@
-use crate::Protocol;
 use serialport::SerialPort;
 use stack::Stack;
 use std::collections::HashMap;
@@ -11,6 +10,7 @@ pub mod stack;
 // XXX: Mockups
 pub trait BootloaderHandler {}
 pub trait ZigBeeTransportReceive {}
+pub trait Protocol {}
 
 #[derive(Debug)]
 pub struct ZigBeeKey;

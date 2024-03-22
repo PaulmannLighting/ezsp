@@ -1,11 +1,7 @@
-use crate::dongle::{BootloaderHandler, Dongle, ZigBeeTransportReceive};
 use crate::ezsp::Status;
-use crate::frame::parameters::add_endpoint;
 use crate::types::ByteSizedVec;
-use crate::{ezsp, Protocol};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::{Error, FromLeBytes, ToLeBytes};
-use serialport::SerialPort;
 
 pub const ID: u16 = 0x0002;
 const SIZE: usize = 1 + 2 + 2 + 1 + 2 * (2 * u8::MAX as usize);
@@ -170,41 +166,5 @@ impl Response {
 
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
-    }
-}
-
-impl<B, T, P, S> Dongle<B, T, P, S>
-where
-    B: BootloaderHandler,
-    T: ZigBeeTransportReceive,
-    P: Protocol,
-    S: SerialPort,
-{
-    /// Add and endpoint.
-    ///
-    /// # Errors
-    /// Returns an [`std::io::Error`] on I/O errors.
-    pub fn add_endpoint(
-        &mut self,
-        endpoint: u8,
-        profile_id: u16,
-        device_id: u16,
-        app_flags: u8,
-        input_clusters: ByteSizedVec<u16>,
-        output_clusters: ByteSizedVec<u16>,
-    ) -> std::io::Result<Status> {
-        let command = Command::new(
-            endpoint,
-            profile_id,
-            device_id,
-            app_flags,
-            input_clusters,
-            output_clusters,
-        );
-        for byte in command.to_le_bytes() {
-            self.write(byte)?;
-        }
-
-        todo!("Receive response")
     }
 }

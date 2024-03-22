@@ -59,7 +59,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn return_context(&self) -> MmoHashContext {
+    pub const fn return_context(self) -> MmoHashContext {
         self.return_context
     }
 }

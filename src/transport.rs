@@ -1,7 +1,9 @@
+#[cfg(feature = "ashv2")]
 mod ashv2;
 
 use crate::types::ByteSizedVec;
 use crate::{ember, ezsp, Error};
+#[cfg(feature = "ashv2")]
 pub use ashv2::Ashv2;
 use le_stream::ToLeBytes;
 use std::future::Future;

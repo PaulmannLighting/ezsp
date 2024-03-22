@@ -11,7 +11,10 @@ num-traits = "0.2.16"
 rw-exact-ext = { git = "ssh://git@github.com/PaulmannLighting/rw-exact-ext.git", version = "0.1.9", features = ["num-traits", "heapless"] }
 serialport = { version = "4.2.2", default-features = false }
 siliconlabs = { git = "ssh://git@github.com/PaulmannLighting/siliconlabs.git", version = "0.1.0", features = ["le-stream"] }
-ashv2 = { git = "ssh://git@github.com/PaulmannLighting/ashv2.git", version = "0.1.0" }
-le-stream = {  git = "https://github.com/PaulmannLighting/le-stream.git", version = "0.1.1", features = ["derive", "heapless"] }
+ashv2 = { git = "ssh://git@github.com/PaulmannLighting/ashv2.git", version = "0.1.0", optional = true }
+le-stream = { git = "https://github.com/PaulmannLighting/le-stream.git", version = "0.1.1", features = ["derive", "heapless"] }
 log = "0.4.20"
 heapless = "0.8.0"
+
+[features]
+ashv2 = ["dep:ashv2"]

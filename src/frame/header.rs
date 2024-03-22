@@ -2,7 +2,6 @@ mod control;
 
 pub use control::Control;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use le_stream::FromLeBytes;
 use rw_exact_ext::ReadExactExt;
 use std::io::{Read, Write};
 

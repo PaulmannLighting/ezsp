@@ -116,9 +116,7 @@ where
             add_transient_link_key::Command::new(partner, transient_key),
         );
         self.host
-            .communicate::<ResponseHandler<add_or_update_key_table_entry::Response>>(
-                command.as_slice(),
-            )
+            .communicate::<ResponseHandler<add_transient_link_key::Response>>(command.as_slice())
             .await
             .and_then(|response| response.status().map_err(Error::InvalidEmberStatus))
     }

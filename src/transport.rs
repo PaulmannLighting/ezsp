@@ -48,4 +48,11 @@ pub trait Ezsp: Transport {
         plaintext: [u8; 16],
         key: [u8; 16],
     ) -> impl Future<Output = Result<[u8; 16], Error>>;
+
+    fn aes_mmo_hash(
+        &mut self,
+        context: ember::aes::MmoHashContext,
+        finalize: bool,
+        data: ByteSizedVec<u8>,
+    ) -> impl Future<Output = Result<ember::aes::MmoHashContext, Error>>;
 }

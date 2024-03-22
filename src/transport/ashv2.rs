@@ -4,7 +4,7 @@ use crate::ember;
 use crate::ezsp::Status;
 use crate::frame::parameters::{
     add_endpoint, add_or_update_key_table_entry, add_transient_link_key,
-    address_table_entry_is_active, aes_encrypt,
+    address_table_entry_is_active, aes_encrypt, aes_mmo_hash,
 };
 use crate::frame::{Control, Header};
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -152,5 +152,27 @@ where
         self.communicate::<aes_encrypt::Response>(command.as_slice())
             .await
             .map(|response| response.ciphertext())
+    }
+
+    async fn aes_mmo_hash(
+        &mut self,
+        context: ember::aes::MmoHashContext,
+        finalize: bool,
+        data: ByteSizedVec<u8>,
+    ) -> Result<ember::aes::MmoHashContext, Error> {
+        let command = self.next_command(
+            aes_mmo_hash::ID,
+            aes_mmo_hash::Command::new(context, finalize, data),
+        );
+        let result = self
+            .communicate::<aes_mmo_hash::Response>(command.as_slice())
+            .await?;
+        let status = result.status().map_err(Error::InvalidEmberStatus)?;
+
+        if status == ember::Status::Success {
+            Ok(result.return_context().clone())
+        } else {
+            Err(Error::Ember(status))
+        }
     }
 }

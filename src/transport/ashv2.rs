@@ -38,7 +38,12 @@ where
             control,
         }
     }
+}
 
+impl<'a, S> Transport for Ashv2<'a, S>
+where
+    S: SerialPort,
+{
     fn next_command<T>(&mut self, frame_id: u16, parameters: T) -> Vec<u8>
     where
         T: ToLeBytes,
@@ -50,12 +55,7 @@ where
         command.extend(parameters.to_le_bytes());
         command
     }
-}
 
-impl<'a, S> Transport for Ashv2<'a, S>
-where
-    S: SerialPort,
-{
     async fn add_endpoint(
         &mut self,
         endpoint: u8,

@@ -4,6 +4,7 @@ use crate::ember::key::Data;
 use crate::ember::Eui64;
 use crate::types::ByteSizedVec;
 use crate::{ember, ezsp};
+use le_stream::ToLeBytes;
 use std::fmt::{Display, Formatter};
 use std::future::Future;
 
@@ -48,6 +49,10 @@ impl std::error::Error for Error {
 }
 
 pub trait Transport {
+    fn next_command<T>(&mut self, frame_id: u16, parameters: T) -> Vec<u8>
+    where
+        T: ToLeBytes;
+
     fn add_endpoint(
         &mut self,
         endpoint: u8,

@@ -5,7 +5,7 @@ use crate::ezsp::Status;
 use crate::frame::header::Control;
 use crate::frame::parameters::{
     add_endpoint, add_or_update_key_table_entry, add_transient_link_key,
-    address_table_entry_is_active,
+    address_table_entry_is_active, aes_encrypt,
 };
 use crate::frame::Header;
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -135,5 +135,13 @@ where
             )
             .await
             .map(|response| response.active())
+    }
+
+    async fn aes_encrypt(&mut self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
+        let command = self.next_command(aes_encrypt::ID, aes_encrypt::Command::new(plaintext, key));
+        self.host
+            .communicate::<ResponseHandler<aes_encrypt::Response>>(command.as_slice())
+            .await
+            .map(|response| response.ciphertext())
     }
 }

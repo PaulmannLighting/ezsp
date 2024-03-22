@@ -39,4 +39,10 @@ pub trait Ezsp: Transport {
         &mut self,
         address_table_index: u8,
     ) -> impl Future<Output = Result<bool, Error>>;
+
+    fn aes_encrypt(
+        &mut self,
+        plaintext: [u8; 16],
+        key: [u8; 16],
+    ) -> impl Future<Output = Result<[u8; 16], Error>>;
 }

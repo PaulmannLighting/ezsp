@@ -43,7 +43,7 @@ where
 
     async fn communicate<R>(&mut self, payload: &[u8]) -> Result<R, Error>
     where
-        R: Clone + Debug + FromLeBytes + Send + Sync + 'a,
+        R: Clone + Debug + FromLeBytes + ToLeBytes + Send + Sync + 'a,
     {
         self.host
             .communicate::<ResponseHandler<Control, u16, R>>(payload)
@@ -52,7 +52,7 @@ where
 
     async fn communicate_legacy<R>(&mut self, payload: &[u8]) -> Result<R, Error>
     where
-        R: Clone + Debug + FromLeBytes + Send + Sync + 'a,
+        R: Clone + Debug + FromLeBytes + ToLeBytes + Send + Sync + 'a,
     {
         self.host
             .communicate::<ResponseHandler<u8, u8, R>>(payload)

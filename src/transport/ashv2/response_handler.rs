@@ -1,4 +1,4 @@
-use crate::frame::ResponseFrame;
+use crate::frame::Frame;
 use crate::transport::Error;
 use ashv2::{Event, HandleResult, Handler, Response};
 use le_stream::{FromLeBytes, ToLeBytes};
@@ -9,14 +9,14 @@ use std::pin::Pin;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::task::{Context, Poll, Waker};
 
-type ResultType<C, I, P> = Option<Result<ResponseFrame<C, I, P>, Error>>;
+type ResultType<C, I, P> = Option<Result<Frame<C, I, P>, Error>>;
 
 #[derive(Clone, Debug)]
 pub struct ResponseHandler<C, I, P>
 where
     C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: FromLeBytes,
+    P: FromLeBytes + ToLeBytes,
 {
     waker: Arc<Mutex<Option<Waker>>>,
     buffer: Arc<Mutex<Vec<u8>>>,
@@ -27,7 +27,7 @@ impl<C, I, P> ResponseHandler<C, I, P>
 where
     C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: FromLeBytes,
+    P: FromLeBytes + ToLeBytes,
 {
     #[must_use]
     pub const fn new(
@@ -47,7 +47,7 @@ where
         let buffer = self.buffer();
         let mut bytes = buffer.iter().copied();
 
-        ResponseFrame::from_le_bytes(&mut bytes).map_or_else(
+        Frame::from_le_bytes(&mut bytes).map_or_else(
             |_| {
                 self.result()
                     .replace(Err("Incomplete data".to_string().into()));
@@ -82,7 +82,7 @@ impl<C, I, P> Default for ResponseHandler<C, I, P>
 where
     C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: FromLeBytes,
+    P: FromLeBytes + ToLeBytes,
 {
     fn default() -> Self {
         Self::new(
@@ -97,14 +97,14 @@ impl<C, I, P> Future for ResponseHandler<C, I, P>
 where
     C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: FromLeBytes,
+    P: FromLeBytes + ToLeBytes,
 {
     type Output = Result<P, Error>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         if let Ok(mut result) = self.result.lock() {
             if let Some(result) = result.take() {
-                return Poll::Ready(result.map(ResponseFrame::parameters));
+                return Poll::Ready(result.map(Frame::parameters));
             }
         }
 
@@ -120,7 +120,7 @@ impl<C, I, P> Handler<Arc<[u8]>> for ResponseHandler<C, I, P>
 where
     C: Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
-    P: FromLeBytes + Debug + Send + Sync,
+    P: Debug + Send + Sync + FromLeBytes + ToLeBytes,
 {
     fn handle(&self, event: Event<Result<Arc<[u8]>, ashv2::Error>>) -> HandleResult {
         match event {
@@ -173,7 +173,7 @@ impl<C, I, P> Response for ResponseHandler<C, I, P>
 where
     C: Clone + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
-    P: FromLeBytes + Clone + Debug + Send + Sync,
+    P: Clone + Debug + Send + Sync + FromLeBytes + ToLeBytes,
 {
     type Result = P;
     type Error = Error;

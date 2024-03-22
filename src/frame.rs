@@ -9,7 +9,7 @@ use std::fmt::Debug;
 #[derive(Debug, FromLeBytes, ToLeBytes)]
 pub struct Frame<C, I, P>
 where
-    C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     P: FromLeBytes + ToLeBytes,
 {
@@ -19,7 +19,7 @@ where
 
 impl<C, I, P> Frame<C, I, P>
 where
-    C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     P: FromLeBytes + ToLeBytes,
 {

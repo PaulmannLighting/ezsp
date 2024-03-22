@@ -14,7 +14,7 @@ type ResultType<C, I, P> = Option<Result<Frame<C, I, P>, Error>>;
 #[derive(Clone, Debug)]
 pub struct ResponseHandler<C, I, P>
 where
-    C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     P: FromLeBytes + ToLeBytes,
 {
@@ -25,7 +25,7 @@ where
 
 impl<C, I, P> ResponseHandler<C, I, P>
 where
-    C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     P: FromLeBytes + ToLeBytes,
 {
@@ -80,7 +80,7 @@ where
 
 impl<C, I, P> Default for ResponseHandler<C, I, P>
 where
-    C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     P: FromLeBytes + ToLeBytes,
 {
@@ -95,7 +95,7 @@ where
 
 impl<C, I, P> Future for ResponseHandler<C, I, P>
 where
-    C: Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     P: FromLeBytes + ToLeBytes,
 {
@@ -118,7 +118,7 @@ where
 
 impl<C, I, P> Handler<Arc<[u8]>> for ResponseHandler<C, I, P>
 where
-    C: Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
+    C: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
     P: Debug + Send + Sync + FromLeBytes + ToLeBytes,
 {
@@ -171,7 +171,7 @@ where
 
 impl<C, I, P> Response for ResponseHandler<C, I, P>
 where
-    C: Clone + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
+    C: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
     P: Clone + Debug + Send + Sync + FromLeBytes + ToLeBytes,
 {

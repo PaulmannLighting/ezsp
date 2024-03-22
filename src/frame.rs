@@ -1,5 +1,5 @@
 mod header;
-pub(crate) mod parameters;
+pub mod parameters;
 
 pub use header::{Control, Header};
 use le_stream::derive::{FromLeBytes, ToLeBytes};

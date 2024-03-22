@@ -1,7 +1,9 @@
 mod ashv2;
 
-use crate::ezsp::Status;
+use crate::ember::key::Data;
+use crate::ember::Eui64;
 use crate::types::ByteSizedVec;
+use crate::{ember, ezsp};
 use std::fmt::{Display, Formatter};
 use std::future::Future;
 
@@ -9,6 +11,7 @@ use std::future::Future;
 pub enum Error {
     Ashv2(::ashv2::Error),
     InvalidEzspStatus(u8),
+    InvalidEmberStatus(u8),
     Custom(String),
 }
 
@@ -28,7 +31,8 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Ashv2(error) => Display::fmt(error, f),
-            Self::InvalidEzspStatus(status_code) => write!(f, "Invalid EZSP status: {status_code}"),
+            Self::InvalidEzspStatus(status) => write!(f, "Invalid EZSP status: {status}"),
+            Self::InvalidEmberStatus(status) => write!(f, "Invalid Ember status: {status}"),
             Self::Custom(msg) => Display::fmt(msg, f),
         }
     }
@@ -52,5 +56,12 @@ pub trait Transport {
         app_flags: u8,
         input_clusters: ByteSizedVec<u16>,
         output_clusters: ByteSizedVec<u16>,
-    ) -> impl Future<Output = Result<Status, Error>>;
+    ) -> impl Future<Output = Result<ezsp::Status, Error>>;
+
+    fn add_or_update_key_table_entry(
+        &mut self,
+        address: Eui64,
+        link_key: bool,
+        key_data: Data,
+    ) -> impl Future<Output = Result<ember::Status, Error>>;
 }

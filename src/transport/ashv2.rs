@@ -1,8 +1,11 @@
 mod response_handler;
 
+use crate::ember;
+use crate::ember::key::Data;
+use crate::ember::Eui64;
 use crate::ezsp::Status;
 use crate::frame::header::Control;
-use crate::frame::parameters::add_endpoint;
+use crate::frame::parameters::{add_endpoint, add_or_update_key_table_entry};
 use crate::frame::Header;
 use crate::transport::ashv2::response_handler::ResponseHandler;
 use crate::transport::{Error, Transport};
@@ -10,6 +13,7 @@ use crate::types::ByteSizedVec;
 use ashv2::Host;
 use le_stream::ToLeBytes;
 use serialport::SerialPort;
+use std::future::Future;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
@@ -76,5 +80,23 @@ where
             .communicate::<ResponseHandler<add_endpoint::Response>>(command.as_slice())
             .await
             .and_then(|response| response.status().map_err(Error::InvalidEzspStatus))
+    }
+
+    async fn add_or_update_key_table_entry(
+        &mut self,
+        address: Eui64,
+        link_key: bool,
+        key_data: Data,
+    ) -> Result<ember::Status, Error> {
+        let command = self.next_command(
+            add_or_update_key_table_entry::ID,
+            add_or_update_key_table_entry::Command::new(address, link_key, key_data),
+        );
+        self.host
+            .communicate::<ResponseHandler<add_or_update_key_table_entry::Response>>(
+                command.as_slice(),
+            )
+            .await
+            .and_then(|response| response.status().map_err(Error::InvalidEmberStatus))
     }
 }

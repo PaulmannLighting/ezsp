@@ -9,4 +9,6 @@ pub mod types;
 
 pub use error::Error;
 pub use protocol::Protocol;
-pub use transport::{Ashv2, Ezsp, Transport};
+#[cfg(feature = "ashv2")]
+pub use transport::Ashv2;
+pub use transport::{Ezsp, Transport};

@@ -5,9 +5,6 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;
 
-pub const HEADER_SIZE: usize = 5;
-pub const LEGACY_HEADER_SIZE: usize = 3;
-
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Header<C, I>
 where

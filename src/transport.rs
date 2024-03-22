@@ -61,4 +61,9 @@ pub trait Ezsp: Transport {
     fn broadcast_network_key_switch(
         &mut self,
     ) -> impl Future<Output = Result<ember::Status, Error>>;
+
+    fn broadcast_next_network_key(
+        &mut self,
+        key: ember::key::Data,
+    ) -> impl Future<Output = Result<ember::Status, Error>>;
 }

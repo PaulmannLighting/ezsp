@@ -2,8 +2,6 @@ mod control;
 
 pub use control::Control;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use rw_exact_ext::ReadExactExt;
-use std::io::{Read, Write};
 
 pub const HEADER_SIZE: usize = 5;
 pub const LEGACY_HEADER_SIZE: usize = 3;
@@ -39,53 +37,6 @@ impl Header {
     pub const fn id(&self) -> u16 {
         self.id
     }
-
-    /// Reads the header from a reader
-    ///
-    /// # Errors
-    /// Returns an [`std::io::Error`] on read errors.
-    pub fn read_from<R>(src: &mut R) -> std::io::Result<Self>
-    where
-        R: Read,
-    {
-        src.read_array_exact::<HEADER_SIZE>().map(Self::from)
-    }
-
-    /// Write the header to a writer
-    ///
-    /// # Errors
-    /// Returns an [`std::io::Error`] on write errors.
-    pub fn write_to<W>(self, dst: &mut W) -> std::io::Result<()>
-    where
-        W: Write,
-    {
-        let bytes: [u8; HEADER_SIZE] = self.into();
-        dst.write_all(&bytes)
-    }
-}
-
-impl From<[u8; HEADER_SIZE]> for Header {
-    fn from(bytes: [u8; HEADER_SIZE]) -> Self {
-        let [sequence, control_low, control_high, id_0, id_1] = bytes;
-        Self::new(
-            sequence,
-            Control::new(control_low.into(), control_high.into()),
-            u16::from_be_bytes([id_0, id_1]),
-        )
-    }
-}
-
-impl From<Header> for [u8; HEADER_SIZE] {
-    fn from(header: Header) -> Self {
-        let [id_0, id_1] = header.id.to_le_bytes();
-        [
-            header.sequence,
-            header.control.low().into(),
-            header.control.high().into(),
-            id_0,
-            id_1,
-        ]
-    }
 }
 
 #[allow(clippy::module_name_repetitions)]
@@ -119,41 +70,5 @@ impl LegacyHeader {
     #[must_use]
     pub const fn id(&self) -> u8 {
         self.id
-    }
-
-    /// Reads the header from a reader
-    ///
-    /// # Errors
-    /// Returns an [`std::io::Error`] on read errors.
-    pub fn read_from<R>(src: &mut R) -> std::io::Result<Self>
-    where
-        R: Read,
-    {
-        src.read_array_exact::<LEGACY_HEADER_SIZE>().map(Self::from)
-    }
-
-    /// Write the header to a writer
-    ///
-    /// # Errors
-    /// Returns an [`std::io::Error`] on write errors.
-    pub fn write_to<W>(self, dst: &mut W) -> std::io::Result<()>
-    where
-        W: Write,
-    {
-        let bytes: [u8; LEGACY_HEADER_SIZE] = self.into();
-        dst.write_all(&bytes)
-    }
-}
-
-impl From<[u8; LEGACY_HEADER_SIZE]> for LegacyHeader {
-    fn from(bytes: [u8; LEGACY_HEADER_SIZE]) -> Self {
-        let [sequence, control, id] = bytes;
-        Self::new(sequence, control, id)
-    }
-}
-
-impl From<LegacyHeader> for [u8; LEGACY_HEADER_SIZE] {
-    fn from(header: LegacyHeader) -> Self {
-        [header.sequence, header.control, header.id]
     }
 }

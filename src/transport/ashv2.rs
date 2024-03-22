@@ -2,12 +2,11 @@ mod response_handler;
 
 use crate::ember;
 use crate::ezsp::Status;
-use crate::frame::header::Control;
 use crate::frame::parameters::{
     add_endpoint, add_or_update_key_table_entry, add_transient_link_key,
     address_table_entry_is_active, aes_encrypt,
 };
-use crate::frame::Header;
+use crate::frame::{Control, Header};
 use crate::transport::ashv2::response_handler::ResponseHandler;
 use crate::transport::{Ezsp, Transport};
 use crate::types::ByteSizedVec;

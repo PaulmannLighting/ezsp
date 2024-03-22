@@ -1,7 +1,7 @@
-pub mod header;
+mod header;
 pub mod parameters;
 
-pub use header::Header;
+pub use header::{Control, Header};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;

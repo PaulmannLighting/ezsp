@@ -71,7 +71,7 @@ where
             .expect("Buffer should never be poisoned.")
     }
 
-    fn result(&self) -> MutexGuard<'_, Option<Result<ResponseFrame<C, I, P>, Error>>> {
+    fn result(&self) -> MutexGuard<'_, ResultType<C, I, P>> {
         self.result
             .lock()
             .expect("Result should never be poisoned.")

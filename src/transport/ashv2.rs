@@ -8,7 +8,7 @@ use crate::frame::header::Control;
 use crate::frame::parameters::{add_endpoint, add_or_update_key_table_entry};
 use crate::frame::Header;
 use crate::transport::ashv2::response_handler::ResponseHandler;
-use crate::transport::{Error, Transport};
+use crate::transport::{Error, Ezsp, Transport};
 use crate::types::ByteSizedVec;
 use ashv2::Host;
 use le_stream::ToLeBytes;
@@ -54,7 +54,12 @@ where
         command.extend(parameters.to_le_bytes());
         command
     }
+}
 
+impl<'a, S> Ezsp for Ashv2<'a, S>
+where
+    S: SerialPort,
+{
     async fn add_endpoint(
         &mut self,
         endpoint: u8,

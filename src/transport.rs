@@ -52,7 +52,9 @@ pub trait Transport {
     fn next_command<T>(&mut self, frame_id: u16, parameters: T) -> Vec<u8>
     where
         T: ToLeBytes;
+}
 
+pub trait Ezsp: Transport {
     fn add_endpoint(
         &mut self,
         endpoint: u8,

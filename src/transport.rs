@@ -1,7 +1,5 @@
 mod ashv2;
 
-use crate::ember::key::Data;
-use crate::ember::Eui64;
 use crate::types::ByteSizedVec;
 use crate::{ember, ezsp, Error};
 use le_stream::ToLeBytes;
@@ -26,8 +24,8 @@ pub trait Ezsp: Transport {
 
     fn add_or_update_key_table_entry(
         &mut self,
-        address: Eui64,
+        address: ember::Eui64,
         link_key: bool,
-        key_data: Data,
+        key_data: ember::key::Data,
     ) -> impl Future<Output = Result<ember::Status, Error>>;
 }

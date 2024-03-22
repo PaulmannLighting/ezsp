@@ -1,8 +1,6 @@
 mod response_handler;
 
 use crate::ember;
-use crate::ember::key::Data;
-use crate::ember::Eui64;
 use crate::ezsp::Status;
 use crate::frame::header::Control;
 use crate::frame::parameters::{add_endpoint, add_or_update_key_table_entry};
@@ -89,9 +87,9 @@ where
 
     async fn add_or_update_key_table_entry(
         &mut self,
-        address: Eui64,
+        address: ember::Eui64,
         link_key: bool,
-        key_data: Data,
+        key_data: ember::key::Data,
     ) -> Result<ember::Status, Error> {
         let command = self.next_command(
             add_or_update_key_table_entry::ID,

@@ -4,7 +4,7 @@ use crate::ember;
 use crate::ezsp::Status;
 use crate::frame::parameters::{
     add_endpoint, add_or_update_key_table_entry, add_transient_link_key,
-    address_table_entry_is_active, aes_encrypt, aes_mmo_hash,
+    address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
 };
 use crate::frame::{Control, Header};
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -174,5 +174,15 @@ where
         } else {
             Err(Error::Ember(status))
         }
+    }
+
+    async fn binding_is_active(&mut self, index: u8) -> Result<bool, Error> {
+        let command = self.next_command(
+            binding_is_active::ID,
+            binding_is_active::Command::new(index),
+        );
+        self.communicate::<binding_is_active::Response>(command.as_slice())
+            .await
+            .map(|response| response.active())
     }
 }

@@ -55,4 +55,6 @@ pub trait Ezsp: Transport {
         finalize: bool,
         data: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<ember::aes::MmoHashContext, Error>>;
+
+    fn binding_is_active(&mut self, index: u8) -> impl Future<Output = Result<bool, Error>>;
 }

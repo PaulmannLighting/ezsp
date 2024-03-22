@@ -13,7 +13,6 @@ use crate::types::ByteSizedVec;
 use ashv2::Host;
 use le_stream::ToLeBytes;
 use serialport::SerialPort;
-use std::future::Future;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]

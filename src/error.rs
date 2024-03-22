@@ -73,7 +73,7 @@ pub trait Resolve {
 impl Resolve for Result<ezsp::Status, u8> {
     fn resolve(self) -> Result<(), Error> {
         match self {
-            Ok(status) => status.ok().map_err(Into::into),
+            Ok(status) => status.ok().map_err(Error::Ezsp),
             Err(status) => Err(Error::InvalidEzspStatus(status)),
         }
     }
@@ -82,7 +82,7 @@ impl Resolve for Result<ezsp::Status, u8> {
 impl Resolve for Result<ember::Status, u8> {
     fn resolve(self) -> Result<(), Error> {
         match self {
-            Ok(status) => status.ok().map_err(Into::into),
+            Ok(status) => status.ok().map_err(Error::Ember),
             Err(status) => Err(Error::InvalidEmberStatus(status)),
         }
     }

@@ -27,7 +27,7 @@ pub enum Status {
     NoError = 0xFF,
 }
 
-impl crate::ember::Status {
+impl Status {
     /// Checks the ember status for success and returns `Ok(value)` in that case.
     ///
     /// # Errors

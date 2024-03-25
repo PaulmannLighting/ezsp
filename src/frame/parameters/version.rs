@@ -1,4 +1,6 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::{FromLeBytes, ToLeBytes};
+use std::fmt::Debug;
 
 pub const ID: u16 = 0x0000;
 
@@ -22,15 +24,21 @@ impl Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response {
+pub struct Response<V>
+where
+    V: Clone + Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+{
     protocol_version: u8,
     stack_type: u8,
-    stack_version: u16,
+    stack_version: V,
 }
 
-impl Response {
+impl<V> Response<V>
+where
+    V: Clone + Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+{
     #[must_use]
-    pub const fn new(protocol_version: u8, stack_type: u8, stack_version: u16) -> Self {
+    pub const fn new(protocol_version: u8, stack_type: u8, stack_version: V) -> Self {
         Self {
             protocol_version,
             stack_type,
@@ -49,7 +57,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn stack_version(&self) -> u16 {
+    pub const fn stack_version(&self) -> V {
         self.stack_version
     }
 }

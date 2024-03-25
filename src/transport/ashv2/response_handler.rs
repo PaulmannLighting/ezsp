@@ -2,7 +2,7 @@ use crate::frame::Frame;
 use crate::Error;
 use ashv2::{Event, HandleResult, Handler, Response};
 use le_stream::{FromLeBytes, ToLeBytes};
-use log::{debug, warn};
+use log::{debug, error, warn};
 use std::fmt::Debug;
 use std::future::Future;
 use std::pin::Pin;
@@ -48,7 +48,8 @@ where
         let mut bytes = buffer.iter().copied();
 
         Frame::from_le_bytes(&mut bytes).map_or_else(
-            |_| {
+            |error| {
+                error!("Error: {error}");
                 self.replace_result(Err("Incomplete data".to_string().into()));
                 HandleResult::Continue
             },

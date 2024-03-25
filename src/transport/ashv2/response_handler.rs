@@ -126,7 +126,9 @@ where
         match event {
             Event::DataReceived(data) => match data {
                 Ok(bytes) => {
-                    if self.result().is_none() {
+                    let result = self.result();
+
+                    if result.is_none() {
                         self.buffer().extend_from_slice(&bytes);
                         self.try_parse()
                     } else {
@@ -134,8 +136,10 @@ where
                     }
                 }
                 Err(error) => {
-                    if self.result().is_none() {
-                        self.result().replace(Err(error.into()));
+                    let mut result = self.result();
+
+                    if result.is_none() {
+                        result.replace(Err(error.into()));
                         HandleResult::Failed
                     } else {
                         HandleResult::Completed

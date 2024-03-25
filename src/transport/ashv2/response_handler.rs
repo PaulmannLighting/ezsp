@@ -2,14 +2,14 @@ use crate::frame::Frame;
 use crate::Error;
 use ashv2::{Event, HandleResult, Handler, Response};
 use le_stream::{FromLeBytes, ToLeBytes};
-use log::warn;
+use log::{debug, warn};
 use std::fmt::Debug;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::task::{Context, Poll, Waker};
 
-type ResultType<C, I, P> = Option<Result<Frame<C, I, P>, Error>>;
+type ResultType<C, I, P> = Result<Frame<C, I, P>, Error>;
 
 #[derive(Clone, Debug)]
 pub struct ResponseHandler<C, I, P>
@@ -20,7 +20,7 @@ where
 {
     waker: Arc<Mutex<Option<Waker>>>,
     buffer: Arc<Mutex<Vec<u8>>>,
-    result: Arc<Mutex<ResultType<C, I, P>>>,
+    result: Arc<Mutex<Option<ResultType<C, I, P>>>>,
 }
 
 impl<C, I, P> ResponseHandler<C, I, P>
@@ -33,7 +33,7 @@ where
     pub const fn new(
         waker: Arc<Mutex<Option<Waker>>>,
         buffer: Arc<Mutex<Vec<u8>>>,
-        result: Arc<Mutex<ResultType<C, I, P>>>,
+        result: Arc<Mutex<Option<ResultType<C, I, P>>>>,
     ) -> Self {
         Self {
             waker,
@@ -49,12 +49,11 @@ where
 
         Frame::from_le_bytes(&mut bytes).map_or_else(
             |_| {
-                self.result()
-                    .replace(Err("Incomplete data".to_string().into()));
+                self.replace_result(Err("Incomplete data".to_string().into()));
                 HandleResult::Continue
             },
             |frame| {
-                self.result().replace(Ok(frame));
+                self.replace_result(Ok(frame));
 
                 for byte in bytes {
                     warn!("Found excess byte in response: {byte:?}");
@@ -71,10 +70,29 @@ where
             .expect("Buffer should never be poisoned.")
     }
 
-    fn result(&self) -> MutexGuard<'_, ResultType<C, I, P>> {
+    fn extend_buffer(&self, bytes: &[u8]) {
+        debug!("Locking buffer.");
+        self.buffer().extend_from_slice(bytes);
+        debug!("Releasing lock on buffer.");
+    }
+
+    fn result(&self) -> MutexGuard<'_, Option<ResultType<C, I, P>>> {
         self.result
             .lock()
             .expect("Result should never be poisoned.")
+    }
+
+    fn replace_result(&self, result: ResultType<C, I, P>) {
+        debug!("Locking result.");
+        self.result().replace(result);
+        debug!("Releasing lock on result.");
+    }
+
+    fn result_is_none(&self) -> bool {
+        debug!("Locking result.");
+        let is_some = self.result().is_none();
+        debug!("Releasing lock on result.");
+        is_some
     }
 }
 
@@ -126,20 +144,16 @@ where
         match event {
             Event::DataReceived(data) => match data {
                 Ok(bytes) => {
-                    let result = self.result();
-
-                    if result.is_none() {
-                        self.buffer().extend_from_slice(&bytes);
+                    if self.result_is_none() {
+                        self.extend_buffer(&bytes);
                         self.try_parse()
                     } else {
                         HandleResult::Completed
                     }
                 }
                 Err(error) => {
-                    let mut result = self.result();
-
-                    if result.is_none() {
-                        result.replace(Err(error.into()));
+                    if self.result_is_none() {
+                        self.replace_result(Err(error.into()));
                         HandleResult::Failed
                     } else {
                         HandleResult::Completed
@@ -161,7 +175,7 @@ where
     }
 
     fn abort(&self, error: ashv2::Error) {
-        self.result().replace(Err(error.into()));
+        self.replace_result(Err(error.into()));
     }
 
     fn wake(&self) {

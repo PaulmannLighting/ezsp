@@ -82,14 +82,15 @@ impl<S> Transport for Ashv2<S>
 where
     for<'s> S: SerialPort + 's,
 {
-    fn next_command<T>(&mut self, frame_id: u16, parameters: T) -> Vec<u8>
+    fn next_command<I, T>(&mut self, frame_id: I, parameters: T) -> Vec<u8>
     where
+        I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
         T: ToLeBytes,
     {
         let mut command = Vec::new();
         command.extend(Header::new(self.sequence, self.control, frame_id).to_le_bytes());
         self.sequence = self.sequence.checked_add(1).unwrap_or(0);
-        command.extend_from_slice(&frame_id.to_le_bytes());
+        command.extend(frame_id.to_le_bytes());
         command.extend(parameters.to_le_bytes());
         command
     }
@@ -208,8 +209,10 @@ where
         &mut self,
         desired_protocol_version: u8,
     ) -> Result<version::Response<u16>, Error> {
-        let command =
-            self.next_command(version::ID, version::Command::new(desired_protocol_version));
+        let command = self.next_command(
+            u16::from(version::ID),
+            version::Command::new(desired_protocol_version),
+        );
         self.communicate::<version::Response<u16>>(command.as_slice())
             .await
     }

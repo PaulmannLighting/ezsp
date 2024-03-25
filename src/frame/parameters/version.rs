@@ -2,7 +2,7 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;
 
-pub const ID: u16 = 0x0000;
+pub const ID: u8 = 0x00;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

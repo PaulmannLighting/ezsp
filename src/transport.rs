@@ -7,10 +7,12 @@ pub use ashv2::Ashv2;
 pub use ezsp::{
     Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, Messaging, TrustCenter,
 };
-use le_stream::ToLeBytes;
+use le_stream::{FromLeBytes, ToLeBytes};
+use std::fmt::Debug;
 
 pub trait Transport {
-    fn next_command<T>(&mut self, frame_id: u16, parameters: T) -> Vec<u8>
+    fn next_command<I, T>(&mut self, frame_id: I, parameters: T) -> Vec<u8>
     where
+        I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
         T: ToLeBytes;
 }

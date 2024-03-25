@@ -19,21 +19,21 @@ use std::fmt::Debug;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
-pub struct Ashv2<'a, S>
+pub struct Ashv2<S>
 where
-    S: SerialPort,
+    for<'s> S: SerialPort + 's,
 {
-    host: Host<'a, S>,
+    host: Host<S>,
     sequence: u8,
     control: Control,
 }
 
-impl<'a, S> Ashv2<'a, S>
+impl<S> Ashv2<S>
 where
-    S: SerialPort,
+    for<'s> S: SerialPort + 's,
 {
     #[must_use]
-    pub const fn new(host: Host<'a, S>, control: Control) -> Self {
+    pub const fn new(host: Host<S>, control: Control) -> Self {
         Self {
             host,
             sequence: 0,
@@ -43,7 +43,7 @@ where
 
     async fn communicate<R>(&mut self, payload: &[u8]) -> Result<R, Error>
     where
-        R: Clone + Debug + FromLeBytes + ToLeBytes + Send + Sync + 'a,
+        for<'r> R: Clone + Debug + FromLeBytes + ToLeBytes + Send + Sync + 'r,
     {
         self.host
             .communicate::<ResponseHandler<Control, u16, R>>(payload)
@@ -52,7 +52,7 @@ where
 
     async fn communicate_legacy<R>(&mut self, payload: &[u8]) -> Result<R, Error>
     where
-        R: Clone + Debug + FromLeBytes + ToLeBytes + Send + Sync + 'a,
+        for<'r> R: Clone + Debug + FromLeBytes + ToLeBytes + Send + Sync + 'r,
     {
         self.host
             .communicate::<ResponseHandler<u8, u8, R>>(payload)
@@ -60,9 +60,9 @@ where
     }
 }
 
-impl<'a, S> Transport for Ashv2<'a, S>
+impl<S> Transport for Ashv2<S>
 where
-    S: SerialPort,
+    for<'s> S: SerialPort + 's,
 {
     fn next_command<T>(&mut self, frame_id: u16, parameters: T) -> Vec<u8>
     where
@@ -77,9 +77,9 @@ where
     }
 }
 
-impl<'a, S> Ezsp for Ashv2<'a, S>
+impl<S> Ezsp for Ashv2<S>
 where
-    S: SerialPort,
+    for<'s> S: SerialPort + 's,
 {
     async fn add_endpoint(
         &mut self,

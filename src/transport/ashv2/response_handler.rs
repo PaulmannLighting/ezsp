@@ -45,7 +45,10 @@ where
     #[allow(clippy::significant_drop_tightening)]
     fn try_parse(&self) -> HandleResult {
         let buffer = self.buffer();
-        let mut bytes = buffer.iter().copied();
+        let mut bytes = buffer.iter().copied().enumerate().map(|(index, byte)| {
+            debug!("Byte #{index}: {byte:?}");
+            byte
+        });
 
         Frame::from_le_bytes(&mut bytes).map_or_else(
             |error| {

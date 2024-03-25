@@ -4,13 +4,13 @@ use crate::ember;
 use crate::ember::binding::TableEntry;
 use crate::ember::{NodeId, PanId};
 use crate::error::Resolve;
-use crate::ezsp::decision::Id;
-use crate::frame::parameters::version::Response;
+use crate::ezsp;
+use crate::ezsp::decision;
 use crate::frame::parameters::{
     add_endpoint, address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
     broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs, clear_binding_table,
     delete_binding, get_binding, get_binding_remote_node_id, read_attribute, set_binding,
-    set_binding_remote_node_id,
+    set_binding_remote_node_id, version,
 };
 use crate::frame::{Control, Header};
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -194,12 +194,21 @@ impl<S> Configuration for Ashv2<S>
 where
     for<'s> S: SerialPort + 's,
 {
-    async fn version(&mut self, desired_protocol_version: u8) -> Result<Response, Error> {
-        todo!()
+    async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
+        let command =
+            self.next_command(version::ID, version::Command::new(desired_protocol_version));
+        self.communicate::<version::Response>(command.as_slice())
+            .await
     }
 
-    async fn legacy_version(&mut self, desired_protocol_version: u8) -> Result<Response, Error> {
-        todo!()
+    async fn legacy_version(
+        &mut self,
+        desired_protocol_version: u8,
+    ) -> Result<version::Response, Error> {
+        let command =
+            self.next_command(version::ID, version::Command::new(desired_protocol_version));
+        self.communicate_legacy::<version::Response>(command.as_slice())
+            .await
     }
 
     async fn get_configuration_value(&mut self, config_id: u8) -> Result<u16, Error> {
@@ -265,7 +274,7 @@ where
         todo!()
     }
 
-    async fn get_policy(&mut self, policy_id: u8) -> Result<Id, Error> {
+    async fn get_policy(&mut self, policy_id: u8) -> Result<decision::Id, Error> {
         todo!()
     }
 

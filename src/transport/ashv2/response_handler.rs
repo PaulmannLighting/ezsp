@@ -1,5 +1,5 @@
 use crate::frame::Frame;
-use crate::transport::Error;
+use crate::Error;
 use ashv2::{Event, HandleResult, Handler, Response};
 use le_stream::{FromLeBytes, ToLeBytes};
 use log::warn;

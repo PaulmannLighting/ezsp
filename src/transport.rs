@@ -1,74 +1,14 @@
 #[cfg(feature = "ashv2")]
 mod ashv2;
+mod ezsp;
 
-use crate::types::ByteSizedVec;
-use crate::{ember, ezsp, Error};
 #[cfg(feature = "ashv2")]
 pub use ashv2::Ashv2;
+pub use ezsp::Ezsp;
 use le_stream::ToLeBytes;
-use std::future::Future;
 
 pub trait Transport {
     fn next_command<T>(&mut self, frame_id: u16, parameters: T) -> Vec<u8>
     where
         T: ToLeBytes;
-}
-
-pub trait Ezsp: Transport {
-    fn add_endpoint(
-        &mut self,
-        endpoint: u8,
-        profile_id: u16,
-        device_id: u16,
-        app_flags: u8,
-        input_clusters: ByteSizedVec<u16>,
-        output_clusters: ByteSizedVec<u16>,
-    ) -> impl Future<Output = Result<(), Error>>;
-
-    fn add_or_update_key_table_entry(
-        &mut self,
-        address: ember::Eui64,
-        link_key: bool,
-        key_data: ember::key::Data,
-    ) -> impl Future<Output = Result<(), Error>>;
-
-    fn add_transient_link_key(
-        &mut self,
-        partner: ember::Eui64,
-        transient_key: ember::key::Data,
-    ) -> impl Future<Output = Result<(), Error>>;
-
-    fn address_table_entry_is_active(
-        &mut self,
-        address_table_index: u8,
-    ) -> impl Future<Output = Result<bool, Error>>;
-
-    fn aes_encrypt(
-        &mut self,
-        plaintext: [u8; 16],
-        key: [u8; 16],
-    ) -> impl Future<Output = Result<[u8; 16], Error>>;
-
-    fn aes_mmo_hash(
-        &mut self,
-        context: ember::aes::MmoHashContext,
-        finalize: bool,
-        data: ByteSizedVec<u8>,
-    ) -> impl Future<Output = Result<ember::aes::MmoHashContext, Error>>;
-
-    fn binding_is_active(&mut self, index: u8) -> impl Future<Output = Result<bool, Error>>;
-
-    fn broadcast_network_key_switch(&mut self) -> impl Future<Output = Result<(), Error>>;
-
-    fn broadcast_next_network_key(
-        &mut self,
-        key: ember::key::Data,
-    ) -> impl Future<Output = Result<(), Error>>;
-
-    fn calculate_smacs(
-        &mut self,
-        am_initiator: bool,
-        partner_certificate: ember::CertificateData,
-        partner_ephemeral_public_key: ember::PublicKeyData,
-    ) -> impl Future<Output = Result<(), Error>>;
 }

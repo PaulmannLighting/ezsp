@@ -50,7 +50,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn value(&self) -> &ByteSizedVec<u8> {
-        &self.value
+    pub fn value(self) -> ByteSizedVec<u8> {
+        self.value
     }
 }

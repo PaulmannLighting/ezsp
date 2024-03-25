@@ -1,14 +1,20 @@
 mod response_handler;
 
 use crate::ember;
+use crate::ember::PanId;
 use crate::error::Resolve;
+use crate::ezsp::decision::Id;
+use crate::frame::parameters::version::Response;
 use crate::frame::parameters::{
     add_endpoint, add_or_update_key_table_entry, add_transient_link_key,
     address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
-    broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs,
+    broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs, read_attribute,
 };
 use crate::frame::{Control, Header};
 use crate::transport::ashv2::response_handler::ResponseHandler;
+use crate::transport::ezsp::{
+    Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Messaging, TrustCenter,
+};
 use crate::transport::{Ezsp, Transport};
 use crate::types::ByteSizedVec;
 use crate::Error;
@@ -16,6 +22,7 @@ use ashv2::Host;
 use le_stream::{FromLeBytes, ToLeBytes};
 use serialport::SerialPort;
 use std::fmt::Debug;
+use std::future::Future;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
@@ -77,10 +84,103 @@ where
     }
 }
 
-impl<S> Ezsp for Ashv2<S>
+impl<S> Binding for Ashv2<S>
 where
     for<'s> S: SerialPort + 's,
 {
+    async fn binding_is_active(&mut self, index: u8) -> Result<bool, Error> {
+        let command = self.next_command(
+            binding_is_active::ID,
+            binding_is_active::Command::new(index),
+        );
+        self.communicate::<binding_is_active::Response>(command.as_slice())
+            .await
+            .map(|response| response.active())
+    }
+}
+
+impl<S> Bootloader for Ashv2<S>
+where
+    for<'s> S: SerialPort + 's,
+{
+    async fn aes_encrypt(&mut self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
+        let command = self.next_command(aes_encrypt::ID, aes_encrypt::Command::new(plaintext, key));
+        self.communicate::<aes_encrypt::Response>(command.as_slice())
+            .await
+            .map(|response| response.ciphertext())
+    }
+}
+
+impl<S> CertificateBasedKeyExchange for Ashv2<S>
+where
+    for<'s> S: SerialPort + 's,
+{
+    async fn calculate_smacs(
+        &mut self,
+        am_initiator: bool,
+        partner_certificate: ember::CertificateData,
+        partner_ephemeral_public_key: ember::PublicKeyData,
+    ) -> Result<(), Error> {
+        let command = self.next_command(
+            calculate_smacs::ID,
+            calculate_smacs::Command::new(
+                am_initiator,
+                partner_certificate,
+                partner_ephemeral_public_key,
+            ),
+        );
+        self.communicate::<calculate_smacs::Response>(command.as_slice())
+            .await?
+            .status()
+            .resolve()
+    }
+}
+
+impl<S> Configuration for Ashv2<S>
+where
+    for<'s> S: SerialPort + 's,
+{
+    async fn version(&mut self, desired_protocol_version: u8) -> Result<Response, Error> {
+        todo!()
+    }
+
+    async fn legacy_version(&mut self, desired_protocol_version: u8) -> Result<Response, Error> {
+        todo!()
+    }
+
+    async fn get_configuration_value(&mut self, config_id: u8) -> Result<u16, Error> {
+        todo!()
+    }
+
+    async fn set_configuration_value(&mut self, config_id: u8, value: u16) -> Result<(), Error> {
+        todo!()
+    }
+
+    async fn read_attribute(
+        &mut self,
+        endpoint: u8,
+        cluster: u16,
+        attribute_id: u16,
+        mask: u8,
+        manufacturer_code: u16,
+    ) -> Result<read_attribute::Response, Error> {
+        todo!()
+    }
+
+    async fn write_attribute(
+        &mut self,
+        endpoint: u8,
+        cluster: u16,
+        attribute_id: u16,
+        mask: u8,
+        manufacturer_code: u16,
+        just_test: bool,
+        data_type: u8,
+        data: ByteSizedVec<u8>,
+    ) -> Result<(), Error> {
+        todo!()
+    }
+
     async fn add_endpoint(
         &mut self,
         endpoint: u8,
@@ -107,37 +207,47 @@ where
             .resolve()
     }
 
-    async fn add_or_update_key_table_entry(
-        &mut self,
-        address: ember::Eui64,
-        link_key: bool,
-        key_data: ember::key::Data,
-    ) -> Result<(), Error> {
-        let command = self.next_command(
-            add_or_update_key_table_entry::ID,
-            add_or_update_key_table_entry::Command::new(address, link_key, key_data),
-        );
-        self.communicate::<add_or_update_key_table_entry::Response>(command.as_slice())
-            .await?
-            .status()
-            .resolve()
+    async fn set_policy(&mut self, policy_id: u8, decision_id: u8) -> Result<(), Error> {
+        todo!()
     }
 
-    async fn add_transient_link_key(
-        &mut self,
-        partner: ember::Eui64,
-        transient_key: ember::key::Data,
-    ) -> Result<(), Error> {
-        let command = self.next_command(
-            add_transient_link_key::ID,
-            add_transient_link_key::Command::new(partner, transient_key),
-        );
-        self.communicate::<add_transient_link_key::Response>(command.as_slice())
-            .await?
-            .status()
-            .resolve()
+    async fn get_policy(&mut self, policy_id: u8) -> Result<Id, Error> {
+        todo!()
     }
 
+    async fn send_pan_id_update(&mut self, new_pan: PanId) -> Result<bool, Error> {
+        todo!()
+    }
+
+    async fn get_value(&mut self, value_id: u8) -> Result<ByteSizedVec<u8>, Error> {
+        todo!()
+    }
+
+    async fn get_extended_value(
+        &mut self,
+        value_id: u8,
+        characteristics: u32,
+    ) -> Result<ByteSizedVec<u8>, Error> {
+        todo!()
+    }
+
+    async fn set_value(&mut self, value_id: u8, value: ByteSizedVec<u8>) -> Result<(), Error> {
+        todo!()
+    }
+
+    async fn set_passive_ack_config(
+        &mut self,
+        config: u8,
+        min_acks_needed: u8,
+    ) -> Result<(), Error> {
+        todo!()
+    }
+}
+
+impl<S> Messaging for Ashv2<S>
+where
+    for<'s> S: SerialPort + 's,
+{
     async fn address_table_entry_is_active(
         &mut self,
         address_table_index: u8,
@@ -150,14 +260,12 @@ where
             .await
             .map(|response| response.active())
     }
+}
 
-    async fn aes_encrypt(&mut self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
-        let command = self.next_command(aes_encrypt::ID, aes_encrypt::Command::new(plaintext, key));
-        self.communicate::<aes_encrypt::Response>(command.as_slice())
-            .await
-            .map(|response| response.ciphertext())
-    }
-
+impl<S> TrustCenter for Ashv2<S>
+where
+    for<'s> S: SerialPort + 's,
+{
     async fn aes_mmo_hash(
         &mut self,
         context: ember::aes::MmoHashContext,
@@ -174,16 +282,6 @@ where
         result.status().resolve().map(|()| result.return_context())
     }
 
-    async fn binding_is_active(&mut self, index: u8) -> Result<bool, Error> {
-        let command = self.next_command(
-            binding_is_active::ID,
-            binding_is_active::Command::new(index),
-        );
-        self.communicate::<binding_is_active::Response>(command.as_slice())
-            .await
-            .map(|response| response.active())
-    }
-
     async fn broadcast_network_key_switch(&mut self) -> Result<(), Error> {
         let command = self.next_command(broadcast_network_key_switch::ID, ());
         self.communicate::<broadcast_network_key_switch::Response>(command.as_slice())
@@ -198,26 +296,6 @@ where
             broadcast_next_network_key::Command::new(key),
         );
         self.communicate::<broadcast_next_network_key::Response>(command.as_slice())
-            .await?
-            .status()
-            .resolve()
-    }
-
-    async fn calculate_smacs(
-        &mut self,
-        am_initiator: bool,
-        partner_certificate: ember::CertificateData,
-        partner_ephemeral_public_key: ember::PublicKeyData,
-    ) -> Result<(), Error> {
-        let command = self.next_command(
-            calculate_smacs::ID,
-            calculate_smacs::Command::new(
-                am_initiator,
-                partner_certificate,
-                partner_ephemeral_public_key,
-            ),
-        );
-        self.communicate::<calculate_smacs::Response>(command.as_slice())
             .await?
             .status()
             .resolve()

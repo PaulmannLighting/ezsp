@@ -1,14 +1,16 @@
 mod response_handler;
 
 use crate::ember;
-use crate::ember::PanId;
+use crate::ember::binding::TableEntry;
+use crate::ember::{NodeId, PanId};
 use crate::error::Resolve;
 use crate::ezsp::decision::Id;
 use crate::frame::parameters::version::Response;
 use crate::frame::parameters::{
-    add_endpoint, add_or_update_key_table_entry, add_transient_link_key,
-    address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
-    broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs, read_attribute,
+    add_endpoint, address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
+    broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs, clear_binding_table,
+    delete_binding, get_binding, get_binding_remote_node_id, read_attribute, set_binding,
+    set_binding_remote_node_id,
 };
 use crate::frame::{Control, Header};
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -22,7 +24,6 @@ use ashv2::Host;
 use le_stream::{FromLeBytes, ToLeBytes};
 use serialport::SerialPort;
 use std::fmt::Debug;
-use std::future::Future;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
@@ -88,6 +89,37 @@ impl<S> Binding for Ashv2<S>
 where
     for<'s> S: SerialPort + 's,
 {
+    async fn clear_binding_table(&mut self) -> Result<(), Error> {
+        let command = self.next_command(clear_binding_table::ID, ());
+        self.communicate::<clear_binding_table::Response>(command.as_slice())
+            .await?
+            .status()
+            .resolve()
+    }
+
+    async fn set_binding(&mut self, index: u8, value: TableEntry) -> Result<(), Error> {
+        let command = self.next_command(set_binding::ID, set_binding::Command::new(index, value));
+        self.communicate::<set_binding::Response>(command.as_slice())
+            .await?
+            .status()
+            .resolve()
+    }
+
+    async fn get_binding(&mut self, index: u8) -> Result<TableEntry, Error> {
+        let command = self.next_command(get_binding::ID, get_binding::Command::new(index));
+        self.communicate::<get_binding::Response>(command.as_slice())
+            .await
+            .and_then(|response| response.status().resolve().map(|_| response.value()))
+    }
+
+    async fn delete_binding(&mut self, index: u8) -> Result<(), Error> {
+        let command = self.next_command(delete_binding::ID, delete_binding::Command::new(index));
+        self.communicate::<delete_binding::Response>(command.as_slice())
+            .await?
+            .status()
+            .resolve()
+    }
+
     async fn binding_is_active(&mut self, index: u8) -> Result<bool, Error> {
         let command = self.next_command(
             binding_is_active::ID,
@@ -96,6 +128,28 @@ where
         self.communicate::<binding_is_active::Response>(command.as_slice())
             .await
             .map(|response| response.active())
+    }
+
+    async fn get_binding_remote_node_id(&mut self, index: u8) -> Result<NodeId, Error> {
+        let command = self.next_command(
+            get_binding_remote_node_id::ID,
+            get_binding_remote_node_id::Command::new(index),
+        );
+        self.communicate::<get_binding_remote_node_id::Response>(command.as_slice())
+            .await
+            .map(|response| response.node_id())
+    }
+
+    async fn set_binding_remote_node_id(
+        &mut self,
+        index: u8,
+        node_id: NodeId,
+    ) -> Result<(), Error> {
+        let command = self.next_command(
+            set_binding_remote_node_id::ID,
+            set_binding_remote_node_id::Command::new(index, node_id),
+        );
+        self.communicate::<()>(command.as_slice()).await
     }
 }
 

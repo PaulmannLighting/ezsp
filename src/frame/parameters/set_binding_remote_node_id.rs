@@ -25,13 +25,3 @@ impl Command {
         self.node_id
     }
 }
-
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response;
-
-impl Response {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
-}

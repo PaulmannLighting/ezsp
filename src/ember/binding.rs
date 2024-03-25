@@ -26,7 +26,7 @@ impl TryFrom<u8> for Type {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct TableEntry {
     typ: u8,
     local: u8,

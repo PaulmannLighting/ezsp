@@ -64,4 +64,11 @@ pub trait Ezsp: Transport {
         &mut self,
         key: ember::key::Data,
     ) -> impl Future<Output = Result<(), Error>>;
+
+    fn calculate_smacs(
+        &mut self,
+        am_initiator: bool,
+        partner_certificate: ember::CertificateData,
+        partner_ephemeral_public_key: ember::PublicKeyData,
+    ) -> impl Future<Output = Result<(), Error>>;
 }

@@ -5,7 +5,7 @@ use crate::error::Resolve;
 use crate::frame::parameters::{
     add_endpoint, add_or_update_key_table_entry, add_transient_link_key,
     address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
-    broadcast_network_key_switch, broadcast_next_network_key,
+    broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs,
 };
 use crate::frame::{Control, Header};
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -198,6 +198,26 @@ where
             broadcast_next_network_key::Command::new(key),
         );
         self.communicate::<broadcast_next_network_key::Response>(command.as_slice())
+            .await?
+            .status()
+            .resolve()
+    }
+
+    async fn calculate_smacs(
+        &mut self,
+        am_initiator: bool,
+        partner_certificate: ember::CertificateData,
+        partner_ephemeral_public_key: ember::PublicKeyData,
+    ) -> Result<(), Error> {
+        let command = self.next_command(
+            calculate_smacs::ID,
+            calculate_smacs::Command::new(
+                am_initiator,
+                partner_certificate,
+                partner_ephemeral_public_key,
+            ),
+        );
+        self.communicate::<calculate_smacs::Response>(command.as_slice())
             .await?
             .status()
             .resolve()

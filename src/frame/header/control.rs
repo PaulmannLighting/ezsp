@@ -1,7 +1,7 @@
 mod high_byte;
 mod low_byte;
 
-pub use high_byte::HighByte;
+pub use high_byte::{FrameFormatVersion, HighByte};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 pub use low_byte::{CallbackType, LowByte, SleepMode};
 

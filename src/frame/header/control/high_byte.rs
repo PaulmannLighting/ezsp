@@ -3,7 +3,6 @@ mod frame_format_version;
 use crate::frame::header::control::high_byte::frame_format_version::{
     bit_swap, FRAME_FORMAT_VERSION_MASK_HIGH, FRAME_FORMAT_VERSION_MASK_LOW,
 };
-use crate::frame::header::control::LowByte;
 pub use frame_format_version::FrameFormatVersion;
 use le_stream::{FromLeBytes, ToLeBytes};
 use num_traits::FromPrimitive;
@@ -41,6 +40,23 @@ impl From<HighByte> for u8 {
 impl From<u8> for HighByte {
     fn from(value: u8) -> Self {
         Self(value)
+    }
+}
+
+impl FromLeBytes for HighByte {
+    fn from_le_bytes<T>(bytes: &mut T) -> le_stream::Result<Self>
+    where
+        T: Iterator<Item = u8>,
+    {
+        <u8 as FromLeBytes>::from_le_bytes(bytes).map(Self)
+    }
+}
+
+impl ToLeBytes for HighByte {
+    type Iter = Once<u8>;
+
+    fn to_le_bytes(self) -> Self::Iter {
+        once(self.0)
     }
 }
 
@@ -87,22 +103,5 @@ mod tests {
 
         let high_byte = HighByte(0b0000_0011);
         assert_eq!(high_byte.frame_format_version(), None);
-    }
-}
-
-impl FromLeBytes for HighByte {
-    fn from_le_bytes<T>(bytes: &mut T) -> le_stream::Result<Self>
-    where
-        T: Iterator<Item = u8>,
-    {
-        <u8 as FromLeBytes>::from_le_bytes(bytes).map(Self)
-    }
-}
-
-impl ToLeBytes for HighByte {
-    type Iter = Once<u8>;
-
-    fn to_le_bytes(self) -> Self::Iter {
-        once(self.0)
     }
 }

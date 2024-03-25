@@ -1,6 +1,6 @@
 mod control;
 
-pub use control::Control;
+pub use control::{CallbackType, Control, FrameFormatVersion, HighByte, LowByte, SleepMode};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;

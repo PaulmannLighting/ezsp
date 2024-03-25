@@ -1,7 +1,7 @@
 mod header;
 pub mod parameters;
 
-pub use header::{Control, Header};
+pub use header::{CallbackType, Control, FrameFormatVersion, Header, HighByte, LowByte, SleepMode};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;

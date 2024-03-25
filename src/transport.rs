@@ -4,7 +4,9 @@ mod ezsp;
 
 #[cfg(feature = "ashv2")]
 pub use ashv2::Ashv2;
-pub use ezsp::Ezsp;
+pub use ezsp::{
+    Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, Messaging, TrustCenter,
+};
 use le_stream::ToLeBytes;
 
 pub trait Transport {

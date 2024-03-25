@@ -24,6 +24,8 @@ use ashv2::Host;
 use le_stream::{FromLeBytes, ToLeBytes};
 use serialport::SerialPort;
 use std::fmt::Debug;
+use std::sync::mpsc::Sender;
+use std::sync::Arc;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
@@ -47,6 +49,14 @@ where
             sequence: 0,
             control,
         }
+    }
+
+    /// Start the ASHv2 host.
+    ///
+    /// # Errors
+    /// Returns an [`ashv2::Error`] if the host could not be started.
+    pub fn start(&mut self, callback: Option<Sender<Arc<[u8]>>>) -> Result<(), ashv2::Error> {
+        self.host.start(callback)
     }
 
     async fn communicate<R>(&mut self, payload: &[u8]) -> Result<R, Error>

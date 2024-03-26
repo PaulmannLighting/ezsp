@@ -15,4 +15,9 @@ pub trait Transport {
     where
         I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
         T: ToLeBytes;
+
+    fn next_legacy_command<I, T>(&mut self, frame_id: I, parameters: T) -> Vec<u8>
+    where
+        I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+        T: ToLeBytes;
 }

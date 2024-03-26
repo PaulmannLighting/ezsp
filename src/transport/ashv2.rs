@@ -95,6 +95,19 @@ where
         command.extend(parameters.to_le_bytes());
         command
     }
+
+    fn next_legacy_command<I, T>(&mut self, frame_id: I, parameters: T) -> Vec<u8>
+    where
+        I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+        T: ToLeBytes,
+    {
+        let mut command = Vec::new();
+        command.extend(Header::new(self.sequence, self.control.low(), frame_id).to_le_bytes());
+        self.sequence = self.sequence.checked_add(1).unwrap_or(0);
+        command.extend(frame_id.to_le_bytes());
+        command.extend(parameters.to_le_bytes());
+        command
+    }
 }
 
 impl<S> Binding for Ashv2<S>
@@ -223,7 +236,7 @@ where
         desired_protocol_version: u8,
     ) -> Result<version::Response<u8>, Error> {
         let command =
-            self.next_command(version::ID, version::Command::new(desired_protocol_version));
+            self.next_legacy_command(version::ID, version::Command::new(desired_protocol_version));
         self.communicate_legacy::<version::Response<u8>>(command.as_slice())
             .await
     }

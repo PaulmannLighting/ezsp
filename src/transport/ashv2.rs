@@ -92,7 +92,9 @@ where
         T: ToLeBytes,
     {
         let mut command = Vec::new();
-        command.extend(Header::new(self.sequence, self.control, frame_id).to_le_bytes());
+        let header = Header::new(self.sequence, self.control, frame_id);
+        debug!("Header: {:?}", header.to_le_bytes().collect::<Vec<_>>());
+        command.extend(header.to_le_bytes());
         self.sequence = self.sequence.checked_add(1).unwrap_or(0);
         command.extend(frame_id.to_le_bytes());
         command.extend(parameters.to_le_bytes());
@@ -105,7 +107,12 @@ where
         T: ToLeBytes,
     {
         let mut command = Vec::new();
-        command.extend(Header::new(self.sequence, self.control.low(), frame_id).to_le_bytes());
+        let header = Header::new(self.sequence, self.control.low(), frame_id);
+        debug!(
+            "Legacy header: {:?}",
+            header.to_le_bytes().collect::<Vec<_>>()
+        );
+        command.extend(header.to_le_bytes());
         self.sequence = self.sequence.checked_add(1).unwrap_or(0);
         command.extend(frame_id.to_le_bytes());
         command.extend(parameters.to_le_bytes());

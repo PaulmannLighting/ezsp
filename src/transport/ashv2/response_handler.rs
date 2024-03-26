@@ -9,7 +9,7 @@ use std::pin::Pin;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::task::{Context, Poll, Waker};
 
-type ResultType<R> = Result<Frame<R::Id>, Error>;
+type ResultType<T> = Result<Frame<T>, Error>;
 
 #[derive(Clone, Debug)]
 pub struct ResponseHandler<R>
@@ -18,7 +18,7 @@ where
 {
     waker: Arc<Mutex<Option<Waker>>>,
     buffer: Arc<Mutex<Vec<u8>>>,
-    result: Arc<Mutex<Option<ResultType<R>>>>,
+    result: Arc<Mutex<Option<ResultType<R::Id>>>>,
 }
 
 impl<R> ResponseHandler<R>
@@ -29,7 +29,7 @@ where
     pub const fn new(
         waker: Arc<Mutex<Option<Waker>>>,
         buffer: Arc<Mutex<Vec<u8>>>,
-        result: Arc<Mutex<Option<ResultType<R>>>>,
+        result: Arc<Mutex<Option<ResultType<R::Id>>>>,
     ) -> Self {
         Self {
             waker,
@@ -97,13 +97,13 @@ where
         debug!("Releasing lock on buffer.");
     }
 
-    fn result(&self) -> MutexGuard<'_, Option<ResultType<R>>> {
+    fn result(&self) -> MutexGuard<'_, Option<ResultType<R::Id>>> {
         self.result
             .lock()
             .expect("Result should never be poisoned.")
     }
 
-    fn replace_result(&self, result: ResultType<R>) {
+    fn replace_result(&self, result: ResultType<R::Id>) {
         debug!("Locking result.");
         self.result().replace(result);
         debug!("Releasing lock on result.");

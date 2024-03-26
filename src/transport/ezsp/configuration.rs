@@ -9,11 +9,11 @@ pub trait Configuration: Transport {
     fn version(
         &mut self,
         desired_protocol_version: u8,
-    ) -> impl Future<Output = Result<version::Response<u16>, Error>>;
+    ) -> impl Future<Output = Result<version::Response, Error>>;
     fn legacy_version(
         &mut self,
         desired_protocol_version: u8,
-    ) -> impl Future<Output = Result<version::Response<u8>, Error>>;
+    ) -> impl Future<Output = Result<version::Response, Error>>;
     fn get_configuration_value(
         &mut self,
         config_id: u8,

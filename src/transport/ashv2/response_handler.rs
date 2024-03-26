@@ -1,15 +1,15 @@
 use crate::frame::{Frame, Parameter};
-use crate::{Control, Error, Header};
+use crate::{Error, Header};
 use ashv2::{Event, HandleResult, Handler, Response};
-use le_stream::{FromLeBytes, ToLeBytes};
+use le_stream::FromLeBytes;
 use log::{debug, error, warn};
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::task::{Context, Poll, Waker};
 
-type ResultType<T> = Result<Frame<T>, Error>;
+type ResultType<R: Parameter> = Result<Frame<R>, Error>;
 
 #[derive(Clone, Debug)]
 pub struct ResponseHandler<R>
@@ -18,7 +18,7 @@ where
 {
     waker: Arc<Mutex<Option<Waker>>>,
     buffer: Arc<Mutex<Vec<u8>>>,
-    result: Arc<Mutex<Option<ResultType<R::Id>>>>,
+    result: Arc<Mutex<Option<ResultType<R>>>>,
 }
 
 impl<R> ResponseHandler<R>
@@ -29,7 +29,7 @@ where
     pub const fn new(
         waker: Arc<Mutex<Option<Waker>>>,
         buffer: Arc<Mutex<Vec<u8>>>,
-        result: Arc<Mutex<Option<ResultType<R::Id>>>>,
+        result: Arc<Mutex<Option<ResultType<R>>>>,
     ) -> Self {
         Self {
             waker,
@@ -97,13 +97,13 @@ where
         debug!("Releasing lock on buffer.");
     }
 
-    fn result(&self) -> MutexGuard<'_, Option<ResultType<R::Id>>> {
+    fn result(&self) -> MutexGuard<'_, Option<ResultType<R>>> {
         self.result
             .lock()
             .expect("Result should never be poisoned.")
     }
 
-    fn replace_result(&self, result: ResultType<R::Id>) {
+    fn replace_result(&self, result: ResultType<R>) {
         debug!("Locking result.");
         self.result().replace(result);
         debug!("Releasing lock on result.");

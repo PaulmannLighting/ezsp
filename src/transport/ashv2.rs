@@ -3,7 +3,7 @@ use std::sync::mpsc::Sender;
 use std::sync::Arc;
 
 use ashv2::Host;
-use le_stream::{FromLeBytes, ToLeBytes};
+use le_stream::ToLeBytes;
 use log::debug;
 use serialport::SerialPort;
 
@@ -66,7 +66,7 @@ impl<S> Transport for Ashv2<S>
 where
     for<'s> S: SerialPort + 's,
 {
-    fn next_header<R>(&mut self) -> Header<R::Id>
+    fn next_header<R>(&mut self) -> Header<R>
     where
         R: Parameter,
     {
@@ -81,7 +81,7 @@ where
         for<'r> R: Clone + Debug + Parameter + Send + Sync + 'r,
     {
         let mut payload = Vec::new();
-        payload.extend(self.next_header().to_le_bytes());
+        payload.extend(self.next_header::<R>().to_le_bytes());
         payload.extend(command.to_le_bytes());
         debug!("Sending payload: {payload:?}");
         self.host.communicate::<ResponseHandler<R>>(&payload).await
@@ -93,7 +93,7 @@ where
     for<'s> S: SerialPort + 's,
 {
     async fn clear_binding_table(&mut self) -> Result<(), Error> {
-        self.communicate::<clear_binding_table::Response>(clear_binding_table::Command::new())
+        self.communicate::<clear_binding_table::Response>(clear_binding_table::Command)
             .await?
             .status()
             .resolve()

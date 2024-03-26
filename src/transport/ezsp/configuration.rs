@@ -10,19 +10,23 @@ pub trait Configuration: Transport {
         &mut self,
         desired_protocol_version: u8,
     ) -> impl Future<Output = Result<version::Response, Error>>;
+
     fn legacy_version(
         &mut self,
         desired_protocol_version: u8,
     ) -> impl Future<Output = Result<version::Response, Error>>;
+
     fn get_configuration_value(
         &mut self,
         config_id: u8,
     ) -> impl Future<Output = Result<u16, Error>>;
+
     fn set_configuration_value(
         &mut self,
         config_id: u8,
         value: u16,
     ) -> impl Future<Output = Result<(), Error>>;
+
     fn read_attribute(
         &mut self,
         endpoint: u8,
@@ -31,6 +35,8 @@ pub trait Configuration: Transport {
         mask: u8,
         manufacturer_code: u16,
     ) -> impl Future<Output = Result<read_attribute::Response, Error>>;
+
+    #[allow(clippy::too_many_arguments)]
     fn write_attribute(
         &mut self,
         endpoint: u8,
@@ -51,24 +57,30 @@ pub trait Configuration: Transport {
         input_clusters: ByteSizedVec<u16>,
         output_clusters: ByteSizedVec<u16>,
     ) -> impl Future<Output = Result<(), Error>>;
+
     fn set_policy(
         &mut self,
         policy_id: u8,
         decision_id: u8,
     ) -> impl Future<Output = Result<(), Error>>;
     fn get_policy(&mut self, policy_id: u8) -> impl Future<Output = Result<decision::Id, Error>>;
+
     fn send_pan_id_update(&mut self, new_pan: PanId) -> impl Future<Output = Result<bool, Error>>;
+
     fn get_value(&mut self, value_id: u8) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>>;
+
     fn get_extended_value(
         &mut self,
         value_id: u8,
         characteristics: u32,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>>;
+
     fn set_value(
         &mut self,
         value_id: u8,
         value: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<(), Error>>;
+
     fn set_passive_ack_config(
         &mut self,
         config: u8,

@@ -1,10 +1,15 @@
-mod response_handler;
+use std::fmt::Debug;
+use std::sync::mpsc::Sender;
+use std::sync::Arc;
+
+use ashv2::Host;
+use le_stream::{FromLeBytes, ToLeBytes};
+use serialport::SerialPort;
 
 use crate::ember;
 use crate::ember::binding::TableEntry;
 use crate::ember::{NodeId, PanId};
 use crate::error::Resolve;
-use crate::ezsp;
 use crate::ezsp::decision;
 use crate::frame::parameters::{
     add_endpoint, address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
@@ -20,12 +25,8 @@ use crate::transport::ezsp::{
 use crate::transport::{Ezsp, Transport};
 use crate::types::ByteSizedVec;
 use crate::Error;
-use ashv2::Host;
-use le_stream::{FromLeBytes, ToLeBytes};
-use serialport::SerialPort;
-use std::fmt::Debug;
-use std::sync::mpsc::Sender;
-use std::sync::Arc;
+
+mod response_handler;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
@@ -345,6 +346,25 @@ impl<S> TrustCenter for Ashv2<S>
 where
     for<'s> S: SerialPort + 's,
 {
+    async fn broadcast_next_network_key(&mut self, key: ember::key::Data) -> Result<(), Error> {
+        let command = self.next_command(
+            broadcast_next_network_key::ID,
+            broadcast_next_network_key::Command::new(key),
+        );
+        self.communicate::<broadcast_next_network_key::Response>(command.as_slice())
+            .await?
+            .status()
+            .resolve()
+    }
+
+    async fn broadcast_network_key_switch(&mut self) -> Result<(), Error> {
+        let command = self.next_command(broadcast_network_key_switch::ID, ());
+        self.communicate::<broadcast_network_key_switch::Response>(command.as_slice())
+            .await?
+            .status()
+            .resolve()
+    }
+
     async fn aes_mmo_hash(
         &mut self,
         context: ember::aes::MmoHashContext,
@@ -359,24 +379,5 @@ where
             .communicate::<aes_mmo_hash::Response>(command.as_slice())
             .await?;
         result.status().resolve().map(|()| result.return_context())
-    }
-
-    async fn broadcast_network_key_switch(&mut self) -> Result<(), Error> {
-        let command = self.next_command(broadcast_network_key_switch::ID, ());
-        self.communicate::<broadcast_network_key_switch::Response>(command.as_slice())
-            .await?
-            .status()
-            .resolve()
-    }
-
-    async fn broadcast_next_network_key(&mut self, key: ember::key::Data) -> Result<(), Error> {
-        let command = self.next_command(
-            broadcast_next_network_key::ID,
-            broadcast_next_network_key::Command::new(key),
-        );
-        self.communicate::<broadcast_next_network_key::Response>(command.as_slice())
-            .await?
-            .status()
-            .resolve()
     }
 }

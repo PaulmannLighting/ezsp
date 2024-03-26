@@ -1,9 +1,8 @@
 pub use callback_type::CallbackType;
-use le_stream::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
 use log::warn;
 use num_traits::FromPrimitive;
 pub use sleep_mode::SleepMode;
-use std::iter::{once, Once};
 
 mod callback_type;
 mod sleep_mode;
@@ -25,7 +24,7 @@ const SLEEP_MODE_MASK_LOW: u8 = 0b0000_0001;
 const SLEEP_MODE_MASK_HIGH: u8 = 0b0000_0010;
 const SLEEP_MODE_OFFSET: u8 = 1;
 
-#[derive(Clone, Copy, Debug, Default, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Ord, PartialOrd, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct LowByte(u8);
 
 impl LowByte {
@@ -100,22 +99,5 @@ impl From<LowByte> for u8 {
 impl From<u8> for LowByte {
     fn from(value: u8) -> Self {
         Self(value)
-    }
-}
-
-impl FromLeBytes for LowByte {
-    fn from_le_bytes<T>(bytes: &mut T) -> le_stream::Result<Self>
-    where
-        T: Iterator<Item = u8>,
-    {
-        <u8 as FromLeBytes>::from_le_bytes(bytes).map(Self)
-    }
-}
-
-impl ToLeBytes for LowByte {
-    type Iter = Once<u8>;
-
-    fn to_le_bytes(self) -> Self::Iter {
-        once(self.0)
     }
 }

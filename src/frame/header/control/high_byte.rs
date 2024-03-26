@@ -1,17 +1,19 @@
-mod frame_format_version;
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::{FromLeBytes, ToLeBytes};
+use num_traits::FromPrimitive;
+
+pub use frame_format_version::FrameFormatVersion;
 
 use crate::frame::header::control::high_byte::frame_format_version::{
     bit_swap, FRAME_FORMAT_VERSION_MASK_HIGH, FRAME_FORMAT_VERSION_MASK_LOW,
 };
-pub use frame_format_version::FrameFormatVersion;
-use le_stream::{FromLeBytes, ToLeBytes};
-use num_traits::FromPrimitive;
-use std::iter::{once, Once};
+
+mod frame_format_version;
 
 const FRAME_FORMAT_VERSION_MASK: u8 =
     FRAME_FORMAT_VERSION_MASK_LOW + FRAME_FORMAT_VERSION_MASK_HIGH;
 
-#[derive(Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct HighByte(u8);
 
 impl HighByte {
@@ -40,23 +42,6 @@ impl From<HighByte> for u8 {
 impl From<u8> for HighByte {
     fn from(value: u8) -> Self {
         Self(value)
-    }
-}
-
-impl FromLeBytes for HighByte {
-    fn from_le_bytes<T>(bytes: &mut T) -> le_stream::Result<Self>
-    where
-        T: Iterator<Item = u8>,
-    {
-        <u8 as FromLeBytes>::from_le_bytes(bytes).map(Self)
-    }
-}
-
-impl ToLeBytes for HighByte {
-    type Iter = Once<u8>;
-
-    fn to_le_bytes(self) -> Self::Iter {
-        once(self.0)
     }
 }
 

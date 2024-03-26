@@ -1,3 +1,5 @@
+use le_stream::{FromLeBytes, ToLeBytes};
+
 pub mod add_endpoint;
 pub mod add_or_update_key_table_entry;
 pub mod add_transient_link_key;
@@ -273,6 +275,6 @@ pub mod zll_set_security_state_without_key;
 pub mod zll_start_scan;
 pub mod zll_touch_link_target_handler;
 
-pub trait Parameter<I> {
+pub trait Parameter<I>: FromLeBytes + ToLeBytes {
     const ID: I;
 }

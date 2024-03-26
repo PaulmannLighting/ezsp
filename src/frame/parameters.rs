@@ -278,7 +278,7 @@ pub mod zll_touch_link_target_handler;
 
 pub trait Parameter<I>: FromLeBytes + ToLeBytes
 where
-    I: Display,
+    I: Display + Eq,
 {
     const ID: I;
 }

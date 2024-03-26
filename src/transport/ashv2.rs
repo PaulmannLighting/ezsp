@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use ashv2::Host;
 use le_stream::{FromLeBytes, ToLeBytes};
+use log::debug;
 use serialport::SerialPort;
 
 use crate::ember;
@@ -64,6 +65,7 @@ where
     where
         for<'r> R: Clone + Debug + FromLeBytes + ToLeBytes + Send + Sync + 'r,
     {
+        debug!("Sending payload: {payload:?}");
         self.host
             .communicate::<ResponseHandler<Control, u16, R>>(payload)
             .await
@@ -73,6 +75,7 @@ where
     where
         for<'r> R: Clone + Debug + FromLeBytes + ToLeBytes + Send + Sync + 'r,
     {
+        debug!("Sending legacy payload: {payload:?}");
         self.host
             .communicate::<ResponseHandler<u8, u8, R>>(payload)
             .await

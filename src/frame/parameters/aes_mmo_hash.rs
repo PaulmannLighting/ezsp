@@ -2,6 +2,7 @@ use crate::types::ByteSizedVec;
 
 use crate::ember::aes::MmoHashContext;
 use crate::ember::Status;
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x006F;
@@ -62,4 +63,8 @@ impl Response {
     pub const fn return_context(self) -> MmoHashContext {
         self.return_context
     }
+}
+
+impl Parameter<u16> for Response {
+    const ID: u16 = ID;
 }

@@ -1,4 +1,5 @@
 use crate::ember::NodeId;
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0030;
@@ -24,4 +25,11 @@ impl Command {
     pub const fn node_id(&self) -> NodeId {
         self.node_id
     }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct Response;
+
+impl Parameter<u16> for Response {
+    const ID: u16 = ID;
 }

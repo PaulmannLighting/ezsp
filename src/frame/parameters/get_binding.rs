@@ -1,5 +1,6 @@
 use crate::ember::binding::TableEntry;
 use crate::ember::Status;
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x002C;
@@ -44,4 +45,8 @@ impl Response {
     pub const fn value(self) -> TableEntry {
         self.value
     }
+}
+
+impl Parameter<u16> for Response {
+    const ID: u16 = ID;
 }

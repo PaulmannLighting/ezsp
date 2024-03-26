@@ -18,7 +18,7 @@ use crate::frame::parameters::{
     delete_binding, get_binding, get_binding_remote_node_id, read_attribute, set_binding,
     set_binding_remote_node_id, version,
 };
-use crate::frame::{Control, Header};
+use crate::frame::{Control, Header, Parameter};
 use crate::transport::ashv2::response_handler::ResponseHandler;
 use crate::transport::ezsp::{
     Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Messaging, TrustCenter,
@@ -63,7 +63,7 @@ where
 
     async fn communicate<R>(&mut self, payload: &[u8]) -> Result<R, Error>
     where
-        for<'r> R: Clone + Debug + FromLeBytes + ToLeBytes + Send + Sync + 'r,
+        for<'r> R: Clone + Debug + FromLeBytes + ToLeBytes + Parameter<u16> + Send + Sync + 'r,
     {
         debug!("Sending payload: {payload:?}");
         self.host
@@ -73,7 +73,7 @@ where
 
     async fn communicate_legacy<R>(&mut self, payload: &[u8]) -> Result<R, Error>
     where
-        for<'r> R: Clone + Debug + FromLeBytes + ToLeBytes + Send + Sync + 'r,
+        for<'r> R: Clone + Debug + FromLeBytes + ToLeBytes + Parameter<u8> + Send + Sync + 'r,
     {
         debug!("Sending legacy payload: {payload:?}");
         self.host
@@ -182,7 +182,9 @@ where
             set_binding_remote_node_id::ID,
             set_binding_remote_node_id::Command::new(index, node_id),
         );
-        self.communicate::<()>(command.as_slice()).await
+        self.communicate::<set_binding_remote_node_id::Response>(command.as_slice())
+            .await
+            .map(|_| ())
     }
 }
 

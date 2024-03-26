@@ -1,3 +1,4 @@
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x005B;
@@ -36,4 +37,8 @@ impl Response {
     pub const fn active(&self) -> bool {
         self.active
     }
+}
+
+impl Parameter<u16> for Response {
+    const ID: u16 = ID;
 }

@@ -1,3 +1,4 @@
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 pub const ID: u16 = 0x0094;
@@ -40,4 +41,8 @@ impl Response {
     pub const fn ciphertext(&self) -> [u8; 16] {
         self.ciphertext
     }
+}
+
+impl Parameter<u16> for Response {
+    const ID: u16 = ID;
 }

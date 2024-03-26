@@ -227,25 +227,22 @@ impl<S> Configuration for Ashv2<S>
 where
     for<'s> S: SerialPort + 's,
 {
-    async fn version(
-        &mut self,
-        desired_protocol_version: u8,
-    ) -> Result<version::Response<u16>, Error> {
+    async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
         let command = self.next_command(
             u16::from(version::ID),
             version::Command::new(desired_protocol_version),
         );
-        self.communicate::<version::Response<u16>>(command.as_slice())
+        self.communicate::<version::Response>(command.as_slice())
             .await
     }
 
     async fn legacy_version(
         &mut self,
         desired_protocol_version: u8,
-    ) -> Result<version::Response<u8>, Error> {
+    ) -> Result<version::Response, Error> {
         let command =
             self.next_legacy_command(version::ID, version::Command::new(desired_protocol_version));
-        self.communicate_legacy::<version::Response<u8>>(command.as_slice())
+        self.communicate_legacy::<version::Response>(command.as_slice())
             .await
     }
 

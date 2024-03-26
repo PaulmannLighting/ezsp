@@ -24,21 +24,15 @@ impl Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response<V>
-where
-    V: Clone + Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-{
+pub struct Response {
     protocol_version: u8,
     stack_type: u8,
-    stack_version: V,
+    stack_version: u16,
 }
 
-impl<V> Response<V>
-where
-    V: Clone + Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-{
+impl Response {
     #[must_use]
-    pub const fn new(protocol_version: u8, stack_type: u8, stack_version: V) -> Self {
+    pub const fn new(protocol_version: u8, stack_type: u8, stack_version: u16) -> Self {
         Self {
             protocol_version,
             stack_type,
@@ -57,7 +51,7 @@ where
     }
 
     #[must_use]
-    pub const fn stack_version(&self) -> V {
+    pub const fn stack_version(&self) -> u16 {
         self.stack_version
     }
 }

@@ -1,3 +1,4 @@
+use crate::Control;
 use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::{Debug, Display};
 
@@ -277,6 +278,6 @@ pub mod zll_start_scan;
 pub mod zll_touch_link_target_handler;
 
 pub trait Parameter: FromLeBytes + ToLeBytes {
-    type Id: Copy + Debug + Display + Eq + FromLeBytes + ToLeBytes;
+    type Id: Copy + Debug + Display + Eq + Send + Sync + Into<Control> + FromLeBytes + ToLeBytes;
     const ID: Self::Id;
 }

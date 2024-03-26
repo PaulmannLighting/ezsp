@@ -1,4 +1,5 @@
 use le_stream::{FromLeBytes, ToLeBytes};
+use std::fmt::Display;
 
 pub mod add_endpoint;
 pub mod add_or_update_key_table_entry;
@@ -275,6 +276,9 @@ pub mod zll_set_security_state_without_key;
 pub mod zll_start_scan;
 pub mod zll_touch_link_target_handler;
 
-pub trait Parameter<I>: FromLeBytes + ToLeBytes {
+pub trait Parameter<I>: FromLeBytes + ToLeBytes
+where
+    I: Display,
+{
     const ID: I;
 }

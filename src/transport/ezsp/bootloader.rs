@@ -6,5 +6,5 @@ pub trait Bootloader: Transport {
         &mut self,
         plaintext: [u8; 16],
         key: [u8; 16],
-    ) -> impl Future<Output = Result<[u8; 16], Error>>;
+    ) -> impl Future<Output = Result<[u8; 16], Error>> + Send;
 }

@@ -23,12 +23,18 @@ pub trait Ezsp:
     fn negotiate_version(
         &mut self,
         desired_protocol_version: u8,
-    ) -> impl Future<Output = Result<version::Response, Error>>;
+    ) -> impl Future<Output = Result<version::Response, Error>> + Send;
 }
 
 impl<T> Ezsp for T
 where
-    T: Binding + Bootloader + CertificateBasedKeyExchange + Configuration + Messaging + TrustCenter,
+    T: Binding
+        + Bootloader
+        + CertificateBasedKeyExchange
+        + Configuration
+        + Messaging
+        + TrustCenter
+        + Send,
 {
     async fn negotiate_version(
         &mut self,

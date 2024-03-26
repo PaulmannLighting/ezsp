@@ -6,23 +6,21 @@ use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Header<C, I>
+pub struct Header<T>
 where
-    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    T: Copy + Debug + Eq + FromLeBytes + ToLeBytes,
 {
     sequence: u8,
-    control: C,
-    id: I,
+    control: T,
+    id: T,
 }
 
-impl<C, I> Header<C, I>
+impl<T> Header<T>
 where
-    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    T: Copy + Debug + Eq + Into<Control> + FromLeBytes + ToLeBytes,
 {
     #[must_use]
-    pub const fn new(sequence: u8, control: C, id: I) -> Self {
+    pub const fn new(sequence: u8, control: T, id: T) -> Self {
         Self {
             sequence,
             control,
@@ -31,12 +29,12 @@ where
     }
 
     #[must_use]
-    pub const fn control(&self) -> C {
-        self.control
+    pub fn control(&self) -> Control {
+        self.control.into()
     }
 
     #[must_use]
-    pub const fn id(&self) -> I {
+    pub const fn id(&self) -> T {
         self.id
     }
 }

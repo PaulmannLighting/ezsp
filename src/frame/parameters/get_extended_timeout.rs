@@ -1,7 +1,7 @@
 use crate::ember::Eui64;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x007F;
+const ID: u16 = 0x007F;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

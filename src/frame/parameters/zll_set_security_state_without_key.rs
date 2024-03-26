@@ -2,7 +2,7 @@ use crate::ember::zll::InitialSecurityState;
 use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x00CF;
+const ID: u16 = 0x00CF;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

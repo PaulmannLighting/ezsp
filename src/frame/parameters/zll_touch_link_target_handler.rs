@@ -1,7 +1,7 @@
 use crate::ember::zll::Network;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x00BB;
+const ID: u16 = 0x00BB;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {

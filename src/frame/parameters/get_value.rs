@@ -3,7 +3,7 @@ use crate::ezsp::Status;
 use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x00AA;
+const ID: u16 = 0x00AA;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

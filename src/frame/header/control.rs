@@ -39,3 +39,27 @@ impl From<[u8; 2]> for Control {
         Self::new(low.into(), high.into())
     }
 }
+
+impl From<u8> for Control {
+    fn from(low: u8) -> Self {
+        Self::new(low.into(), 0.into())
+    }
+}
+
+impl From<u16> for Control {
+    fn from(bytes: u16) -> Self {
+        Self::from(bytes.to_le_bytes())
+    }
+}
+
+impl From<Control> for u8 {
+    fn from(control: Control) -> Self {
+        control.low.into()
+    }
+}
+
+impl From<Control> for u16 {
+    fn from(control: Control) -> Self {
+        u16::from_le_bytes(control.into())
+    }
+}

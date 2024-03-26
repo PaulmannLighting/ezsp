@@ -1,5 +1,5 @@
 use crate::frame::{Frame, Parameter};
-use crate::{Error, Header};
+use crate::{Control, Error, Header};
 use ashv2::{Event, HandleResult, Handler, Response};
 use le_stream::{FromLeBytes, ToLeBytes};
 use log::{debug, error, warn};
@@ -9,31 +9,27 @@ use std::pin::Pin;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::task::{Context, Poll, Waker};
 
-type ResultType<C, I, P> = Result<Frame<C, I, P>, Error>;
+type ResultType<R> = Result<Frame<R::Id>, Error>;
 
 #[derive(Clone, Debug)]
-pub struct ResponseHandler<C, I, P>
+pub struct ResponseHandler<R>
 where
-    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Display + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: Parameter<I> + FromLeBytes + ToLeBytes,
+    R: Parameter,
 {
     waker: Arc<Mutex<Option<Waker>>>,
     buffer: Arc<Mutex<Vec<u8>>>,
-    result: Arc<Mutex<Option<ResultType<C, I, P>>>>,
+    result: Arc<Mutex<Option<ResultType<R>>>>,
 }
 
-impl<C, I, P> ResponseHandler<C, I, P>
+impl<R> ResponseHandler<R>
 where
-    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Display + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: Parameter<I> + FromLeBytes + ToLeBytes,
+    R: Parameter,
 {
     #[must_use]
     pub const fn new(
         waker: Arc<Mutex<Option<Waker>>>,
         buffer: Arc<Mutex<Vec<u8>>>,
-        result: Arc<Mutex<Option<ResultType<C, I, P>>>>,
+        result: Arc<Mutex<Option<ResultType<R>>>>,
     ) -> Self {
         Self {
             waker,
@@ -52,7 +48,7 @@ where
 
         Self::parse_header(&mut bytes).map_or(
             HandleResult::Failed,
-            |header| match P::from_le_bytes(&mut bytes) {
+            |header| match R::from_le_bytes(&mut bytes) {
                 Ok(parameters) => {
                     self.replace_result(Ok(Frame::new(header, parameters)));
 
@@ -71,19 +67,19 @@ where
         )
     }
 
-    fn parse_header<B>(bytes: &mut B) -> Option<Header<C, I>>
+    fn parse_header<T>(bytes: &mut T) -> Option<Header<R::Id>>
     where
-        B: Iterator<Item = u8>,
+        T: Iterator<Item = u8>,
     {
-        let header = Header::<C, I>::from_le_bytes(bytes).ok()?;
+        let header = Header::from_le_bytes(bytes).ok()?;
 
-        if header.id() == P::ID {
+        if header.id() == R::ID {
             Some(header)
         } else {
             error!(
                 "Invalid frame id. Expected {}, but got {}.",
                 header.id(),
-                P::ID
+                R::ID
             );
             None
         }
@@ -101,13 +97,13 @@ where
         debug!("Releasing lock on buffer.");
     }
 
-    fn result(&self) -> MutexGuard<'_, Option<ResultType<C, I, P>>> {
+    fn result(&self) -> MutexGuard<'_, Option<ResultType<R>>> {
         self.result
             .lock()
             .expect("Result should never be poisoned.")
     }
 
-    fn replace_result(&self, result: ResultType<C, I, P>) {
+    fn replace_result(&self, result: ResultType<R>) {
         debug!("Locking result.");
         self.result().replace(result);
         debug!("Releasing lock on result.");
@@ -121,11 +117,9 @@ where
     }
 }
 
-impl<C, I, P> Default for ResponseHandler<C, I, P>
+impl<R> Default for ResponseHandler<R>
 where
-    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Display + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: Parameter<I> + FromLeBytes + ToLeBytes,
+    R: Parameter,
 {
     fn default() -> Self {
         Self::new(
@@ -136,13 +130,11 @@ where
     }
 }
 
-impl<C, I, P> Future for ResponseHandler<C, I, P>
+impl<R> Future for ResponseHandler<R>
 where
-    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Display + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: Parameter<I> + FromLeBytes + ToLeBytes,
+    R: Parameter,
 {
-    type Output = Result<P, Error>;
+    type Output = Result<R, Error>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         if let Ok(mut result) = self.result.lock() {
@@ -159,11 +151,9 @@ where
     }
 }
 
-impl<C, I, P> Handler<Arc<[u8]>> for ResponseHandler<C, I, P>
+impl<R> Handler<Arc<[u8]>> for ResponseHandler<R>
 where
-    C: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Display + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
-    P: Debug + Send + Sync + Parameter<I> + FromLeBytes + ToLeBytes,
+    R: Debug + Send + Sync + Parameter,
 {
     fn handle(&self, event: Event<Result<Arc<[u8]>, ashv2::Error>>) -> HandleResult {
         match event {
@@ -212,12 +202,10 @@ where
     }
 }
 
-impl<C, I, P> Response for ResponseHandler<C, I, P>
+impl<R> Response for ResponseHandler<R>
 where
-    C: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Display + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
-    P: Clone + Debug + Send + Sync + Parameter<I> + FromLeBytes + ToLeBytes,
+    R: Clone + Debug + Send + Sync + Parameter,
 {
-    type Result = P;
+    type Result = R;
     type Error = Error;
 }

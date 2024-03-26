@@ -1,7 +1,7 @@
 use crate::ember::zll::{DataToken, SecurityToken};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x00BC;
+const ID: u16 = 0x00BC;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command;

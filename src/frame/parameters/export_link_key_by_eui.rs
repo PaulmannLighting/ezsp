@@ -3,7 +3,7 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManKey};
 use siliconlabs::Status;
 
-pub const ID: u16 = 0x0110;
+const ID: u16 = 0x0110;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

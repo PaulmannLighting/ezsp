@@ -2,7 +2,7 @@ use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;
 
-pub const ID: u8 = 0x00;
+const ID: u8 = 0x00;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
@@ -21,6 +21,11 @@ impl Command {
     pub const fn desired_protocol_version(&self) -> u8 {
         self.desired_protocol_version
     }
+}
+
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID as u16;
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
@@ -56,10 +61,69 @@ impl Response {
     }
 }
 
-impl Parameter<u8> for Response {
-    const ID: u8 = ID;
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID as u16;
 }
 
-impl Parameter<u16> for Response {
-    const ID: u16 = ID as u16;
+#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct LegacyCommand {
+    desired_protocol_version: u8,
+}
+
+impl LegacyCommand {
+    #[must_use]
+    pub const fn new(desired_protocol_version: u8) -> Self {
+        Self {
+            desired_protocol_version,
+        }
+    }
+
+    #[must_use]
+    pub const fn desired_protocol_version(&self) -> u8 {
+        self.desired_protocol_version
+    }
+}
+
+impl Parameter for LegacyCommand {
+    type Id = u8;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+pub struct LegacyResponse {
+    protocol_version: u8,
+    stack_type: u8,
+    stack_version: u16,
+}
+
+impl LegacyResponse {
+    #[must_use]
+    pub const fn new(protocol_version: u8, stack_type: u8, stack_version: u16) -> Self {
+        Self {
+            protocol_version,
+            stack_type,
+            stack_version,
+        }
+    }
+
+    #[must_use]
+    pub const fn protocol_version(&self) -> u8 {
+        self.protocol_version
+    }
+
+    #[must_use]
+    pub const fn stack_type(&self) -> u8 {
+        self.stack_type
+    }
+
+    #[must_use]
+    pub const fn stack_version(&self) -> u16 {
+        self.stack_version
+    }
+}
+
+impl Parameter for LegacyResponse {
+    type Id = u8;
+    const ID: Self::Id = ID;
 }

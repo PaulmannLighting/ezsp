@@ -2,12 +2,17 @@ use crate::ember::NodeId;
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x0030;
+const ID: u16 = 0x0030;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
     index: u8,
     node_id: NodeId,
+}
+
+impl Parameter for Command {
+    type Id = u16;
+    const ID: u16 = ID;
 }
 
 impl Command {
@@ -30,6 +35,7 @@ impl Command {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response;
 
-impl Parameter<u16> for Response {
+impl Parameter for Response {
+    type Id = u16;
     const ID: u16 = ID;
 }

@@ -3,7 +3,7 @@ use crate::ember::join::Decision;
 use crate::ember::{Eui64, NodeId};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x0024;
+const ID: u16 = 0x0024;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {

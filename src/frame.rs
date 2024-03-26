@@ -8,24 +8,20 @@ pub use parameters::Parameter;
 use std::fmt::Debug;
 
 #[derive(Debug, FromLeBytes, ToLeBytes)]
-pub struct Frame<C, I, P>
+pub struct Frame<P>
 where
-    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: FromLeBytes + ToLeBytes,
+    P: Parameter,
 {
-    header: Header<C, I>,
+    header: Header<P::Id>,
     parameters: P,
 }
 
-impl<C, I, P> Frame<C, I, P>
+impl<P> Frame<P>
 where
-    C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: FromLeBytes + ToLeBytes,
+    P: Parameter,
 {
     #[must_use]
-    pub const fn new(header: Header<C, I>, parameters: P) -> Self {
+    pub const fn new(header: Header<P::Id>, parameters: P) -> Self {
         Self { header, parameters }
     }
     pub fn parameters(self) -> P {

@@ -1,7 +1,7 @@
 use crate::ember::gp::Address;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x00C0;
+const ID: u16 = 0x00C0;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

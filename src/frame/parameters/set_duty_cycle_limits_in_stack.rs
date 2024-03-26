@@ -2,7 +2,7 @@ use crate::ember::duty_cycle::Limits;
 use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x0040;
+const ID: u16 = 0x0040;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

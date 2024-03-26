@@ -3,7 +3,7 @@ use crate::ezsp::network::InitBitmask;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use num_traits::ToPrimitive;
 
-pub const ID: u16 = 0x0017;
+const ID: u16 = 0x0017;
 
 type Bitmask = heapless::Vec<InitBitmask, 2>;
 

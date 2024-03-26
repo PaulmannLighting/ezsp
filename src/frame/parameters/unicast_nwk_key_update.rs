@@ -2,7 +2,7 @@ use crate::ember::key::Data;
 use crate::ember::{Eui64, NodeId, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x00A9;
+const ID: u16 = 0x00A9;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

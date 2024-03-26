@@ -5,7 +5,7 @@ use crate::ember::Status;
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x006F;
+const ID: u16 = 0x006F;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
@@ -40,6 +40,11 @@ impl Command {
     }
 }
 
+impl Parameter for Command {
+    type Id = u16;
+    const ID: u16 = ID;
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
     status: u8,
@@ -65,6 +70,7 @@ impl Response {
     }
 }
 
-impl Parameter<u16> for Response {
+impl Parameter for Response {
+    type Id = u16;
     const ID: u16 = ID;
 }

@@ -4,7 +4,7 @@ use crate::ember::Status;
 use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x003F;
+const ID: u16 = 0x003F;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {

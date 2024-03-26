@@ -1,7 +1,7 @@
 use crate::ember::duty_cycle::State;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x004D;
+const ID: u16 = 0x004D;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {

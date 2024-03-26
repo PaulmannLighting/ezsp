@@ -2,7 +2,7 @@ use crate::ezsp::Status;
 use crate::ezsp::{decision, policy};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x0056;
+const ID: u16 = 0x0056;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

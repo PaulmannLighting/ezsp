@@ -2,7 +2,7 @@ use crate::ember::Status;
 use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x0051;
+const ID: u16 = 0x0051;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

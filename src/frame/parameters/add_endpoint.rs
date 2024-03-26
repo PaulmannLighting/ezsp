@@ -4,7 +4,7 @@ use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::{Error, FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x0002;
+const ID: u16 = 0x0002;
 const SIZE: usize = 1 + 2 + 2 + 1 + 2 * (2 * u8::MAX as usize);
 
 #[derive(Debug, Eq, PartialEq)]
@@ -152,6 +152,11 @@ impl ToLeBytes for Command {
     }
 }
 
+impl Parameter for Command {
+    type Id = u16;
+    const ID: u16 = ID;
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
     status: u8,
@@ -170,6 +175,7 @@ impl Response {
     }
 }
 
-impl Parameter<u16> for Response {
+impl Parameter for Response {
+    type Id = u16;
     const ID: u16 = ID;
 }

@@ -60,61 +60,31 @@ where
     pub fn start(&mut self, callback: Option<Sender<Arc<[u8]>>>) -> Result<(), ashv2::Error> {
         self.host.start(callback)
     }
-
-    async fn communicate<R>(&mut self, payload: &[u8]) -> Result<R, Error>
-    where
-        for<'r> R: Clone + Debug + FromLeBytes + ToLeBytes + Parameter<u16> + Send + Sync + 'r,
-    {
-        debug!("Sending payload: {payload:?}");
-        self.host
-            .communicate::<ResponseHandler<Control, u16, R>>(payload)
-            .await
-    }
-
-    async fn communicate_legacy<R>(&mut self, payload: &[u8]) -> Result<R, Error>
-    where
-        for<'r> R: Clone + Debug + FromLeBytes + ToLeBytes + Parameter<u8> + Send + Sync + 'r,
-    {
-        debug!("Sending legacy payload: {payload:?}");
-        self.host
-            .communicate::<ResponseHandler<u8, u8, R>>(payload)
-            .await
-    }
 }
 
 impl<S> Transport for Ashv2<S>
 where
     for<'s> S: SerialPort + 's,
 {
-    fn next_command<I, T>(&mut self, frame_id: I, parameters: T) -> Vec<u8>
+    fn next_header<R>(&mut self) -> Header<R::Id>
     where
-        I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-        T: ToLeBytes,
+        R: Parameter,
     {
-        let mut command = Vec::new();
-        let header = Header::new(self.sequence, self.control, frame_id);
+        let header = Header::new(self.sequence, self.control, R::ID);
         debug!("Header: {:?}", header.to_le_bytes().collect::<Vec<_>>());
-        command.extend(header.to_le_bytes());
         self.sequence = self.sequence.checked_add(1).unwrap_or(0);
-        command.extend(parameters.to_le_bytes());
-        command
+        header
     }
 
-    fn next_legacy_command<I, T>(&mut self, frame_id: I, parameters: T) -> Vec<u8>
+    async fn communicate<R>(&mut self, command: impl Parameter) -> Result<R, Error>
     where
-        I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-        T: ToLeBytes,
+        for<'r> R: Clone + Debug + Parameter + Send + Sync + 'r,
     {
-        let mut command = Vec::new();
-        let header = Header::new(self.sequence, self.control.low(), frame_id);
-        debug!(
-            "Legacy header: {:?}",
-            header.to_le_bytes().collect::<Vec<_>>()
-        );
-        command.extend(header.to_le_bytes());
-        self.sequence = self.sequence.checked_add(1).unwrap_or(0);
-        command.extend(parameters.to_le_bytes());
-        command
+        let mut payload = Vec::new();
+        payload.extend(self.next_header().to_le_bytes());
+        payload.extend(command.to_le_bytes());
+        debug!("Sending payload: {payload:?}");
+        self.host.communicate::<ResponseHandler<R>>(&payload).await
     }
 }
 
@@ -123,54 +93,44 @@ where
     for<'s> S: SerialPort + 's,
 {
     async fn clear_binding_table(&mut self) -> Result<(), Error> {
-        let command = self.next_command(clear_binding_table::ID, ());
-        self.communicate::<clear_binding_table::Response>(command.as_slice())
+        self.communicate::<clear_binding_table::Response>(clear_binding_table::Command::new())
             .await?
             .status()
             .resolve()
     }
 
     async fn set_binding(&mut self, index: u8, value: TableEntry) -> Result<(), Error> {
-        let command = self.next_command(set_binding::ID, set_binding::Command::new(index, value));
-        self.communicate::<set_binding::Response>(command.as_slice())
+        self.communicate::<set_binding::Response>(set_binding::Command::new(index, value))
             .await?
             .status()
             .resolve()
     }
 
     async fn get_binding(&mut self, index: u8) -> Result<TableEntry, Error> {
-        let command = self.next_command(get_binding::ID, get_binding::Command::new(index));
-        self.communicate::<get_binding::Response>(command.as_slice())
+        self.communicate::<get_binding::Response>(get_binding::Command::new(index))
             .await
             .and_then(|response| response.status().resolve().map(|_| response.value()))
     }
 
     async fn delete_binding(&mut self, index: u8) -> Result<(), Error> {
-        let command = self.next_command(delete_binding::ID, delete_binding::Command::new(index));
-        self.communicate::<delete_binding::Response>(command.as_slice())
+        self.communicate::<delete_binding::Response>(delete_binding::Command::new(index))
             .await?
             .status()
             .resolve()
     }
 
     async fn binding_is_active(&mut self, index: u8) -> Result<bool, Error> {
-        let command = self.next_command(
-            binding_is_active::ID,
-            binding_is_active::Command::new(index),
-        );
-        self.communicate::<binding_is_active::Response>(command.as_slice())
+        self.communicate::<binding_is_active::Response>(binding_is_active::Command::new(index))
             .await
             .map(|response| response.active())
     }
 
     async fn get_binding_remote_node_id(&mut self, index: u8) -> Result<NodeId, Error> {
-        let command = self.next_command(
-            get_binding_remote_node_id::ID,
+        self.communicate::<get_binding_remote_node_id::Response>(
             get_binding_remote_node_id::Command::new(index),
-        );
-        self.communicate::<get_binding_remote_node_id::Response>(command.as_slice())
-            .await
-            .map(|response| response.node_id())
+        )
+        .await
+        .map(|response| response.node_id())
     }
 
     async fn set_binding_remote_node_id(
@@ -178,13 +138,11 @@ where
         index: u8,
         node_id: NodeId,
     ) -> Result<(), Error> {
-        let command = self.next_command(
-            set_binding_remote_node_id::ID,
+        self.communicate::<set_binding_remote_node_id::Response>(
             set_binding_remote_node_id::Command::new(index, node_id),
-        );
-        self.communicate::<set_binding_remote_node_id::Response>(command.as_slice())
-            .await
-            .map(|_| ())
+        )
+        .await
+        .map(|_| ())
     }
 }
 
@@ -193,8 +151,7 @@ where
     for<'s> S: SerialPort + 's,
 {
     async fn aes_encrypt(&mut self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
-        let command = self.next_command(aes_encrypt::ID, aes_encrypt::Command::new(plaintext, key));
-        self.communicate::<aes_encrypt::Response>(command.as_slice())
+        self.communicate::<aes_encrypt::Response>(aes_encrypt::Command::new(plaintext, key))
             .await
             .map(|response| response.ciphertext())
     }
@@ -210,18 +167,14 @@ where
         partner_certificate: ember::CertificateData,
         partner_ephemeral_public_key: ember::PublicKeyData,
     ) -> Result<(), Error> {
-        let command = self.next_command(
-            calculate_smacs::ID,
-            calculate_smacs::Command::new(
-                am_initiator,
-                partner_certificate,
-                partner_ephemeral_public_key,
-            ),
-        );
-        self.communicate::<calculate_smacs::Response>(command.as_slice())
-            .await?
-            .status()
-            .resolve()
+        self.communicate::<calculate_smacs::Response>(calculate_smacs::Command::new(
+            am_initiator,
+            partner_certificate,
+            partner_ephemeral_public_key,
+        ))
+        .await?
+        .status()
+        .resolve()
     }
 }
 
@@ -230,11 +183,7 @@ where
     for<'s> S: SerialPort + 's,
 {
     async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
-        let command = self.next_command(
-            u16::from(version::ID),
-            version::Command::new(desired_protocol_version),
-        );
-        self.communicate::<version::Response>(command.as_slice())
+        self.communicate::<version::Response>(version::Command::new(desired_protocol_version))
             .await
     }
 
@@ -242,10 +191,10 @@ where
         &mut self,
         desired_protocol_version: u8,
     ) -> Result<version::Response, Error> {
-        let command =
-            self.next_legacy_command(version::ID, version::Command::new(desired_protocol_version));
-        self.communicate_legacy::<version::Response>(command.as_slice())
-            .await
+        self.communicate::<version::LegacyResponse>(version::LegacyCommand::new(
+            desired_protocol_version,
+        ))
+        .await
     }
 
     async fn get_configuration_value(&mut self, config_id: u8) -> Result<u16, Error> {
@@ -290,21 +239,17 @@ where
         input_clusters: ByteSizedVec<u16>,
         output_clusters: ByteSizedVec<u16>,
     ) -> Result<(), Error> {
-        let command = self.next_command(
-            add_endpoint::ID,
-            add_endpoint::Command::new(
-                endpoint,
-                profile_id,
-                device_id,
-                app_flags,
-                input_clusters,
-                output_clusters,
-            ),
-        );
-        self.communicate::<add_endpoint::Response>(command.as_slice())
-            .await?
-            .status()
-            .resolve()
+        self.communicate::<add_endpoint::Response>(add_endpoint::Command::new(
+            endpoint,
+            profile_id,
+            device_id,
+            app_flags,
+            input_clusters,
+            output_clusters,
+        ))
+        .await?
+        .status()
+        .resolve()
     }
 
     async fn set_policy(&mut self, policy_id: u8, decision_id: u8) -> Result<(), Error> {
@@ -352,13 +297,11 @@ where
         &mut self,
         address_table_index: u8,
     ) -> Result<bool, Error> {
-        let command = self.next_command(
-            address_table_entry_is_active::ID,
+        self.communicate::<address_table_entry_is_active::Response>(
             address_table_entry_is_active::Command::new(address_table_index),
-        );
-        self.communicate::<address_table_entry_is_active::Response>(command.as_slice())
-            .await
-            .map(|response| response.active())
+        )
+        .await
+        .map(|response| response.active())
     }
 }
 
@@ -367,22 +310,21 @@ where
     for<'s> S: SerialPort + 's,
 {
     async fn broadcast_next_network_key(&mut self, key: ember::key::Data) -> Result<(), Error> {
-        let command = self.next_command(
-            broadcast_next_network_key::ID,
+        self.communicate::<broadcast_next_network_key::Response>(
             broadcast_next_network_key::Command::new(key),
-        );
-        self.communicate::<broadcast_next_network_key::Response>(command.as_slice())
-            .await?
-            .status()
-            .resolve()
+        )
+        .await?
+        .status()
+        .resolve()
     }
 
     async fn broadcast_network_key_switch(&mut self) -> Result<(), Error> {
-        let command = self.next_command(broadcast_network_key_switch::ID, ());
-        self.communicate::<broadcast_network_key_switch::Response>(command.as_slice())
-            .await?
-            .status()
-            .resolve()
+        self.communicate::<broadcast_network_key_switch::Response>(
+            broadcast_network_key_switch::Command,
+        )
+        .await?
+        .status()
+        .resolve()
     }
 
     async fn aes_mmo_hash(
@@ -391,12 +333,10 @@ where
         finalize: bool,
         data: ByteSizedVec<u8>,
     ) -> Result<ember::aes::MmoHashContext, Error> {
-        let command = self.next_command(
-            aes_mmo_hash::ID,
-            aes_mmo_hash::Command::new(context, finalize, data),
-        );
         let result = self
-            .communicate::<aes_mmo_hash::Response>(command.as_slice())
+            .communicate::<aes_mmo_hash::Response>(aes_mmo_hash::Command::new(
+                context, finalize, data,
+            ))
             .await?;
         result.status().resolve().map(|()| result.return_context())
     }

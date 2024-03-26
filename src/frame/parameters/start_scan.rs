@@ -2,7 +2,7 @@ use crate::ezsp::network::scan::Type;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use siliconlabs::Status;
 
-pub const ID: u16 = 0x001A;
+const ID: u16 = 0x001A;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

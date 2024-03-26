@@ -1,7 +1,7 @@
 use crate::ember::{CertificateData, PrivateKeyData, PublicKeyData, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x00A2;
+const ID: u16 = 0x00A2;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

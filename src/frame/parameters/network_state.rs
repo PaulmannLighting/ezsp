@@ -1,7 +1,7 @@
 use crate::ezsp::network::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x0018;
+const ID: u16 = 0x0018;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command;

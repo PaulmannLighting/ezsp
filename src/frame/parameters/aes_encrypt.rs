@@ -1,7 +1,7 @@
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x0094;
+const ID: u16 = 0x0094;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {
@@ -26,6 +26,11 @@ impl Command {
     }
 }
 
+impl Parameter for Command {
+    type Id = u16;
+    const ID: u16 = ID;
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
     ciphertext: [u8; 16],
@@ -43,6 +48,7 @@ impl Response {
     }
 }
 
-impl Parameter<u16> for Response {
+impl Parameter for Response {
+    type Id = u16;
     const ID: u16 = ID;
 }

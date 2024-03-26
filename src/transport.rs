@@ -2,6 +2,8 @@
 mod ashv2;
 mod ezsp;
 
+use crate::frame::Parameter;
+use crate::{Error, Header};
 #[cfg(feature = "ashv2")]
 pub use ashv2::Ashv2;
 pub use ezsp::{
@@ -9,15 +11,14 @@ pub use ezsp::{
 };
 use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;
+use std::future::Future;
 
 pub trait Transport {
-    fn next_command<I, T>(&mut self, frame_id: I, parameters: T) -> Vec<u8>
+    fn next_header<R>(&mut self) -> Header<R::Id>
     where
-        I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-        T: ToLeBytes;
+        R: Parameter;
 
-    fn next_legacy_command<I, T>(&mut self, frame_id: I, parameters: T) -> Vec<u8>
+    fn communicate<R>(&mut self, command: impl Parameter) -> impl Future<Output = Result<R, Error>>
     where
-        I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-        T: ToLeBytes;
+        for<'r> R: Clone + Debug + Parameter + Send + Sync + 'r;
 }

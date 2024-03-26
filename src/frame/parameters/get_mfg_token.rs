@@ -2,7 +2,7 @@ use crate::ezsp::mfg_token::Id;
 use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-pub const ID: u16 = 0x000B;
+const ID: u16 = 0x000B;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Command {

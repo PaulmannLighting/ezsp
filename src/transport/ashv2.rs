@@ -96,7 +96,6 @@ where
         debug!("Header: {:?}", header.to_le_bytes().collect::<Vec<_>>());
         command.extend(header.to_le_bytes());
         self.sequence = self.sequence.checked_add(1).unwrap_or(0);
-        command.extend(frame_id.to_le_bytes());
         command.extend(parameters.to_le_bytes());
         command
     }
@@ -114,7 +113,6 @@ where
         );
         command.extend(header.to_le_bytes());
         self.sequence = self.sequence.checked_add(1).unwrap_or(0);
-        command.extend(frame_id.to_le_bytes());
         command.extend(parameters.to_le_bytes());
         command
     }

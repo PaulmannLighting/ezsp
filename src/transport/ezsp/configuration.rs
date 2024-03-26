@@ -7,28 +7,28 @@ use std::future::Future;
 
 pub trait Configuration: Transport {
     fn version(
-        &mut self,
+        &self,
         desired_protocol_version: u8,
     ) -> impl Future<Output = Result<version::Response, Error>> + Send;
 
     fn legacy_version(
-        &mut self,
+        &self,
         desired_protocol_version: u8,
     ) -> impl Future<Output = Result<version::Response, Error>> + Send;
 
     fn get_configuration_value(
-        &mut self,
+        &self,
         config_id: u8,
     ) -> impl Future<Output = Result<u16, Error>> + Send;
 
     fn set_configuration_value(
-        &mut self,
+        &self,
         config_id: u8,
         value: u16,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     fn read_attribute(
-        &mut self,
+        &self,
         endpoint: u8,
         cluster: u16,
         attribute_id: u16,
@@ -38,7 +38,7 @@ pub trait Configuration: Transport {
 
     #[allow(clippy::too_many_arguments)]
     fn write_attribute(
-        &mut self,
+        &self,
         endpoint: u8,
         cluster: u16,
         attribute_id: u16,
@@ -50,7 +50,7 @@ pub trait Configuration: Transport {
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     fn add_endpoint(
-        &mut self,
+        &self,
         endpoint: u8,
         profile_id: u16,
         device_id: u16,
@@ -59,40 +59,35 @@ pub trait Configuration: Transport {
         output_clusters: ByteSizedVec<u16>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
-    fn set_policy(
-        &mut self,
-        policy_id: u8,
-        decision_id: u8,
-    ) -> impl Future<Output = Result<(), Error>>;
-    fn get_policy(
-        &mut self,
-        policy_id: u8,
-    ) -> impl Future<Output = Result<decision::Id, Error>> + Send;
+    fn set_policy(&self, policy_id: u8, decision_id: u8)
+        -> impl Future<Output = Result<(), Error>>;
+    fn get_policy(&self, policy_id: u8)
+        -> impl Future<Output = Result<decision::Id, Error>> + Send;
 
     fn send_pan_id_update(
-        &mut self,
+        &self,
         new_pan: PanId,
     ) -> impl Future<Output = Result<bool, Error>> + Send;
 
     fn get_value(
-        &mut self,
+        &self,
         value_id: u8,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
 
     fn get_extended_value(
-        &mut self,
+        &self,
         value_id: u8,
         characteristics: u32,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
 
     fn set_value(
-        &mut self,
+        &self,
         value_id: u8,
         value: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     fn set_passive_ack_config(
-        &mut self,
+        &self,
         config: u8,
         min_acks_needed: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;

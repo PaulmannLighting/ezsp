@@ -4,14 +4,14 @@ use std::future::Future;
 
 pub trait TrustCenter: Transport {
     fn broadcast_next_network_key(
-        &mut self,
+        &self,
         key: ember::key::Data,
     ) -> impl Future<Output = Result<(), Error>>;
 
-    fn broadcast_network_key_switch(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
+    fn broadcast_network_key_switch(&self) -> impl Future<Output = Result<(), Error>> + Send;
 
     fn aes_mmo_hash(
-        &mut self,
+        &self,
         context: ember::aes::MmoHashContext,
         finalize: bool,
         data: ByteSizedVec<u8>,

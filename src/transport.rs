@@ -14,11 +14,11 @@ use std::fmt::Debug;
 use std::future::Future;
 
 pub trait Transport {
-    fn next_header<R>(&mut self) -> Header<R::Id>
+    fn next_header<R>(&self) -> Header<R::Id>
     where
         R: Parameter;
 
-    fn communicate<R>(&mut self, command: impl Parameter) -> impl Future<Output = Result<R, Error>>
+    fn communicate<R>(&self, command: impl Parameter) -> impl Future<Output = Result<R, Error>>
     where
         for<'r> R: Clone + Debug + Parameter + Send + Sync + 'r;
 }

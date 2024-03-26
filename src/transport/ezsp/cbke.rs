@@ -3,7 +3,7 @@ use std::future::Future;
 
 pub trait CertificateBasedKeyExchange: Transport {
     fn calculate_smacs(
-        &mut self,
+        &self,
         am_initiator: bool,
         partner_certificate: ember::CertificateData,
         partner_ephemeral_public_key: ember::PublicKeyData,

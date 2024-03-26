@@ -1,5 +1,5 @@
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;
 
 pub const ID: u8 = 0x00;
@@ -54,4 +54,12 @@ impl Response {
     pub const fn stack_version(&self) -> u16 {
         self.stack_version
     }
+}
+
+impl Parameter<u8> for Response {
+    const ID: u8 = ID;
+}
+
+impl Parameter<u16> for Response {
+    const ID: u16 = ID as u16;
 }

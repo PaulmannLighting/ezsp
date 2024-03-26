@@ -272,3 +272,7 @@ pub mod zll_set_rx_on_when_idle;
 pub mod zll_set_security_state_without_key;
 pub mod zll_start_scan;
 pub mod zll_touch_link_target_handler;
+
+pub trait Parameter<I> {
+    const ID: I;
+}

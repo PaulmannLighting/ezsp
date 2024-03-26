@@ -1,5 +1,5 @@
-use crate::frame::Frame;
-use crate::Error;
+use crate::frame::{Frame, Parameter};
+use crate::{Error, Header};
 use ashv2::{Event, HandleResult, Handler, Response};
 use le_stream::{FromLeBytes, ToLeBytes};
 use log::{debug, error, warn};
@@ -16,7 +16,7 @@ pub struct ResponseHandler<C, I, P>
 where
     C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
     I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: FromLeBytes + ToLeBytes,
+    P: Parameter<I> + FromLeBytes + ToLeBytes,
 {
     waker: Arc<Mutex<Option<Waker>>>,
     buffer: Arc<Mutex<Vec<u8>>>,
@@ -50,22 +50,43 @@ where
             byte
         });
 
-        Frame::from_le_bytes(&mut bytes).map_or_else(
-            |error| {
-                error!("Error: {error}");
-                self.replace_result(Err("Incomplete data".to_string().into()));
-                HandleResult::Continue
-            },
-            |frame| {
-                self.replace_result(Ok(frame));
+        match Self::parse_header(&mut bytes) {
+            Some(header) => match P::from_le_bytes(&mut bytes) {
+                Ok(parameters) => {
+                    self.replace_result(Ok(Frame::new(header, parameters)));
 
-                for byte in bytes {
-                    warn!("Found excess byte in response: {byte:?}");
+                    for byte in bytes {
+                        warn!("Found excess byte in response: {byte:?}");
+                    }
+
+                    HandleResult::Completed
                 }
-
-                HandleResult::Completed
+                Err(error) => {
+                    error!("Error: {error}");
+                    self.replace_result(Err("Incomplete data".to_string().into()));
+                    HandleResult::Continue
+                }
             },
-        )
+            None => HandleResult::Failed,
+        }
+    }
+
+    fn parse_header<B>(bytes: &mut B) -> Option<Header<C, I>>
+    where
+        B: Iterator<Item = u8>,
+    {
+        let header = Header::<C, I>::from_le_bytes(bytes).ok()?;
+
+        if header.id() == P::Id {
+            Some(header)
+        } else {
+            error!(
+                "Invalid frame id. Expected {}, but got {}.",
+                header.id(),
+                P::Id
+            );
+            None
+        }
     }
 
     fn buffer(&self) -> MutexGuard<'_, Vec<u8>> {

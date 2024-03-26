@@ -66,7 +66,7 @@ impl<S> Transport for Ashv2<S>
 where
     for<'s> S: SerialPort + 's,
 {
-    fn next_header<R>(&mut self) -> Header<R>
+    fn next_header<R>(&mut self) -> Header<R::Id>
     where
         R: Parameter,
     {
@@ -190,11 +190,12 @@ where
     async fn legacy_version(
         &mut self,
         desired_protocol_version: u8,
-    ) -> Result<version::LegacyResponse, Error> {
-        self.communicate::<version::LegacyResponse>(version::LegacyCommand::new(
-            desired_protocol_version,
+    ) -> Result<version::Response, Error> {
+        self.communicate::<version::LegacyResponse>(version::LegacyCommand::from(
+            version::Command::new(desired_protocol_version),
         ))
         .await
+        .map(Into::into)
     }
 
     async fn get_configuration_value(&mut self, config_id: u8) -> Result<u16, Error> {

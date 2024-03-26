@@ -14,7 +14,7 @@ pub trait Configuration: Transport {
     fn legacy_version(
         &mut self,
         desired_protocol_version: u8,
-    ) -> impl Future<Output = Result<version::LegacyResponse, Error>> + Send;
+    ) -> impl Future<Output = Result<version::Response, Error>> + Send;
 
     fn get_configuration_value(
         &mut self,

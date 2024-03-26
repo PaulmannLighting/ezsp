@@ -190,7 +190,7 @@ where
     async fn legacy_version(
         &mut self,
         desired_protocol_version: u8,
-    ) -> Result<version::Response, Error> {
+    ) -> Result<version::LegacyResponse, Error> {
         self.communicate::<version::LegacyResponse>(version::LegacyCommand::new(
             desired_protocol_version,
         ))

@@ -17,7 +17,7 @@ where
 
 impl<T> Header<T>
 where
-    T: Copy + Debug + Eq + Into<Control> + FromLeBytes + ToLeBytes,
+    T: Copy + Debug + Eq + From<Control> + Into<Control> + FromLeBytes + ToLeBytes,
 {
     #[must_use]
     pub const fn new(sequence: u8, control: T, id: T) -> Self {

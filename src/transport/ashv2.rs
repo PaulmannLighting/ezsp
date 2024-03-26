@@ -70,7 +70,7 @@ where
     where
         R: Parameter,
     {
-        let header = Header::new(self.sequence, self.control, R::ID);
+        let header = Header::new(self.sequence, self.control.into(), R::ID);
         debug!("Header: {:?}", header.to_le_bytes().collect::<Vec<_>>());
         self.sequence = self.sequence.checked_add(1).unwrap_or(0);
         header

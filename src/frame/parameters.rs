@@ -277,7 +277,16 @@ pub mod zll_set_security_state_without_key;
 pub mod zll_start_scan;
 pub mod zll_touch_link_target_handler;
 
-pub trait Parameter: FromLeBytes + ToLeBytes {
-    type Id: Copy + Debug + Display + Eq + Send + Sync + Into<Control> + FromLeBytes + ToLeBytes;
+pub trait Parameter: Send + Sync + FromLeBytes + ToLeBytes {
+    type Id: Copy
+        + Debug
+        + Display
+        + Eq
+        + Send
+        + Sync
+        + From<Control>
+        + Into<Control>
+        + FromLeBytes
+        + ToLeBytes;
     const ID: Self::Id;
 }

@@ -3,7 +3,7 @@ use crate::{Error, Header};
 use ashv2::{Event, HandleResult, Handler, Response};
 use le_stream::{FromLeBytes, ToLeBytes};
 use log::{debug, error, warn};
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex, MutexGuard};
@@ -15,7 +15,7 @@ type ResultType<C, I, P> = Result<Frame<C, I, P>, Error>;
 pub struct ResponseHandler<C, I, P>
 where
     C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    I: Copy + Debug + Display + Eq + PartialEq + FromLeBytes + ToLeBytes,
     P: Parameter<I> + FromLeBytes + ToLeBytes,
 {
     waker: Arc<Mutex<Option<Waker>>>,
@@ -26,8 +26,8 @@ where
 impl<C, I, P> ResponseHandler<C, I, P>
 where
     C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: FromLeBytes + ToLeBytes,
+    I: Copy + Debug + Display + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    P: Parameter<I> + FromLeBytes + ToLeBytes,
 {
     #[must_use]
     pub const fn new(
@@ -50,8 +50,9 @@ where
             byte
         });
 
-        match Self::parse_header(&mut bytes) {
-            Some(header) => match P::from_le_bytes(&mut bytes) {
+        Self::parse_header(&mut bytes).map_or(
+            HandleResult::Failed,
+            |header| match P::from_le_bytes(&mut bytes) {
                 Ok(parameters) => {
                     self.replace_result(Ok(Frame::new(header, parameters)));
 
@@ -67,8 +68,7 @@ where
                     HandleResult::Continue
                 }
             },
-            None => HandleResult::Failed,
-        }
+        )
     }
 
     fn parse_header<B>(bytes: &mut B) -> Option<Header<C, I>>
@@ -77,13 +77,13 @@ where
     {
         let header = Header::<C, I>::from_le_bytes(bytes).ok()?;
 
-        if header.id() == P::Id {
+        if header.id() == P::ID {
             Some(header)
         } else {
             error!(
                 "Invalid frame id. Expected {}, but got {}.",
                 header.id(),
-                P::Id
+                P::ID
             );
             None
         }
@@ -124,8 +124,8 @@ where
 impl<C, I, P> Default for ResponseHandler<C, I, P>
 where
     C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: FromLeBytes + ToLeBytes,
+    I: Copy + Debug + Display + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    P: Parameter<I> + FromLeBytes + ToLeBytes,
 {
     fn default() -> Self {
         Self::new(
@@ -139,8 +139,8 @@ where
 impl<C, I, P> Future for ResponseHandler<C, I, P>
 where
     C: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Eq + PartialEq + FromLeBytes + ToLeBytes,
-    P: FromLeBytes + ToLeBytes,
+    I: Copy + Debug + Display + Eq + PartialEq + FromLeBytes + ToLeBytes,
+    P: Parameter<I> + FromLeBytes + ToLeBytes,
 {
     type Output = Result<P, Error>;
 
@@ -162,8 +162,8 @@ where
 impl<C, I, P> Handler<Arc<[u8]>> for ResponseHandler<C, I, P>
 where
     C: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
-    P: Debug + Send + Sync + FromLeBytes + ToLeBytes,
+    I: Copy + Debug + Display + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
+    P: Debug + Send + Sync + Parameter<I> + FromLeBytes + ToLeBytes,
 {
     fn handle(&self, event: Event<Result<Arc<[u8]>, ashv2::Error>>) -> HandleResult {
         match event {
@@ -215,8 +215,8 @@ where
 impl<C, I, P> Response for ResponseHandler<C, I, P>
 where
     C: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
-    I: Copy + Debug + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
-    P: Clone + Debug + Send + Sync + FromLeBytes + ToLeBytes,
+    I: Copy + Debug + Display + Eq + PartialEq + Send + Sync + FromLeBytes + ToLeBytes,
+    P: Clone + Debug + Send + Sync + Parameter<I> + FromLeBytes + ToLeBytes,
 {
     type Result = P;
     type Error = Error;

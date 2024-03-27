@@ -151,11 +151,11 @@ where
     }
 }
 
-impl<R> Handler<Arc<[u8]>> for ResponseHandler<R>
+impl<R> Handler for ResponseHandler<R>
 where
     R: Debug + Send + Sync + Parameter,
 {
-    fn handle(&self, event: Event<Result<Arc<[u8]>, ashv2::Error>>) -> HandleResult {
+    fn handle(&self, event: Event) -> HandleResult {
         match event {
             Event::DataReceived(data) => match data {
                 Ok(bytes) => {

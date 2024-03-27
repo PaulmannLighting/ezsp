@@ -65,17 +65,6 @@ where
     {
         self.host.start(callback)
     }
-
-    /// Reset the ASHv2 host.
-    ///
-    /// # Errors
-    /// Returns an [`ashv2::Error`] if the host could not be reset.
-    pub async fn reset(&self) -> Result<(), ashv2::Error>
-    where
-        Self: 'static,
-    {
-        self.host.reset().await
-    }
 }
 
 impl<'a, S> Transport for Ashv2<'a, S>

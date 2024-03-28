@@ -25,7 +25,7 @@ use crate::transport::ashv2::response_handler::ResponseHandler;
 use crate::transport::ezsp::{
     Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Messaging, TrustCenter,
 };
-use crate::transport::{Ezsp, Transport};
+use crate::transport::Transport;
 use crate::types::ByteSizedVec;
 use crate::Error;
 
@@ -61,10 +61,7 @@ impl<'a> Ashv2<'a> {
     }
 }
 
-impl<'a> Transport for Ashv2<'a>
-where
-    Self: 'static,
-{
+impl<'a> Transport for Ashv2<'a> {
     fn next_header<R>(&self) -> Header<R::Id>
     where
         R: Parameter,

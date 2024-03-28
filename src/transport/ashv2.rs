@@ -33,44 +33,37 @@ mod response_handler;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
-pub struct Ashv2<'a, S>
-where
-    S: SerialPort + 'a,
-{
-    host: Host<'a, S>,
+pub struct Ashv2<'a> {
+    host: Host<'a>,
     sequence: AtomicU8,
     control: Control,
 }
 
-impl<'a, S> Ashv2<'a, S>
-where
-    S: SerialPort,
-{
-    #[must_use]
-    pub const fn new(host: Host<'a, S>, control: Control) -> Self {
-        Self {
-            host,
-            sequence: AtomicU8::new(0),
-            control,
-        }
-    }
-
-    /// Start the ASHv2 host.
+impl<'a> Ashv2<'a> {
+    /// Spawns an ASHv2 host.
     ///
     /// # Errors
-    /// Returns an [`ashv2::Error`] if the host could not be started.
-    pub fn start(&mut self, callback: Option<Sender<Arc<[u8]>>>) -> Result<(), ashv2::Error>
+    /// Returns an [`ashv2::Error`] if spawning fails.
+    pub fn spawn<S>(
+        serial_port: S,
+        control: Control,
+        callback: Option<Sender<Arc<[u8]>>>,
+    ) -> Result<Self, ashv2::Error>
     where
         Self: 'static,
+        S: SerialPort + 'a,
     {
-        self.host.start(callback)
+        Ok(Self {
+            host: Host::spawn(serial_port, callback)?,
+            sequence: AtomicU8::new(0),
+            control,
+        })
     }
 }
 
-impl<'a, S> Transport for Ashv2<'a, S>
+impl<'a> Transport for Ashv2<'a>
 where
     Self: 'static,
-    S: SerialPort,
 {
     fn next_header<R>(&self) -> Header<R::Id>
     where
@@ -96,10 +89,9 @@ where
     }
 }
 
-impl<S> Binding for Ashv2<'_, S>
+impl Binding for Ashv2<'_>
 where
     Self: 'static,
-    S: SerialPort,
 {
     async fn clear_binding_table(&self) -> Result<(), Error> {
         self.communicate::<clear_binding_table::Response>(clear_binding_table::Command)
@@ -151,10 +143,9 @@ where
     }
 }
 
-impl<S> Bootloader for Ashv2<'_, S>
+impl Bootloader for Ashv2<'_>
 where
     Self: 'static,
-    S: SerialPort,
 {
     async fn aes_encrypt(&self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
         self.communicate::<aes_encrypt::Response>(aes_encrypt::Command::new(plaintext, key))
@@ -163,10 +154,9 @@ where
     }
 }
 
-impl<S> CertificateBasedKeyExchange for Ashv2<'_, S>
+impl CertificateBasedKeyExchange for Ashv2<'_>
 where
     Self: 'static,
-    S: SerialPort,
 {
     async fn calculate_smacs(
         &self,
@@ -185,10 +175,9 @@ where
     }
 }
 
-impl<S> Configuration for Ashv2<'_, S>
+impl Configuration for Ashv2<'_>
 where
     Self: 'static,
-    S: SerialPort,
 {
     async fn version(&self, desired_protocol_version: u8) -> Result<version::Response, Error> {
         self.communicate::<version::Response>(version::Command::new(desired_protocol_version))
@@ -294,10 +283,9 @@ where
     }
 }
 
-impl<S> Messaging for Ashv2<'_, S>
+impl Messaging for Ashv2<'_>
 where
     Self: 'static,
-    S: SerialPort,
 {
     async fn address_table_entry_is_active(&self, address_table_index: u8) -> Result<bool, Error> {
         self.communicate::<address_table_entry_is_active::Response>(
@@ -308,10 +296,9 @@ where
     }
 }
 
-impl<S> TrustCenter for Ashv2<'_, S>
+impl TrustCenter for Ashv2<'_>
 where
     Self: 'static,
-    S: SerialPort,
 {
     async fn broadcast_next_network_key(&self, key: ember::key::Data) -> Result<(), Error> {
         self.communicate::<broadcast_next_network_key::Response>(

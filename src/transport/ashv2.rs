@@ -7,7 +7,7 @@ use std::sync::Arc;
 use ashv2::Host;
 use le_stream::ToLeBytes;
 use log::debug;
-use serialport::SerialPort;
+use serialport::{SerialPort, TTYPort};
 
 use crate::ember;
 use crate::ember::binding::TableEntry;
@@ -44,14 +44,13 @@ impl<'a> Ashv2<'a> {
     ///
     /// # Errors
     /// Returns an [`ashv2::Error`] if spawning fails.
-    pub fn spawn<S>(
-        serial_port: S,
+    pub fn spawn(
+        serial_port: TTYPort,
         control: Control,
         callback: Option<Sender<Arc<[u8]>>>,
     ) -> Result<Self, ashv2::Error>
     where
         Self: 'static,
-        S: SerialPort + 'a,
     {
         Ok(Self {
             host: Host::spawn(serial_port, callback)?,

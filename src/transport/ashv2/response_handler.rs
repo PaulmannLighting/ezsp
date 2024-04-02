@@ -160,7 +160,7 @@ where
             Event::DataReceived(data) => match data {
                 Ok(bytes) => {
                     if self.result_is_none() {
-                        self.extend_buffer(&bytes);
+                        self.extend_buffer(bytes);
                         self.try_parse()
                     } else {
                         HandleResult::Completed

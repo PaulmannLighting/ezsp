@@ -4,7 +4,7 @@ use std::sync::atomic::Ordering::SeqCst;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
 
-use ashv2::Host;
+use ashv2::{FrameBuffer, Host};
 use le_stream::ToLeBytes;
 use log::debug;
 use serialport::SerialPort;
@@ -47,7 +47,7 @@ impl<'a> Ashv2<'a> {
     pub fn spawn<S>(
         serial_port: S,
         control: Control,
-        callback: Option<Sender<Arc<[u8]>>>,
+        callback: Option<Sender<FrameBuffer>>,
     ) -> Result<Self, ashv2::Error>
     where
         Self: 'static,

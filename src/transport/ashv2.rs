@@ -33,13 +33,13 @@ mod response_handler;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
-pub struct Ashv2<'a> {
-    host: Host<'a>,
+pub struct Ashv2<'host> {
+    host: Host<'host>,
     sequence: AtomicU8,
     control: Control,
 }
 
-impl<'a> Ashv2<'a> {
+impl<'host> Ashv2<'host> {
     /// Spawns an ASHv2 host.
     ///
     /// # Errors
@@ -51,7 +51,7 @@ impl<'a> Ashv2<'a> {
     ) -> Result<Self, ashv2::Error>
     where
         Self: 'static,
-        S: SerialPort + 'a,
+        S: SerialPort + 'host,
     {
         Ok(Self {
             host: Host::spawn(serial_port, callback)?,
@@ -61,7 +61,7 @@ impl<'a> Ashv2<'a> {
     }
 }
 
-impl<'a> Transport for Ashv2<'a> {
+impl<'host> Transport for Ashv2<'host> {
     fn next_header<R>(&self) -> Header<R::Id>
     where
         R: Parameter,
@@ -76,7 +76,7 @@ impl<'a> Transport for Ashv2<'a> {
 
     async fn communicate<R>(&self, command: impl Parameter) -> Result<R, Error>
     where
-        R: Clone + Debug + Parameter + Send + Sync + 'a,
+        R: Clone + Debug + Parameter + Send + Sync + 'host,
     {
         let mut payload = Vec::new();
         payload.extend(self.next_header::<R>().to_le_bytes());

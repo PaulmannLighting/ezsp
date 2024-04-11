@@ -290,3 +290,12 @@ pub trait Parameter: Send + Sync + FromLeBytes + ToLeBytes {
         + ToLeBytes;
     const ID: Self::Id;
 }
+
+/// Possible callback responses, which are called "handler"s according to the EZSP documentation.
+#[allow(clippy::large_enum_variant)]
+pub enum Handler {
+    BootloadTransmitComplete(bootload_transmit_complete_handler::Response),
+    CalculateSmacs(calculate_smacs_handler::Response),
+    CalculateSmacs283k1(calculate_smacs283k1::Response),
+    // TODO: implement all.
+}

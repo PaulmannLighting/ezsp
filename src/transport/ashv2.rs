@@ -348,7 +348,10 @@ where
     }
 }
 
-impl Networking for Ashv2<'_> {
+impl Networking for Ashv2<'_>
+where
+    Self: 'static,
+{
     async fn child_id(&self, child_index: u8) -> Result<NodeId, Error> {
         self.communicate::<child_id::Response>(child_id::Command::new(child_index))
             .await

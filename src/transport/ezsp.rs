@@ -3,6 +3,7 @@ mod bootloader;
 mod cbke;
 mod configuration;
 mod messaging;
+mod networking;
 mod trust_center;
 
 use crate::frame::parameters::version;
@@ -13,6 +14,7 @@ pub use crate::transport::ezsp::messaging::Messaging;
 pub use crate::transport::ezsp::trust_center::TrustCenter;
 use crate::Error;
 pub use configuration::Configuration;
+pub use networking::Networking;
 use std::future::Future;
 
 const MIN_NON_LEGACY_VERSION: u8 = 8;
@@ -33,6 +35,7 @@ where
         + CertificateBasedKeyExchange
         + Configuration
         + Messaging
+        + Networking
         + TrustCenter
         + Send,
 {

@@ -24,7 +24,8 @@ use crate::frame::parameters::{
 use crate::frame::{Control, Header, Parameter};
 use crate::transport::ashv2::response_handler::ResponseHandler;
 use crate::transport::ezsp::{
-    Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Messaging, TrustCenter,
+    Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Messaging, Networking,
+    TrustCenter,
 };
 use crate::transport::Transport;
 use crate::types::ByteSizedVec;
@@ -344,5 +345,11 @@ where
             ))
             .await?;
         result.status().resolve().map(|()| result.return_context())
+    }
+}
+
+impl Networking for Ashv2<'_> {
+    async fn child_id(&self, child_index: u8) -> Result<NodeId, Error> {
+        todo!()
     }
 }

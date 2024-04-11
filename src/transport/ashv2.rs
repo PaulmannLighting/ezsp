@@ -18,7 +18,7 @@ use crate::ezsp::decision;
 use crate::frame::parameters::{
     add_endpoint, address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
     broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs,
-    calculate_smacs283k1, clear_binding_table, delete_binding, get_binding,
+    calculate_smacs283k1, child_id, clear_binding_table, delete_binding, get_binding,
     get_binding_remote_node_id, read_attribute, set_binding, set_binding_remote_node_id, version,
 };
 use crate::frame::{Control, Header, Parameter};
@@ -350,6 +350,8 @@ where
 
 impl Networking for Ashv2<'_> {
     async fn child_id(&self, child_index: u8) -> Result<NodeId, Error> {
-        todo!()
+        self.communicate::<child_id::Response>(child_id::Command::new(child_index))
+            .await
+            .map(|response| response.child_id())
     }
 }

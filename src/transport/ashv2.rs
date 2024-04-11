@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::future::Future;
 use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::SeqCst;
 use std::sync::mpsc::Sender;
@@ -11,14 +12,14 @@ use serialport::SerialPort;
 
 use crate::ember;
 use crate::ember::binding::TableEntry;
-use crate::ember::{NodeId, PanId};
+use crate::ember::{Certificate283k1Data, NodeId, PanId, PublicKey283k1Data};
 use crate::error::Resolve;
 use crate::ezsp::decision;
 use crate::frame::parameters::{
     add_endpoint, address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
-    broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs, clear_binding_table,
-    delete_binding, get_binding, get_binding_remote_node_id, read_attribute, set_binding,
-    set_binding_remote_node_id, version,
+    broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs,
+    calculate_smacs283k1, clear_binding_table, delete_binding, get_binding,
+    get_binding_remote_node_id, read_attribute, set_binding, set_binding_remote_node_id, version,
 };
 use crate::frame::{Control, Header, Parameter};
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -162,6 +163,22 @@ where
         partner_ephemeral_public_key: ember::PublicKeyData,
     ) -> Result<(), Error> {
         self.communicate::<calculate_smacs::Response>(calculate_smacs::Command::new(
+            am_initiator,
+            partner_certificate,
+            partner_ephemeral_public_key,
+        ))
+        .await?
+        .status()
+        .resolve()
+    }
+
+    async fn calculate_smacs283k1(
+        &self,
+        am_initiator: bool,
+        partner_certificate: Certificate283k1Data,
+        partner_ephemeral_public_key: PublicKey283k1Data,
+    ) -> Result<(), Error> {
+        self.communicate::<calculate_smacs283k1::Response>(calculate_smacs283k1::Command::new(
             am_initiator,
             partner_certificate,
             partner_ephemeral_public_key,

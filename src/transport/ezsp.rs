@@ -7,15 +7,15 @@ mod networking;
 mod trust_center;
 
 use crate::frame::parameters::version;
-pub use crate::transport::ezsp::binding::Binding;
-pub use crate::transport::ezsp::bootloader::Bootloader;
-pub use crate::transport::ezsp::cbke::CertificateBasedKeyExchange;
-pub use crate::transport::ezsp::messaging::Messaging;
-pub use crate::transport::ezsp::trust_center::TrustCenter;
 use crate::Error;
+pub use binding::Binding;
+pub use bootloader::Bootloader;
+pub use cbke::CertificateBasedKeyExchange;
 pub use configuration::Configuration;
+pub use messaging::Messaging;
 pub use networking::Networking;
 use std::future::Future;
+pub use trust_center::TrustCenter;
 
 const MIN_NON_LEGACY_VERSION: u8 = 8;
 

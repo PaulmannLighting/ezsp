@@ -137,7 +137,7 @@ where
             set_binding_remote_node_id::Command::new(index, node_id),
         )
         .await
-        .map(|_| ())
+        .map(drop)
     }
 }
 

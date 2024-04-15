@@ -3,6 +3,11 @@ use crate::{ember, Error, Transport};
 use std::future::Future;
 
 pub trait CertificateBasedKeyExchange: Transport {
+    /// Calculates the SMAC verification keys for both the initiator and responder roles of
+    /// CBKE using the passed parameters and the stored public/private key pair previously
+    /// generated with ezspGenerateKeysRetrieveCert().
+    /// It also stores the unverified link key data in temporary storage on the NCP until the key
+    /// establishment is complete.
     fn calculate_smacs(
         &self,
         am_initiator: bool,
@@ -10,6 +15,11 @@ pub trait CertificateBasedKeyExchange: Transport {
         partner_ephemeral_public_key: ember::PublicKeyData,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
+    /// Calculates the SMAC verification keys for both the initiator and responder roles of
+    /// CBKE for the 283k1 ECC curve using the passed parameters and the stored public/private
+    /// key pair previously generated with ezspGenerateKeysRetrieveCert283k1().
+    /// It also stores the unverified link key data in temporary storage on the NCP until the
+    /// key establishment is complete.
     fn calculate_smacs283k1(
         &self,
         am_initiator: bool,

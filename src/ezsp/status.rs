@@ -2,6 +2,7 @@ mod ash;
 mod error;
 mod spi_err;
 
+use crate::error::Resolve;
 pub use ash::Ash;
 pub use error::Error;
 use num_traits::{FromPrimitive, ToPrimitive};
@@ -77,6 +78,15 @@ impl FromPrimitive for Status {
 
     fn from_u64(n: u64) -> Option<Self> {
         u8::try_from(n).ok().and_then(Self::from_u8)
+    }
+}
+
+impl Resolve for Result<Status, u8> {
+    fn resolve(self) -> Result<(), crate::Error> {
+        match self {
+            Ok(status) => status.ok().map_err(crate::Error::Ezsp),
+            Err(status) => Err(crate::Error::InvalidEzspStatus(status)),
+        }
     }
 }
 

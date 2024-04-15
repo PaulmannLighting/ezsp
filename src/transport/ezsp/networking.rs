@@ -1,7 +1,7 @@
 use std::future::Future;
 
-use crate::{Error, Transport};
 use crate::ember::NodeId;
+use crate::{Error, Transport};
 
 /// Networking frames.
 pub trait Networking: Transport {

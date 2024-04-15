@@ -17,6 +17,10 @@ pub trait CertificateBasedKeyExchange: Transport {
         partner_ephemeral_public_key: PublicKey283k1Data,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
+    /// Clears the temporary data associated with CBKE and the key establishment,
+    /// most notably the ephemeral public/private key pair.
+    /// If storeLinKey is true it moves the unverified link key stored in temporary storage
+    /// into the link key table. Otherwise it discards the key.
     fn clear_temporary_data_maybe_store_link_key(
         &self,
         store_link_key: bool,

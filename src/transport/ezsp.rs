@@ -9,8 +9,8 @@ pub use networking::Networking;
 pub use security::Security;
 pub use trust_center::TrustCenter;
 
-use crate::Error;
 use crate::frame::parameters::version;
+use crate::Error;
 
 mod binding;
 mod bootloader;

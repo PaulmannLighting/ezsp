@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::future::Future;
 use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::SeqCst;
 use std::sync::mpsc::Sender;
@@ -18,8 +19,8 @@ use crate::frame::{Control, Header, Parameter};
 use crate::frame::parameters::{
     add_endpoint, address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
     broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs,
-    calculate_smacs283k1, child_id, clear_binding_table, clear_key_table, delete_binding,
-    get_binding, get_binding_remote_node_id, read_attribute, set_binding,
+    calculate_smacs283k1, child_id, clear_binding_table, clear_key_table, clear_stored_beacons,
+    delete_binding, get_binding, get_binding_remote_node_id, read_attribute, set_binding,
     set_binding_remote_node_id, version,
 };
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -318,6 +319,12 @@ where
         self.communicate::<child_id::Response>(child_id::Command::new(child_index))
             .await
             .map(|response| response.child_id())
+    }
+
+    async fn clear_stored_beacons(&self) -> Result<(), Error> {
+        self.communicate::<clear_stored_beacons::Response>(clear_stored_beacons::Command)
+            .await
+            .map(drop)
     }
 }
 

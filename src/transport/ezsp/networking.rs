@@ -5,6 +5,7 @@ use crate::{Error, Transport};
 
 /// Networking frames.
 pub trait Networking: Transport {
+    /// Convert a child index to a node ID.
     fn child_id(&self, child_index: u8) -> impl Future<Output = Result<NodeId, Error>> + Send;
 
     /// Clears all cached beacons that have been collected from a scan.

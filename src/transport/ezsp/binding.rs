@@ -1,4 +1,4 @@
-use crate::ember::binding::{TableEntry, Type};
+use crate::ember::binding::TableEntry;
 use crate::ember::NodeId;
 use crate::{Error, Transport};
 use std::future::Future;
@@ -23,7 +23,7 @@ pub trait Binding: Transport {
     /// Indicates whether any messages are currently being sent using this binding table entry.
     /// Note that this command does not indicate whether a binding is clear.
     /// To determine whether a binding is clear, check whether the type field of the
-    /// [`TableEntry`] has the value [`Type::Unused`].
+    /// [`TableEntry`] has the value [`crate::ember::binding::Type::Unused`].
     fn binding_is_active(&self, index: u8) -> impl Future<Output = Result<bool, Error>> + Send;
 
     /// Returns the node ID for the binding's destination, if the ID is known.

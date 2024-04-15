@@ -16,4 +16,9 @@ pub trait CertificateBasedKeyExchange: Transport {
         partner_certificate: Certificate283k1Data,
         partner_ephemeral_public_key: PublicKey283k1Data,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    fn clear_temporary_data_maybe_store_link_key(
+        &self,
+        store_link_key: bool,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }

@@ -1,9 +1,7 @@
 use std::fmt::Debug;
-use std::future::Future;
 use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::SeqCst;
 use std::sync::mpsc::Sender;
-use std::sync::Arc;
 
 use ashv2::{FrameBuffer, Host};
 use le_stream::ToLeBytes;
@@ -11,25 +9,26 @@ use log::debug;
 use serialport::SerialPort;
 
 use crate::ember;
-use crate::ember::binding::TableEntry;
 use crate::ember::{Certificate283k1Data, NodeId, PanId, PublicKey283k1Data};
+use crate::ember::binding::TableEntry;
+use crate::Error;
 use crate::error::Resolve;
 use crate::ezsp::decision;
+use crate::frame::{Control, Header, Parameter};
 use crate::frame::parameters::{
     add_endpoint, address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
     broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs,
-    calculate_smacs283k1, child_id, clear_binding_table, delete_binding, get_binding,
-    get_binding_remote_node_id, read_attribute, set_binding, set_binding_remote_node_id, version,
+    calculate_smacs283k1, child_id, clear_binding_table, clear_key_table, delete_binding,
+    get_binding, get_binding_remote_node_id, read_attribute, set_binding,
+    set_binding_remote_node_id, version,
 };
-use crate::frame::{Control, Header, Parameter};
 use crate::transport::ashv2::response_handler::ResponseHandler;
 use crate::transport::ezsp::{
     Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Messaging, Networking,
-    TrustCenter,
+    Security, TrustCenter,
 };
 use crate::transport::Transport;
 use crate::types::ByteSizedVec;
-use crate::Error;
 
 mod response_handler;
 
@@ -311,6 +310,29 @@ where
     }
 }
 
+impl Networking for Ashv2<'_>
+where
+    Self: 'static,
+{
+    async fn child_id(&self, child_index: u8) -> Result<NodeId, Error> {
+        self.communicate::<child_id::Response>(child_id::Command::new(child_index))
+            .await
+            .map(|response| response.child_id())
+    }
+}
+
+impl Security for Ashv2<'_>
+where
+    Self: 'static,
+{
+    async fn clear_key_table(&self) -> Result<(), Error> {
+        self.communicate::<clear_key_table::Response>(clear_key_table::Command)
+            .await?
+            .status()
+            .resolve()
+    }
+}
+
 impl TrustCenter for Ashv2<'_>
 where
     Self: 'static,
@@ -345,16 +367,5 @@ where
             ))
             .await?;
         result.status().resolve().map(|()| result.return_context())
-    }
-}
-
-impl Networking for Ashv2<'_>
-where
-    Self: 'static,
-{
-    async fn child_id(&self, child_index: u8) -> Result<NodeId, Error> {
-        self.communicate::<child_id::Response>(child_id::Command::new(child_index))
-            .await
-            .map(|response| response.child_id())
     }
 }

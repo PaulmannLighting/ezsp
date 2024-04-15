@@ -1,26 +1,36 @@
-mod binding;
-mod bootloader;
-mod cbke;
-mod configuration;
-mod messaging;
-mod networking;
-mod trust_center;
+use std::future::Future;
 
-use crate::frame::parameters::version;
-use crate::Error;
 pub use binding::Binding;
 pub use bootloader::Bootloader;
 pub use cbke::CertificateBasedKeyExchange;
 pub use configuration::Configuration;
 pub use messaging::Messaging;
 pub use networking::Networking;
-use std::future::Future;
+pub use security::Security;
 pub use trust_center::TrustCenter;
+
+use crate::Error;
+use crate::frame::parameters::version;
+
+mod binding;
+mod bootloader;
+mod cbke;
+mod configuration;
+mod messaging;
+mod networking;
+mod security;
+mod trust_center;
 
 const MIN_NON_LEGACY_VERSION: u8 = 8;
 
 pub trait Ezsp:
-    Binding + Bootloader + CertificateBasedKeyExchange + Configuration + Messaging + TrustCenter
+    Binding
+    + Bootloader
+    + CertificateBasedKeyExchange
+    + Configuration
+    + Messaging
+    + Security
+    + TrustCenter
 {
     fn negotiate_version(
         &mut self,
@@ -36,6 +46,7 @@ where
         + Configuration
         + Messaging
         + Networking
+        + Security
         + TrustCenter
         + Send,
 {

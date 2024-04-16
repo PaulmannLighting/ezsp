@@ -9,7 +9,7 @@ use std::pin::Pin;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::task::{Context, Poll, Waker};
 
-type ResultType<R: Parameter> = Result<Frame<R>, Error>;
+type ResultType<R> = Result<Frame<R>, Error>;
 
 #[derive(Clone, Debug)]
 pub struct ResponseHandler<R>

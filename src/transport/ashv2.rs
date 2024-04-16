@@ -20,7 +20,7 @@ use crate::frame::parameters::{
     broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs,
     calculate_smacs283k1, child_id, clear_binding_table, clear_key_table, clear_stored_beacons,
     clear_temporary_data_maybe_store_link_key, clear_temporary_data_maybe_store_link_key283k1,
-    clear_transient_link_keys, custom_frame, d_gp_send, delete_binding, get_binding,
+    clear_transient_link_keys, custom_frame, d_gp_send, debug_write, delete_binding, get_binding,
     get_binding_remote_node_id, read_attribute, set_binding, set_binding_remote_node_id, version,
 };
 use crate::frame::{Control, Header, Parameter};
@@ -445,5 +445,19 @@ where
         self.communicate::<custom_frame::Response>(custom_frame::Command::new(payload))
             .await?
             .into()
+    }
+
+    async fn debug_write(
+        &self,
+        binary_message: bool,
+        message: ByteSizedVec<u8>,
+    ) -> Result<(), Error> {
+        self.communicate::<debug_write::Response>(debug_write::Command::new(
+            binary_message,
+            message,
+        ))
+        .await?
+        .status()
+        .resolve()
     }
 }

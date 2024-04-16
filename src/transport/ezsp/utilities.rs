@@ -10,4 +10,11 @@ pub trait Utilities: Transport {
         &self,
         payload: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
+
+    /// Sends a debug message from the Host to the Network Analyzer utility via the NCP.
+    fn debug_write(
+        &self,
+        binary_message: bool,
+        message: ByteSizedVec<u8>,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }

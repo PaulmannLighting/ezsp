@@ -4,6 +4,7 @@ pub use binding::Binding;
 pub use bootloader::Bootloader;
 pub use cbke::CertificateBasedKeyExchange;
 pub use configuration::Configuration;
+pub use green_power::GreenPower;
 pub use messaging::Messaging;
 pub use networking::Networking;
 pub use security::Security;
@@ -17,6 +18,7 @@ mod binding;
 mod bootloader;
 mod cbke;
 mod configuration;
+mod green_power;
 mod messaging;
 mod networking;
 mod security;
@@ -30,6 +32,7 @@ pub trait Ezsp:
     + Bootloader
     + CertificateBasedKeyExchange
     + Configuration
+    + GreenPower
     + Messaging
     + Security
     + TrustCenter
@@ -47,6 +50,7 @@ where
         + Bootloader
         + CertificateBasedKeyExchange
         + Configuration
+        + GreenPower
         + Messaging
         + Networking
         + Security

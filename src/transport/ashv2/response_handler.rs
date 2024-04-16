@@ -40,6 +40,7 @@ where
 
     #[allow(clippy::significant_drop_tightening)]
     fn try_parse(&self) -> HandleResult {
+        // TODO: handle possible "invalid_command::Response"
         let buffer = self.buffer();
         let mut bytes = buffer.iter().copied().enumerate().map(|(index, byte)| {
             debug!("Byte #{index}: {byte:?}");

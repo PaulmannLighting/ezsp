@@ -2,6 +2,7 @@ use std::fmt::Debug;
 use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::SeqCst;
 use std::sync::mpsc::Sender;
+use std::time::Duration;
 
 use ashv2::{FrameBuffer, Host};
 use le_stream::ToLeBytes;
@@ -335,7 +336,7 @@ where
         gpd_command_id: u8,
         gpd_asdu: ByteSizedVec<u8>,
         gpep_handle: u8,
-        gp_tx_queue_entry_lifetime_ms: u16,
+        gp_tx_queue_entry_lifetime: Duration,
     ) -> Result<(), Error> {
         self.communicate::<d_gp_send::Response>(d_gp_send::Command::new(
             action,
@@ -344,8 +345,8 @@ where
             gpd_command_id,
             gpd_asdu,
             gpep_handle,
-            gp_tx_queue_entry_lifetime_ms,
-        ))
+            gp_tx_queue_entry_lifetime,
+        )?)
         .await?
         .status()
         .resolve()

@@ -2,6 +2,7 @@ use crate::ember::gp::Address;
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 use std::future::Future;
+use std::time::Duration;
 
 pub trait GreenPower: Transport {
     #[allow(clippy::too_many_arguments)]
@@ -13,6 +14,6 @@ pub trait GreenPower: Transport {
         gpd_command_id: u8,
         gpd_asdu: ByteSizedVec<u8>,
         gpep_handle: u8,
-        gp_tx_queue_entry_lifetime_ms: u16,
+        gp_tx_queue_entry_lifetime: Duration,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }

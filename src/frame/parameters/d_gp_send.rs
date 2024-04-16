@@ -3,6 +3,8 @@ use crate::ember::Status;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+use std::num::TryFromIntError;
+use std::time::Duration;
 
 const ID: u16 = 0x00C6;
 
@@ -18,25 +20,24 @@ pub struct Command {
 }
 
 impl Command {
-    #[must_use]
-    pub const fn new(
+    pub fn new(
         action: bool,
         use_cca: bool,
         addr: Address,
         gpd_command_id: u8,
         gpd_asdu: ByteSizedVec<u8>,
         gpep_handle: u8,
-        gp_tx_queue_entry_lifetime_ms: u16,
-    ) -> Self {
-        Self {
+        gp_tx_queue_entry_lifetime: Duration,
+    ) -> Result<Self, TryFromIntError> {
+        Ok(Self {
             action,
             use_cca,
             addr,
             gpd_command_id,
             gpd_asdu,
             gpep_handle,
-            gp_tx_queue_entry_lifetime_ms,
-        }
+            gp_tx_queue_entry_lifetime_ms: gp_tx_queue_entry_lifetime.as_millis().try_into()?,
+        })
     }
 
     #[must_use]
@@ -70,8 +71,8 @@ impl Command {
     }
 
     #[must_use]
-    pub const fn gp_tx_queue_entry_lifetime_ms(&self) -> u16 {
-        self.gp_tx_queue_entry_lifetime_ms
+    pub fn gp_tx_queue_entry_lifetime(&self) -> Duration {
+        Duration::from_millis(self.gp_tx_queue_entry_lifetime_ms.into())
     }
 }
 

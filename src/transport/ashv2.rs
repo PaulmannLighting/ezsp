@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-use std::future::Future;
 use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::SeqCst;
 use std::sync::mpsc::Sender;
@@ -11,6 +10,7 @@ use serialport::SerialPort;
 
 use crate::ember;
 use crate::ember::binding::TableEntry;
+use crate::ember::gp::Address;
 use crate::ember::{Certificate283k1Data, NodeId, PanId, PublicKey283k1Data};
 use crate::error::Resolve;
 use crate::ezsp::decision;
@@ -19,14 +19,14 @@ use crate::frame::parameters::{
     broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs,
     calculate_smacs283k1, child_id, clear_binding_table, clear_key_table, clear_stored_beacons,
     clear_temporary_data_maybe_store_link_key, clear_temporary_data_maybe_store_link_key283k1,
-    clear_transient_link_keys, custom_frame, delete_binding, get_binding,
+    clear_transient_link_keys, custom_frame, d_gp_send, delete_binding, get_binding,
     get_binding_remote_node_id, read_attribute, set_binding, set_binding_remote_node_id, version,
 };
 use crate::frame::{Control, Header, Parameter};
 use crate::transport::ashv2::response_handler::ResponseHandler;
 use crate::transport::ezsp::{
-    Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Messaging, Networking,
-    Security, TrustCenter, Utilities,
+    Binding, Bootloader, CertificateBasedKeyExchange, Configuration, GreenPower, Messaging,
+    Networking, Security, TrustCenter, Utilities,
 };
 use crate::transport::Transport;
 use crate::types::ByteSizedVec;
@@ -320,6 +320,35 @@ where
 
     async fn set_passive_ack_config(&self, config: u8, min_acks_needed: u8) -> Result<(), Error> {
         todo!()
+    }
+}
+
+impl GreenPower for Ashv2<'_>
+where
+    Self: 'static,
+{
+    async fn d_gp_send(
+        &self,
+        action: bool,
+        use_cca: bool,
+        addr: Address,
+        gpd_command_id: u8,
+        gpd_asdu: ByteSizedVec<u8>,
+        gpep_handle: u8,
+        gp_tx_queue_entry_lifetime_ms: u16,
+    ) -> Result<(), Error> {
+        self.communicate::<d_gp_send::Response>(d_gp_send::Command::new(
+            action,
+            use_cca,
+            addr,
+            gpd_command_id,
+            gpd_asdu,
+            gpep_handle,
+            gp_tx_queue_entry_lifetime_ms,
+        ))
+        .await?
+        .status()
+        .resolve()
     }
 }
 

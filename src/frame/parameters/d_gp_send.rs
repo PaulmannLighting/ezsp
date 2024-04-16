@@ -1,9 +1,9 @@
 use crate::ember::gp::Address;
 use crate::ember::Status;
+use crate::error::value::Error;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use std::num::TryFromIntError;
 use std::time::Duration;
 
 const ID: u16 = 0x00C6;
@@ -28,7 +28,7 @@ impl Command {
         gpd_asdu: ByteSizedVec<u8>,
         gpep_handle: u8,
         gp_tx_queue_entry_lifetime: Duration,
-    ) -> Result<Self, TryFromIntError> {
+    ) -> Result<Self, Error> {
         Ok(Self {
             action,
             use_cca,
@@ -36,7 +36,10 @@ impl Command {
             gpd_command_id,
             gpd_asdu,
             gpep_handle,
-            gp_tx_queue_entry_lifetime_ms: gp_tx_queue_entry_lifetime.as_millis().try_into()?,
+            gp_tx_queue_entry_lifetime_ms: gp_tx_queue_entry_lifetime
+                .as_millis()
+                .try_into()
+                .map_err(|_| Error::DurationTooLarge(gp_tx_queue_entry_lifetime))?,
         })
     }
 

@@ -1,7 +1,6 @@
 use crate::{ember, ezsp};
 
 use std::fmt::{Debug, Display, Formatter};
-use std::num::TryFromIntError;
 
 #[derive(Debug)]
 pub enum Error {
@@ -9,9 +8,9 @@ pub enum Error {
     Ashv2(ashv2::Error),
     InvalidEzspStatus(u8),
     InvalidEmberStatus(u8),
-    InvalidIntegerValue(TryFromIntError),
     Ezsp(ezsp::Status),
     Ember(ember::Status),
+    ValueError(value::Error),
     Custom(String),
 }
 
@@ -22,9 +21,9 @@ impl Display for Error {
             Self::Ashv2(error) => Display::fmt(error, f),
             Self::InvalidEzspStatus(status) => write!(f, "Invalid EZSP status: {status}"),
             Self::InvalidEmberStatus(status) => write!(f, "Invalid Ember status: {status}"),
-            Self::InvalidIntegerValue(error) => Display::fmt(error, f),
             Self::Ezsp(status) => write!(f, "{}", u8::from(*status)),
             Self::Ember(status) => write!(f, "{}", u8::from(*status)),
+            Self::ValueError(error) => Display::fmt(error, f),
             Self::Custom(msg) => Display::fmt(msg, f),
         }
     }
@@ -49,9 +48,9 @@ impl From<ember::Status> for Error {
     }
 }
 
-impl From<TryFromIntError> for Error {
-    fn from(error: TryFromIntError) -> Self {
-        Self::InvalidIntegerValue(error)
+impl From<value::Error> for Error {
+    fn from(error: value::Error) -> Self {
+        Self::ValueError(error)
     }
 }
 
@@ -85,4 +84,26 @@ pub trait Resolve: Sized {
     fn resolve_to<T>(self, value: T) -> Result<T, Error> {
         self.resolve().map(|()| value)
     }
+}
+
+pub mod value {
+    use std::fmt::{Display, Formatter};
+    use std::time::Duration;
+
+    #[derive(Debug)]
+    pub enum Error {
+        DurationTooLarge(Duration),
+    }
+
+    impl Display for Error {
+        fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+            match self {
+                Self::DurationTooLarge(duration) => {
+                    write!(f, "Duration too large: {}ms", duration.as_millis())
+                }
+            }
+        }
+    }
+
+    impl std::error::Error for Error {}
 }

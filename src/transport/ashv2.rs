@@ -18,8 +18,8 @@ use crate::frame::parameters::{
     broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs,
     calculate_smacs283k1, child_id, clear_binding_table, clear_key_table, clear_stored_beacons,
     clear_temporary_data_maybe_store_link_key, clear_temporary_data_maybe_store_link_key283k1,
-    delete_binding, get_binding, get_binding_remote_node_id, read_attribute, set_binding,
-    set_binding_remote_node_id, version,
+    clear_transient_link_keys, delete_binding, get_binding, get_binding_remote_node_id,
+    read_attribute, set_binding, set_binding_remote_node_id, version,
 };
 use crate::frame::{Control, Header, Parameter};
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -361,6 +361,12 @@ where
             .await?
             .status()
             .resolve()
+    }
+
+    async fn clear_transient_link_keys(&self) -> Result<(), Error> {
+        self.communicate::<clear_transient_link_keys::Response>(clear_transient_link_keys::Command)
+            .await
+            .map(drop)
     }
 }
 

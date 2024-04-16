@@ -23,7 +23,7 @@ impl Command {
 
 impl Parameter for Command {
     type Id = u16;
-    const ID: u16 = ID;
+    const ID: Self::Id = ID;
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
@@ -46,5 +46,5 @@ impl Response {
 
 impl Parameter for Response {
     type Id = u16;
-    const ID: u16 = ID;
+    const ID: Self::Id = ID;
 }

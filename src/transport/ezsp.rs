@@ -8,6 +8,7 @@ pub use messaging::Messaging;
 pub use networking::Networking;
 pub use security::Security;
 pub use trust_center::TrustCenter;
+pub use utilities::Utilities;
 
 use crate::frame::parameters::version;
 use crate::Error;
@@ -20,6 +21,7 @@ mod messaging;
 mod networking;
 mod security;
 mod trust_center;
+mod utilities;
 
 const MIN_NON_LEGACY_VERSION: u8 = 8;
 
@@ -31,6 +33,7 @@ pub trait Ezsp:
     + Messaging
     + Security
     + TrustCenter
+    + Utilities
 {
     fn negotiate_version(
         &mut self,
@@ -48,6 +51,7 @@ where
         + Networking
         + Security
         + TrustCenter
+        + Utilities
         + Send,
 {
     async fn negotiate_version(

@@ -1,4 +1,5 @@
 use crate::ember::Status;
+use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
@@ -21,7 +22,12 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response {
     status: u8,
     reply: ByteSizedVec<u8>,
@@ -41,7 +47,12 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn reply(&self) -> &ByteSizedVec<u8> {
-        &self.reply
+    pub fn reply(self) -> ByteSizedVec<u8> {
+        self.reply
     }
+}
+
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

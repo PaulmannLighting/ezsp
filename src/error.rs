@@ -15,6 +15,21 @@ pub enum Error {
     Custom(String),
 }
 
+impl Display for Error {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            #[cfg(feature = "ashv2")]
+            Self::Ashv2(error) => Display::fmt(error, f),
+            Self::InvalidEzspStatus(status) => write!(f, "Invalid EZSP status: {status}"),
+            Self::InvalidEmberStatus(status) => write!(f, "Invalid Ember status: {status}"),
+            Self::InvalidIntegerValue(error) => Display::fmt(error, f),
+            Self::Ezsp(status) => write!(f, "{}", u8::from(*status)),
+            Self::Ember(status) => write!(f, "{}", u8::from(*status)),
+            Self::Custom(msg) => Display::fmt(msg, f),
+        }
+    }
+}
+
 #[cfg(feature = "ashv2")]
 impl From<ashv2::Error> for Error {
     fn from(error: ashv2::Error) -> Self {
@@ -43,21 +58,6 @@ impl From<TryFromIntError> for Error {
 impl From<String> for Error {
     fn from(msg: String) -> Self {
         Self::Custom(msg)
-    }
-}
-
-impl Display for Error {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            #[cfg(feature = "ashv2")]
-            Self::Ashv2(error) => Display::fmt(error, f),
-            Self::InvalidEzspStatus(status) => write!(f, "Invalid EZSP status: {status}"),
-            Self::InvalidEmberStatus(status) => write!(f, "Invalid Ember status: {status}"),
-            Self::InvalidIntegerValue(error) => Display::fmt(error, f),
-            Self::Ezsp(status) => write!(f, "{}", u8::from(*status)),
-            Self::Ember(status) => write!(f, "{}", u8::from(*status)),
-            Self::Custom(msg) => Display::fmt(msg, f),
-        }
     }
 }
 

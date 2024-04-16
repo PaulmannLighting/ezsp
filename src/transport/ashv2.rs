@@ -17,8 +17,9 @@ use crate::frame::parameters::{
     add_endpoint, address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
     broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs,
     calculate_smacs283k1, child_id, clear_binding_table, clear_key_table, clear_stored_beacons,
-    clear_temporary_data_maybe_store_link_key, delete_binding, get_binding,
-    get_binding_remote_node_id, read_attribute, set_binding, set_binding_remote_node_id, version,
+    clear_temporary_data_maybe_store_link_key, clear_temporary_data_maybe_store_link_key283k1,
+    delete_binding, get_binding, get_binding_remote_node_id, read_attribute, set_binding,
+    set_binding_remote_node_id, version,
 };
 use crate::frame::{Control, Header, Parameter};
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -194,6 +195,18 @@ where
     ) -> Result<(), Error> {
         self.communicate::<clear_temporary_data_maybe_store_link_key::Response>(
             clear_temporary_data_maybe_store_link_key::Command::new(store_link_key),
+        )
+        .await?
+        .status()
+        .resolve()
+    }
+
+    async fn clear_temporary_data_maybe_store_link_key283k1(
+        &self,
+        store_link_key: bool,
+    ) -> Result<(), Error> {
+        self.communicate::<clear_temporary_data_maybe_store_link_key283k1::Response>(
+            clear_temporary_data_maybe_store_link_key283k1::Command::new(store_link_key),
         )
         .await?
         .status()

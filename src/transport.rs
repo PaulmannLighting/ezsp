@@ -10,16 +10,22 @@ pub use ezsp::{
     Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, Messaging, Networking,
     TrustCenter,
 };
+use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;
 use std::future::Future;
 
 pub trait Transport {
     fn next_header<R>(&self) -> Header<R::Id>
     where
-        R: Parameter;
+        R: Parameter,
+        <R as Parameter>::Id: FromLeBytes;
 
-    fn communicate<R>(&self, command: impl Parameter) -> impl Future<Output = Result<R, Error>>
+    fn communicate<R>(
+        &self,
+        command: impl Parameter + ToLeBytes,
+    ) -> impl Future<Output = Result<R, Error>>
     where
         Self: 'static,
-        for<'r> R: Clone + Debug + Parameter + Send + Sync + 'r;
+        for<'r> R: Clone + Debug + Parameter + FromLeBytes + ToLeBytes + Send + Sync + 'r,
+        <R as Parameter>::Id: FromLeBytes + ToLeBytes;
 }

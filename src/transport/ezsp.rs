@@ -34,6 +34,7 @@ pub trait Ezsp:
     + Configuration
     + GreenPower
     + Messaging
+    + Networking
     + Security
     + TrustCenter
     + Utilities

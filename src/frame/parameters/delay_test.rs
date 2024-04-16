@@ -1,4 +1,7 @@
+use crate::error::value::Error;
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+use std::time::Duration;
 
 const ID: u16 = 0x009D;
 
@@ -8,18 +11,26 @@ pub struct Command {
 }
 
 impl Command {
-    #[must_use]
-    pub const fn new(delay: u16) -> Self {
-        Self { delay }
+    pub fn new(delay: Duration) -> Result<Self, Error> {
+        delay
+            .as_millis()
+            .try_into()
+            .map_err(|_| Error::DurationTooLarge(delay))
+            .map(|delay| Self { delay })
     }
 
     #[must_use]
-    pub const fn delay(&self) -> u16 {
-        self.delay
+    pub fn delay(&self) -> Duration {
+        Duration::from_millis(self.delay.into())
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Response;
 
 impl Response {
@@ -27,4 +38,9 @@ impl Response {
     pub const fn new() -> Self {
         Self {}
     }
+}
+
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

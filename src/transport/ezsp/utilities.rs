@@ -1,6 +1,7 @@
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 use std::future::Future;
+use std::time::Duration;
 
 pub trait Utilities: Transport {
     /// Provides the customer a custom EZSP frame.
@@ -17,4 +18,7 @@ pub trait Utilities: Transport {
         binary_message: bool,
         message: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Used to test that UART flow control is working correctly.
+    fn delay_test(&self, delay: Duration) -> impl Future<Output = Result<(), Error>> + Send;
 }

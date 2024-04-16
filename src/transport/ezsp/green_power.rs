@@ -5,6 +5,7 @@ use std::future::Future;
 use std::time::Duration;
 
 pub trait GreenPower: Transport {
+    /// Adds/removes an entry from the GP Tx Queue.
     #[allow(clippy::too_many_arguments)]
     fn d_gp_send(
         &self,

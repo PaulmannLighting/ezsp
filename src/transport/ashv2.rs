@@ -5,7 +5,7 @@ use std::sync::mpsc::Sender;
 use std::time::Duration;
 
 use ashv2::{FrameBuffer, Host};
-use le_stream::{FromLeBytes, ToLeBytes};
+use le_stream::ToLeBytes;
 use log::debug;
 use serialport::SerialPort;
 

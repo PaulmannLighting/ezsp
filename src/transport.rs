@@ -10,7 +10,6 @@ pub use ezsp::{
     Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, Messaging, Networking,
     TrustCenter,
 };
-use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;
 use std::future::Future;
 

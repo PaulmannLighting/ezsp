@@ -109,8 +109,8 @@ where
 
     async fn get_binding(&self, index: u8) -> Result<TableEntry, Error> {
         self.communicate::<get_binding::Response>(get_binding::Command::new(index))
-            .await
-            .and_then(|response| response.status().resolve().map(|_| response.value()))
+            .await?
+            .into()
     }
 
     async fn delete_binding(&self, index: u8) -> Result<(), Error> {
@@ -399,12 +399,11 @@ where
         finalize: bool,
         data: ByteSizedVec<u8>,
     ) -> Result<ember::aes::MmoHashContext, Error> {
-        let result = self
-            .communicate::<aes_mmo_hash::Response>(aes_mmo_hash::Command::new(
-                context, finalize, data,
-            ))
-            .await?;
-        result.status().resolve().map(|()| result.return_context())
+        self.communicate::<aes_mmo_hash::Response>(aes_mmo_hash::Command::new(
+            context, finalize, data,
+        ))
+        .await?
+        .into()
     }
 }
 
@@ -413,9 +412,8 @@ where
     Self: 'static,
 {
     async fn custom_frame(&self, payload: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
-        let result = self
-            .communicate::<custom_frame::Response>(custom_frame::Command::new(payload))
-            .await?;
-        result.status().resolve().map(|()| result.reply())
+        self.communicate::<custom_frame::Response>(custom_frame::Command::new(payload))
+            .await?
+            .into()
     }
 }

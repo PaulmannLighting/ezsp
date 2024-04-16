@@ -62,10 +62,18 @@ impl std::error::Error for Error {
     }
 }
 
-pub trait Resolve {
-    /// Resolve a status result into an error result.
+pub trait Resolve: Sized {
+    /// Resolve a status result into a result of either `()` or [`Error`].
     ///
     /// # Errors
     /// Returns [`Error`] if the status is not success.
     fn resolve(self) -> Result<(), Error>;
+
+    /// Resolve a status result into a result of either the passed value or [`Error`].
+    ///
+    /// # Errors
+    /// Returns [`Error`] if the status is not success.
+    fn resolve_to<T>(self, value: T) -> Result<T, Error> {
+        self.resolve().map(|()| value)
+    }
 }

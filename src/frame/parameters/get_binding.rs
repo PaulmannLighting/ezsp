@@ -1,6 +1,8 @@
 use crate::ember::binding::TableEntry;
 use crate::ember::Status;
+use crate::error::Resolve;
 use crate::frame::Parameter;
+use crate::Error;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x002C;
@@ -49,6 +51,12 @@ impl Response {
     #[must_use]
     pub const fn value(self) -> TableEntry {
         self.value
+    }
+}
+
+impl From<Response> for Result<TableEntry, Error> {
+    fn from(response: Response) -> Self {
+        response.status().resolve_to(response.value())
     }
 }
 

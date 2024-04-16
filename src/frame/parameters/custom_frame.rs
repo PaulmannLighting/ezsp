@@ -1,6 +1,8 @@
 use crate::ember::Status;
+use crate::error::Resolve;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
+use crate::Error;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0047;
@@ -49,6 +51,12 @@ impl Response {
     #[must_use]
     pub fn reply(self) -> ByteSizedVec<u8> {
         self.reply
+    }
+}
+
+impl From<Response> for Result<ByteSizedVec<u8>, Error> {
+    fn from(response: Response) -> Self {
+        response.status().resolve_to(response.reply())
     }
 }
 

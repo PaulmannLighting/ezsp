@@ -2,7 +2,9 @@ use crate::types::ByteSizedVec;
 
 use crate::ember::aes::MmoHashContext;
 use crate::ember::Status;
+use crate::error::Resolve;
 use crate::frame::Parameter;
+use crate::Error;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x006F;
@@ -67,6 +69,12 @@ impl Response {
     #[must_use]
     pub const fn return_context(self) -> MmoHashContext {
         self.return_context
+    }
+}
+
+impl From<Response> for Result<MmoHashContext, Error> {
+    fn from(response: Response) -> Self {
+        response.status().resolve_to(response.return_context())
     }
 }
 

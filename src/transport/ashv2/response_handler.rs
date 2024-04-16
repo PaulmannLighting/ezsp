@@ -23,8 +23,7 @@ where
 
 impl<R> ResponseHandler<R>
 where
-    R: Parameter + FromLeBytes,
-    <R as Parameter>::Id: FromLeBytes,
+    R: Parameter,
 {
     #[must_use]
     pub const fn new(
@@ -71,7 +70,6 @@ where
     fn parse_header<T>(bytes: &mut T) -> Option<Header<R::Id>>
     where
         T: Iterator<Item = u8>,
-        <R as Parameter>::Id: FromLeBytes,
     {
         let header = Header::from_le_bytes(bytes).ok()?;
 
@@ -121,8 +119,7 @@ where
 
 impl<R> Default for ResponseHandler<R>
 where
-    R: Parameter + FromLeBytes,
-    <R as Parameter>::Id: FromLeBytes,
+    R: Parameter,
 {
     fn default() -> Self {
         Self::new(
@@ -156,8 +153,7 @@ where
 
 impl<R> Handler for ResponseHandler<R>
 where
-    R: Debug + Send + Sync + Parameter + FromLeBytes,
-    <R as Parameter>::Id: FromLeBytes,
+    R: Debug + Send + Sync + Parameter,
 {
     fn handle(&self, event: Event) -> HandleResult {
         match event {
@@ -208,8 +204,7 @@ where
 
 impl<R> Response for ResponseHandler<R>
 where
-    R: Clone + Debug + Send + Sync + Parameter + FromLeBytes,
-    <R as Parameter>::Id: FromLeBytes,
+    R: Clone + Debug + Send + Sync + Parameter,
 {
     type Result = R;
     type Error = Error;

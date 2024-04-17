@@ -79,8 +79,9 @@ impl<'host> Transport for Ashv2<'host> {
         header
     }
 
-    async fn communicate<R>(&self, command: impl Parameter + ToLeBytes) -> Result<R, Error>
+    async fn communicate<C, R>(&self, command: C) -> Result<R, Error>
     where
+        C: Parameter + ToLeBytes,
         R: Clone + Debug + Send + Sync + Parameter + FromLeBytes + 'host,
     {
         let mut payload = Vec::new();
@@ -96,40 +97,40 @@ where
     Self: 'static,
 {
     async fn clear_binding_table(&self) -> Result<(), Error> {
-        self.communicate::<clear_binding_table::Response>(clear_binding_table::Command)
+        self.communicate::<_, clear_binding_table::Response>(clear_binding_table::Command)
             .await?
             .status()
             .resolve()
     }
 
     async fn set_binding(&self, index: u8, value: TableEntry) -> Result<(), Error> {
-        self.communicate::<set_binding::Response>(set_binding::Command::new(index, value))
+        self.communicate::<_, set_binding::Response>(set_binding::Command::new(index, value))
             .await?
             .status()
             .resolve()
     }
 
     async fn get_binding(&self, index: u8) -> Result<TableEntry, Error> {
-        self.communicate::<get_binding::Response>(get_binding::Command::new(index))
+        self.communicate::<_, get_binding::Response>(get_binding::Command::new(index))
             .await?
             .into()
     }
 
     async fn delete_binding(&self, index: u8) -> Result<(), Error> {
-        self.communicate::<delete_binding::Response>(delete_binding::Command::new(index))
+        self.communicate::<_, delete_binding::Response>(delete_binding::Command::new(index))
             .await?
             .status()
             .resolve()
     }
 
     async fn binding_is_active(&self, index: u8) -> Result<bool, Error> {
-        self.communicate::<binding_is_active::Response>(binding_is_active::Command::new(index))
+        self.communicate::<_, binding_is_active::Response>(binding_is_active::Command::new(index))
             .await
             .map(|response| response.active())
     }
 
     async fn get_binding_remote_node_id(&self, index: u8) -> Result<NodeId, Error> {
-        self.communicate::<get_binding_remote_node_id::Response>(
+        self.communicate::<_, get_binding_remote_node_id::Response>(
             get_binding_remote_node_id::Command::new(index),
         )
         .await
@@ -137,7 +138,7 @@ where
     }
 
     async fn set_binding_remote_node_id(&self, index: u8, node_id: NodeId) -> Result<(), Error> {
-        self.communicate::<set_binding_remote_node_id::Response>(
+        self.communicate::<_, set_binding_remote_node_id::Response>(
             set_binding_remote_node_id::Command::new(index, node_id),
         )
         .await
@@ -150,7 +151,7 @@ where
     Self: 'static,
 {
     async fn aes_encrypt(&self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
-        self.communicate::<aes_encrypt::Response>(aes_encrypt::Command::new(plaintext, key))
+        self.communicate::<_, aes_encrypt::Response>(aes_encrypt::Command::new(plaintext, key))
             .await
             .map(|response| response.ciphertext())
     }
@@ -166,7 +167,7 @@ where
         partner_certificate: ember::CertificateData,
         partner_ephemeral_public_key: ember::PublicKeyData,
     ) -> Result<(), Error> {
-        self.communicate::<calculate_smacs::Response>(calculate_smacs::Command::new(
+        self.communicate::<_, calculate_smacs::Response>(calculate_smacs::Command::new(
             am_initiator,
             partner_certificate,
             partner_ephemeral_public_key,
@@ -182,7 +183,7 @@ where
         partner_certificate: Certificate283k1Data,
         partner_ephemeral_public_key: PublicKey283k1Data,
     ) -> Result<(), Error> {
-        self.communicate::<calculate_smacs283k1::Response>(calculate_smacs283k1::Command::new(
+        self.communicate::<_, calculate_smacs283k1::Response>(calculate_smacs283k1::Command::new(
             am_initiator,
             partner_certificate,
             partner_ephemeral_public_key,
@@ -196,7 +197,7 @@ where
         &self,
         store_link_key: bool,
     ) -> Result<(), Error> {
-        self.communicate::<clear_temporary_data_maybe_store_link_key::Response>(
+        self.communicate::<_, clear_temporary_data_maybe_store_link_key::Response>(
             clear_temporary_data_maybe_store_link_key::Command::new(store_link_key),
         )
         .await?
@@ -208,7 +209,7 @@ where
         &self,
         store_link_key: bool,
     ) -> Result<(), Error> {
-        self.communicate::<clear_temporary_data_maybe_store_link_key283k1::Response>(
+        self.communicate::<_, clear_temporary_data_maybe_store_link_key283k1::Response>(
             clear_temporary_data_maybe_store_link_key283k1::Command::new(store_link_key),
         )
         .await?
@@ -217,7 +218,7 @@ where
     }
 
     async fn dsa_sign(&self, message: ByteSizedVec<u8>) -> Result<(), Error> {
-        self.communicate::<dsa_sign::Response>(dsa_sign::Command::new(message))
+        self.communicate::<_, dsa_sign::Response>(dsa_sign::Command::new(message))
             .await
             .map(drop)
     }
@@ -228,7 +229,7 @@ where
     Self: 'static,
 {
     async fn version(&self, desired_protocol_version: u8) -> Result<version::Response, Error> {
-        self.communicate::<version::Response>(version::Command::new(desired_protocol_version))
+        self.communicate::<_, version::Response>(version::Command::new(desired_protocol_version))
             .await
     }
 
@@ -236,7 +237,7 @@ where
         &self,
         desired_protocol_version: u8,
     ) -> Result<version::Response, Error> {
-        self.communicate::<version::LegacyResponse>(version::LegacyCommand::from(
+        self.communicate::<_, version::LegacyResponse>(version::LegacyCommand::from(
             version::Command::new(desired_protocol_version),
         ))
         .await
@@ -285,7 +286,7 @@ where
         input_clusters: ByteSizedVec<u16>,
         output_clusters: ByteSizedVec<u16>,
     ) -> Result<(), Error> {
-        self.communicate::<add_endpoint::Response>(add_endpoint::Command::new(
+        self.communicate::<_, add_endpoint::Response>(add_endpoint::Command::new(
             endpoint,
             profile_id,
             device_id,
@@ -345,7 +346,7 @@ where
         gpep_handle: u8,
         gp_tx_queue_entry_lifetime: Duration,
     ) -> Result<(), Error> {
-        self.communicate::<d_gp_send::Response>(d_gp_send::Command::new(
+        self.communicate::<_, d_gp_send::Response>(d_gp_send::Command::new(
             action,
             use_cca,
             addr,
@@ -365,7 +366,7 @@ where
     Self: 'static,
 {
     async fn address_table_entry_is_active(&self, address_table_index: u8) -> Result<bool, Error> {
-        self.communicate::<address_table_entry_is_active::Response>(
+        self.communicate::<_, address_table_entry_is_active::Response>(
             address_table_entry_is_active::Command::new(address_table_index),
         )
         .await
@@ -378,13 +379,13 @@ where
     Self: 'static,
 {
     async fn child_id(&self, child_index: u8) -> Result<NodeId, Error> {
-        self.communicate::<child_id::Response>(child_id::Command::new(child_index))
+        self.communicate::<_, child_id::Response>(child_id::Command::new(child_index))
             .await
             .map(|response| response.child_id())
     }
 
     async fn clear_stored_beacons(&self) -> Result<(), Error> {
-        self.communicate::<clear_stored_beacons::Response>(clear_stored_beacons::Command)
+        self.communicate::<_, clear_stored_beacons::Response>(clear_stored_beacons::Command)
             .await
             .map(drop)
     }
@@ -395,16 +396,18 @@ where
     Self: 'static,
 {
     async fn clear_key_table(&self) -> Result<(), Error> {
-        self.communicate::<clear_key_table::Response>(clear_key_table::Command)
+        self.communicate::<_, clear_key_table::Response>(clear_key_table::Command)
             .await?
             .status()
             .resolve()
     }
 
     async fn clear_transient_link_keys(&self) -> Result<(), Error> {
-        self.communicate::<clear_transient_link_keys::Response>(clear_transient_link_keys::Command)
-            .await
-            .map(drop)
+        self.communicate::<_, clear_transient_link_keys::Response>(
+            clear_transient_link_keys::Command,
+        )
+        .await
+        .map(drop)
     }
 }
 
@@ -413,7 +416,7 @@ where
     Self: 'static,
 {
     async fn broadcast_next_network_key(&self, key: ember::key::Data) -> Result<(), Error> {
-        self.communicate::<broadcast_next_network_key::Response>(
+        self.communicate::<_, broadcast_next_network_key::Response>(
             broadcast_next_network_key::Command::new(key),
         )
         .await?
@@ -422,7 +425,7 @@ where
     }
 
     async fn broadcast_network_key_switch(&self) -> Result<(), Error> {
-        self.communicate::<broadcast_network_key_switch::Response>(
+        self.communicate::<_, broadcast_network_key_switch::Response>(
             broadcast_network_key_switch::Command,
         )
         .await?
@@ -436,7 +439,7 @@ where
         finalize: bool,
         data: ByteSizedVec<u8>,
     ) -> Result<ember::aes::MmoHashContext, Error> {
-        self.communicate::<aes_mmo_hash::Response>(aes_mmo_hash::Command::new(
+        self.communicate::<_, aes_mmo_hash::Response>(aes_mmo_hash::Command::new(
             context, finalize, data,
         ))
         .await?
@@ -449,7 +452,7 @@ where
     Self: 'static,
 {
     async fn custom_frame(&self, payload: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
-        self.communicate::<custom_frame::Response>(custom_frame::Command::new(payload))
+        self.communicate::<_, custom_frame::Response>(custom_frame::Command::new(payload))
             .await?
             .into()
     }
@@ -459,7 +462,7 @@ where
         binary_message: bool,
         message: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
-        self.communicate::<debug_write::Response>(debug_write::Command::new(
+        self.communicate::<_, debug_write::Response>(debug_write::Command::new(
             binary_message,
             message,
         ))
@@ -469,7 +472,7 @@ where
     }
 
     async fn delay_test(&self, delay: Duration) -> Result<(), Error> {
-        self.communicate::<delay_test::Response>(delay_test::Command::new(delay)?)
+        self.communicate::<_, delay_test::Response>(delay_test::Command::new(delay)?)
             .await
             .map(drop)
     }

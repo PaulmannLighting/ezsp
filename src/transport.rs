@@ -19,11 +19,9 @@ pub trait Transport {
     where
         R: Parameter;
 
-    fn communicate<R>(
-        &self,
-        command: impl Parameter + ToLeBytes,
-    ) -> impl Future<Output = Result<R, Error>>
+    fn communicate<C, R>(&self, command: C) -> impl Future<Output = Result<R, Error>>
     where
         Self: 'static,
+        C: Parameter + ToLeBytes,
         for<'r> R: Clone + Debug + Send + Sync + Parameter + FromLeBytes + 'r;
 }

@@ -23,5 +23,5 @@ pub trait Transport {
     where
         Self: 'static,
         C: Parameter + ToLeBytes,
-        for<'r> R: Clone + Debug + Send + Sync + Parameter + FromLeBytes + 'r;
+        for<'response> R: Clone + Debug + Send + Sync + Parameter + FromLeBytes + 'response;
 }

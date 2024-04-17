@@ -277,7 +277,7 @@ pub mod zll_set_security_state_without_key;
 pub mod zll_start_scan;
 pub mod zll_touch_link_target_handler;
 
-pub trait Parameter: Send + Sync + FromLeBytes + ToLeBytes {
+pub trait Parameter: Send + Sync {
     type Id: Copy
         + Debug
         + Display

@@ -23,7 +23,7 @@ where
 
 impl<R> ResponseHandler<R>
 where
-    R: Parameter,
+    R: Parameter + FromLeBytes,
 {
     #[must_use]
     pub const fn new(
@@ -120,7 +120,7 @@ where
 
 impl<R> Default for ResponseHandler<R>
 where
-    R: Parameter,
+    R: Parameter + FromLeBytes,
 {
     fn default() -> Self {
         Self::new(
@@ -154,7 +154,7 @@ where
 
 impl<R> Handler for ResponseHandler<R>
 where
-    R: Debug + Send + Sync + Parameter,
+    R: Debug + Send + Sync + Parameter + FromLeBytes,
 {
     fn handle(&self, event: Event) -> HandleResult {
         match event {
@@ -205,7 +205,7 @@ where
 
 impl<R> Response for ResponseHandler<R>
 where
-    R: Clone + Debug + Send + Sync + Parameter,
+    R: Clone + Debug + Send + Sync + Parameter + FromLeBytes,
 {
     type Result = R;
     type Error = Error;

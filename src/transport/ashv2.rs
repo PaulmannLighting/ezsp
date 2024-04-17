@@ -5,7 +5,7 @@ use std::sync::mpsc::Sender;
 use std::time::Duration;
 
 use ashv2::{FrameBuffer, Host};
-use le_stream::ToLeBytes;
+use le_stream::{FromLeBytes, ToLeBytes};
 use log::debug;
 use serialport::SerialPort;
 
@@ -79,9 +79,9 @@ impl<'host> Transport for Ashv2<'host> {
         header
     }
 
-    async fn communicate<R>(&self, command: impl Parameter) -> Result<R, Error>
+    async fn communicate<R>(&self, command: impl Parameter + ToLeBytes) -> Result<R, Error>
     where
-        R: Clone + Debug + Parameter + Send + Sync + 'host,
+        R: Clone + Debug + Send + Sync + Parameter + FromLeBytes + 'host,
     {
         let mut payload = Vec::new();
         payload.extend(self.next_header::<R>().to_le_bytes());

@@ -55,7 +55,7 @@ impl Ashv2 {
         callback: Option<Sender<FrameBuffer>>,
     ) -> Result<Self, ashv2::Error>
     where
-        for<'a> S: SerialPort + 'a,
+        S: SerialPort + 'static,
     {
         Ok(Self {
             host: Host::spawn(serial_port, callback)?,
@@ -81,7 +81,7 @@ impl Transport for Ashv2 {
     async fn communicate<C, R>(&self, command: C) -> Result<R, Error>
     where
         C: Parameter + ToLeBytes,
-        for<'a> R: Clone + Debug + Send + Sync + Parameter + FromLeBytes + 'a,
+        R: Clone + Debug + Send + Sync + Parameter + FromLeBytes + 'static,
     {
         let mut payload = Vec::new();
         payload.extend(self.next_header::<R>().to_le_bytes());

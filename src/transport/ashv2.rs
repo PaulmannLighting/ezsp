@@ -38,13 +38,13 @@ mod response_handler;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
-pub struct Ashv2<'host> {
-    host: Host<'host>,
+pub struct Ashv2 {
+    host: Host,
     sequence: AtomicU8,
     control: Control,
 }
 
-impl<'host> Ashv2<'host> {
+impl Ashv2 {
     /// Spawns an ASHv2 host.
     ///
     /// # Errors
@@ -55,8 +55,7 @@ impl<'host> Ashv2<'host> {
         callback: Option<Sender<FrameBuffer>>,
     ) -> Result<Self, ashv2::Error>
     where
-        Self: 'static,
-        S: SerialPort + 'host,
+        for<'a> S: SerialPort + 'a,
     {
         Ok(Self {
             host: Host::spawn(serial_port, callback)?,
@@ -66,7 +65,7 @@ impl<'host> Ashv2<'host> {
     }
 }
 
-impl<'host> Transport for Ashv2<'host> {
+impl Transport for Ashv2 {
     fn next_header<R>(&self) -> Header<R::Id>
     where
         R: Parameter,
@@ -82,7 +81,7 @@ impl<'host> Transport for Ashv2<'host> {
     async fn communicate<C, R>(&self, command: C) -> Result<R, Error>
     where
         C: Parameter + ToLeBytes,
-        R: Clone + Debug + Send + Sync + Parameter + FromLeBytes + 'host,
+        for<'a> R: Clone + Debug + Send + Sync + Parameter + FromLeBytes + 'a,
     {
         let mut payload = Vec::new();
         payload.extend(self.next_header::<R>().to_le_bytes());
@@ -92,10 +91,7 @@ impl<'host> Transport for Ashv2<'host> {
     }
 }
 
-impl Binding for Ashv2<'_>
-where
-    Self: 'static,
-{
+impl Binding for Ashv2 {
     async fn clear_binding_table(&self) -> Result<(), Error> {
         self.communicate::<_, clear_binding_table::Response>(clear_binding_table::Command)
             .await?
@@ -146,10 +142,7 @@ where
     }
 }
 
-impl Bootloader for Ashv2<'_>
-where
-    Self: 'static,
-{
+impl Bootloader for Ashv2 {
     async fn aes_encrypt(&self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
         self.communicate::<_, aes_encrypt::Response>(aes_encrypt::Command::new(plaintext, key))
             .await
@@ -157,10 +150,7 @@ where
     }
 }
 
-impl CertificateBasedKeyExchange for Ashv2<'_>
-where
-    Self: 'static,
-{
+impl CertificateBasedKeyExchange for Ashv2 {
     async fn calculate_smacs(
         &self,
         am_initiator: bool,
@@ -224,10 +214,7 @@ where
     }
 }
 
-impl Configuration for Ashv2<'_>
-where
-    Self: 'static,
-{
+impl Configuration for Ashv2 {
     async fn version(&self, desired_protocol_version: u8) -> Result<version::Response, Error> {
         self.communicate::<_, version::Response>(version::Command::new(desired_protocol_version))
             .await
@@ -332,10 +319,7 @@ where
     }
 }
 
-impl GreenPower for Ashv2<'_>
-where
-    Self: 'static,
-{
+impl GreenPower for Ashv2 {
     async fn d_gp_send(
         &self,
         action: bool,
@@ -361,10 +345,7 @@ where
     }
 }
 
-impl Messaging for Ashv2<'_>
-where
-    Self: 'static,
-{
+impl Messaging for Ashv2 {
     async fn address_table_entry_is_active(&self, address_table_index: u8) -> Result<bool, Error> {
         self.communicate::<_, address_table_entry_is_active::Response>(
             address_table_entry_is_active::Command::new(address_table_index),
@@ -374,10 +355,7 @@ where
     }
 }
 
-impl Networking for Ashv2<'_>
-where
-    Self: 'static,
-{
+impl Networking for Ashv2 {
     async fn child_id(&self, child_index: u8) -> Result<NodeId, Error> {
         self.communicate::<_, child_id::Response>(child_id::Command::new(child_index))
             .await
@@ -391,10 +369,7 @@ where
     }
 }
 
-impl Security for Ashv2<'_>
-where
-    Self: 'static,
-{
+impl Security for Ashv2 {
     async fn clear_key_table(&self) -> Result<(), Error> {
         self.communicate::<_, clear_key_table::Response>(clear_key_table::Command)
             .await?
@@ -411,10 +386,7 @@ where
     }
 }
 
-impl TrustCenter for Ashv2<'_>
-where
-    Self: 'static,
-{
+impl TrustCenter for Ashv2 {
     async fn broadcast_next_network_key(&self, key: ember::key::Data) -> Result<(), Error> {
         self.communicate::<_, broadcast_next_network_key::Response>(
             broadcast_next_network_key::Command::new(key),
@@ -447,10 +419,7 @@ where
     }
 }
 
-impl Utilities for Ashv2<'_>
-where
-    Self: 'static,
-{
+impl Utilities for Ashv2 {
     async fn custom_frame(&self, payload: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
         self.communicate::<_, custom_frame::Response>(custom_frame::Command::new(payload))
             .await?

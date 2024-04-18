@@ -7,8 +7,8 @@ use crate::{Error, Header};
 #[cfg(feature = "ashv2")]
 pub use ashv2::Ashv2;
 pub use ezsp::{
-    Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, Messaging, Networking,
-    TrustCenter,
+    Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, GreenPower, Messaging,
+    Networking, Security, TrustCenter, Utilities,
 };
 use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;

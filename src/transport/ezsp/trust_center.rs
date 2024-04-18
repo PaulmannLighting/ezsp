@@ -5,7 +5,7 @@ use std::future::Future;
 pub trait TrustCenter: Transport {
     /// This function broadcasts a new encryption key,
     /// but does not tell the nodes in the network to start using it.
-    /// To tell nodes to switch to the new key, use [`Self::broadcast_network_key_switch`].
+    /// To tell nodes to switch to the new key, use [`broadcast_network_key_switch()`](Self::broadcast_network_key_switch).
     /// This is only valid for the Trust Center/Coordinator.
     /// It is up to the application to determine how quickly
     /// to send the Switch Key after sending the alternate encryption key.

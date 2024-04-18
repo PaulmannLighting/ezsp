@@ -54,7 +54,8 @@ pub trait CertificateBasedKeyExchange: Transport {
     /// However, this function is still supported.
     ///
     /// This function begins the process of signing the passed message contained within the messageContents array.
-    /// If no other ECC operation is going on, it will immediately return with [`ember::Status::OperationInProgress`] to indicate the start of ECC operation.
+    /// If no other ECC operation is going on, it will immediately return with
+    /// [`Status::OperationInProgress`](ember::Status::OperationInProgress) to indicate the start of ECC operation.
     /// It will delay a period of time to let APS retries take place,
     /// but then it will shut down the radio and consume the CPU processing until the signing is complete.
     /// This may take up to 1 second. The signed message will be returned in the dsaSignHandler response.

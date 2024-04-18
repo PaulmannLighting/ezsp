@@ -14,7 +14,7 @@ pub trait Configuration: Transport {
         desired_protocol_version: u8,
     ) -> impl Future<Output = Result<version::Response, Error>> + Send;
 
-    /// Legacy implementation of [`Self::version`] using a shortened header.
+    /// Legacy implementation of [`version()`](Self::version) using a shortened header.
     fn legacy_version(
         &self,
         desired_protocol_version: u8,
@@ -27,9 +27,9 @@ pub trait Configuration: Transport {
     ) -> impl Future<Output = Result<u16, Error>> + Send;
 
     /// Writes a configuration value to the NCP. Configuration values can be modified by the Host after the NCP has reset.
-    /// Once the status of the stack changes to [`crate::ember::Status::NetworkUp`],
+    /// Once the status of the stack changes to [`Status::NetworkUp`](crate::ember::Status::NetworkUp),
     /// configuration values can no longer be modified
-    /// and this command will respond with [`crate::ezsp::Error::InvalidCall`].
+    /// and this command will respond with [`Error::InvalidCall`](crate::ezsp::Error::InvalidCall).
     fn set_configuration_value(
         &self,
         config_id: u8,
@@ -63,8 +63,8 @@ pub trait Configuration: Transport {
     /// Configures endpoint information on the NCP.
     /// The NCP does not remember these settings after a reset.
     /// Endpoints can be added by the Host after the NCP has reset.
-    /// Once the status of the stack changes to [`crate::ember::Status::NetworkUp`],
-    /// endpoints can no longer be added and this command will respond with [`crate::ezsp::Error::InvalidCall`].
+    /// Once the status of the stack changes to [`Status::NetworkUp`](crate::ember::Status::NetworkUp),
+    /// endpoints can no longer be added and this command will respond with [`Error::InvalidCall`](crate::ezsp::Error::InvalidCall).
     fn add_endpoint(
         &self,
         endpoint: u8,

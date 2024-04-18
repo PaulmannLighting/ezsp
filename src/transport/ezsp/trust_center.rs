@@ -19,9 +19,9 @@ pub trait TrustCenter: Transport {
     fn broadcast_network_key_switch(&self) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This routine processes the passed chunk of data and updates the hash context based on it.
-    /// If the 'finalize' parameter is not set, then the length of the data passed in must be a
+    /// If the `finalize` parameter is not set, then the length of the data passed in must be a
     /// multiple of 16.
-    /// If the 'finalize' parameter is set then the length can be any value up 1-16,
+    /// If the `finalize` parameter is set then the length can be any value up 1-16,
     /// and the final hash value will be calculated.
     fn aes_mmo_hash(
         &self,

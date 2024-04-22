@@ -12,10 +12,6 @@ use serialport::SerialPort;
 use crate::ember;
 use crate::ember::binding::TableEntry;
 use crate::ember::gp::Address;
-use crate::ember::{
-    Certificate283k1Data, CertificateData, MessageDigest, NodeId, PanId, PublicKey283k1Data,
-    SignatureData,
-};
 use crate::error::Resolve;
 use crate::ezsp::decision;
 use crate::frame::parameters::{
@@ -128,7 +124,7 @@ impl Binding for Ashv2 {
             .map(|response| response.active())
     }
 
-    async fn get_binding_remote_node_id(&self, index: u8) -> Result<NodeId, Error> {
+    async fn get_binding_remote_node_id(&self, index: u8) -> Result<ember::NodeId, Error> {
         self.communicate::<_, get_binding_remote_node_id::Response>(
             get_binding_remote_node_id::Command::new(index),
         )
@@ -136,7 +132,11 @@ impl Binding for Ashv2 {
         .map(|response| response.node_id())
     }
 
-    async fn set_binding_remote_node_id(&self, index: u8, node_id: NodeId) -> Result<(), Error> {
+    async fn set_binding_remote_node_id(
+        &self,
+        index: u8,
+        node_id: ember::NodeId,
+    ) -> Result<(), Error> {
         self.communicate::<_, set_binding_remote_node_id::Response>(
             set_binding_remote_node_id::Command::new(index, node_id),
         )
@@ -173,8 +173,8 @@ impl CertificateBasedKeyExchange for Ashv2 {
     async fn calculate_smacs283k1(
         &self,
         am_initiator: bool,
-        partner_certificate: Certificate283k1Data,
-        partner_ephemeral_public_key: PublicKey283k1Data,
+        partner_certificate: ember::Certificate283k1Data,
+        partner_ephemeral_public_key: ember::PublicKey283k1Data,
     ) -> Result<(), Error> {
         self.communicate::<_, calculate_smacs283k1::Response>(calculate_smacs283k1::Command::new(
             am_initiator,
@@ -218,9 +218,9 @@ impl CertificateBasedKeyExchange for Ashv2 {
 
     async fn dsa_verify(
         &self,
-        digest: MessageDigest,
-        signer_certificate: CertificateData,
-        received_sig: SignatureData,
+        digest: ember::MessageDigest,
+        signer_certificate: ember::CertificateData,
+        received_sig: ember::SignatureData,
     ) -> Result<(), Error> {
         self.communicate::<_, dsa_verify::Response>(dsa_verify::Command::new(
             digest,
@@ -313,7 +313,7 @@ impl Configuration for Ashv2 {
         todo!()
     }
 
-    async fn send_pan_id_update(&self, new_pan: PanId) -> Result<bool, Error> {
+    async fn send_pan_id_update(&self, new_pan: ember::PanId) -> Result<bool, Error> {
         todo!()
     }
 
@@ -375,7 +375,7 @@ impl Messaging for Ashv2 {
 }
 
 impl Networking for Ashv2 {
-    async fn child_id(&self, child_index: u8) -> Result<NodeId, Error> {
+    async fn child_id(&self, child_index: u8) -> Result<ember::NodeId, Error> {
         self.communicate::<_, child_id::Response>(child_id::Command::new(child_index))
             .await
             .map(|response| response.child_id())

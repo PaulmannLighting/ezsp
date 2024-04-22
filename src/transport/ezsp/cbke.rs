@@ -1,6 +1,3 @@
-use crate::ember::{
-    Certificate283k1Data, CertificateData, MessageDigest, PublicKey283k1Data, SignatureData,
-};
 use crate::types::ByteSizedVec;
 use crate::{ember, Error, Transport};
 use std::future::Future;
@@ -26,8 +23,8 @@ pub trait CertificateBasedKeyExchange: Transport {
     fn calculate_smacs283k1(
         &self,
         am_initiator: bool,
-        partner_certificate: Certificate283k1Data,
-        partner_ephemeral_public_key: PublicKey283k1Data,
+        partner_certificate: ember::Certificate283k1Data,
+        partner_ephemeral_public_key: ember::PublicKey283k1Data,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Clears the temporary data associated with CBKE and the key establishment,
@@ -77,8 +74,8 @@ pub trait CertificateBasedKeyExchange: Transport {
     /// Verify that signature of the associated message digest was signed by the private key of the associated certificate.
     fn dsa_verify(
         &self,
-        digest: MessageDigest,
-        signer_certificate: CertificateData,
-        received_sig: SignatureData,
+        digest: ember::MessageDigest,
+        signer_certificate: ember::CertificateData,
+        received_sig: ember::SignatureData,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }

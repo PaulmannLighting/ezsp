@@ -21,4 +21,11 @@ pub trait Utilities: Transport {
 
     /// Used to test that UART flow control is working correctly.
     fn delay_test(&self, delay: Duration) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Variable length data from the Host is echoed back by the NCP.
+    /// This command has no other effects and is designed for testing the link between the Host and NCP.
+    fn echo(
+        &self,
+        data: ByteSizedVec<u8>,
+    ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
 }

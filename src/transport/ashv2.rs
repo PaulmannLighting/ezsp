@@ -20,8 +20,8 @@ use crate::frame::parameters::{
     calculate_smacs283k1, child_id, clear_binding_table, clear_key_table, clear_stored_beacons,
     clear_temporary_data_maybe_store_link_key, clear_temporary_data_maybe_store_link_key283k1,
     clear_transient_link_keys, custom_frame, d_gp_send, debug_write, delay_test, delete_binding,
-    dsa_sign, dsa_verify, dsa_verify283k1, get_binding, get_binding_remote_node_id, read_attribute,
-    set_binding, set_binding_remote_node_id, version,
+    dsa_sign, dsa_verify, dsa_verify283k1, echo, get_binding, get_binding_remote_node_id,
+    read_attribute, set_binding, set_binding_remote_node_id, version,
 };
 use crate::frame::{Control, Header, Parameter};
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -479,5 +479,11 @@ impl Utilities for Ashv2 {
         self.communicate::<_, delay_test::Response>(delay_test::Command::new(delay)?)
             .await
             .map(drop)
+    }
+
+    async fn echo(&self, data: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
+        self.communicate::<_, echo::Response>(echo::Command::new(data))
+            .await
+            .map(echo::Response::echo)
     }
 }

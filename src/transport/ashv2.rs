@@ -20,8 +20,8 @@ use crate::frame::parameters::{
     calculate_smacs283k1, child_id, clear_binding_table, clear_key_table, clear_stored_beacons,
     clear_temporary_data_maybe_store_link_key, clear_temporary_data_maybe_store_link_key283k1,
     clear_transient_link_keys, custom_frame, d_gp_send, debug_write, delay_test, delete_binding,
-    dsa_sign, dsa_verify, get_binding, get_binding_remote_node_id, read_attribute, set_binding,
-    set_binding_remote_node_id, version,
+    dsa_sign, dsa_verify, dsa_verify283k1, get_binding, get_binding_remote_node_id, read_attribute,
+    set_binding, set_binding_remote_node_id, version,
 };
 use crate::frame::{Control, Header, Parameter};
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -223,6 +223,22 @@ impl CertificateBasedKeyExchange for Ashv2 {
         received_sig: ember::SignatureData,
     ) -> Result<(), Error> {
         self.communicate::<_, dsa_verify::Response>(dsa_verify::Command::new(
+            digest,
+            signer_certificate,
+            received_sig,
+        ))
+        .await?
+        .status()
+        .resolve()
+    }
+
+    async fn dsa_verify283k1(
+        &self,
+        digest: ember::MessageDigest,
+        signer_certificate: ember::Certificate283k1Data,
+        received_sig: ember::Signature283k1Data,
+    ) -> Result<(), Error> {
+        self.communicate::<_, dsa_verify283k1::Response>(dsa_verify283k1::Command::new(
             digest,
             signer_certificate,
             received_sig,

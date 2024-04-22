@@ -78,4 +78,12 @@ pub trait CertificateBasedKeyExchange: Transport {
         signer_certificate: ember::CertificateData,
         received_sig: ember::SignatureData,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    ///  Verify that signature of the associated message digest was signed by the private key of the associated certificate.
+    fn dsa_verify283k1(
+        &self,
+        digest: ember::MessageDigest,
+        signer_certificate: ember::Certificate283k1Data,
+        received_sig: ember::Signature283k1Data,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }

@@ -18,13 +18,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }

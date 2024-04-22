@@ -36,36 +36,6 @@ impl Command {
             output_clusters: output_cluster_list,
         }
     }
-
-    #[must_use]
-    pub const fn endpoint(&self) -> u8 {
-        self.endpoint
-    }
-
-    #[must_use]
-    pub const fn profile_id(&self) -> u16 {
-        self.profile_id
-    }
-
-    #[must_use]
-    pub const fn device_id(&self) -> u16 {
-        self.device_id
-    }
-
-    #[must_use]
-    pub const fn app_flags(&self) -> u8 {
-        self.app_flags
-    }
-
-    #[must_use]
-    pub const fn input_cluster_list(&self) -> &ByteSizedVec<u16> {
-        &self.input_clusters
-    }
-
-    #[must_use]
-    pub const fn output_cluster_list(&self) -> &ByteSizedVec<u16> {
-        &self.output_clusters
-    }
 }
 
 impl Parameter for Command {
@@ -79,13 +49,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }

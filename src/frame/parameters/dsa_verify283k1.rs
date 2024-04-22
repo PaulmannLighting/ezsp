@@ -24,21 +24,6 @@ impl Command {
             received_sig,
         }
     }
-
-    #[must_use]
-    pub const fn digest(&self) -> &MessageDigest {
-        &self.digest
-    }
-
-    #[must_use]
-    pub const fn signer_certificate(&self) -> &Certificate283k1Data {
-        &self.signer_certificate
-    }
-
-    #[must_use]
-    pub const fn received_sig(&self) -> &Signature283k1Data {
-        &self.received_sig
-    }
 }
 
 impl Parameter for Command {
@@ -52,13 +37,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }

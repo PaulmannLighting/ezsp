@@ -11,14 +11,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status, message: ByteSizedVec<u8>) -> Self {
-        Self {
-            status: status.into(),
-            message,
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }

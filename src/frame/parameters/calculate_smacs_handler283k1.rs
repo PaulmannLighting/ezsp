@@ -12,15 +12,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status, initiator_smac: SmacData, responder_smac: SmacData) -> Self {
-        Self {
-            status: status.into(),
-            initiator_smac,
-            responder_smac,
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }

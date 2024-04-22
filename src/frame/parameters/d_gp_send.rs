@@ -42,41 +42,6 @@ impl Command {
                 .map_err(|_| Error::DurationTooLarge(gp_tx_queue_entry_lifetime))?,
         })
     }
-
-    #[must_use]
-    pub const fn action(&self) -> bool {
-        self.action
-    }
-
-    #[must_use]
-    pub const fn use_cca(&self) -> bool {
-        self.use_cca
-    }
-
-    #[must_use]
-    pub const fn addr(&self) -> &Address {
-        &self.addr
-    }
-
-    #[must_use]
-    pub const fn gpd_command_id(&self) -> u8 {
-        self.gpd_command_id
-    }
-
-    #[must_use]
-    pub const fn gpd_asdu(&self) -> &ByteSizedVec<u8> {
-        &self.gpd_asdu
-    }
-
-    #[must_use]
-    pub const fn gpep_handle(&self) -> u8 {
-        self.gpep_handle
-    }
-
-    #[must_use]
-    pub fn gp_tx_queue_entry_lifetime(&self) -> Duration {
-        Duration::from_millis(self.gp_tx_queue_entry_lifetime_ms.into())
-    }
 }
 
 impl Parameter for Command {
@@ -90,13 +55,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }

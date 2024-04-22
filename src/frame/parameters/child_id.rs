@@ -14,11 +14,6 @@ impl Command {
     pub const fn new(child_index: u8) -> Self {
         Self { child_index }
     }
-
-    #[must_use]
-    pub const fn child_index(&self) -> u8 {
-        self.child_index
-    }
 }
 
 impl Parameter for Command {
@@ -32,11 +27,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub const fn new(child_id: NodeId) -> Self {
-        Self { child_id }
-    }
-
     #[must_use]
     pub const fn child_id(&self) -> NodeId {
         self.child_id

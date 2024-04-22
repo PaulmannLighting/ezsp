@@ -25,21 +25,6 @@ impl Command {
             data,
         }
     }
-
-    #[must_use]
-    pub const fn context(&self) -> &MmoHashContext {
-        &self.context
-    }
-
-    #[must_use]
-    pub const fn finalize(&self) -> bool {
-        self.finalize
-    }
-
-    #[must_use]
-    pub const fn data(&self) -> &ByteSizedVec<u8> {
-        &self.data
-    }
 }
 
 impl Parameter for Command {
@@ -54,14 +39,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status, return_context: MmoHashContext) -> Self {
-        Self {
-            status: status.into(),
-            return_context,
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }

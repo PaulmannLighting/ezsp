@@ -13,16 +13,6 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub fn new(channel_page: u8, channel: u8, state: State, total_devices: u8) -> Self {
-        Self {
-            channel_page,
-            channel,
-            state: state.into(),
-            total_devices,
-        }
-    }
-
-    #[must_use]
     pub const fn channel_page(&self) -> u8 {
         self.channel_page
     }

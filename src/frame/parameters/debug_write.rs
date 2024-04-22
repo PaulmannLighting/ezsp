@@ -19,16 +19,6 @@ impl Command {
             message,
         }
     }
-
-    #[must_use]
-    pub const fn binary_message(&self) -> bool {
-        self.binary_message
-    }
-
-    #[must_use]
-    pub const fn message(&self) -> &ByteSizedVec<u8> {
-        &self.message
-    }
 }
 
 impl Parameter for Command {
@@ -42,13 +32,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }

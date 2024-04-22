@@ -15,11 +15,6 @@ impl Command {
             address_table_index,
         }
     }
-
-    #[must_use]
-    pub const fn address_table_index(&self) -> u8 {
-        self.address_table_index
-    }
 }
 
 impl Parameter for Command {
@@ -33,11 +28,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub const fn new(active: bool) -> Self {
-        Self { active }
-    }
-
     #[must_use]
     pub const fn active(&self) -> bool {
         self.active

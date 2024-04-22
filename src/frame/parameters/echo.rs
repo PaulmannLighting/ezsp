@@ -14,11 +14,6 @@ impl Command {
     pub const fn new(data: ByteSizedVec<u8>) -> Self {
         Self { data }
     }
-
-    #[must_use]
-    pub const fn data(&self) -> &ByteSizedVec<u8> {
-        &self.data
-    }
 }
 
 impl Parameter for Command {
@@ -32,11 +27,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub const fn new(echo: ByteSizedVec<u8>) -> Self {
-        Self { echo }
-    }
-
     #[must_use]
     pub fn echo(self) -> ByteSizedVec<u8> {
         self.echo

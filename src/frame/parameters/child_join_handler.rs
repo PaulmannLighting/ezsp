@@ -16,23 +16,6 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub fn new(
-        index: u8,
-        joining: bool,
-        child_id: NodeId,
-        child_eui64: Eui64,
-        child_type: Type,
-    ) -> Self {
-        Self {
-            index,
-            joining,
-            child_id,
-            child_eui64,
-            child_type: child_type.into(),
-        }
-    }
-
-    #[must_use]
     pub const fn index(&self) -> u8 {
         self.index
     }

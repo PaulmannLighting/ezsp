@@ -14,16 +14,6 @@ impl Command {
     pub const fn new(plaintext: [u8; 16], key: [u8; 16]) -> Self {
         Self { plaintext, key }
     }
-
-    #[must_use]
-    pub const fn plaintext(&self) -> [u8; 16] {
-        self.plaintext
-    }
-
-    #[must_use]
-    pub const fn key(&self) -> [u8; 16] {
-        self.key
-    }
 }
 
 impl Parameter for Command {
@@ -37,11 +27,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub const fn new(ciphertext: [u8; 16]) -> Self {
-        Self { ciphertext }
-    }
-
     #[must_use]
     pub const fn ciphertext(&self) -> [u8; 16] {
         self.ciphertext

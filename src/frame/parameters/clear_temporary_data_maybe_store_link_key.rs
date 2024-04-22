@@ -14,11 +14,6 @@ impl Command {
     pub const fn new(store_link_key: bool) -> Self {
         Self { store_link_key }
     }
-
-    #[must_use]
-    pub const fn store_link_key(&self) -> bool {
-        self.store_link_key
-    }
 }
 
 impl Parameter for Command {
@@ -32,13 +27,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }

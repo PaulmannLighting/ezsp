@@ -18,11 +18,6 @@ impl Command {
             .map_err(|_| Error::DurationTooLarge(delay))
             .map(|delay| Self { delay })
     }
-
-    #[must_use]
-    pub fn delay(&self) -> Duration {
-        Duration::from_millis(self.delay.into())
-    }
 }
 
 impl Parameter for Command {
@@ -32,13 +27,6 @@ impl Parameter for Command {
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response;
-
-impl Response {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
 
 impl Parameter for Response {
     type Id = u16;

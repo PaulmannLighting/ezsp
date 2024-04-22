@@ -13,11 +13,6 @@ impl Command {
     pub const fn new(index: u8) -> Self {
         Self { index }
     }
-
-    #[must_use]
-    pub const fn index(&self) -> u8 {
-        self.index
-    }
 }
 
 impl Parameter for Command {
@@ -31,11 +26,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub const fn new(active: bool) -> Self {
-        Self { active }
-    }
-
     #[must_use]
     pub const fn active(&self) -> bool {
         self.active

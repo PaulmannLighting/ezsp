@@ -24,21 +24,6 @@ impl Command {
             partner_ephemeral_public_key,
         }
     }
-
-    #[must_use]
-    pub const fn am_initiator(&self) -> bool {
-        self.am_initiator
-    }
-
-    #[must_use]
-    pub const fn partner_certificate(&self) -> &CertificateData {
-        &self.partner_certificate
-    }
-
-    #[must_use]
-    pub const fn partner_ephemeral_public_key(&self) -> &PublicKeyData {
-        &self.partner_ephemeral_public_key
-    }
 }
 
 impl Parameter for Command {
@@ -52,13 +37,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }

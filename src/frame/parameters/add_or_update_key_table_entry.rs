@@ -20,21 +20,6 @@ impl Command {
             key_data,
         }
     }
-
-    #[must_use]
-    pub const fn address(&self) -> Eui64 {
-        self.address
-    }
-
-    #[must_use]
-    pub const fn link_key(&self) -> bool {
-        self.link_key
-    }
-
-    #[must_use]
-    pub const fn key_data(&self) -> &Data {
-        &self.key_data
-    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
@@ -43,13 +28,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }

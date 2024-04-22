@@ -1,4 +1,6 @@
-use crate::ember::{Certificate283k1Data, PublicKey283k1Data};
+use crate::ember::{
+    Certificate283k1Data, CertificateData, MessageDigest, PublicKey283k1Data, SignatureData,
+};
 use crate::types::ByteSizedVec;
 use crate::{ember, Error, Transport};
 use std::future::Future;
@@ -71,4 +73,12 @@ pub trait CertificateBasedKeyExchange: Transport {
     #[deprecated]
     fn dsa_sign(&self, message: ByteSizedVec<u8>)
         -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Verify that signature of the associated message digest was signed by the private key of the associated certificate.
+    fn dsa_verify(
+        &self,
+        digest: MessageDigest,
+        signer_certificate: CertificateData,
+        received_sig: SignatureData,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }

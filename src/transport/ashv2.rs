@@ -12,7 +12,10 @@ use serialport::SerialPort;
 use crate::ember;
 use crate::ember::binding::TableEntry;
 use crate::ember::gp::Address;
-use crate::ember::{Certificate283k1Data, NodeId, PanId, PublicKey283k1Data};
+use crate::ember::{
+    Certificate283k1Data, CertificateData, MessageDigest, NodeId, PanId, PublicKey283k1Data,
+    SignatureData,
+};
 use crate::error::Resolve;
 use crate::ezsp::decision;
 use crate::frame::parameters::{
@@ -21,7 +24,7 @@ use crate::frame::parameters::{
     calculate_smacs283k1, child_id, clear_binding_table, clear_key_table, clear_stored_beacons,
     clear_temporary_data_maybe_store_link_key, clear_temporary_data_maybe_store_link_key283k1,
     clear_transient_link_keys, custom_frame, d_gp_send, debug_write, delay_test, delete_binding,
-    dsa_sign, get_binding, get_binding_remote_node_id, read_attribute, set_binding,
+    dsa_sign, dsa_verify, get_binding, get_binding_remote_node_id, read_attribute, set_binding,
     set_binding_remote_node_id, version,
 };
 use crate::frame::{Control, Header, Parameter};
@@ -211,6 +214,22 @@ impl CertificateBasedKeyExchange for Ashv2 {
         self.communicate::<_, dsa_sign::Response>(dsa_sign::Command::new(message))
             .await
             .map(drop)
+    }
+
+    async fn dsa_verify(
+        &self,
+        digest: MessageDigest,
+        signer_certificate: CertificateData,
+        received_sig: SignatureData,
+    ) -> Result<(), Error> {
+        self.communicate::<_, dsa_verify::Response>(dsa_verify::Command::new(
+            digest,
+            signer_certificate,
+            received_sig,
+        ))
+        .await?
+        .status()
+        .resolve()
     }
 }
 

@@ -12,17 +12,10 @@ use serialport::SerialPort;
 use crate::ember;
 use crate::ember::binding::TableEntry;
 use crate::ember::gp::Address;
+use crate::ember::message;
 use crate::error::Resolve;
 use crate::ezsp::decision;
-use crate::frame::parameters::{
-    add_endpoint, address_table_entry_is_active, aes_encrypt, aes_mmo_hash, binding_is_active,
-    broadcast_network_key_switch, broadcast_next_network_key, calculate_smacs,
-    calculate_smacs283k1, child_id, clear_binding_table, clear_key_table, clear_stored_beacons,
-    clear_temporary_data_maybe_store_link_key, clear_temporary_data_maybe_store_link_key283k1,
-    clear_transient_link_keys, custom_frame, d_gp_send, debug_write, delay_test, delete_binding,
-    dsa_sign, dsa_verify, dsa_verify283k1, echo, get_binding, get_binding_remote_node_id,
-    read_attribute, set_binding, set_binding_remote_node_id, version,
-};
+use crate::frame::parameters::*;
 use crate::frame::{Control, Header, Parameter};
 use crate::transport::ashv2::response_handler::ResponseHandler;
 use crate::transport::ezsp::{
@@ -92,41 +85,51 @@ impl Transport for Ashv2 {
 
 impl Binding for Ashv2 {
     async fn clear_binding_table(&self) -> Result<(), Error> {
-        self.communicate::<_, clear_binding_table::Response>(clear_binding_table::Command)
-            .await?
-            .status()
-            .resolve()
+        self.communicate::<_, binding::clear_binding_table::Response>(
+            binding::clear_binding_table::Command,
+        )
+        .await?
+        .status()
+        .resolve()
     }
 
     async fn set_binding(&self, index: u8, value: TableEntry) -> Result<(), Error> {
-        self.communicate::<_, set_binding::Response>(set_binding::Command::new(index, value))
-            .await?
-            .status()
-            .resolve()
+        self.communicate::<_, binding::set_binding::Response>(binding::set_binding::Command::new(
+            index, value,
+        ))
+        .await?
+        .status()
+        .resolve()
     }
 
     async fn get_binding(&self, index: u8) -> Result<TableEntry, Error> {
-        self.communicate::<_, get_binding::Response>(get_binding::Command::new(index))
-            .await?
-            .into()
+        self.communicate::<_, binding::get_binding::Response>(binding::get_binding::Command::new(
+            index,
+        ))
+        .await?
+        .into()
     }
 
     async fn delete_binding(&self, index: u8) -> Result<(), Error> {
-        self.communicate::<_, delete_binding::Response>(delete_binding::Command::new(index))
-            .await?
-            .status()
-            .resolve()
+        self.communicate::<_, binding::delete_binding::Response>(
+            binding::delete_binding::Command::new(index),
+        )
+        .await?
+        .status()
+        .resolve()
     }
 
     async fn binding_is_active(&self, index: u8) -> Result<bool, Error> {
-        self.communicate::<_, binding_is_active::Response>(binding_is_active::Command::new(index))
-            .await
-            .map(|response| response.active())
+        self.communicate::<_, binding::binding_is_active::Response>(
+            binding::binding_is_active::Command::new(index),
+        )
+        .await
+        .map(|response| response.active())
     }
 
     async fn get_binding_remote_node_id(&self, index: u8) -> Result<ember::NodeId, Error> {
-        self.communicate::<_, get_binding_remote_node_id::Response>(
-            get_binding_remote_node_id::Command::new(index),
+        self.communicate::<_, binding::get_binding_remote_node_id::Response>(
+            binding::get_binding_remote_node_id::Command::new(index),
         )
         .await
         .map(|response| response.node_id())
@@ -137,8 +140,8 @@ impl Binding for Ashv2 {
         index: u8,
         node_id: ember::NodeId,
     ) -> Result<(), Error> {
-        self.communicate::<_, set_binding_remote_node_id::Response>(
-            set_binding_remote_node_id::Command::new(index, node_id),
+        self.communicate::<_, binding::set_binding_remote_node_id::Response>(
+            binding::set_binding_remote_node_id::Command::new(index, node_id),
         )
         .await
         .map(drop)
@@ -147,9 +150,11 @@ impl Binding for Ashv2 {
 
 impl Bootloader for Ashv2 {
     async fn aes_encrypt(&self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
-        self.communicate::<_, aes_encrypt::Response>(aes_encrypt::Command::new(plaintext, key))
-            .await
-            .map(|response| response.ciphertext())
+        self.communicate::<_, bootloader::aes_encrypt::Response>(
+            bootloader::aes_encrypt::Command::new(plaintext, key),
+        )
+        .await
+        .map(|response| response.ciphertext())
     }
 }
 
@@ -160,7 +165,7 @@ impl CertificateBasedKeyExchange for Ashv2 {
         partner_certificate: ember::CertificateData,
         partner_ephemeral_public_key: ember::PublicKeyData,
     ) -> Result<(), Error> {
-        self.communicate::<_, calculate_smacs::Response>(calculate_smacs::Command::new(
+        self.communicate::<_, cbke::calculate_smacs::Response>(cbke::calculate_smacs::Command::new(
             am_initiator,
             partner_certificate,
             partner_ephemeral_public_key,
@@ -176,11 +181,13 @@ impl CertificateBasedKeyExchange for Ashv2 {
         partner_certificate: ember::Certificate283k1Data,
         partner_ephemeral_public_key: ember::PublicKey283k1Data,
     ) -> Result<(), Error> {
-        self.communicate::<_, calculate_smacs283k1::Response>(calculate_smacs283k1::Command::new(
-            am_initiator,
-            partner_certificate,
-            partner_ephemeral_public_key,
-        ))
+        self.communicate::<_, cbke::calculate_smacs283k1::Response>(
+            cbke::calculate_smacs283k1::Command::new(
+                am_initiator,
+                partner_certificate,
+                partner_ephemeral_public_key,
+            ),
+        )
         .await?
         .status()
         .resolve()
@@ -190,8 +197,8 @@ impl CertificateBasedKeyExchange for Ashv2 {
         &self,
         store_link_key: bool,
     ) -> Result<(), Error> {
-        self.communicate::<_, clear_temporary_data_maybe_store_link_key::Response>(
-            clear_temporary_data_maybe_store_link_key::Command::new(store_link_key),
+        self.communicate::<_, cbke::clear_temporary_data_maybe_store_link_key::Response>(
+            cbke::clear_temporary_data_maybe_store_link_key::Command::new(store_link_key),
         )
         .await?
         .status()
@@ -202,8 +209,8 @@ impl CertificateBasedKeyExchange for Ashv2 {
         &self,
         store_link_key: bool,
     ) -> Result<(), Error> {
-        self.communicate::<_, clear_temporary_data_maybe_store_link_key283k1::Response>(
-            clear_temporary_data_maybe_store_link_key283k1::Command::new(store_link_key),
+        self.communicate::<_, cbke::clear_temporary_data_maybe_store_link_key283k1::Response>(
+            cbke::clear_temporary_data_maybe_store_link_key283k1::Command::new(store_link_key),
         )
         .await?
         .status()
@@ -211,7 +218,7 @@ impl CertificateBasedKeyExchange for Ashv2 {
     }
 
     async fn dsa_sign(&self, message: ByteSizedVec<u8>) -> Result<(), Error> {
-        self.communicate::<_, dsa_sign::Response>(dsa_sign::Command::new(message))
+        self.communicate::<_, cbke::dsa_sign::Response>(cbke::dsa_sign::Command::new(message))
             .await
             .map(drop)
     }
@@ -222,7 +229,7 @@ impl CertificateBasedKeyExchange for Ashv2 {
         signer_certificate: ember::CertificateData,
         received_sig: ember::SignatureData,
     ) -> Result<(), Error> {
-        self.communicate::<_, dsa_verify::Response>(dsa_verify::Command::new(
+        self.communicate::<_, cbke::dsa_verify::Response>(cbke::dsa_verify::Command::new(
             digest,
             signer_certificate,
             received_sig,
@@ -238,7 +245,7 @@ impl CertificateBasedKeyExchange for Ashv2 {
         signer_certificate: ember::Certificate283k1Data,
         received_sig: ember::Signature283k1Data,
     ) -> Result<(), Error> {
-        self.communicate::<_, dsa_verify283k1::Response>(dsa_verify283k1::Command::new(
+        self.communicate::<_, cbke::dsa_verify283k1::Response>(cbke::dsa_verify283k1::Command::new(
             digest,
             signer_certificate,
             received_sig,
@@ -250,18 +257,25 @@ impl CertificateBasedKeyExchange for Ashv2 {
 }
 
 impl Configuration for Ashv2 {
-    async fn version(&self, desired_protocol_version: u8) -> Result<version::Response, Error> {
-        self.communicate::<_, version::Response>(version::Command::new(desired_protocol_version))
-            .await
+    async fn version(
+        &self,
+        desired_protocol_version: u8,
+    ) -> Result<configuration::version::Response, Error> {
+        self.communicate::<_, configuration::version::Response>(
+            configuration::version::Command::new(desired_protocol_version),
+        )
+        .await
     }
 
     async fn legacy_version(
         &self,
         desired_protocol_version: u8,
-    ) -> Result<version::Response, Error> {
-        self.communicate::<_, version::LegacyResponse>(version::LegacyCommand::from(
-            version::Command::new(desired_protocol_version),
-        ))
+    ) -> Result<configuration::version::Response, Error> {
+        self.communicate::<_, configuration::version::LegacyResponse>(
+            configuration::version::LegacyCommand::from(configuration::version::Command::new(
+                desired_protocol_version,
+            )),
+        )
         .await
         .map(Into::into)
     }
@@ -281,7 +295,7 @@ impl Configuration for Ashv2 {
         attribute_id: u16,
         mask: u8,
         manufacturer_code: u16,
-    ) -> Result<read_attribute::Response, Error> {
+    ) -> Result<configuration::read_attribute::Response, Error> {
         todo!()
     }
 
@@ -308,14 +322,16 @@ impl Configuration for Ashv2 {
         input_clusters: ByteSizedVec<u16>,
         output_clusters: ByteSizedVec<u16>,
     ) -> Result<(), Error> {
-        self.communicate::<_, add_endpoint::Response>(add_endpoint::Command::new(
-            endpoint,
-            profile_id,
-            device_id,
-            app_flags,
-            input_clusters,
-            output_clusters,
-        ))
+        self.communicate::<_, configuration::add_endpoint::Response>(
+            configuration::add_endpoint::Command::new(
+                endpoint,
+                profile_id,
+                device_id,
+                app_flags,
+                input_clusters,
+                output_clusters,
+            ),
+        )
         .await?
         .status()
         .resolve()
@@ -365,15 +381,17 @@ impl GreenPower for Ashv2 {
         gpep_handle: u8,
         gp_tx_queue_entry_lifetime: Duration,
     ) -> Result<(), Error> {
-        self.communicate::<_, d_gp_send::Response>(d_gp_send::Command::new(
-            action,
-            use_cca,
-            addr,
-            gpd_command_id,
-            gpd_asdu,
-            gpep_handle,
-            gp_tx_queue_entry_lifetime,
-        )?)
+        self.communicate::<_, green_power::d_gp_send::Response>(
+            green_power::d_gp_send::Command::new(
+                action,
+                use_cca,
+                addr,
+                gpd_command_id,
+                gpd_asdu,
+                gpep_handle,
+                gp_tx_queue_entry_lifetime,
+            )?,
+        )
         .await?
         .status()
         .resolve()
@@ -382,8 +400,8 @@ impl GreenPower for Ashv2 {
 
 impl Messaging for Ashv2 {
     async fn address_table_entry_is_active(&self, address_table_index: u8) -> Result<bool, Error> {
-        self.communicate::<_, address_table_entry_is_active::Response>(
-            address_table_entry_is_active::Command::new(address_table_index),
+        self.communicate::<_, messaging::address_table_entry_is_active::Response>(
+            messaging::address_table_entry_is_active::Command::new(address_table_index),
         )
         .await
         .map(|response| response.active())
@@ -392,29 +410,35 @@ impl Messaging for Ashv2 {
 
 impl Networking for Ashv2 {
     async fn child_id(&self, child_index: u8) -> Result<ember::NodeId, Error> {
-        self.communicate::<_, child_id::Response>(child_id::Command::new(child_index))
-            .await
-            .map(|response| response.child_id())
+        self.communicate::<_, networking::child_id::Response>(networking::child_id::Command::new(
+            child_index,
+        ))
+        .await
+        .map(|response| response.child_id())
     }
 
     async fn clear_stored_beacons(&self) -> Result<(), Error> {
-        self.communicate::<_, clear_stored_beacons::Response>(clear_stored_beacons::Command)
-            .await
-            .map(drop)
+        self.communicate::<_, networking::clear_stored_beacons::Response>(
+            networking::clear_stored_beacons::Command,
+        )
+        .await
+        .map(drop)
     }
 }
 
 impl Security for Ashv2 {
     async fn clear_key_table(&self) -> Result<(), Error> {
-        self.communicate::<_, clear_key_table::Response>(clear_key_table::Command)
-            .await?
-            .status()
-            .resolve()
+        self.communicate::<_, security::clear_key_table::Response>(
+            security::clear_key_table::Command,
+        )
+        .await?
+        .status()
+        .resolve()
     }
 
     async fn clear_transient_link_keys(&self) -> Result<(), Error> {
-        self.communicate::<_, clear_transient_link_keys::Response>(
-            clear_transient_link_keys::Command,
+        self.communicate::<_, security::clear_transient_link_keys::Response>(
+            security::clear_transient_link_keys::Command,
         )
         .await
         .map(drop)
@@ -423,8 +447,8 @@ impl Security for Ashv2 {
 
 impl TrustCenter for Ashv2 {
     async fn broadcast_next_network_key(&self, key: ember::key::Data) -> Result<(), Error> {
-        self.communicate::<_, broadcast_next_network_key::Response>(
-            broadcast_next_network_key::Command::new(key),
+        self.communicate::<_, trust_center::broadcast_next_network_key::Response>(
+            trust_center::broadcast_next_network_key::Command::new(key),
         )
         .await?
         .status()
@@ -432,8 +456,8 @@ impl TrustCenter for Ashv2 {
     }
 
     async fn broadcast_network_key_switch(&self) -> Result<(), Error> {
-        self.communicate::<_, broadcast_network_key_switch::Response>(
-            broadcast_network_key_switch::Command,
+        self.communicate::<_, trust_center::broadcast_network_key_switch::Response>(
+            trust_center::broadcast_network_key_switch::Command,
         )
         .await?
         .status()
@@ -446,9 +470,9 @@ impl TrustCenter for Ashv2 {
         finalize: bool,
         data: ByteSizedVec<u8>,
     ) -> Result<ember::aes::MmoHashContext, Error> {
-        self.communicate::<_, aes_mmo_hash::Response>(aes_mmo_hash::Command::new(
-            context, finalize, data,
-        ))
+        self.communicate::<_, trust_center::aes_mmo_hash::Response>(
+            trust_center::aes_mmo_hash::Command::new(context, finalize, data),
+        )
         .await?
         .into()
     }
@@ -456,9 +480,11 @@ impl TrustCenter for Ashv2 {
 
 impl Utilities for Ashv2 {
     async fn custom_frame(&self, payload: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
-        self.communicate::<_, custom_frame::Response>(custom_frame::Command::new(payload))
-            .await?
-            .into()
+        self.communicate::<_, utilities::custom_frame::Response>(
+            utilities::custom_frame::Command::new(payload),
+        )
+        .await?
+        .into()
     }
 
     async fn debug_write(
@@ -466,24 +492,25 @@ impl Utilities for Ashv2 {
         binary_message: bool,
         message: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
-        self.communicate::<_, debug_write::Response>(debug_write::Command::new(
-            binary_message,
-            message,
-        ))
+        self.communicate::<_, utilities::debug_write::Response>(
+            utilities::debug_write::Command::new(binary_message, message),
+        )
         .await?
         .status()
         .resolve()
     }
 
     async fn delay_test(&self, delay: Duration) -> Result<(), Error> {
-        self.communicate::<_, delay_test::Response>(delay_test::Command::new(delay)?)
-            .await
-            .map(drop)
+        self.communicate::<_, utilities::delay_test::Response>(utilities::delay_test::Command::new(
+            delay,
+        )?)
+        .await
+        .map(drop)
     }
 
     async fn echo(&self, data: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
-        self.communicate::<_, echo::Response>(echo::Command::new(data))
+        self.communicate::<_, utilities::echo::Response>(utilities::echo::Command::new(data))
             .await
-            .map(echo::Response::echo)
+            .map(utilities::echo::Response::echo)
     }
 }

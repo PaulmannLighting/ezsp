@@ -1,6 +1,6 @@
 use crate::ember::PanId;
 use crate::ezsp::decision;
-use crate::frame::parameters::{read_attribute, version};
+use crate::frame::parameters::configuration::{read_attribute, version};
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 use std::future::Future;

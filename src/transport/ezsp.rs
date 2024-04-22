@@ -11,7 +11,7 @@ pub use security::Security;
 pub use trust_center::TrustCenter;
 pub use utilities::Utilities;
 
-use crate::frame::parameters::version;
+use crate::frame::parameters::configuration::version;
 use crate::Error;
 
 mod binding;

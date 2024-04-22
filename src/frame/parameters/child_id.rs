@@ -4,7 +4,7 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0106;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     child_index: u8,
 }
@@ -26,7 +26,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     child_id: NodeId,
 }

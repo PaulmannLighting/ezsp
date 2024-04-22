@@ -1,10 +1,11 @@
+use le_stream::derive::FromLeBytes;
+
 use crate::ember::Status;
 use crate::types::ByteSizedVec;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0093;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
     message: ByteSizedVec<u8>,

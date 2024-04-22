@@ -5,7 +5,7 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0012;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     binary_message: bool,
     message: ByteSizedVec<u8>,
@@ -36,7 +36,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }

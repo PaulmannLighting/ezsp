@@ -1,20 +1,10 @@
 use crate::ember::Status;
 use crate::types::ByteSizedVec;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::FromLeBytes;
 
 const ID: u16 = 0x00A7;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command;
-
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
     message: ByteSizedVec<u8>,

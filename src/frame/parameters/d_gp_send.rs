@@ -8,7 +8,7 @@ use std::time::Duration;
 
 const ID: u16 = 0x00C6;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     action: bool,
     use_cca: bool,
@@ -84,7 +84,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }

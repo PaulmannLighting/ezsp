@@ -1,10 +1,11 @@
+use le_stream::derive::FromLeBytes;
+
 use crate::ember::node::Type;
 use crate::ember::{Eui64, NodeId};
-use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0023;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     index: u8,
     joining: bool,

@@ -1,9 +1,10 @@
+use le_stream::derive::FromLeBytes;
+
 use crate::ember::{SmacData, Status};
-use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x00A0;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
     initiator_smac: SmacData,

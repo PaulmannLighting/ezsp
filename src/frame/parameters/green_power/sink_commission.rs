@@ -1,9 +1,10 @@
 use crate::ember::Status;
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x010A;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     options: u8,
     gpm_addr_for_security: u16,
@@ -26,42 +27,25 @@ impl Command {
             sink_endpoint,
         }
     }
-
-    #[must_use]
-    pub const fn options(&self) -> u8 {
-        self.options
-    }
-
-    #[must_use]
-    pub const fn gpm_addr_for_security(&self) -> u16 {
-        self.gpm_addr_for_security
-    }
-
-    #[must_use]
-    pub const fn gpm_addr_for_pairing(&self) -> u16 {
-        self.gpm_addr_for_pairing
-    }
-
-    #[must_use]
-    pub const fn sink_endpoint(&self) -> u8 {
-        self.sink_endpoint
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }
+}
+
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

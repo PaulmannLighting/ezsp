@@ -8,7 +8,8 @@ use crate::{Error, Header};
 pub use ashv2::Ashv2;
 pub use ezsp::{
     Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, GreenPower, Messaging,
-    Networking, Security, TrustCenter, Utilities,
+    Mfglib, Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities,
+    Wwah, Zll,
 };
 use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;

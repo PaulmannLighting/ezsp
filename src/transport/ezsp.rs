@@ -4,7 +4,7 @@ pub use binding::Binding;
 pub use bootloader::Bootloader;
 pub use cbke::CertificateBasedKeyExchange;
 pub use configuration::Configuration;
-pub use green_power::GreenPower;
+pub use green_power::{GreenPower, ProxyTable, SinkTable};
 pub use messaging::Messaging;
 pub use mfglib::Mfglib;
 pub use networking::Networking;

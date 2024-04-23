@@ -34,7 +34,7 @@ impl Command {
             aps_frame,
             radius,
             message_tag,
-            content: content,
+            content,
         }
     }
 

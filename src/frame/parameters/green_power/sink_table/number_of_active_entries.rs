@@ -1,7 +1,7 @@
+use crate::types::UintT;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0118;
-type UintT = u16; // TODO: is this the correct type?
 
 #[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command;

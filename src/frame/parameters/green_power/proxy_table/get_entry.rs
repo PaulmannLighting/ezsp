@@ -34,8 +34,8 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn entry(&self) -> &TableEntry {
-        &self.entry
+    pub const fn entry(self) -> TableEntry {
+        self.entry
     }
 }
 

@@ -1,23 +1,16 @@
 use crate::ember::{PublicKey283k1Data, Status};
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::frame::Parameter;
+use le_stream::derive::FromLeBytes;
 
 const ID: u16 = 0x00E9;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
     ephemeral_public_key: PublicKey283k1Data,
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status, ephemeral_public_key: PublicKey283k1Data) -> Self {
-        Self {
-            status: status.into(),
-            ephemeral_public_key,
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }
@@ -26,4 +19,9 @@ impl Response {
     pub const fn ephemeral_public_key(&self) -> &PublicKey283k1Data {
         &self.ephemeral_public_key
     }
+}
+
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

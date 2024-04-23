@@ -1,10 +1,11 @@
 use le_stream::derive::FromLeBytes;
 
 use crate::ember::{SmacData, Status};
+use crate::frame::Parameter;
 
 const ID: u16 = 0x00EB;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
     initiator_smac: SmacData,
@@ -25,4 +26,9 @@ impl Response {
     pub const fn responder_smac(&self) -> &SmacData {
         &self.responder_smac
     }
+}
+
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

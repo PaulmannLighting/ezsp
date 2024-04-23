@@ -1,5 +1,9 @@
+use crate::ember::{
+    Certificate283k1Data, CertificateData, MessageDigest, PrivateKeyData, PublicKey283k1Data,
+    PublicKeyData, Signature283k1Data, SignatureData,
+};
 use crate::types::ByteSizedVec;
-use crate::{ember, Error, Transport};
+use crate::{Error, Transport};
 use std::future::Future;
 
 pub trait CertificateBasedKeyExchange: Transport {
@@ -11,8 +15,8 @@ pub trait CertificateBasedKeyExchange: Transport {
     fn calculate_smacs(
         &self,
         am_initiator: bool,
-        partner_certificate: ember::CertificateData,
-        partner_ephemeral_public_key: ember::PublicKeyData,
+        partner_certificate: CertificateData,
+        partner_ephemeral_public_key: PublicKeyData,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Calculates the SMAC verification keys for both the initiator and responder roles of
@@ -23,8 +27,8 @@ pub trait CertificateBasedKeyExchange: Transport {
     fn calculate_smacs283k1(
         &self,
         am_initiator: bool,
-        partner_certificate: ember::Certificate283k1Data,
-        partner_ephemeral_public_key: ember::PublicKey283k1Data,
+        partner_certificate: Certificate283k1Data,
+        partner_ephemeral_public_key: PublicKey283k1Data,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Clears the temporary data associated with CBKE and the key establishment,
@@ -74,16 +78,49 @@ pub trait CertificateBasedKeyExchange: Transport {
     /// Verify that signature of the associated message digest was signed by the private key of the associated certificate.
     fn dsa_verify(
         &self,
-        digest: ember::MessageDigest,
-        signer_certificate: ember::CertificateData,
-        received_sig: ember::SignatureData,
+        digest: MessageDigest,
+        signer_certificate: CertificateData,
+        received_sig: SignatureData,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     ///  Verify that signature of the associated message digest was signed by the private key of the associated certificate.
     fn dsa_verify283k1(
         &self,
-        digest: ember::MessageDigest,
-        signer_certificate: ember::Certificate283k1Data,
-        received_sig: ember::Signature283k1Data,
+        digest: MessageDigest,
+        signer_certificate: Certificate283k1Data,
+        received_sig: Signature283k1Data,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This call starts the generation of the ECC Ephemeral Public/Private key pair.
+    ///
+    /// When complete it stores the private key.
+    /// The results are returned via [`generate_cbke_keys_handler::Result`](crate::frame::parameters::cbke::generate_cbke_keys_handler::Response).
+    fn generate_cbke_keys(&self) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This call starts the generation of the ECC 283k1 curve Ephemeral Public/Private key pair.
+    ///
+    /// When complete it stores the private key.
+    /// The results are returned via [`generate_cbke_keys_handler283k1::Result`](crate::frame::parameters::cbke::generate_cbke_keys_handler283k1::Response).
+    fn generate_cbke_keys283k1(&self) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Retrieves the certificate installed on the NCP.
+    fn get_certificate(&self) -> impl Future<Output = Result<CertificateData, Error>> + Send;
+
+    /// Retrieves the 283k certificate installed on the NCP.
+    fn get_certificate283k1(
+        &self,
+    ) -> impl Future<Output = Result<Certificate283k1Data, Error>> + Send;
+
+    /// Sets the device's 283k1 curve CA public key, local certificate,
+    /// and static private key on the NCP associated with this node.
+    fn save_preinstalled_cbke_data283k1(&self) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets the device's CA public key, local certificate,
+    /// and static private key on the NCP associated with this node.
+    fn set_preinstalled_cbke_data(
+        &self,
+        ca_public: PublicKeyData,
+        my_cert: CertificateData,
+        my_key: PrivateKeyData,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }

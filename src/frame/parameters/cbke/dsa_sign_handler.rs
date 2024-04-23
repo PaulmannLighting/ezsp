@@ -1,10 +1,11 @@
 use crate::ember::Status;
+use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 use le_stream::derive::FromLeBytes;
 
 const ID: u16 = 0x00A7;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
     message: ByteSizedVec<u8>,
@@ -19,4 +20,9 @@ impl Response {
     pub const fn message(&self) -> &ByteSizedVec<u8> {
         &self.message
     }
+}
+
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

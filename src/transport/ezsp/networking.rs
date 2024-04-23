@@ -1,10 +1,10 @@
 use std::future::Future;
 
 use crate::ember::NodeId;
-use crate::{Error, Transport};
+use crate::Error;
 
 /// Networking frames.
-pub trait Networking: Transport {
+pub trait Networking {
     /// Convert a child index to a node ID.
     fn child_id(&self, child_index: u8) -> impl Future<Output = Result<NodeId, Error>> + Send;
 

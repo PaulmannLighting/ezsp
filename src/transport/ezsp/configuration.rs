@@ -1,11 +1,12 @@
+use std::future::Future;
+
 use crate::ember::PanId;
 use crate::ezsp::decision;
 use crate::frame::parameters::configuration::{read_attribute, version};
 use crate::types::ByteSizedVec;
-use crate::{Error, Transport};
-use std::future::Future;
+use crate::Error;
 
-pub trait Configuration: Transport {
+pub trait Configuration {
     /// Configures endpoint information on the NCP.
     /// The NCP does not remember these settings after a reset.
     /// Endpoints can be added by the Host after the NCP has reset.

@@ -1,10 +1,11 @@
+use std::future::Future;
+
 use crate::ember::gp::sink::TableEntry;
 use crate::ember::gp::Address;
 use crate::types::UintT;
-use crate::{Error, Transport};
-use std::future::Future;
+use crate::Error;
 
-pub trait SinkTable: Transport {
+pub trait SinkTable {
     /// Clear the entire sink table.
     fn clear_all(&self) -> impl Future<Output = Result<(), Error>>;
 

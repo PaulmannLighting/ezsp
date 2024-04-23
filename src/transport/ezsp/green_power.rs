@@ -6,12 +6,12 @@ pub use sink_table::SinkTable;
 
 use crate::ember::gp::Address;
 use crate::types::ByteSizedVec;
-use crate::{Error, Transport};
+use crate::Error;
 
 mod proxy_table;
 mod sink_table;
 
-pub trait GreenPower: Transport + ProxyTable + SinkTable {
+pub trait GreenPower: ProxyTable + SinkTable {
     /// Adds/removes an entry from the GP Tx Queue.
     #[allow(clippy::too_many_arguments)]
     fn send(

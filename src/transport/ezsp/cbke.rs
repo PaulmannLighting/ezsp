@@ -1,12 +1,13 @@
+use std::future::Future;
+
 use crate::ember::{
     Certificate283k1Data, CertificateData, MessageDigest, PrivateKeyData, PublicKey283k1Data,
     PublicKeyData, Signature283k1Data, SignatureData,
 };
 use crate::types::ByteSizedVec;
-use crate::{Error, Transport};
-use std::future::Future;
+use crate::Error;
 
-pub trait CertificateBasedKeyExchange: Transport {
+pub trait CertificateBasedKeyExchange {
     /// Calculates the SMAC verification keys for both the initiator and responder roles of
     /// CBKE using the passed parameters and the stored public/private key pair previously
     /// generated with ezspGenerateKeysRetrieveCert().

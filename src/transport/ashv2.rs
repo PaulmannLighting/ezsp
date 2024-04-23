@@ -12,7 +12,6 @@ use serialport::SerialPort;
 use crate::ember;
 use crate::ember::binding::TableEntry;
 use crate::ember::gp::Address;
-use crate::ember::message;
 use crate::error::Resolve;
 use crate::ezsp::decision;
 use crate::frame::parameters::*;

@@ -1,9 +1,10 @@
-use crate::ember::binding::TableEntry;
-use crate::ember::NodeId;
-use crate::{Error, Transport};
 use std::future::Future;
 
-pub trait Binding: Transport {
+use crate::ember::binding::TableEntry;
+use crate::ember::NodeId;
+use crate::Error;
+
+pub trait Binding {
     /// Indicates whether any messages are currently being sent using this binding table entry.
     /// Note that this command does not indicate whether a binding is clear.
     /// To determine whether a binding is clear, check whether the type field of the

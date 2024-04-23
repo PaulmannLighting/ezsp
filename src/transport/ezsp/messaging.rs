@@ -2,9 +2,9 @@ use std::future::Future;
 
 use crate::ember::beacon::ClassificationParams;
 use crate::ember::Eui64;
-use crate::{Error, Transport};
+use crate::Error;
 
-pub trait Messaging: Transport {
+pub trait Messaging {
     /// Indicates whether any messages are currently being sent using this address table entry.
     /// Note that this function does not indicate whether the address table entry is unused.
     /// To determine whether an address table entry is unused, check the remote node ID.

@@ -1,10 +1,11 @@
+use std::future::Future;
+
 use crate::ember::gp::proxy::TableEntry;
 use crate::ember::gp::Address;
 use crate::ember::key::Data;
-use crate::{Error, Transport};
-use std::future::Future;
+use crate::Error;
 
-pub trait ProxyTable: Transport {
+pub trait ProxyTable {
     /// Retrieves the proxy table entry stored at the passed index.
     fn get_entry(&self, proxy_index: u8) -> impl Future<Output = Result<TableEntry, Error>>;
 

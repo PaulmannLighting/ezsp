@@ -1,9 +1,10 @@
-use crate::types::ByteSizedVec;
-use crate::{Error, Transport};
 use std::future::Future;
 use std::time::Duration;
 
-pub trait Utilities: Transport {
+use crate::types::ByteSizedVec;
+use crate::Error;
+
+pub trait Utilities {
     /// Provides the customer a custom EZSP frame.
     /// On the NCP, these frames are only handled if the XNCP library is included.
     /// On the NCP side these frames are handled in the `emberXNcpIncomingCustomEzspMessageCallback()` callback function.

@@ -1,8 +1,9 @@
-use crate::types::ByteSizedVec;
-use crate::{ember, Error, Transport};
 use std::future::Future;
 
-pub trait TrustCenter: Transport {
+use crate::types::ByteSizedVec;
+use crate::{ember, Error};
+
+pub trait TrustCenter {
     /// This function broadcasts a new encryption key,
     /// but does not tell the nodes in the network to start using it.
     /// To tell nodes to switch to the new key, use [`broadcast_network_key_switch()`](Self::broadcast_network_key_switch).

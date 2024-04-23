@@ -1,10 +1,11 @@
+use std::future::Future;
+
 use crate::ember::Eui64;
 use crate::frame::parameters::bootloader::get_standalone_bootloader_version_plat_micro_phy::Response;
 use crate::types::ByteSizedVec;
-use crate::{Error, Transport};
-use std::future::Future;
+use crate::Error;
 
-pub trait Bootloader: Transport {
+pub trait Bootloader {
     /// Perform AES encryption on `plaintext` using `key`.
     fn aes_encrypt(
         &self,

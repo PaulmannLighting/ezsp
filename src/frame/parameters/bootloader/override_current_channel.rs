@@ -1,6 +1,4 @@
 use crate::ember::Status;
-use crate::frame::parameters::bootloader::get_standalone_bootloader_version_plat_micro_phy::Command;
-
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 

@@ -1,18 +1,17 @@
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0091;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command;
 
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     bootloader_version: u16,
     node_plat: u8,
@@ -21,16 +20,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub const fn new(bootloader_version: u16, node_plat: u8, node_micro: u8, node_phy: u8) -> Self {
-        Self {
-            bootloader_version,
-            node_plat,
-            node_micro,
-            node_phy,
-        }
-    }
-
     #[must_use]
     pub const fn bootloader_version(&self) -> u16 {
         self.bootloader_version
@@ -50,4 +39,9 @@ impl Response {
     pub const fn node_phy(&self) -> u8 {
         self.node_phy
     }
+}
+
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

@@ -17,7 +17,7 @@ impl Response {
     }
 
     #[must_use]
-    pub const fn message(&self) -> &ByteSizedVec<u8> {
-        &self.message
+    pub const fn message(self) -> ByteSizedVec<u8> {
+        self.message
     }
 }

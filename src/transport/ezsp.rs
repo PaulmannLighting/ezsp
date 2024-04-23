@@ -6,10 +6,14 @@ pub use cbke::CertificateBasedKeyExchange;
 pub use configuration::Configuration;
 pub use green_power::GreenPower;
 pub use messaging::Messaging;
+pub use mfglib::Mfglib;
 pub use networking::Networking;
 pub use security::Security;
+pub use token_interface::TokenInterface;
 pub use trust_center::TrustCenter;
 pub use utilities::Utilities;
+pub use wwah::Wwah;
+pub use zll::Zll;
 
 use crate::frame::parameters::configuration::version;
 use crate::Error;
@@ -20,10 +24,14 @@ mod cbke;
 mod configuration;
 mod green_power;
 mod messaging;
+mod mfglib;
 mod networking;
 mod security;
+mod token_interface;
 mod trust_center;
 mod utilities;
+mod wwah;
+mod zll;
 
 const MIN_NON_LEGACY_VERSION: u8 = 8;
 
@@ -34,10 +42,14 @@ pub trait Ezsp:
     + Configuration
     + GreenPower
     + Messaging
+    + Mfglib
     + Networking
     + Security
+    + TokenInterface
     + TrustCenter
     + Utilities
+    + Wwah
+    + Zll
 {
     fn negotiate_version(
         &mut self,
@@ -53,10 +65,14 @@ where
         + Configuration
         + GreenPower
         + Messaging
+        + Mfglib
         + Networking
         + Security
+        + TokenInterface
         + TrustCenter
         + Utilities
+        + Wwah
+        + Zll
         + Send,
 {
     async fn negotiate_version(

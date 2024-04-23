@@ -381,17 +381,15 @@ impl GreenPower for Ashv2 {
         gpep_handle: u8,
         gp_tx_queue_entry_lifetime: Duration,
     ) -> Result<(), Error> {
-        self.communicate::<_, green_power::d_gp_send::Response>(
-            green_power::d_gp_send::Command::new(
-                action,
-                use_cca,
-                addr,
-                gpd_command_id,
-                gpd_asdu,
-                gpep_handle,
-                gp_tx_queue_entry_lifetime,
-            )?,
-        )
+        self.communicate::<_, green_power::send::Response>(green_power::send::Command::new(
+            action,
+            use_cca,
+            addr,
+            gpd_command_id,
+            gpd_asdu,
+            gpep_handle,
+            gp_tx_queue_entry_lifetime,
+        )?)
         .await?
         .status()
         .resolve()

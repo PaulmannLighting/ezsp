@@ -73,21 +73,19 @@ where
     async fn clear_binding_table(&self) -> Result<(), Error> {
         self.communicate::<_, clear_binding_table::Response>(clear_binding_table::Command)
             .await?
-            .status()
             .resolve()
     }
 
     async fn delete_binding(&self, index: u8) -> Result<(), Error> {
         self.communicate::<_, delete_binding::Response>(delete_binding::Command::new(index))
             .await?
-            .status()
             .resolve()
     }
 
     async fn get_binding(&self, index: u8) -> Result<TableEntry, Error> {
         self.communicate::<_, get_binding::Response>(get_binding::Command::new(index))
             .await?
-            .into()
+            .resolve()
     }
 
     async fn get_binding_remote_node_id(&self, index: u8) -> Result<NodeId, Error> {
@@ -101,7 +99,6 @@ where
     async fn set_binding(&self, index: u8, value: TableEntry) -> Result<(), Error> {
         self.communicate::<_, set_binding::Response>(set_binding::Command::new(index, value))
             .await?
-            .status()
             .resolve()
     }
 

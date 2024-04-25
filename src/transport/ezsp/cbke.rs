@@ -8,6 +8,7 @@ use crate::error::Resolve;
 use crate::frame::parameters::cbke::{
     calculate_smacs, calculate_smacs283k1, clear_temporary_data_maybe_store_link_key,
     clear_temporary_data_maybe_store_link_key283k1, dsa_sign, dsa_verify, dsa_verify283k1,
+    generate_cbke_keys,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -226,7 +227,9 @@ where
     }
 
     async fn generate_cbke_keys(&self) -> Result<(), Error> {
-        todo!()
+        self.communicate::<_, generate_cbke_keys::Response>(generate_cbke_keys::Command)
+            .await?
+            .resolve()
     }
 
     async fn generate_cbke_keys283k1(&self) -> Result<(), Error> {

@@ -2,7 +2,9 @@ use std::future::Future;
 
 use crate::ember::beacon::ClassificationParams;
 use crate::ember::Eui64;
-use crate::frame::parameters::messaging::address_table_entry_is_active;
+use crate::frame::parameters::messaging::{
+    address_table_entry_is_active, get_address_table_remote_eui64,
+};
 use crate::{Error, Transport};
 
 pub trait Messaging {
@@ -57,7 +59,11 @@ where
         &self,
         address_table_index: u8,
     ) -> Result<Eui64, Error> {
-        todo!()
+        self.communicate::<_, get_address_table_remote_eui64::Response>(
+            get_address_table_remote_eui64::Command::new(address_table_index),
+        )
+        .await
+        .map(|response| response.eui64())
     }
 
     async fn get_address_table_remote_node_id(

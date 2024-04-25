@@ -6,7 +6,6 @@ use std::iter::{Chain, FlatMap};
 
 use crate::ezsp::Status;
 use crate::frame::Parameter;
-use crate::resolvable::Resolvable;
 use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x0002;
@@ -98,10 +97,10 @@ impl Parameter for Response {
     const ID: u16 = ID;
 }
 
-impl Resolvable for Response {
+impl Resolve for Response {
     type Result = ();
 
     fn resolve(self) -> Result<Self::Result, crate::Error> {
-        Status::try_from(self.status).resolve_to(())
+        Status::try_from(self.status).resolve()
     }
 }

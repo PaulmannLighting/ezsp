@@ -5,7 +5,7 @@ use crate::ember::gp::Address;
 use crate::error::Resolve;
 use crate::frame::parameters::green_power::sink_table::{
     clear_all, find_or_allocate_entry, get_entry, init, lookup, number_of_active_entries,
-    remove_entry,
+    remove_entry, set_entry,
 };
 use crate::types::UintT;
 use crate::{Error, Transport};
@@ -99,7 +99,9 @@ where
     }
 
     async fn set_entry(&self, sink_index: u8, entry: TableEntry) -> Result<(), Error> {
-        todo!()
+        self.communicate::<_, set_entry::Response>(set_entry::Command::new(sink_index, entry))
+            .await?
+            .resolve()
     }
 
     async fn set_security_frame_counter(&self, index: u8, sfc: u32) -> Result<(), Error> {

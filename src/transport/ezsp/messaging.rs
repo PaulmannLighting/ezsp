@@ -12,7 +12,7 @@ use crate::frame::parameters::messaging::{
     address_table_entry_is_active, get_address_table_remote_eui64,
     get_address_table_remote_node_id, get_beacon_classification_params, get_extended_timeout,
     get_multicast_table_entry, lookup_eui64_by_node_id, lookup_node_id_by_eui64,
-    maximum_payload_length, poll_for_data, replace_address_table_entry,
+    maximum_payload_length, poll_for_data, proxy_broadcast, replace_address_table_entry,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -415,7 +415,7 @@ where
         .resolve()
     }
 
-    fn proxy_broadcast(
+    async fn proxy_broadcast(
         &self,
         source: NodeId,
         destination: NodeId,
@@ -424,8 +424,18 @@ where
         radius: u8,
         message_tag: u8,
         message: ByteSizedVec<u8>,
-    ) -> impl Future<Output = Result<u8, Error>> + Send {
-        todo!()
+    ) -> Result<u8, Error> {
+        self.communicate::<_, proxy_broadcast::Response>(proxy_broadcast::Command::new(
+            source,
+            destination,
+            nwk_sequence,
+            aps_frame,
+            radius,
+            message_tag,
+            message,
+        ))
+        .await?
+        .resolve()
     }
 
     fn replace_address_table_entry(

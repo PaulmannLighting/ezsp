@@ -4,7 +4,7 @@ use crate::ember::Eui64;
 use crate::error::Resolve;
 use crate::frame::parameters::bootloader::{
     aes_encrypt, get_standalone_bootloader_version_plat_micro_phy, launch_standalone_bootloader,
-    override_current_channel,
+    override_current_channel, send_bootload_message,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -99,6 +99,10 @@ where
         dest_eui64: Eui64,
         message: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
-        todo!()
+        self.communicate::<_, send_bootload_message::Response>(send_bootload_message::Command::new(
+            broadcast, dest_eui64, message,
+        ))
+        .await?
+        .resolve()
     }
 }

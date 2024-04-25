@@ -1,6 +1,7 @@
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+
 use crate::ember::NodeId;
 use crate::frame::Parameter;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x005F;
 

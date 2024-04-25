@@ -1,11 +1,15 @@
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+
 use crate::ember::aps::Frame;
 use crate::ember::Status;
+use crate::error::Resolve;
+use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::Error;
 
 const ID: u16 = 0x0038;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     aps_frame: Frame,
     hops: u8,
@@ -31,54 +35,30 @@ impl Command {
             message_contents,
         }
     }
-
-    #[must_use]
-    pub const fn aps_frame(&self) -> &Frame {
-        &self.aps_frame
-    }
-
-    #[must_use]
-    pub const fn hops(&self) -> u8 {
-        self.hops
-    }
-
-    #[must_use]
-    pub const fn nonmember_radius(&self) -> u8 {
-        self.nonmember_radius
-    }
-
-    #[must_use]
-    pub const fn message_tag(&self) -> u8 {
-        self.message_tag
-    }
-
-    #[must_use]
-    pub const fn message_contents(&self) -> &ByteSizedVec<u8> {
-        &self.message_contents
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
     sequence: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status, sequence: u8) -> Self {
-        Self {
-            status: status.into(),
-            sequence,
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
+impl Resolve for Response {
+    type Result = u8;
+
+    fn resolve(self) -> Result<Self::Result, Error> {
         Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub const fn sequence(&self) -> u8 {
-        self.sequence
+            .resolve()
+            .map(|()| self.sequence)
     }
 }

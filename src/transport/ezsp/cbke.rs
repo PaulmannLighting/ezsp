@@ -186,7 +186,6 @@ where
             clear_temporary_data_maybe_store_link_key283k1::Command::new(store_link_key),
         )
         .await?
-        .status()
         .resolve()
     }
 
@@ -208,7 +207,6 @@ where
             received_sig,
         ))
         .await?
-        .status()
         .resolve()
     }
 
@@ -224,7 +222,6 @@ where
             received_sig,
         ))
         .await?
-        .status()
         .resolve()
     }
 

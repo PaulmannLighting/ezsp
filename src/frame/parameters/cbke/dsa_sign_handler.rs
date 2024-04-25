@@ -1,7 +1,8 @@
+use le_stream::derive::FromLeBytes;
+
 use crate::ember::Status;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use le_stream::derive::FromLeBytes;
 
 const ID: u16 = 0x00A7;
 

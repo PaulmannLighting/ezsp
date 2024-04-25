@@ -1,8 +1,9 @@
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+
 use crate::ember::{CertificateData, PublicKeyData, Status};
 use crate::error::Resolve;
 use crate::frame::Parameter;
 use crate::Error;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x009F;
 

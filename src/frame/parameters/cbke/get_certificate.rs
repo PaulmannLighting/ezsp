@@ -1,6 +1,7 @@
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+
 use crate::ember::{CertificateData, Status};
 use crate::frame::Parameter;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x00A5;
 

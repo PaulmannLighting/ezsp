@@ -1,6 +1,7 @@
+use le_stream::derive::FromLeBytes;
+
 use crate::ember::{PublicKey283k1Data, Status};
 use crate::frame::Parameter;
-use le_stream::derive::FromLeBytes;
 
 const ID: u16 = 0x00E9;
 

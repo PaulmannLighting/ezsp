@@ -37,15 +37,6 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub const fn new(protocol_version: u8, stack_type: u8, stack_version: u16) -> Self {
-        Self {
-            protocol_version,
-            stack_type,
-            stack_version,
-        }
-    }
-
-    #[must_use]
     pub const fn protocol_version(&self) -> u8 {
         self.protocol_version
     }

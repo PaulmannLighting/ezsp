@@ -3,6 +3,7 @@ pub mod ember;
 pub mod error;
 pub mod ezsp;
 pub mod frame;
+mod resolvable;
 pub mod transport;
 pub mod types;
 

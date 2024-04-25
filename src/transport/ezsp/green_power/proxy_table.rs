@@ -35,10 +35,9 @@ where
     T: Transport,
 {
     async fn get_entry(&self, proxy_index: u8) -> Result<TableEntry, Error> {
-        let response = self
-            .communicate::<_, get_entry::Response>(get_entry::Command::new(proxy_index))
-            .await?;
-        response.status().resolve_to(response.entry())
+        self.communicate::<_, get_entry::Response>(get_entry::Command::new(proxy_index))
+            .await?
+            .resolve()
     }
 
     async fn lookup(&self, addr: Address) -> Result<u8, Error> {

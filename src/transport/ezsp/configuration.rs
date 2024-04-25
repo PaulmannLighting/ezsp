@@ -4,8 +4,9 @@ use crate::ember::PanId;
 use crate::error::Resolve;
 use crate::ezsp::config::Id;
 use crate::ezsp::decision;
+use crate::ezsp::value::ExtendedId;
 use crate::frame::parameters::configuration::{
-    add_endpoint, get_configuration_value, read_attribute, send_pan_id_update,
+    add_endpoint, get_configuration_value, get_extended_value, read_attribute, send_pan_id_update,
     set_configuration_value, version,
 };
 use crate::types::ByteSizedVec;
@@ -36,7 +37,7 @@ pub trait Configuration {
     /// Reads a value from the NCP but passes an extra argument specific to the value being retrieved.
     fn get_extended_value(
         &self,
-        value_id: u8,
+        value_id: ExtendedId,
         characteristics: u32,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
 
@@ -160,10 +161,16 @@ where
 
     async fn get_extended_value(
         &self,
-        value_id: u8,
+        value_id: ExtendedId,
         characteristics: u32,
     ) -> Result<ByteSizedVec<u8>, Error> {
-        todo!()
+        let response = self
+            .communicate::<_, get_extended_value::Response>(get_extended_value::Command::new(
+                value_id,
+                characteristics,
+            ))
+            .await?;
+        response.status().resolve_to(response.value())
     }
 
     async fn get_policy(&self, policy_id: u8) -> Result<decision::Id, Error> {

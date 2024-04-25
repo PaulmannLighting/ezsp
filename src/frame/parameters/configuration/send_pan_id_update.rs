@@ -1,4 +1,5 @@
 use crate::ember::PanId;
+use crate::error::Resolve;
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
@@ -26,14 +27,15 @@ pub struct Response {
     status: bool,
 }
 
-impl Response {
-    #[must_use]
-    pub const fn status(&self) -> bool {
-        self.status
-    }
-}
-
 impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl Resolve for Response {
+    type Result = bool;
+
+    fn resolve(self) -> Result<Self::Result, crate::Error> {
+        Ok(self.status)
+    }
 }

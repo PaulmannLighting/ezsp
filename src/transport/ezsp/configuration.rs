@@ -218,8 +218,8 @@ where
         self.communicate::<_, send_pan_id_update::Response>(send_pan_id_update::Command::new(
             new_pan,
         ))
-        .await
-        .map(|response| response.status())
+        .await?
+        .resolve()
     }
 
     async fn set_configuration_value(&self, config_id: Id, value: u16) -> Result<(), Error> {
@@ -227,7 +227,6 @@ where
             set_configuration_value::Command::new(config_id, value),
         )
         .await?
-        .status()
         .resolve()
     }
 

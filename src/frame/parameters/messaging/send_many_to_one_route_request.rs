@@ -1,9 +1,10 @@
-use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+
+use crate::ember::Status;
 
 const ID: u16 = 0x0041;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     concentrator_type: u16,
     radius: u8,
@@ -17,19 +18,9 @@ impl Command {
             radius,
         }
     }
-
-    #[must_use]
-    pub const fn concentrator_type(&self) -> u16 {
-        self.concentrator_type
-    }
-
-    #[must_use]
-    pub const fn radius(&self) -> u8 {
-        self.radius
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }

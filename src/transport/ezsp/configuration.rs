@@ -184,7 +184,16 @@ where
         mask: u8,
         manufacturer_code: u16,
     ) -> Result<read_attribute::Response, Error> {
-        todo!()
+        let response = self
+            .communicate::<_, read_attribute::Response>(read_attribute::Command::new(
+                endpoint,
+                cluster,
+                attribute_id,
+                mask,
+                manufacturer_code,
+            ))
+            .await?;
+        response.status().resolve_to(response)
     }
 
     async fn send_pan_id_update(&self, new_pan: PanId) -> Result<bool, Error> {

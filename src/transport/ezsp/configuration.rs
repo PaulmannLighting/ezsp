@@ -3,7 +3,9 @@ use std::future::Future;
 use crate::ember::PanId;
 use crate::error::Resolve;
 use crate::ezsp::decision;
-use crate::frame::parameters::configuration::{add_endpoint, read_attribute, version};
+use crate::frame::parameters::configuration::{
+    add_endpoint, read_attribute, send_pan_id_update, version,
+};
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 
@@ -197,7 +199,11 @@ where
     }
 
     async fn send_pan_id_update(&self, new_pan: PanId) -> Result<bool, Error> {
-        todo!()
+        self.communicate::<_, send_pan_id_update::Response>(send_pan_id_update::Command::new(
+            new_pan,
+        ))
+        .await
+        .map(|response| response.status())
     }
 
     async fn set_configuration_value(&self, config_id: u8, value: u16) -> Result<(), Error> {

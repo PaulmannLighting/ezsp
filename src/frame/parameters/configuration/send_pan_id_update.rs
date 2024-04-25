@@ -1,9 +1,10 @@
 use crate::ember::PanId;
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0057;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     new_pan: PanId,
 }
@@ -13,26 +14,26 @@ impl Command {
     pub const fn new(new_pan: PanId) -> Self {
         Self { new_pan }
     }
-
-    #[must_use]
-    pub const fn new_pan(&self) -> PanId {
-        self.new_pan
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: bool,
 }
 
 impl Response {
     #[must_use]
-    pub const fn new(status: bool) -> Self {
-        Self { status }
-    }
-
-    #[must_use]
     pub const fn status(&self) -> bool {
         self.status
     }
+}
+
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

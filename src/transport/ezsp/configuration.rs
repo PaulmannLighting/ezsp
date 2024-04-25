@@ -2,9 +2,10 @@ use std::future::Future;
 
 use crate::ember::PanId;
 use crate::error::Resolve;
+use crate::ezsp::config::Id;
 use crate::ezsp::decision;
 use crate::frame::parameters::configuration::{
-    add_endpoint, read_attribute, send_pan_id_update, version,
+    add_endpoint, read_attribute, send_pan_id_update, set_configuration_value, version,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -76,7 +77,7 @@ pub trait Configuration {
     /// and this command will respond with [`Error::InvalidCall`](crate::ezsp::Error::InvalidCall).
     fn set_configuration_value(
         &self,
-        config_id: u8,
+        config_id: Id,
         value: u16,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
@@ -206,8 +207,13 @@ where
         .map(|response| response.status())
     }
 
-    async fn set_configuration_value(&self, config_id: u8, value: u16) -> Result<(), Error> {
-        todo!()
+    async fn set_configuration_value(&self, config_id: Id, value: u16) -> Result<(), Error> {
+        self.communicate::<_, set_configuration_value::Response>(
+            set_configuration_value::Command::new(config_id, value),
+        )
+        .await?
+        .status()
+        .resolve()
     }
 
     async fn set_passive_ack_config(&self, config: u8, min_acks_needed: u8) -> Result<(), Error> {

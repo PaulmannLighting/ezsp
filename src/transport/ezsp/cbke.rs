@@ -8,7 +8,7 @@ use crate::error::Resolve;
 use crate::frame::parameters::cbke::{
     calculate_smacs, calculate_smacs283k1, clear_temporary_data_maybe_store_link_key,
     clear_temporary_data_maybe_store_link_key283k1, dsa_sign, dsa_verify, dsa_verify283k1,
-    generate_cbke_keys, generate_cbke_keys283k1,
+    generate_cbke_keys, generate_cbke_keys283k1, get_certificate,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -239,7 +239,9 @@ where
     }
 
     async fn get_certificate(&self) -> Result<CertificateData, Error> {
-        todo!()
+        self.communicate::<_, get_certificate::Response>(get_certificate::Command)
+            .await?
+            .resolve()
     }
 
     async fn get_certificate283k1(&self) -> Result<Certificate283k1Data, Error> {

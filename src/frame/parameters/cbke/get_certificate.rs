@@ -1,7 +1,9 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 use crate::ember::{CertificateData, Status};
+use crate::error::Resolve;
 use crate::frame::Parameter;
+use crate::Error;
 
 const ID: u16 = 0x00A5;
 
@@ -19,18 +21,17 @@ pub struct Response {
     local_cert: CertificateData,
 }
 
-impl Response {
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub const fn local_cert(&self) -> &CertificateData {
-        &self.local_cert
-    }
-}
-
 impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl Resolve for Response {
+    type Result = CertificateData;
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status)
+            .resolve()
+            .map(|()| self.local_cert)
+    }
 }

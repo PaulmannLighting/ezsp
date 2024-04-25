@@ -149,7 +149,6 @@ where
             partner_ephemeral_public_key,
         ))
         .await?
-        .status()
         .resolve()
     }
 

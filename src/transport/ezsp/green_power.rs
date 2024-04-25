@@ -6,7 +6,7 @@ pub use sink_table::SinkTable;
 
 use crate::ember::gp::Address;
 use crate::error::Resolve;
-use crate::frame::parameters::green_power::send;
+use crate::frame::parameters::green_power::{send, sink_commission};
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 
@@ -74,7 +74,14 @@ where
         gpm_addr_for_pairing: u16,
         sink_endpoint: u8,
     ) -> Result<(), Error> {
-        todo!()
+        self.communicate::<_, sink_commission::Response>(sink_commission::Command::new(
+            options,
+            gpm_addr_for_security,
+            gpm_addr_for_pairing,
+            sink_endpoint,
+        ))
+        .await?
+        .resolve()
     }
 
     async fn translation_table_clear(&self) -> Result<(), Error> {

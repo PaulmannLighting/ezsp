@@ -438,14 +438,23 @@ where
         .resolve()
     }
 
-    fn replace_address_table_entry(
+    async fn replace_address_table_entry(
         &self,
         address_table_index: u8,
         new_eui64: Eui64,
         new_id: NodeId,
         new_extended_timeout: bool,
-    ) -> impl Future<Output = Result<Payload, Error>> + Send {
-        todo!()
+    ) -> Result<Payload, Error> {
+        self.communicate::<_, replace_address_table_entry::Response>(
+            replace_address_table_entry::Command::new(
+                address_table_index,
+                new_eui64,
+                new_id,
+                new_extended_timeout,
+            ),
+        )
+        .await?
+        .resolve()
     }
 
     fn send_broadcast(

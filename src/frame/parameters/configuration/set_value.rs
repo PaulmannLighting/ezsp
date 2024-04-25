@@ -1,11 +1,14 @@
+use crate::error::Resolve;
 use crate::ezsp::value::Id;
 use crate::ezsp::Status;
+use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
+use crate::Error;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x00AB;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     value_id: u8,
     value: ByteSizedVec<u8>,
@@ -19,31 +22,27 @@ impl Command {
             value,
         }
     }
-
-    pub fn value_id(&self) -> Result<Id, u8> {
-        Id::try_from(self.value_id)
-    }
-
-    #[must_use]
-    pub const fn value(&self) -> &ByteSizedVec<u8> {
-        &self.value
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+impl Resolve for Response {
+    type Result = ();
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status).resolve()
     }
 }

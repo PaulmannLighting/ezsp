@@ -8,7 +8,7 @@ use crate::ezsp::{decision, policy, value};
 use crate::frame::parameters::configuration::{
     add_endpoint, get_configuration_value, get_extended_value, get_policy, get_value,
     read_attribute, send_pan_id_update, set_configuration_value, set_passive_ack_config,
-    set_policy, version,
+    set_policy, set_value, version,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -103,7 +103,7 @@ pub trait Configuration {
     /// Writes a value to the NCP.
     fn set_value(
         &self,
-        value_id: u8,
+        value_id: value::Id,
         value: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
@@ -255,8 +255,10 @@ where
         .resolve()
     }
 
-    async fn set_value(&self, value_id: u8, value: ByteSizedVec<u8>) -> Result<(), Error> {
-        todo!()
+    async fn set_value(&self, value_id: value::Id, value: ByteSizedVec<u8>) -> Result<(), Error> {
+        self.communicate::<_, set_value::Response>(set_value::Command::new(value_id, value))
+            .await?
+            .resolve()
     }
 
     async fn version(&self, desired_protocol_version: u8) -> Result<version::Response, Error> {

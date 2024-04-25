@@ -4,6 +4,7 @@ use crate::ember::Eui64;
 use crate::error::Resolve;
 use crate::frame::parameters::bootloader::{
     aes_encrypt, get_standalone_bootloader_version_plat_micro_phy, launch_standalone_bootloader,
+    override_current_channel,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -85,7 +86,11 @@ where
     }
 
     async fn override_current_channel(&self, channel: u8) -> Result<(), Error> {
-        todo!()
+        self.communicate::<_, override_current_channel::Response>(
+            override_current_channel::Command::new(channel),
+        )
+        .await?
+        .resolve()
     }
 
     async fn send_bootload_message(

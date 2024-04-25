@@ -1,9 +1,9 @@
 use std::future::Future;
 
 use crate::ember::beacon::ClassificationParams;
-use crate::ember::Eui64;
+use crate::ember::{Eui64, NodeId};
 use crate::frame::parameters::messaging::{
-    address_table_entry_is_active, get_address_table_remote_eui64,
+    address_table_entry_is_active, get_address_table_remote_eui64, get_address_table_remote_node_id,
 };
 use crate::{Error, Transport};
 
@@ -28,7 +28,7 @@ pub trait Messaging {
     fn get_address_table_remote_node_id(
         &self,
         address_table_index: u8,
-    ) -> impl Future<Output = Result<Eui64, Error>> + Send;
+    ) -> impl Future<Output = Result<NodeId, Error>> + Send;
 
     /// Gets the priority masks and related variables for choosing the best beacon.
     fn get_beacon_classification_params(
@@ -69,8 +69,12 @@ where
     async fn get_address_table_remote_node_id(
         &self,
         address_table_index: u8,
-    ) -> Result<Eui64, Error> {
-        todo!()
+    ) -> Result<NodeId, Error> {
+        self.communicate::<_, get_address_table_remote_node_id::Response>(
+            get_address_table_remote_node_id::Command::new(address_table_index),
+        )
+        .await
+        .map(|response| response.node_id())
     }
 
     async fn get_beacon_classification_params(&self) -> Result<ClassificationParams, Error> {

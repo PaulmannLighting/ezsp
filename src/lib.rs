@@ -3,11 +3,10 @@ pub mod ember;
 pub mod error;
 pub mod ezsp;
 pub mod frame;
-mod resolvable;
 pub mod transport;
 pub mod types;
 
-pub use error::Error;
+pub use error::{value::Error as ValueError, Error};
 pub use frame::{CallbackType, Control, FrameFormatVersion, Header, HighByte, LowByte, SleepMode};
 #[cfg(feature = "ashv2")]
 pub use transport::Ashv2;

@@ -70,20 +70,10 @@ impl std::error::Error for Error {
     }
 }
 
-pub trait Resolve: Sized {
-    /// Resolve a status result into a result of either `()` or [`Error`].
-    ///
-    /// # Errors
-    /// Returns [`Error`] if the status is not success.
-    fn resolve(self) -> Result<(), Error>;
+pub trait Resolve {
+    type Result;
 
-    /// Resolve a status result into a result of either the passed value or [`Error`].
-    ///
-    /// # Errors
-    /// Returns [`Error`] if the status is not success.
-    fn resolve_to<T>(self, value: T) -> Result<T, Error> {
-        self.resolve().map(|()| value)
-    }
+    fn resolve(self) -> Result<Self::Result, Error>;
 }
 
 pub mod value {

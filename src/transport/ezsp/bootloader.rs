@@ -1,8 +1,9 @@
 use std::future::Future;
 
 use crate::ember::Eui64;
-use crate::frame::parameters::bootloader::aes_encrypt;
-use crate::frame::parameters::bootloader::get_standalone_bootloader_version_plat_micro_phy::Response;
+use crate::frame::parameters::bootloader::{
+    aes_encrypt, get_standalone_bootloader_version_plat_micro_phy,
+};
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 
@@ -20,7 +21,9 @@ pub trait Bootloader {
     /// Also return the node's version of `PLAT`, `MICRO` and `PHY`.
     fn get_standalone_bootloader_version_plat_micro_phy(
         &self,
-    ) -> impl Future<Output = Result<Response, Error>> + Send;
+    ) -> impl Future<
+        Output = Result<get_standalone_bootloader_version_plat_micro_phy::Response, Error>,
+    > + Send;
 
     /// Quits the current application and launches the standalone bootloader (if installed).
     ///
@@ -63,8 +66,13 @@ where
             .map(|response| response.ciphertext())
     }
 
-    async fn get_standalone_bootloader_version_plat_micro_phy(&self) -> Result<Response, Error> {
-        todo!()
+    async fn get_standalone_bootloader_version_plat_micro_phy(
+        &self,
+    ) -> Result<get_standalone_bootloader_version_plat_micro_phy::Response, Error> {
+        self.communicate::<_, get_standalone_bootloader_version_plat_micro_phy::Response>(
+            get_standalone_bootloader_version_plat_micro_phy::Command,
+        )
+        .await
     }
 
     async fn launch_standalone_bootloader(&self, mode: u8) -> Result<(), Error> {

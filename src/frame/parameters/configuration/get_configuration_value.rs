@@ -1,6 +1,9 @@
+use crate::error::Resolve;
 use crate::ezsp::config::Id;
 use crate::ezsp::Status;
 use crate::frame::Parameter;
+use crate::resolvable::Resolvable;
+use crate::Error;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0052;
@@ -30,14 +33,11 @@ pub struct Response {
     value: u16,
 }
 
-impl Response {
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
+impl Resolvable for Response {
+    type Result = u16;
 
-    #[must_use]
-    pub const fn value(&self) -> u16 {
-        self.value
+    fn resolve(&self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status).resolve_to(self.value)
     }
 }
 

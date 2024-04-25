@@ -1,3 +1,4 @@
+use crate::error::Resolve;
 use crate::ezsp::value::ExtendedId;
 use crate::ezsp::Status;
 use crate::frame::Parameter;
@@ -33,18 +34,15 @@ pub struct Response {
     value: ByteSizedVec<u8>,
 }
 
-impl Response {
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub fn value(self) -> ByteSizedVec<u8> {
-        self.value
-    }
-}
-
 impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl Resolve for Response {
+    type Result = ByteSizedVec<u8>;
+
+    fn resolve(self) -> Result<Self::Result, crate::Error> {
+        Status::try_from(self.status).resolve_to(self.value)
+    }
 }

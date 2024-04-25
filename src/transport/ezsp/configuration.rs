@@ -146,17 +146,15 @@ where
             output_clusters,
         ))
         .await?
-        .status()
         .resolve()
     }
 
     async fn get_configuration_value(&self, config_id: Id) -> Result<u16, Error> {
-        let response = self
-            .communicate::<_, get_configuration_value::Response>(
-                get_configuration_value::Command::new(config_id),
-            )
-            .await?;
-        response.status().resolve_to(response.value())
+        self.communicate::<_, get_configuration_value::Response>(
+            get_configuration_value::Command::new(config_id),
+        )
+        .await?
+        .resolve()
     }
 
     async fn get_extended_value(
@@ -164,13 +162,12 @@ where
         value_id: ExtendedId,
         characteristics: u32,
     ) -> Result<ByteSizedVec<u8>, Error> {
-        let response = self
-            .communicate::<_, get_extended_value::Response>(get_extended_value::Command::new(
-                value_id,
-                characteristics,
-            ))
-            .await?;
-        response.status().resolve_to(response.value())
+        self.communicate::<_, get_extended_value::Response>(get_extended_value::Command::new(
+            value_id,
+            characteristics,
+        ))
+        .await?
+        .resolve()
     }
 
     async fn get_policy(&self, policy_id: u8) -> Result<decision::Id, Error> {

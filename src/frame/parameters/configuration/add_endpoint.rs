@@ -1,3 +1,4 @@
+use crate::error::Resolve;
 use le_stream::derive::FromLeBytes;
 use le_stream::ToLeBytes;
 use std::array::IntoIter;
@@ -5,6 +6,7 @@ use std::iter::{Chain, FlatMap};
 
 use crate::ezsp::Status;
 use crate::frame::Parameter;
+use crate::resolvable::Resolvable;
 use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x0002;
@@ -91,13 +93,15 @@ pub struct Response {
     status: u8,
 }
 
-impl Response {
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
-}
-
 impl Parameter for Response {
     type Id = u16;
     const ID: u16 = ID;
+}
+
+impl Resolvable for Response {
+    type Result = ();
+
+    fn resolve(self) -> Result<Self::Result, crate::Error> {
+        Status::try_from(self.status).resolve_to(())
+    }
 }

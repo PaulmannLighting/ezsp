@@ -1,6 +1,8 @@
 use crate::ember::Status;
+use crate::error::Resolve;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
+use crate::Error;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0108;
@@ -39,17 +41,12 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
-pub struct Response {
-    status: u8,
+pub struct Payload {
     data_type: u8,
     data: ByteSizedVec<u8>,
 }
 
-impl Response {
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
-
+impl Payload {
     #[must_use]
     pub const fn data_type(&self) -> u8 {
         self.data_type
@@ -61,7 +58,23 @@ impl Response {
     }
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+pub struct Response {
+    status: u8,
+    payload: Payload,
+}
+
 impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl Resolve for Response {
+    type Result = Payload;
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status)
+            .resolve()
+            .map(|()| self.payload)
+    }
 }

@@ -4,10 +4,10 @@ use crate::ember::PanId;
 use crate::error::Resolve;
 use crate::ezsp::config::Id;
 use crate::ezsp::value::ExtendedId;
-use crate::ezsp::{decision, policy};
+use crate::ezsp::{decision, policy, value};
 use crate::frame::parameters::configuration::{
-    add_endpoint, get_configuration_value, get_extended_value, get_policy, read_attribute,
-    send_pan_id_update, set_configuration_value, version,
+    add_endpoint, get_configuration_value, get_extended_value, get_policy, get_value,
+    read_attribute, send_pan_id_update, set_configuration_value, version,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -50,7 +50,7 @@ pub trait Configuration {
     /// Reads a value from the NCP.
     fn get_value(
         &self,
-        value_id: u8,
+        value_id: value::Id,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
 
     /// Legacy implementation of [`version()`](Self::version) using a shortened header.
@@ -67,7 +67,7 @@ pub trait Configuration {
         attribute_id: u16,
         mask: u8,
         manufacturer_code: u16,
-    ) -> impl Future<Output = Result<read_attribute::Response, Error>> + Send;
+    ) -> impl Future<Output = Result<read_attribute::Payload, Error>> + Send;
 
     /// Triggers a pan id update message.
     fn send_pan_id_update(
@@ -178,8 +178,10 @@ where
             .resolve()
     }
 
-    async fn get_value(&self, value_id: u8) -> Result<ByteSizedVec<u8>, Error> {
-        todo!()
+    async fn get_value(&self, value_id: value::Id) -> Result<ByteSizedVec<u8>, Error> {
+        self.communicate::<_, get_value::Response>(get_value::Command::new(value_id))
+            .await?
+            .resolve()
     }
 
     async fn legacy_version(
@@ -200,17 +202,16 @@ where
         attribute_id: u16,
         mask: u8,
         manufacturer_code: u16,
-    ) -> Result<read_attribute::Response, Error> {
-        let response = self
-            .communicate::<_, read_attribute::Response>(read_attribute::Command::new(
-                endpoint,
-                cluster,
-                attribute_id,
-                mask,
-                manufacturer_code,
-            ))
-            .await?;
-        response.status().resolve_to(response)
+    ) -> Result<read_attribute::Payload, Error> {
+        self.communicate::<_, read_attribute::Response>(read_attribute::Command::new(
+            endpoint,
+            cluster,
+            attribute_id,
+            mask,
+            manufacturer_code,
+        ))
+        .await?
+        .resolve()
     }
 
     async fn send_pan_id_update(&self, new_pan: PanId) -> Result<bool, Error> {

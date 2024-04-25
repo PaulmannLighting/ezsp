@@ -1,10 +1,12 @@
 use crate::ember::Status;
+use crate::error::Resolve;
+use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0109;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     endpoint: u8,
     cluster: u16,
@@ -39,62 +41,27 @@ impl Command {
             data,
         }
     }
-
-    #[must_use]
-    pub const fn endpoint(&self) -> u8 {
-        self.endpoint
-    }
-
-    #[must_use]
-    pub const fn cluster(&self) -> u16 {
-        self.cluster
-    }
-
-    #[must_use]
-    pub const fn attribute_id(&self) -> u16 {
-        self.attribute_id
-    }
-
-    #[must_use]
-    pub const fn mask(&self) -> u8 {
-        self.mask
-    }
-
-    #[must_use]
-    pub const fn manufacturer_code(&self) -> u16 {
-        self.manufacturer_code
-    }
-
-    #[must_use]
-    pub const fn just_test(&self) -> bool {
-        self.just_test
-    }
-
-    #[must_use]
-    pub const fn data_type(&self) -> u8 {
-        self.data_type
-    }
-
-    #[must_use]
-    pub const fn data(&self) -> &ByteSizedVec<u8> {
-        &self.data
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+impl Resolve for Response {
+    type Result = ();
+
+    fn resolve(self) -> Result<Self::Result, crate::Error> {
+        Status::try_from(self.status).resolve()
     }
 }

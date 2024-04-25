@@ -8,7 +8,7 @@ use crate::ezsp::{decision, policy, value};
 use crate::frame::parameters::configuration::{
     add_endpoint, get_configuration_value, get_extended_value, get_policy, get_value,
     read_attribute, send_pan_id_update, set_configuration_value, set_passive_ack_config,
-    set_policy, set_value, version,
+    set_policy, set_value, version, write_attribute,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -277,6 +277,17 @@ where
         data_type: u8,
         data: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
-        todo!()
+        self.communicate::<_, write_attribute::Response>(write_attribute::Command::new(
+            endpoint,
+            cluster,
+            attribute_id,
+            mask,
+            manufacturer_code,
+            just_test,
+            data_type,
+            data,
+        ))
+        .await?
+        .resolve()
     }
 }

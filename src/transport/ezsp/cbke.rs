@@ -175,7 +175,6 @@ where
             clear_temporary_data_maybe_store_link_key::Command::new(store_link_key),
         )
         .await?
-        .status()
         .resolve()
     }
 

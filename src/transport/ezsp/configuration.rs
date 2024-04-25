@@ -7,7 +7,8 @@ use crate::ezsp::value::ExtendedId;
 use crate::ezsp::{decision, policy, value};
 use crate::frame::parameters::configuration::{
     add_endpoint, get_configuration_value, get_extended_value, get_policy, get_value,
-    read_attribute, send_pan_id_update, set_configuration_value, set_passive_ack_config, version,
+    read_attribute, send_pan_id_update, set_configuration_value, set_passive_ack_config,
+    set_policy, version,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -93,8 +94,11 @@ pub trait Configuration {
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Allows the Host to change the policies used by the NCP to make fast decisions.
-    fn set_policy(&self, policy_id: u8, decision_id: u8)
-        -> impl Future<Output = Result<(), Error>>;
+    fn set_policy(
+        &self,
+        policy_id: policy::Id,
+        decision_id: decision::Id,
+    ) -> impl Future<Output = Result<(), Error>>;
 
     /// Writes a value to the NCP.
     fn set_value(
@@ -238,8 +242,17 @@ where
         .resolve()
     }
 
-    async fn set_policy(&self, policy_id: u8, decision_id: u8) -> Result<(), Error> {
-        todo!()
+    async fn set_policy(
+        &self,
+        policy_id: policy::Id,
+        decision_id: decision::Id,
+    ) -> Result<(), Error> {
+        self.communicate::<_, set_policy::Response>(set_policy::Command::new(
+            policy_id,
+            decision_id,
+        ))
+        .await?
+        .resolve()
     }
 
     async fn set_value(&self, value_id: u8, value: ByteSizedVec<u8>) -> Result<(), Error> {

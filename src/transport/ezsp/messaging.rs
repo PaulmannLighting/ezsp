@@ -13,7 +13,7 @@ use crate::frame::parameters::messaging::{
     get_address_table_remote_node_id, get_beacon_classification_params, get_extended_timeout,
     get_multicast_table_entry, lookup_eui64_by_node_id, lookup_node_id_by_eui64,
     maximum_payload_length, poll_for_data, proxy_broadcast, replace_address_table_entry,
-    send_broadcast,
+    send_broadcast, send_many_to_one_route_request,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -477,12 +477,16 @@ where
         .resolve()
     }
 
-    fn send_many_to_one_route_request(
+    async fn send_many_to_one_route_request(
         &self,
         concentrator_type: u16,
         radius: u8,
-    ) -> impl Future<Output = Result<(), Error>> + Send {
-        todo!()
+    ) -> Result<(), Error> {
+        self.communicate::<_, send_many_to_one_route_request::Response>(
+            send_many_to_one_route_request::Command::new(concentrator_type, radius),
+        )
+        .await?
+        .resolve()
     }
 
     fn send_multicast(

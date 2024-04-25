@@ -4,8 +4,13 @@ use crate::ember::{
     Certificate283k1Data, CertificateData, MessageDigest, PrivateKeyData, PublicKey283k1Data,
     PublicKeyData, Signature283k1Data, SignatureData,
 };
+use crate::error::Resolve;
+use crate::frame::parameters::cbke::{
+    calculate_smacs, calculate_smacs283k1, clear_temporary_data_maybe_store_link_key,
+    clear_temporary_data_maybe_store_link_key283k1, dsa_sign, dsa_verify, dsa_verify283k1,
+};
 use crate::types::ByteSizedVec;
-use crate::Error;
+use crate::{Error, Transport};
 
 pub trait CertificateBasedKeyExchange {
     /// Calculates the SMAC verification keys for both the initiator and responder roles of
@@ -124,4 +129,132 @@ pub trait CertificateBasedKeyExchange {
         my_cert: CertificateData,
         my_key: PrivateKeyData,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+}
+
+impl<T> CertificateBasedKeyExchange for T
+where
+    T: Transport,
+{
+    async fn calculate_smacs(
+        &self,
+        am_initiator: bool,
+        partner_certificate: CertificateData,
+        partner_ephemeral_public_key: PublicKeyData,
+    ) -> Result<(), Error> {
+        self.communicate::<_, calculate_smacs::Response>(calculate_smacs::Command::new(
+            am_initiator,
+            partner_certificate,
+            partner_ephemeral_public_key,
+        ))
+        .await?
+        .status()
+        .resolve()
+    }
+
+    async fn calculate_smacs283k1(
+        &self,
+        am_initiator: bool,
+        partner_certificate: Certificate283k1Data,
+        partner_ephemeral_public_key: PublicKey283k1Data,
+    ) -> Result<(), Error> {
+        self.communicate::<_, calculate_smacs283k1::Response>(calculate_smacs283k1::Command::new(
+            am_initiator,
+            partner_certificate,
+            partner_ephemeral_public_key,
+        ))
+        .await?
+        .status()
+        .resolve()
+    }
+
+    async fn clear_temporary_data_maybe_store_link_key(
+        &self,
+        store_link_key: bool,
+    ) -> Result<(), Error> {
+        self.communicate::<_, clear_temporary_data_maybe_store_link_key::Response>(
+            clear_temporary_data_maybe_store_link_key::Command::new(store_link_key),
+        )
+        .await?
+        .status()
+        .resolve()
+    }
+
+    async fn clear_temporary_data_maybe_store_link_key283k1(
+        &self,
+        store_link_key: bool,
+    ) -> Result<(), Error> {
+        self.communicate::<_, clear_temporary_data_maybe_store_link_key283k1::Response>(
+            clear_temporary_data_maybe_store_link_key283k1::Command::new(store_link_key),
+        )
+        .await?
+        .status()
+        .resolve()
+    }
+
+    async fn dsa_sign(&self, message: ByteSizedVec<u8>) -> Result<(), Error> {
+        self.communicate::<_, dsa_sign::Response>(dsa_sign::Command::new(message))
+            .await
+            .map(drop)
+    }
+
+    async fn dsa_verify(
+        &self,
+        digest: MessageDigest,
+        signer_certificate: CertificateData,
+        received_sig: SignatureData,
+    ) -> Result<(), Error> {
+        self.communicate::<_, dsa_verify::Response>(dsa_verify::Command::new(
+            digest,
+            signer_certificate,
+            received_sig,
+        ))
+        .await?
+        .status()
+        .resolve()
+    }
+
+    async fn dsa_verify283k1(
+        &self,
+        digest: MessageDigest,
+        signer_certificate: Certificate283k1Data,
+        received_sig: Signature283k1Data,
+    ) -> Result<(), Error> {
+        self.communicate::<_, dsa_verify283k1::Response>(dsa_verify283k1::Command::new(
+            digest,
+            signer_certificate,
+            received_sig,
+        ))
+        .await?
+        .status()
+        .resolve()
+    }
+
+    async fn generate_cbke_keys(&self) -> Result<(), Error> {
+        todo!()
+    }
+
+    async fn generate_cbke_keys283k1(&self) -> Result<(), Error> {
+        todo!()
+    }
+
+    async fn get_certificate(&self) -> Result<CertificateData, Error> {
+        todo!()
+    }
+
+    async fn get_certificate283k1(&self) -> Result<Certificate283k1Data, Error> {
+        todo!()
+    }
+
+    async fn save_preinstalled_cbke_data283k1(&self) -> Result<(), Error> {
+        todo!()
+    }
+
+    async fn set_preinstalled_cbke_data(
+        &self,
+        ca_public: PublicKeyData,
+        my_cert: CertificateData,
+        my_key: PrivateKeyData,
+    ) -> Result<(), Error> {
+        todo!()
+    }
 }

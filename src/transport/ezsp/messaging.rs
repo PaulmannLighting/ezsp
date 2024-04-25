@@ -2,7 +2,8 @@ use std::future::Future;
 
 use crate::ember::beacon::ClassificationParams;
 use crate::ember::Eui64;
-use crate::Error;
+use crate::frame::parameters::messaging::address_table_entry_is_active;
+use crate::{Error, Transport};
 
 pub trait Messaging {
     /// Indicates whether any messages are currently being sent using this address table entry.
@@ -38,4 +39,39 @@ pub trait Messaging {
         &self,
         remote_eui64: Eui64,
     ) -> impl Future<Output = Result<bool, Error>> + Send;
+}
+
+impl<T> Messaging for T
+where
+    T: Transport,
+{
+    async fn address_table_entry_is_active(&self, address_table_index: u8) -> Result<bool, Error> {
+        self.communicate::<_, address_table_entry_is_active::Response>(
+            address_table_entry_is_active::Command::new(address_table_index),
+        )
+        .await
+        .map(|response| response.active())
+    }
+
+    async fn get_address_table_remote_eui64(
+        &self,
+        address_table_index: u8,
+    ) -> Result<Eui64, Error> {
+        todo!()
+    }
+
+    async fn get_address_table_remote_node_id(
+        &self,
+        address_table_index: u8,
+    ) -> Result<Eui64, Error> {
+        todo!()
+    }
+
+    async fn get_beacon_classification_params(&self) -> Result<ClassificationParams, Error> {
+        todo!()
+    }
+
+    async fn get_extended_timeout(&self, remote_eui64: Eui64) -> Result<bool, Error> {
+        todo!()
+    }
 }

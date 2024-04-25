@@ -15,12 +15,12 @@ use le_stream::{FromLeBytes, ToLeBytes};
 use std::fmt::Debug;
 use std::future::Future;
 
-pub trait Transport {
+pub trait Transport: Send + Sync {
     fn next_header<R>(&self) -> Header<R::Id>
     where
         R: Parameter;
 
-    fn communicate<C, R>(&self, command: C) -> impl Future<Output = Result<R, Error>>
+    fn communicate<C, R>(&self, command: C) -> impl Future<Output = Result<R, Error>> + Send + Sync
     where
         C: Parameter + ToLeBytes,
         R: Clone + Debug + Send + Sync + Parameter + FromLeBytes + 'static;

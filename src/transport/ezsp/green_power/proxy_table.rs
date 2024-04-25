@@ -3,14 +3,16 @@ use std::future::Future;
 use crate::ember::gp::proxy::TableEntry;
 use crate::ember::gp::Address;
 use crate::ember::key::Data;
-use crate::Error;
+use crate::error::Resolve;
+use crate::frame::parameters::green_power::proxy_table::{get_entry, lookup, process_gp_pairing};
+use crate::{Error, Transport};
 
 pub trait ProxyTable {
     /// Retrieves the proxy table entry stored at the passed index.
-    fn get_entry(&self, proxy_index: u8) -> impl Future<Output = Result<TableEntry, Error>>;
+    fn get_entry(&self, proxy_index: u8) -> impl Future<Output = Result<TableEntry, Error>> + Send;
 
     /// Finds the index of the passed address in the gp table.
-    fn lookup(&self, addr: Address) -> impl Future<Output = Result<u8, Error>>;
+    fn lookup(&self, addr: Address) -> impl Future<Output = Result<u8, Error>> + Send;
 
     /// Update the GP Proxy table based on a GP pairing.
     fn process_gp_pairing(
@@ -25,5 +27,52 @@ pub trait ProxyTable {
         gpd_key: Data,
         gpd_security_frame_counter: u32,
         forwarding_radius: u8,
-    ) -> impl Future<Output = Result<bool, Error>>;
+    ) -> impl Future<Output = Result<bool, Error>> + Send;
+}
+
+impl<T> ProxyTable for T
+where
+    T: Transport,
+{
+    async fn get_entry(&self, proxy_index: u8) -> Result<TableEntry, Error> {
+        let response = self
+            .communicate::<_, get_entry::Response>(get_entry::Command::new(proxy_index))
+            .await?;
+        response.status().resolve_to(response.entry())
+    }
+
+    async fn lookup(&self, addr: Address) -> Result<u8, Error> {
+        self.communicate::<_, lookup::Response>(lookup::Command::new(addr))
+            .await
+            .map(|response| response.index())
+    }
+
+    async fn process_gp_pairing(
+        &self,
+        options: u32,
+        addr: Address,
+        comm_mode: u8,
+        sink_network_address: u16,
+        sink_group_id: u16,
+        assigned_alias: u16,
+        sink_ieee_address: [u8; 8],
+        gpd_key: Data,
+        gpd_security_frame_counter: u32,
+        forwarding_radius: u8,
+    ) -> Result<bool, Error> {
+        self.communicate::<_, process_gp_pairing::Response>(process_gp_pairing::Command::new(
+            options,
+            addr,
+            comm_mode,
+            sink_network_address,
+            sink_group_id,
+            assigned_alias,
+            sink_ieee_address,
+            gpd_key,
+            gpd_security_frame_counter,
+            forwarding_radius,
+        ))
+        .await
+        .map(|response| response.gp_pairing_added())
+    }
 }

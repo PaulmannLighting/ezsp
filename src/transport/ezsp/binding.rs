@@ -2,14 +2,22 @@ use std::future::Future;
 
 use crate::ember::binding::TableEntry;
 use crate::ember::NodeId;
-use crate::Error;
+use crate::error::Resolve;
+use crate::frame::parameters::binding::{
+    binding_is_active, clear_binding_table, delete_binding, get_binding,
+    get_binding_remote_node_id, set_binding, set_binding_remote_node_id,
+};
+use crate::{Error, Transport};
 
 pub trait Binding {
     /// Indicates whether any messages are currently being sent using this binding table entry.
     /// Note that this command does not indicate whether a binding is clear.
     /// To determine whether a binding is clear, check whether the type field of the
     /// [`TableEntry`] has the value [`Type::Unused`](crate::ember::binding::Type::Unused).
-    fn binding_is_active(&self, index: u8) -> impl Future<Output = Result<bool, Error>> + Send;
+    fn binding_is_active(
+        &self,
+        index: u8,
+    ) -> impl Future<Output = Result<bool, Error>> + Send + Sync;
 
     /// Deletes all binding table entries.
     fn clear_binding_table(&self) -> impl Future<Output = Result<(), Error>> + Send;
@@ -50,4 +58,58 @@ pub trait Binding {
         index: u8,
         node_id: NodeId,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+}
+
+impl<T> Binding for T
+where
+    T: Transport,
+{
+    async fn binding_is_active(&self, index: u8) -> Result<bool, Error> {
+        self.communicate::<_, binding_is_active::Response>(binding_is_active::Command::new(index))
+            .await
+            .map(|response| response.active())
+    }
+
+    async fn clear_binding_table(&self) -> Result<(), Error> {
+        self.communicate::<_, clear_binding_table::Response>(clear_binding_table::Command)
+            .await?
+            .status()
+            .resolve()
+    }
+
+    async fn delete_binding(&self, index: u8) -> Result<(), Error> {
+        self.communicate::<_, delete_binding::Response>(delete_binding::Command::new(index))
+            .await?
+            .status()
+            .resolve()
+    }
+
+    async fn get_binding(&self, index: u8) -> Result<TableEntry, Error> {
+        self.communicate::<_, get_binding::Response>(get_binding::Command::new(index))
+            .await?
+            .into()
+    }
+
+    async fn get_binding_remote_node_id(&self, index: u8) -> Result<NodeId, Error> {
+        self.communicate::<_, get_binding_remote_node_id::Response>(
+            get_binding_remote_node_id::Command::new(index),
+        )
+        .await
+        .map(|response| response.node_id())
+    }
+
+    async fn set_binding(&self, index: u8, value: TableEntry) -> Result<(), Error> {
+        self.communicate::<_, set_binding::Response>(set_binding::Command::new(index, value))
+            .await?
+            .status()
+            .resolve()
+    }
+
+    async fn set_binding_remote_node_id(&self, index: u8, node_id: NodeId) -> Result<(), Error> {
+        self.communicate::<_, set_binding_remote_node_id::Response>(
+            set_binding_remote_node_id::Command::new(index, node_id),
+        )
+        .await
+        .map(drop)
+    }
 }

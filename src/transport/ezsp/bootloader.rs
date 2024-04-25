@@ -1,9 +1,10 @@
 use std::future::Future;
 
 use crate::ember::Eui64;
+use crate::frame::parameters::bootloader::aes_encrypt;
 use crate::frame::parameters::bootloader::get_standalone_bootloader_version_plat_micro_phy::Response;
 use crate::types::ByteSizedVec;
-use crate::Error;
+use crate::{Error, Transport};
 
 pub trait Bootloader {
     /// Perform AES encryption on `plaintext` using `key`.
@@ -50,4 +51,36 @@ pub trait Bootloader {
         dest_eui64: Eui64,
         message: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+}
+
+impl<T> Bootloader for T
+where
+    T: Transport,
+{
+    async fn aes_encrypt(&self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
+        self.communicate::<_, aes_encrypt::Response>(aes_encrypt::Command::new(plaintext, key))
+            .await
+            .map(|response| response.ciphertext())
+    }
+
+    async fn get_standalone_bootloader_version_plat_micro_phy(&self) -> Result<Response, Error> {
+        todo!()
+    }
+
+    async fn launch_standalone_bootloader(&self, mode: u8) -> Result<(), Error> {
+        todo!()
+    }
+
+    async fn override_current_channel(&self, channel: u8) -> Result<(), Error> {
+        todo!()
+    }
+
+    async fn send_bootload_message(
+        &self,
+        broadcast: bool,
+        dest_eui64: Eui64,
+        message: ByteSizedVec<u8>,
+    ) -> Result<(), Error> {
+        todo!()
+    }
 }

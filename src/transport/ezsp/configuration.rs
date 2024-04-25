@@ -1,10 +1,11 @@
 use std::future::Future;
 
 use crate::ember::PanId;
+use crate::error::Resolve;
 use crate::ezsp::decision;
-use crate::frame::parameters::configuration::{read_attribute, version};
+use crate::frame::parameters::configuration::{add_endpoint, read_attribute, version};
 use crate::types::ByteSizedVec;
-use crate::Error;
+use crate::{Error, Transport};
 
 pub trait Configuration {
     /// Configures endpoint information on the NCP.
@@ -116,4 +117,112 @@ pub trait Configuration {
         data_type: u8,
         data: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+}
+
+impl<T> Configuration for T
+where
+    T: Transport,
+{
+    async fn add_endpoint(
+        &self,
+        endpoint: u8,
+        profile_id: u16,
+        device_id: u16,
+        app_flags: u8,
+        input_clusters: ByteSizedVec<u16>,
+        output_clusters: ByteSizedVec<u16>,
+    ) -> Result<(), Error> {
+        self.communicate::<_, add_endpoint::Response>(add_endpoint::Command::new(
+            endpoint,
+            profile_id,
+            device_id,
+            app_flags,
+            input_clusters,
+            output_clusters,
+        ))
+        .await?
+        .status()
+        .resolve()
+    }
+
+    async fn get_configuration_value(&self, config_id: u8) -> Result<u16, Error> {
+        todo!()
+    }
+
+    async fn get_extended_value(
+        &self,
+        value_id: u8,
+        characteristics: u32,
+    ) -> Result<ByteSizedVec<u8>, Error> {
+        todo!()
+    }
+
+    async fn get_policy(&self, policy_id: u8) -> Result<decision::Id, Error> {
+        todo!()
+    }
+
+    async fn get_value(&self, value_id: u8) -> Result<ByteSizedVec<u8>, Error> {
+        todo!()
+    }
+
+    async fn legacy_version(
+        &self,
+        desired_protocol_version: u8,
+    ) -> Result<version::Response, Error> {
+        self.communicate::<_, version::LegacyResponse>(version::LegacyCommand::from(
+            version::Command::new(desired_protocol_version),
+        ))
+        .await
+        .map(Into::into)
+    }
+
+    async fn read_attribute(
+        &self,
+        endpoint: u8,
+        cluster: u16,
+        attribute_id: u16,
+        mask: u8,
+        manufacturer_code: u16,
+    ) -> Result<read_attribute::Response, Error> {
+        todo!()
+    }
+
+    async fn send_pan_id_update(&self, new_pan: PanId) -> Result<bool, Error> {
+        todo!()
+    }
+
+    async fn set_configuration_value(&self, config_id: u8, value: u16) -> Result<(), Error> {
+        todo!()
+    }
+
+    async fn set_passive_ack_config(&self, config: u8, min_acks_needed: u8) -> Result<(), Error> {
+        todo!()
+    }
+
+    async fn set_policy(&self, policy_id: u8, decision_id: u8) -> Result<(), Error> {
+        todo!()
+    }
+
+    async fn set_value(&self, value_id: u8, value: ByteSizedVec<u8>) -> Result<(), Error> {
+        todo!()
+    }
+
+    async fn version(&self, desired_protocol_version: u8) -> Result<version::Response, Error> {
+        self.communicate::<_, version::Response>(version::Command::new(desired_protocol_version))
+            .await
+    }
+
+    async fn write_attribute(
+        &self,
+        endpoint: u8,
+        cluster: u16,
+        attribute_id: u16,
+        mask: u8,
+        manufacturer_code: u16,
+        just_test: bool,
+        data_type: u8,
+        data: ByteSizedVec<u8>,
+    ) -> Result<(), Error> {
+        todo!()
+    }
 }

@@ -6,7 +6,7 @@ pub use sink_table::SinkTable;
 
 use crate::ember::gp::Address;
 use crate::error::Resolve;
-use crate::frame::parameters::green_power::{send, sink_commission};
+use crate::frame::parameters::green_power::{send, sink_commission, translation_table_clear};
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 
@@ -85,6 +85,8 @@ where
     }
 
     async fn translation_table_clear(&self) -> Result<(), Error> {
-        todo!()
+        self.communicate::<_, translation_table_clear::Response>(translation_table_clear::Command)
+            .await
+            .map(drop)
     }
 }

@@ -2,7 +2,10 @@ use std::future::Future;
 
 use crate::ember::gp::sink::TableEntry;
 use crate::ember::gp::Address;
-use crate::frame::parameters::green_power::sink_table::{clear_all, find_or_allocate_entry};
+use crate::error::Resolve;
+use crate::frame::parameters::green_power::sink_table::{
+    clear_all, find_or_allocate_entry, get_entry, init, lookup,
+};
 use crate::types::UintT;
 use crate::{Error, Transport};
 
@@ -65,15 +68,21 @@ where
     }
 
     async fn get_entry(&self, sink_index: u8) -> Result<TableEntry, Error> {
-        todo!()
+        self.communicate::<_, get_entry::Response>(get_entry::Command::new(sink_index))
+            .await?
+            .resolve()
     }
 
     async fn init(&self) -> Result<(), Error> {
-        todo!()
+        self.communicate::<_, init::Response>(init::Command)
+            .await
+            .map(drop)
     }
 
     async fn lookup(&self, addr: Address) -> Result<u8, Error> {
-        todo!()
+        self.communicate::<_, lookup::Response>(lookup::Command::new(addr))
+            .await
+            .map(|response| response.index())
     }
 
     async fn number_of_active_entries(&self) -> Result<UintT, Error> {

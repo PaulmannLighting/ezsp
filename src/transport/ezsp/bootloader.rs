@@ -1,8 +1,9 @@
 use std::future::Future;
 
 use crate::ember::Eui64;
+use crate::error::Resolve;
 use crate::frame::parameters::bootloader::{
-    aes_encrypt, get_standalone_bootloader_version_plat_micro_phy,
+    aes_encrypt, get_standalone_bootloader_version_plat_micro_phy, launch_standalone_bootloader,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -76,7 +77,11 @@ where
     }
 
     async fn launch_standalone_bootloader(&self, mode: u8) -> Result<(), Error> {
-        todo!()
+        self.communicate::<_, launch_standalone_bootloader::Response>(
+            launch_standalone_bootloader::Command::new(mode),
+        )
+        .await?
+        .resolve()
     }
 
     async fn override_current_channel(&self, channel: u8) -> Result<(), Error> {

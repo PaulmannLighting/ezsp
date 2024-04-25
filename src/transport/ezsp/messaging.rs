@@ -11,7 +11,7 @@ use crate::frame::parameters::messaging::{
     address_table_entry_is_active, get_address_table_remote_eui64,
     get_address_table_remote_node_id, get_beacon_classification_params, get_extended_timeout,
     get_multicast_table_entry, lookup_eui64_by_node_id, lookup_node_id_by_eui64,
-    replace_address_table_entry,
+    maximum_payload_length, replace_address_table_entry,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -393,8 +393,10 @@ where
         .map(|response| response.node_id())
     }
 
-    fn maximum_payload_length(&self) -> impl Future<Output = Result<u8, Error>> + Send {
-        todo!()
+    async fn maximum_payload_length(&self) -> Result<u8, Error> {
+        self.communicate::<_, maximum_payload_length::Response>(maximum_payload_length::Command)
+            .await
+            .map(|response| response.aps_length())
     }
 
     fn poll_for_data(

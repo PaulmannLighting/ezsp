@@ -2,7 +2,6 @@ use std::fmt::{Debug, Display};
 
 use le_stream::{FromLeBytes, ToLeBytes};
 
-use crate::frame::parameters::green_power::send::Response;
 use crate::Control;
 
 pub mod binding;

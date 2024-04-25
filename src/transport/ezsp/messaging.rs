@@ -2,6 +2,7 @@ use std::future::Future;
 
 use crate::ember::aps::Frame;
 use crate::ember::beacon::ClassificationParams;
+use crate::ember::event::Units;
 use crate::ember::message::Outgoing;
 use crate::ember::multicast::TableEntry;
 use crate::ember::{Eui64, NodeId};
@@ -11,7 +12,7 @@ use crate::frame::parameters::messaging::{
     address_table_entry_is_active, get_address_table_remote_eui64,
     get_address_table_remote_node_id, get_beacon_classification_params, get_extended_timeout,
     get_multicast_table_entry, lookup_eui64_by_node_id, lookup_node_id_by_eui64,
-    maximum_payload_length, replace_address_table_entry,
+    maximum_payload_length, poll_for_data, replace_address_table_entry,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -82,7 +83,7 @@ pub trait Messaging {
     fn poll_for_data(
         &self,
         interval: u16,
-        units: u8,
+        units: Units,
         failure_limit: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
@@ -399,13 +400,19 @@ where
             .map(|response| response.aps_length())
     }
 
-    fn poll_for_data(
+    async fn poll_for_data(
         &self,
         interval: u16,
-        units: u8,
+        units: Units,
         failure_limit: u8,
-    ) -> impl Future<Output = Result<(), Error>> + Send {
-        todo!()
+    ) -> Result<(), Error> {
+        self.communicate::<_, poll_for_data::Response>(poll_for_data::Command::new(
+            interval,
+            units,
+            failure_limit,
+        ))
+        .await?
+        .resolve()
     }
 
     fn proxy_broadcast(

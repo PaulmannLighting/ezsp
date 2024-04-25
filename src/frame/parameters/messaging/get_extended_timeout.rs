@@ -1,6 +1,7 @@
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+
 use crate::ember::Eui64;
 use crate::frame::Parameter;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x007F;
 
@@ -21,7 +22,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     extended_timeout: bool,
 }

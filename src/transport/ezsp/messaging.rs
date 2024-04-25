@@ -5,7 +5,7 @@ use crate::ember::{Eui64, NodeId};
 use crate::error::Resolve;
 use crate::frame::parameters::messaging::{
     address_table_entry_is_active, get_address_table_remote_eui64,
-    get_address_table_remote_node_id, get_beacon_classification_params,
+    get_address_table_remote_node_id, get_beacon_classification_params, get_extended_timeout,
 };
 use crate::{Error, Transport};
 
@@ -88,6 +88,10 @@ where
     }
 
     async fn get_extended_timeout(&self, remote_eui64: Eui64) -> Result<bool, Error> {
-        todo!()
+        self.communicate::<_, get_extended_timeout::Response>(get_extended_timeout::Command::new(
+            remote_eui64,
+        ))
+        .await
+        .map(|response| response.extended_timeout())
     }
 }

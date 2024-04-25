@@ -10,7 +10,8 @@ use crate::frame::parameters::messaging::replace_address_table_entry::Payload;
 use crate::frame::parameters::messaging::{
     address_table_entry_is_active, get_address_table_remote_eui64,
     get_address_table_remote_node_id, get_beacon_classification_params, get_extended_timeout,
-    get_multicast_table_entry, lookup_eui64_by_node_id, replace_address_table_entry,
+    get_multicast_table_entry, lookup_eui64_by_node_id, lookup_node_id_by_eui64,
+    replace_address_table_entry,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -70,7 +71,7 @@ pub trait Messaging {
     fn lookup_node_id_by_eui64(
         &self,
         eui64: Eui64,
-    ) -> impl Future<Output = Result<Eui64, Error>> + Send;
+    ) -> impl Future<Output = Result<NodeId, Error>> + Send;
 
     /// Returns the maximum size of the payload. The size depends on the security level in use.
     fn maximum_payload_length(&self) -> impl Future<Output = Result<u8, Error>> + Send;
@@ -384,11 +385,12 @@ where
         .resolve()
     }
 
-    fn lookup_node_id_by_eui64(
-        &self,
-        eui64: Eui64,
-    ) -> impl Future<Output = Result<Eui64, Error>> + Send {
-        todo!()
+    async fn lookup_node_id_by_eui64(&self, eui64: Eui64) -> Result<NodeId, Error> {
+        self.communicate::<_, lookup_node_id_by_eui64::Response>(
+            lookup_node_id_by_eui64::Command::new(eui64),
+        )
+        .await
+        .map(|response| response.node_id())
     }
 
     fn maximum_payload_length(&self) -> impl Future<Output = Result<u8, Error>> + Send {

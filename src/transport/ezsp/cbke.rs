@@ -28,6 +28,7 @@ pub trait CertificateBasedKeyExchange {
     /// Calculates the SMAC verification keys for both the initiator and responder roles of
     /// CBKE for the 283k1 ECC curve using the passed parameters and the stored public/private
     /// key pair previously generated with ezspGenerateKeysRetrieveCert283k1().
+    ///
     /// It also stores the unverified link key data in temporary storage on the NCP until the
     /// key establishment is complete.
     fn calculate_smacs283k1(
@@ -39,8 +40,9 @@ pub trait CertificateBasedKeyExchange {
 
     /// Clears the temporary data associated with CBKE and the key establishment,
     /// most notably the ephemeral public/private key pair.
+    ///
     /// If storeLinKey is true it moves the unverified link key stored in temporary storage
-    /// into the link key table. Otherwise it discards the key.
+    /// into the link key table. Otherwise, it discards the key.
     fn clear_temporary_data_maybe_store_link_key(
         &self,
         store_link_key: bool,
@@ -48,9 +50,9 @@ pub trait CertificateBasedKeyExchange {
 
     /// Clears the temporary data associated with CBKE and the key establishment,
     /// most notably the ephemeral public/private  key pair.
+    ///
     /// If storeLinKey is true it moves the unverified link key stored in temporary storage
-    /// into the link key table.
-    /// Otherwise it discards the key.
+    /// into the link key table. Otherwise, it discards the key.
     fn clear_temporary_data_maybe_store_link_key283k1(
         &self,
         store_link_key: bool,

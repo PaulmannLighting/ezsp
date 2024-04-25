@@ -1,10 +1,11 @@
 use crate::ezsp::config::Id;
 use crate::ezsp::Status;
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0052;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     config_id: u8,
 }
@@ -16,27 +17,20 @@ impl Command {
             config_id: config_id.into(),
         }
     }
-
-    pub fn config_id(&self) -> Result<Id, u8> {
-        Id::try_from(self.config_id)
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
     value: u16,
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(status: Status, value: u16) -> Self {
-        Self {
-            status: status.into(),
-            value,
-        }
-    }
-
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }
@@ -45,4 +39,9 @@ impl Response {
     pub const fn value(&self) -> u16 {
         self.value
     }
+}
+
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

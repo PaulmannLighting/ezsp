@@ -4,7 +4,7 @@ use crate::ember::gp::sink::TableEntry;
 use crate::ember::gp::Address;
 use crate::error::Resolve;
 use crate::frame::parameters::green_power::sink_table::{
-    clear_all, find_or_allocate_entry, get_entry, init, lookup,
+    clear_all, find_or_allocate_entry, get_entry, init, lookup, number_of_active_entries,
 };
 use crate::types::UintT;
 use crate::{Error, Transport};
@@ -86,7 +86,9 @@ where
     }
 
     async fn number_of_active_entries(&self) -> Result<UintT, Error> {
-        todo!()
+        self.communicate::<_, number_of_active_entries::Response>(number_of_active_entries::Command)
+            .await
+            .map(|response| response.number_of_entries())
     }
 
     async fn remove_entry(&self, sink_index: u8) -> Result<(), Error> {

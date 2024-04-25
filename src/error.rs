@@ -83,6 +83,7 @@ pub mod value {
     #[derive(Debug)]
     pub enum Error {
         DurationTooLarge(Duration),
+        InvalidDecisionId(u8),
     }
 
     impl Display for Error {
@@ -91,6 +92,7 @@ pub mod value {
                 Self::DurationTooLarge(duration) => {
                     write!(f, "Duration too large: {}ms", duration.as_millis())
                 }
+                Self::InvalidDecisionId(id) => write!(f, "Invalid decision ID: {id}"),
             }
         }
     }

@@ -1,5 +1,8 @@
+use crate::error::Resolve;
 use crate::ezsp::Status;
 use crate::ezsp::{decision, policy};
+use crate::frame::Parameter;
+use crate::{Error, ValueError};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0056;
@@ -16,32 +19,31 @@ impl Command {
             policy_id: policy_id.into(),
         }
     }
-
-    pub fn policy_id(&self) -> Result<policy::Id, u8> {
-        policy::Id::try_from(self.policy_id)
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
     decision_id: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status, decision_id: decision::Id) -> Self {
-        Self {
-            status: status.into(),
-            decision_id: decision_id.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
+impl Resolve for Response {
+    type Result = decision::Id;
 
-    pub fn decision_id(&self) -> Result<decision::Id, u8> {
-        decision::Id::try_from(self.decision_id)
+    fn resolve(self) -> Result<Self::Value, Error> {
+        Status::try_from(self.status).resolve().and_then(|_| {
+            decision::Id::try_from(self.decision_id)
+                .map_err(|id| Error::ValueError(ValueError::InvalidDecisionId(id)))
+        })
     }
 }

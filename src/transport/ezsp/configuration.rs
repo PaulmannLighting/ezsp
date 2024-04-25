@@ -3,11 +3,11 @@ use std::future::Future;
 use crate::ember::PanId;
 use crate::error::Resolve;
 use crate::ezsp::config::Id;
-use crate::ezsp::decision;
 use crate::ezsp::value::ExtendedId;
+use crate::ezsp::{decision, policy};
 use crate::frame::parameters::configuration::{
-    add_endpoint, get_configuration_value, get_extended_value, read_attribute, send_pan_id_update,
-    set_configuration_value, version,
+    add_endpoint, get_configuration_value, get_extended_value, get_policy, read_attribute,
+    send_pan_id_update, set_configuration_value, version,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -42,8 +42,10 @@ pub trait Configuration {
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
 
     /// Allows the Host to read the policies used by the NCP to make fast decisions.
-    fn get_policy(&self, policy_id: u8)
-        -> impl Future<Output = Result<decision::Id, Error>> + Send;
+    fn get_policy(
+        &self,
+        policy_id: policy::Id,
+    ) -> impl Future<Output = Result<decision::Id, Error>> + Send;
 
     /// Reads a value from the NCP.
     fn get_value(
@@ -170,8 +172,10 @@ where
         .resolve()
     }
 
-    async fn get_policy(&self, policy_id: u8) -> Result<decision::Id, Error> {
-        todo!()
+    async fn get_policy(&self, policy_id: policy::Id) -> Result<decision::Id, Error> {
+        self.communicate::<_, get_policy::Response>(get_policy::Command::new(policy_id))
+            .await?
+            .resolve()
     }
 
     async fn get_value(&self, value_id: u8) -> Result<ByteSizedVec<u8>, Error> {

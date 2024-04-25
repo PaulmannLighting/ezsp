@@ -64,7 +64,6 @@ where
             gp_tx_queue_entry_lifetime,
         )?)
         .await?
-        .status()
         .resolve()
     }
 

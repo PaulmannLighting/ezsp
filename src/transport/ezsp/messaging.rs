@@ -10,7 +10,7 @@ use crate::frame::parameters::messaging::replace_address_table_entry::Payload;
 use crate::frame::parameters::messaging::{
     address_table_entry_is_active, get_address_table_remote_eui64,
     get_address_table_remote_node_id, get_beacon_classification_params, get_extended_timeout,
-    get_multicast_table_entry, replace_address_table_entry,
+    get_multicast_table_entry, lookup_eui64_by_node_id, replace_address_table_entry,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -376,11 +376,12 @@ where
         .resolve()
     }
 
-    fn lookup_eui64_by_node_id(
-        &self,
-        node_id: NodeId,
-    ) -> impl Future<Output = Result<Eui64, Error>> + Send {
-        todo!()
+    async fn lookup_eui64_by_node_id(&self, node_id: NodeId) -> Result<Eui64, Error> {
+        self.communicate::<_, lookup_eui64_by_node_id::Response>(
+            lookup_eui64_by_node_id::Command::new(node_id),
+        )
+        .await?
+        .resolve()
     }
 
     fn lookup_node_id_by_eui64(

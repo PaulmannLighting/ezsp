@@ -2,8 +2,10 @@ use std::future::Future;
 
 use crate::ember::beacon::ClassificationParams;
 use crate::ember::{Eui64, NodeId};
+use crate::error::Resolve;
 use crate::frame::parameters::messaging::{
-    address_table_entry_is_active, get_address_table_remote_eui64, get_address_table_remote_node_id,
+    address_table_entry_is_active, get_address_table_remote_eui64,
+    get_address_table_remote_node_id, get_beacon_classification_params,
 };
 use crate::{Error, Transport};
 
@@ -78,7 +80,11 @@ where
     }
 
     async fn get_beacon_classification_params(&self) -> Result<ClassificationParams, Error> {
-        todo!()
+        self.communicate::<_, get_beacon_classification_params::Response>(
+            get_beacon_classification_params::Command,
+        )
+        .await?
+        .resolve()
     }
 
     async fn get_extended_timeout(&self, remote_eui64: Eui64) -> Result<bool, Error> {

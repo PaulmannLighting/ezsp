@@ -1,7 +1,10 @@
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+
 use crate::ember::beacon::ClassificationParams;
 use crate::ember::Status;
+use crate::error::Resolve;
 use crate::frame::Parameter;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::Error;
 
 const ID: u16 = 0x00F3;
 
@@ -13,24 +16,21 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
     param: ClassificationParams,
 }
 
-impl Response {
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub const fn param(self) -> ClassificationParams {
-        self.param
-    }
-}
-
 impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl Resolve for Response {
+    type Result = ClassificationParams;
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status).resolve().map(|()| self.param)
+    }
 }

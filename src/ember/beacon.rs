@@ -1,5 +1,6 @@
-use crate::ember::types::PanId;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+
+use crate::ember::types::PanId;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Data {
@@ -95,7 +96,7 @@ impl Data {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct ClassificationParams {
     min_rssi_for_receiving_pkts: i8,
     beacon_classification_mask: u16,

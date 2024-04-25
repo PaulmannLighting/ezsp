@@ -11,7 +11,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response;
 
 impl Parameter for Response {

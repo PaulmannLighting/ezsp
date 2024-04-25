@@ -9,7 +9,7 @@ use crate::frame::parameters::cbke::{
     calculate_smacs, calculate_smacs283k1, clear_temporary_data_maybe_store_link_key,
     clear_temporary_data_maybe_store_link_key283k1, dsa_sign, dsa_verify, dsa_verify283k1,
     generate_cbke_keys, generate_cbke_keys283k1, get_certificate, get_certificate283k1,
-    save_preinstalled_cbke_data283k1,
+    save_preinstalled_cbke_data283k1, set_preinstalled_cbke_data,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -265,6 +265,10 @@ where
         my_cert: CertificateData,
         my_key: PrivateKeyData,
     ) -> Result<(), Error> {
-        todo!()
+        self.communicate::<_, set_preinstalled_cbke_data::Response>(
+            set_preinstalled_cbke_data::Command::new(ca_public, my_cert, my_key),
+        )
+        .await?
+        .resolve()
     }
 }

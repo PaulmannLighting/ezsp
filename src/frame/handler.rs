@@ -7,9 +7,10 @@ use crate::frame::parameters::{
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     Binding(binding::handler::Handler),
-    Networking(networking::handler::Handler),
     Bootloader(bootloader::handler::Handler),
     CertificateBasedKeyExchange(cbke::handler::Handler),
     GreenPower(green_power::handler::Handler),
-    Messaging(messaging::handler::Handler), // TODO: implement all.
+    Messaging(messaging::handler::Handler),
+    Networking(networking::handler::Handler),
+    // TODO: implement all.
 }

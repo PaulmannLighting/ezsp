@@ -2,7 +2,9 @@ use std::future::Future;
 
 use crate::ember::NodeId;
 use crate::error::Resolve;
-use crate::frame::parameters::networking::{child_id, clear_stored_beacons, energy_scan_request};
+use crate::frame::parameters::networking::{
+    child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
+};
 use crate::{Error, Transport};
 
 /// Networking frames.
@@ -22,6 +24,26 @@ pub trait Networking {
         scan_channels: u32,
         scan_duration: u8,
         scan_count: u16,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// The application may call this function when contact with the network has been lost.
+    ///
+    /// The most common usage case is when an end device can no longer communicate with its parent
+    /// and wishes to find a new one. Another case is when a device has missed a Network Key update
+    /// and no longer has the current Network Key.
+    ///
+    /// The stack will call `ezspStackStatusHandler` to indicate that the network is down,
+    /// then try to re-establish contact with the network by performing an active scan,
+    /// choosing a network with matching extended pan id, and sending a ZigBee network rejoin request.
+    /// A second call to the `ezspStackStatusHandler` callback indicates either the success or the
+    /// failure of the attempt. The process takes approximately 150 milliseconds per channel to complete.
+    ///
+    /// This call replaces the emberMobileNodeHasMoved API from EmberZNet 2.x,
+    /// which used MAC association and consequently took half a second longer to complete.
+    fn find_and_rejoin_network(
+        &self,
+        have_current_network_key: bool,
+        channel_mask: u32,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -54,6 +76,18 @@ where
             scan_duration,
             scan_count,
         ))
+        .await?
+        .resolve()
+    }
+
+    async fn find_and_rejoin_network(
+        &self,
+        have_current_network_key: bool,
+        channel_mask: u32,
+    ) -> Result<(), Error> {
+        self.communicate::<_, find_and_rejoin_network::Response>(
+            find_and_rejoin_network::Command::new(have_current_network_key, channel_mask),
+        )
         .await?
         .resolve()
     }

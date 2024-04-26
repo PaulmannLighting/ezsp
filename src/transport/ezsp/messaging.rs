@@ -16,6 +16,7 @@ use crate::frame::parameters::messaging::{
     send_broadcast, send_many_to_one_route_request, send_multicast, send_multicast_with_alias,
     send_raw_message, send_raw_message_extended, send_reply, send_unicast,
     set_address_table_remote_eui64, set_address_table_remote_node_id,
+    set_beacon_classification_params,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -612,11 +613,15 @@ where
         .map(drop)
     }
 
-    fn set_beacon_classification_params(
+    async fn set_beacon_classification_params(
         &self,
         param: ClassificationParams,
-    ) -> impl Future<Output = Result<(), Error>> + Send {
-        todo!()
+    ) -> Result<(), Error> {
+        self.communicate::<_, set_beacon_classification_params::Response>(
+            set_beacon_classification_params::Command::new(param),
+        )
+        .await?
+        .resolve()
     }
 
     fn set_extended_timeout(

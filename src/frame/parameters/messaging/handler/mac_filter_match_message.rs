@@ -1,21 +1,13 @@
+use le_stream::derive::FromLeBytes;
+
 use crate::ember::mac::PassthroughType;
+use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0046;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command;
-
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response {
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+pub struct Handler {
     filter_index_match: u8,
     legacy_passthrough_type: u8,
     last_hop_lqi: u8,
@@ -23,24 +15,7 @@ pub struct Response {
     message: ByteSizedVec<u8>,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(
-        filter_index_match: u8,
-        legacy_passthrough_type: PassthroughType,
-        last_hop_lqi: u8,
-        last_hop_rssi: i8,
-        message: ByteSizedVec<u8>,
-    ) -> Self {
-        Self {
-            filter_index_match,
-            legacy_passthrough_type: legacy_passthrough_type.into(),
-            last_hop_lqi,
-            last_hop_rssi,
-            message,
-        }
-    }
-
+impl Handler {
     #[must_use]
     pub const fn filter_index_match(&self) -> u8 {
         self.filter_index_match
@@ -64,4 +39,9 @@ impl Response {
     pub const fn message(&self) -> &ByteSizedVec<u8> {
         &self.message
     }
+}
+
+impl Parameter for Handler {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

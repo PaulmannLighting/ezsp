@@ -1,13 +1,15 @@
+use le_stream::derive::FromLeBytes;
+
 use crate::ember::aps::Frame;
 use crate::ember::message::Outgoing;
 use crate::ember::Status;
+use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x003F;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response {
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+pub struct Handler {
     typ: u8,
     index_or_destination: u16,
     aps_frame: Frame,
@@ -16,26 +18,7 @@ pub struct Response {
     message: ByteSizedVec<u8>,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(
-        typ: Outgoing,
-        index_or_destination: u16,
-        aps_frame: Frame,
-        message_tag: u8,
-        status: Status,
-        message: ByteSizedVec<u8>,
-    ) -> Self {
-        Self {
-            typ: typ.into(),
-            index_or_destination,
-            aps_frame,
-            message_tag,
-            status: status.into(),
-            message,
-        }
-    }
-
+impl Handler {
     pub fn typ(&self) -> Result<Outgoing, u8> {
         Outgoing::try_from(self.typ)
     }
@@ -63,4 +46,9 @@ impl Response {
     pub const fn message(&self) -> &ByteSizedVec<u8> {
         &self.message
     }
+}
+
+impl Parameter for Handler {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

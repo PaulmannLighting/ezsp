@@ -35,7 +35,7 @@ impl TryFrom<u16> for Option {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Frame {
     profile_id: u16,
     cluster_id: u16,

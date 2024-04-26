@@ -1,4 +1,6 @@
-use crate::frame::parameters::{binding, bootloader, cbke, green_power, mfglib, networking};
+use crate::frame::parameters::{
+    binding, bootloader, cbke, green_power, messaging, mfglib, networking,
+};
 
 /// Possible callback responses, which are called "handler"s according to the EZSP documentation.
 #[allow(clippy::large_enum_variant)]
@@ -9,5 +11,5 @@ pub enum Handler {
     Bootloader(bootloader::handler::Handler),
     CertificateBasedKeyExchange(cbke::handler::Handler),
     GreenPower(green_power::handler::Handler),
-    // TODO: implement all.
+    Messaging(messaging::handler::Handler), // TODO: implement all.
 }

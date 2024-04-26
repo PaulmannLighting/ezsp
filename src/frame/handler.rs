@@ -7,5 +7,6 @@ pub enum Handler {
     Binding(binding::handler::Handler),
     Networking(networking::handler::Handler),
     Bootloader(bootloader::handler::Handler),
+    CertificateBasedKeyExchange(cbke::handler::Handler),
     // TODO: implement all.
 }

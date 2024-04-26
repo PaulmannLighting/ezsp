@@ -1,29 +1,28 @@
 use le_stream::derive::FromLeBytes;
 
-use crate::ember::Status;
+use crate::ember::{PublicKeyData, Status};
 use crate::frame::Parameter;
-use crate::types::ByteSizedVec;
 
-const ID: u16 = 0x00A7;
+const ID: u16 = 0x009E;
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
-pub struct Response {
+pub struct Handler {
     status: u8,
-    message: ByteSizedVec<u8>,
+    ephemeral_public_key: PublicKeyData,
 }
 
-impl Response {
+impl Handler {
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }
 
     #[must_use]
-    pub const fn message(&self) -> &ByteSizedVec<u8> {
-        &self.message
+    pub const fn ephemeral_public_key(&self) -> &PublicKeyData {
+        &self.ephemeral_public_key
     }
 }
 
-impl Parameter for Response {
+impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

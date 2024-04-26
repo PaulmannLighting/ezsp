@@ -2,7 +2,7 @@ use std::future::Future;
 
 use crate::error::Resolve;
 use crate::frame::parameters::mfglib::{
-    end, get_channel, get_power, send_packet, set_channel, set_power, start,
+    end, get_channel, get_power, send_packet, set_channel, set_power, start, start_stream,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -56,6 +56,11 @@ pub trait Mfglib {
     /// These packets will not be passed up with a CRC failure.
     /// All other mfglib functions will return an error until the [`start()`](Self::start) has been called.
     fn start(&self, rx_callback: bool) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Starts transmitting a random stream of characters.
+    ///
+    /// This is so that the radio modulation can be measured.
+    fn start_stream(&self) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Mfglib for T
@@ -104,6 +109,12 @@ where
 
     async fn start(&self, rx_callback: bool) -> Result<(), Error> {
         self.communicate::<_, start::Response>(start::Command::new(rx_callback))
+            .await?
+            .resolve()
+    }
+
+    async fn start_stream(&self) -> Result<(), Error> {
+        self.communicate::<_, start_stream::Response>(start_stream::Command)
             .await?
             .resolve()
     }

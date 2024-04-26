@@ -1,20 +1,17 @@
+use le_stream::derive::FromLeBytes;
+
 use crate::ember::PanId;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::frame::Parameter;
 
 const ID: u16 = 0x00D2;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes)]
+pub struct Handler {
     pan_id: PanId,
     channel: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub const fn new(pan_id: PanId, channel: u8) -> Self {
-        Self { pan_id, channel }
-    }
-
+impl Handler {
     #[must_use]
     pub const fn pan_id(&self) -> PanId {
         self.pan_id
@@ -24,4 +21,9 @@ impl Response {
     pub const fn channel(&self) -> u8 {
         self.channel
     }
+}
+
+impl Parameter for Handler {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

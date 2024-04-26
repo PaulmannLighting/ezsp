@@ -5,7 +5,7 @@ use crate::frame::Parameter;
 
 const ID: u16 = 0x004D;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Handler {
     channel_page: u8,
     channel: u8,

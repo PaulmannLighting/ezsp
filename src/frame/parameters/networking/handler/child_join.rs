@@ -6,7 +6,7 @@ use crate::frame::Parameter;
 
 const ID: u16 = 0x0023;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Handler {
     index: u8,
     joining: bool,

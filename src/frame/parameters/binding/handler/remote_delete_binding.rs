@@ -1,25 +1,17 @@
+use le_stream::derive::FromLeBytes;
+
 use crate::ember::Status;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::frame::Parameter;
 
 const ID: u16 = 0x0032;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command;
-
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response {
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+pub struct Handler {
     index: u8,
     policy_decision: u8,
 }
 
-impl Response {
+impl Handler {
     #[must_use]
     pub fn new(index: u8, policy_decision: Status) -> Self {
         Self {
@@ -36,4 +28,9 @@ impl Response {
     pub fn policy_decision(&self) -> Result<Status, u8> {
         Status::try_from(self.policy_decision)
     }
+}
+
+impl Parameter for Handler {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

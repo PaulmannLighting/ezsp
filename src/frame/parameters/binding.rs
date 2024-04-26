@@ -3,7 +3,6 @@ pub mod clear_binding_table;
 pub mod delete_binding;
 pub mod get_binding;
 pub mod get_binding_remote_node_id;
-pub mod remote_delete_binding_handler;
-pub mod remote_set_binding_handler;
+pub mod handler;
 pub mod set_binding;
 pub mod set_binding_remote_node_id;

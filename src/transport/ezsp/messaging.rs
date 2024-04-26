@@ -15,6 +15,7 @@ use crate::frame::parameters::messaging::{
     maximum_payload_length, poll_for_data, proxy_broadcast, replace_address_table_entry,
     send_broadcast, send_many_to_one_route_request, send_multicast, send_multicast_with_alias,
     send_raw_message, send_raw_message_extended, send_reply, send_unicast,
+    set_address_table_remote_eui64,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -587,12 +588,16 @@ where
         .resolve()
     }
 
-    fn set_address_table_remote_eui64(
+    async fn set_address_table_remote_eui64(
         &self,
         address_table_index: u8,
         eui64: Eui64,
-    ) -> impl Future<Output = Result<(), Error>> + Send {
-        todo!()
+    ) -> Result<(), Error> {
+        self.communicate::<_, set_address_table_remote_eui64::Response>(
+            set_address_table_remote_eui64::Command::new(address_table_index, eui64),
+        )
+        .await?
+        .resolve()
     }
 
     fn set_address_table_remote_node_id(

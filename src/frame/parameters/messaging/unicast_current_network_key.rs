@@ -1,9 +1,13 @@
-use crate::ember::{Eui64, NodeId, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+
+use crate::ember::{Eui64, NodeId, Status};
+use crate::error::Resolve;
+use crate::frame::Parameter;
+use crate::Error;
 
 const ID: u16 = 0x0050;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     target_short: NodeId,
     target_long: Eui64,
@@ -19,37 +23,27 @@ impl Command {
             parent_short_id,
         }
     }
-
-    #[must_use]
-    pub const fn target_short(&self) -> NodeId {
-        self.target_short
-    }
-
-    #[must_use]
-    pub const fn target_long(&self) -> Eui64 {
-        self.target_long
-    }
-
-    #[must_use]
-    pub const fn parent_short_id(&self) -> NodeId {
-        self.parent_short_id
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+impl Resolve for Response {
+    type Result = ();
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status).resolve()
     }
 }

@@ -17,7 +17,7 @@ use crate::frame::parameters::messaging::{
     send_raw_message, send_raw_message_extended, send_reply, send_unicast,
     set_address_table_remote_eui64, set_address_table_remote_node_id,
     set_beacon_classification_params, set_extended_timeout, set_mac_poll_failure_wait_time,
-    set_multicast_table_entry, set_source_route_discovery_mode,
+    set_multicast_table_entry, set_source_route_discovery_mode, unicast_current_network_key,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -668,13 +668,17 @@ where
         .map(|response| response.remaining_time())
     }
 
-    fn unicast_current_network_key(
+    async fn unicast_current_network_key(
         &self,
         target_short: NodeId,
         target_long: Eui64,
         parent_short_id: NodeId,
-    ) -> impl Future<Output = Result<(), Error>> + Send {
-        todo!()
+    ) -> Result<(), Error> {
+        self.communicate::<_, unicast_current_network_key::Response>(
+            unicast_current_network_key::Command::new(target_short, target_long, parent_short_id),
+        )
+        .await?
+        .resolve()
     }
 
     fn write_node_data(&self, erase: bool) -> impl Future<Output = Result<(), Error>> + Send {

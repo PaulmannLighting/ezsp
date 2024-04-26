@@ -3,6 +3,7 @@ use std::future::Future;
 use crate::error::Resolve;
 use crate::frame::parameters::mfglib::{
     end, get_channel, get_power, send_packet, set_channel, set_power, start, start_stream,
+    start_tone,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -61,6 +62,13 @@ pub trait Mfglib {
     ///
     /// This is so that the radio modulation can be measured.
     fn start_stream(&self) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Starts transmitting an unmodulated tone on the currently set channel and power level.
+    ///
+    /// Upon successful return, the tone will be transmitting.
+    /// To stop transmitting tone, application must call [`stop_tone()`](Self::stop_tone), allowing
+    /// it the flexibility to determine its own criteria or tone duration (time, event, etc.).
+    fn start_tone(&self) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Mfglib for T
@@ -115,6 +123,12 @@ where
 
     async fn start_stream(&self) -> Result<(), Error> {
         self.communicate::<_, start_stream::Response>(start_stream::Command)
+            .await?
+            .resolve()
+    }
+
+    async fn start_tone(&self) -> Result<(), Error> {
+        self.communicate::<_, start_tone::Response>(start_tone::Command)
             .await?
             .resolve()
     }

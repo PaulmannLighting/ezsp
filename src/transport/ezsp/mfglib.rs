@@ -1,7 +1,7 @@
 use std::future::Future;
 
 use crate::error::Resolve;
-use crate::frame::parameters::mfglib::{end, get_channel, get_power, send_packet};
+use crate::frame::parameters::mfglib::{end, get_channel, get_power, send_packet, set_channel};
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 
@@ -31,6 +31,11 @@ pub trait Mfglib {
         &self,
         content: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets the radio channel.
+    ///
+    /// Calibration occurs if this is the first time the channel has been used.
+    fn set_channel(&self, channel: u8) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Mfglib for T
@@ -57,6 +62,12 @@ where
 
     async fn send_packet(&self, content: ByteSizedVec<u8>) -> Result<(), Error> {
         self.communicate::<_, send_packet::Response>(send_packet::Command::new(content))
+            .await?
+            .resolve()
+    }
+
+    async fn set_channel(&self, channel: u8) -> impl Future<Output = Result<(), Error>> + Send {
+        self.communicate::<_, set_channel::Response>(set_channel::Command::new(channel))
             .await?
             .resolve()
     }

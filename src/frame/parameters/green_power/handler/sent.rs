@@ -1,16 +1,17 @@
+use le_stream::derive::FromLeBytes;
+
 use crate::ember::Status;
 use crate::frame::Parameter;
-use le_stream::derive::FromLeBytes;
 
 const ID: u16 = 0x00C7;
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
-pub struct Response {
+pub struct Handler {
     status: u8,
     gpep_handle: u8,
 }
 
-impl Response {
+impl Handler {
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }
@@ -21,7 +22,7 @@ impl Response {
     }
 }
 
-impl Parameter for Response {
+impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

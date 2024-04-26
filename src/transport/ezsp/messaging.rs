@@ -321,7 +321,7 @@ pub trait Messaging {
         parent_short_id: NodeId,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
-    /// Write the current node Id, PAN ID, or Node type to the tokens.
+    /// Write the current node ID, PAN ID, or Node type to the tokens.
     fn write_node_data(&self, erase: bool) -> impl Future<Output = Result<(), Error>> + Send;
 }
 

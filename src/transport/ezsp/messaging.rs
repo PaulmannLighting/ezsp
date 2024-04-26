@@ -14,7 +14,7 @@ use crate::frame::parameters::messaging::{
     get_multicast_table_entry, lookup_eui64_by_node_id, lookup_node_id_by_eui64,
     maximum_payload_length, poll_for_data, proxy_broadcast, replace_address_table_entry,
     send_broadcast, send_many_to_one_route_request, send_multicast, send_multicast_with_alias,
-    send_raw_message,
+    send_raw_message, send_raw_message_extended,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -542,13 +542,17 @@ where
         .resolve()
     }
 
-    fn send_raw_message_extended(
+    async fn send_raw_message_extended(
         &self,
         message: ByteSizedVec<u8>,
         priority: u8,
         use_cca: bool,
-    ) -> impl Future<Output = Result<(), Error>> + Send {
-        todo!()
+    ) -> Result<(), Error> {
+        self.communicate::<_, send_raw_message_extended::Response>(
+            send_raw_message_extended::Command::new(message, priority, use_cca),
+        )
+        .await?
+        .resolve()
     }
 
     fn send_reply(

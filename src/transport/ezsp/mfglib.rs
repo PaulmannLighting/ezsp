@@ -1,7 +1,7 @@
 use std::future::Future;
 
 use crate::error::Resolve;
-use crate::frame::parameters::mfglib::{end, get_channel};
+use crate::frame::parameters::mfglib::{end, get_channel, get_power};
 use crate::{Error, Transport};
 
 pub trait Mfglib {
@@ -12,6 +12,9 @@ pub trait Mfglib {
 
     /// Returns the current radio channel, as previously set via [`set_channel()`](Self::set_channel).
     fn get_channel(&self) -> impl Future<Output = Result<u8, Error>> + Send;
+
+    /// Returns the current radio power setting, as previously set via [`set_power()`](Self::set_power).
+    fn get_power(&self) -> impl Future<Output = Result<i8, Error>> + Send;
 }
 
 impl<T> Mfglib for T
@@ -28,5 +31,11 @@ where
         self.communicate::<_, get_channel::Response>(get_channel::Command)
             .await
             .map(|response| response.channel())
+    }
+
+    async fn get_power(&self) -> Result<i8, Error> {
+        self.communicate::<_, get_power::Response>(get_power::Command)
+            .await
+            .map(|response| response.power())
     }
 }

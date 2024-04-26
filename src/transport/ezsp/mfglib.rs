@@ -2,7 +2,7 @@ use std::future::Future;
 
 use crate::error::Resolve;
 use crate::frame::parameters::mfglib::{
-    end, get_channel, get_power, send_packet, set_channel, set_power,
+    end, get_channel, get_power, send_packet, set_channel, set_power, start,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -49,6 +49,13 @@ pub trait Mfglib {
         tx_power_mode: u16,
         power: i8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Activate use of mfglib test routines and enables the radio receiver to report packets it
+    /// receives to the [`rx_handler`] callback.
+    ///
+    /// These packets will not be passed up with a CRC failure.
+    /// All other mfglib functions will return an error until the [`start()`](Self::start) has been called.
+    fn start(&self, rx_callback: bool) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Mfglib for T
@@ -91,6 +98,12 @@ where
         power: i8,
     ) -> impl Future<Output = Result<(), Error>> + Send {
         self.communicate::<_, set_power::Response>(set_power::Command::new(tx_power_mode, power))
+            .await?
+            .resolve()
+    }
+
+    async fn start(&self, rx_callback: bool) -> Result<(), Error> {
+        self.communicate::<_, start::Response>(start::Command::new(rx_callback))
             .await?
             .resolve()
     }

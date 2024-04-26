@@ -1,9 +1,11 @@
-use crate::ember::NodeId;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+
+use crate::ember::NodeId;
+use crate::frame::Parameter;
 
 const ID: u16 = 0x005D;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     address_table_index: u8,
     id: NodeId,
@@ -17,24 +19,17 @@ impl Command {
             id,
         }
     }
-
-    #[must_use]
-    pub const fn address_table_index(&self) -> u8 {
-        self.address_table_index
-    }
-
-    #[must_use]
-    pub const fn id(&self) -> NodeId {
-        self.id
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response;
 
-impl Response {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

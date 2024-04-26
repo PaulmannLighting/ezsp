@@ -17,7 +17,7 @@ use crate::frame::parameters::messaging::{
     send_raw_message, send_raw_message_extended, send_reply, send_unicast,
     set_address_table_remote_eui64, set_address_table_remote_node_id,
     set_beacon_classification_params, set_extended_timeout, set_mac_poll_failure_wait_time,
-    set_multicast_table_entry,
+    set_multicast_table_entry, set_source_route_discovery_mode,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -657,11 +657,15 @@ where
         .resolve()
     }
 
-    fn set_source_route_discovery_mode(
+    async fn set_source_route_discovery_mode(
         &self,
         mode: SourceRouteDiscoveryMode,
-    ) -> impl Future<Output = Result<u32, Error>> + Send {
-        todo!()
+    ) -> Result<u32, Error> {
+        self.communicate::<_, set_source_route_discovery_mode::Response>(
+            set_source_route_discovery_mode::Command::new(mode),
+        )
+        .await
+        .map(|response| response.remaining_time())
     }
 
     fn unicast_current_network_key(

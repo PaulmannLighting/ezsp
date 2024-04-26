@@ -18,6 +18,7 @@ use crate::frame::parameters::messaging::{
     set_address_table_remote_eui64, set_address_table_remote_node_id,
     set_beacon_classification_params, set_extended_timeout, set_mac_poll_failure_wait_time,
     set_multicast_table_entry, set_source_route_discovery_mode, unicast_current_network_key,
+    write_node_data,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -681,7 +682,9 @@ where
         .resolve()
     }
 
-    fn write_node_data(&self, erase: bool) -> impl Future<Output = Result<(), Error>> + Send {
-        todo!()
+    async fn write_node_data(&self, erase: bool) -> Result<(), Error> {
+        self.communicate::<_, write_node_data::Response>(write_node_data::Command::new(erase))
+            .await?
+            .resolve()
     }
 }

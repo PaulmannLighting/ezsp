@@ -29,3 +29,4 @@ pub struct Response;
 impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
+}

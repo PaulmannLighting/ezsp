@@ -13,7 +13,7 @@ use crate::frame::parameters::messaging::{
     get_address_table_remote_node_id, get_beacon_classification_params, get_extended_timeout,
     get_multicast_table_entry, lookup_eui64_by_node_id, lookup_node_id_by_eui64,
     maximum_payload_length, poll_for_data, proxy_broadcast, replace_address_table_entry,
-    send_broadcast, send_many_to_one_route_request, send_multicast,
+    send_broadcast, send_many_to_one_route_request, send_multicast, send_multicast_with_alias,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -508,7 +508,7 @@ where
         .resolve()
     }
 
-    fn send_multicast_with_alias(
+    async fn send_multicast_with_alias(
         &self,
         aps_frame: Frame,
         hops: u8,
@@ -517,8 +517,20 @@ where
         nwk_sequence: u8,
         message_tag: u8,
         message_contents: ByteSizedVec<u8>,
-    ) -> impl Future<Output = Result<u8, Error>> + Send {
-        todo!()
+    ) -> Result<u8, Error> {
+        self.communicate::<_, send_multicast_with_alias::Response>(
+            send_multicast_with_alias::Command::new(
+                aps_frame,
+                hops,
+                nonmember_radius,
+                alias,
+                nwk_sequence,
+                message_tag,
+                message_contents,
+            ),
+        )
+        .await?
+        .resolve()
     }
 
     fn send_raw_message(

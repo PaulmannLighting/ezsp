@@ -3,7 +3,7 @@ use std::future::Future;
 use crate::error::Resolve;
 use crate::frame::parameters::mfglib::{
     end, get_channel, get_power, send_packet, set_channel, set_power, start, start_stream,
-    start_tone, stop_stream,
+    start_tone, stop_stream, stop_tone,
 };
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
@@ -72,6 +72,9 @@ pub trait Mfglib {
 
     /// Stops transmitting a random stream of characters started by [`start_stream()`](Self::start_stream).
     fn stop_stream(&self) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Stops transmitting tone started by [`start_tone()`](Self::start_tone).
+    fn stop_tone(&self) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Mfglib for T
@@ -138,6 +141,12 @@ where
 
     async fn stop_stream(&self) -> impl Future<Output = Result<(), Error>> + Send {
         self.communicate::<_, stop_stream::Response>(stop_stream::Command)
+            .await?
+            .resolve()
+    }
+
+    async fn stop_tone(&self) -> impl Future<Output = Result<(), Error>> + Send {
+        self.communicate::<_, stop_tone::Response>(stop_tone::Command)
             .await?
             .resolve()
     }

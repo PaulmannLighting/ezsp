@@ -1,7 +1,9 @@
 use std::future::Future;
 
 use crate::error::Resolve;
-use crate::frame::parameters::mfglib::{end, get_channel, get_power, send_packet, set_channel};
+use crate::frame::parameters::mfglib::{
+    end, get_channel, get_power, send_packet, set_channel, set_power,
+};
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 
@@ -36,6 +38,17 @@ pub trait Mfglib {
     ///
     /// Calibration occurs if this is the first time the channel has been used.
     fn set_channel(&self, channel: u8) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// First select the transmit power mode, and then include a method for selecting the radio transmit power.
+    ///
+    /// The valid power settings depend upon the specific radio in use.
+    /// Ember radios have discrete power settings, and then requested power is rounded to a valid
+    /// power setting; the actual power output is available to the caller via [`get_power()`](Self::get_power).
+    fn set_power(
+        &self,
+        tx_power_mode: u16,
+        power: i8,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Mfglib for T
@@ -68,6 +81,16 @@ where
 
     async fn set_channel(&self, channel: u8) -> impl Future<Output = Result<(), Error>> + Send {
         self.communicate::<_, set_channel::Response>(set_channel::Command::new(channel))
+            .await?
+            .resolve()
+    }
+
+    async fn set_power(
+        &self,
+        tx_power_mode: u16,
+        power: i8,
+    ) -> impl Future<Output = Result<(), Error>> + Send {
+        self.communicate::<_, set_power::Response>(set_power::Command::new(tx_power_mode, power))
             .await?
             .resolve()
     }

@@ -5,7 +5,7 @@ use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x008E;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Handler {
     link_quality: u8,
     rssi: i8,
@@ -13,15 +13,6 @@ pub struct Handler {
 }
 
 impl Handler {
-    #[must_use]
-    pub const fn new(link_quality: u8, rssi: i8, content: ByteSizedVec<u8>) -> Self {
-        Self {
-            link_quality,
-            rssi,
-            content,
-        }
-    }
-
     #[must_use]
     pub const fn link_quality(&self) -> u8 {
         self.link_quality

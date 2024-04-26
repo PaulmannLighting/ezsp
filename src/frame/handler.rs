@@ -1,5 +1,5 @@
 use crate::frame::parameters::{
-    binding, bootloader, cbke, green_power, messaging, mfglib, networking,
+    binding, bootloader, cbke, green_power, messaging, mfglib, networking, security,
 };
 
 /// Possible callback responses, which are called "handler"s according to the EZSP documentation.
@@ -11,6 +11,8 @@ pub enum Handler {
     CertificateBasedKeyExchange(cbke::handler::Handler),
     GreenPower(green_power::handler::Handler),
     Messaging(messaging::handler::Handler),
+    MfgLib(mfglib::handler::Handler),
     Networking(networking::handler::Handler),
+    Security(security::handler::Handler),
     // TODO: implement all.
 }

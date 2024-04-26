@@ -1,7 +1,7 @@
 pub mod end;
 pub mod get_channel;
 pub mod get_power;
-pub mod rx_handler;
+pub mod handler;
 pub mod send_packet;
 pub mod set_channel;
 pub mod set_power;

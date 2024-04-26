@@ -28,6 +28,7 @@ where
     pub const fn new(header: Header<P::Id>, parameters: P) -> Self {
         Self { header, parameters }
     }
+
     pub fn parameters(self) -> P {
         self.parameters
     }

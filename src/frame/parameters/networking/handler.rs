@@ -6,6 +6,7 @@ pub mod scan_complete;
 pub mod stack_status;
 pub mod unused_pan_id_found;
 
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     ChildJoin(child_join::Handler),
     DutyCycle(duty_cycle::Handler),

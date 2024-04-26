@@ -17,6 +17,7 @@ use crate::frame::parameters::messaging::{
     send_raw_message, send_raw_message_extended, send_reply, send_unicast,
     set_address_table_remote_eui64, set_address_table_remote_node_id,
     set_beacon_classification_params, set_extended_timeout, set_mac_poll_failure_wait_time,
+    set_multicast_table_entry,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -648,12 +649,12 @@ where
         .map(drop)
     }
 
-    fn set_multicast_table_entry(
-        &self,
-        index: u8,
-        value: TableEntry,
-    ) -> impl Future<Output = Result<(), Error>> + Send {
-        todo!()
+    async fn set_multicast_table_entry(&self, index: u8, value: TableEntry) -> Result<(), Error> {
+        self.communicate::<_, set_multicast_table_entry::Response>(
+            set_multicast_table_entry::Command::new(index, value),
+        )
+        .await?
+        .resolve()
     }
 
     fn set_source_route_discovery_mode(

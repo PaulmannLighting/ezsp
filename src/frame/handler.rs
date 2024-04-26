@@ -6,5 +6,6 @@ use crate::frame::parameters::{binding, bootloader, cbke, mfglib, networking};
 pub enum Handler {
     Binding(binding::handler::Handler),
     Networking(networking::handler::Handler),
+    Bootloader(bootloader::handler::Handler),
     // TODO: implement all.
 }

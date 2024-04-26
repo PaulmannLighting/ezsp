@@ -36,7 +36,7 @@ pub trait Parameter: Send + Sync {
 /// Possible callback responses, which are called "handler"s according to the EZSP documentation.
 #[allow(clippy::large_enum_variant)]
 pub enum Handler {
-    BootloadTransmitComplete(bootloader::bootload_transmit_complete_handler::Response),
+    BootloadTransmitComplete(bootloader::bootload_transmit_complete_handler::Handler),
     CalculateSmacs(cbke::calculate_smacs_handler::Response),
     CalculateSmacs283k1(cbke::calculate_smacs283k1::Response),
     MfglibRxHandler(mfglib::rx_handler::Handler),

@@ -16,7 +16,7 @@ use crate::frame::parameters::messaging::{
     send_broadcast, send_many_to_one_route_request, send_multicast, send_multicast_with_alias,
     send_raw_message, send_raw_message_extended, send_reply, send_unicast,
     set_address_table_remote_eui64, set_address_table_remote_node_id,
-    set_beacon_classification_params,
+    set_beacon_classification_params, set_extended_timeout,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::{Error, Transport};
@@ -624,12 +624,17 @@ where
         .resolve()
     }
 
-    fn set_extended_timeout(
+    async fn set_extended_timeout(
         &self,
         remote_eui64: Eui64,
         extended_timeout: bool,
-    ) -> impl Future<Output = Result<(), Error>> + Send {
-        todo!()
+    ) -> Result<(), Error> {
+        self.communicate::<_, set_extended_timeout::Response>(set_extended_timeout::Command::new(
+            remote_eui64,
+            extended_timeout,
+        ))
+        .await
+        .map(drop)
     }
 
     fn set_mac_poll_failure_wait_time(

@@ -1,5 +1,7 @@
-use crate::ember::Eui64;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+
+use crate::ember::Eui64;
+use crate::frame::Parameter;
 
 const ID: u16 = 0x007E;
 
@@ -19,5 +21,15 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response;
+
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}

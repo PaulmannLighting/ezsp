@@ -15,15 +15,6 @@ pub struct Handler {
 
 impl Handler {
     #[must_use]
-    pub fn new(entry: TableEntry, index: u8, policy_decision: Status) -> Self {
-        Self {
-            entry,
-            index,
-            policy_decision: policy_decision.into(),
-        }
-    }
-
-    #[must_use]
     pub const fn entry(&self) -> &TableEntry {
         &self.entry
     }

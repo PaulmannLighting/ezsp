@@ -1,26 +1,18 @@
+use le_stream::derive::FromLeBytes;
+
+use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x008E;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Command;
-
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response {
+#[derive(Debug, Eq, PartialEq, FromLeBytes)]
+pub struct Handler {
     link_quality: u8,
     rssi: i8,
     content: ByteSizedVec<u8>,
 }
 
-impl Response {
+impl Handler {
     #[must_use]
     pub const fn new(link_quality: u8, rssi: i8, content: ByteSizedVec<u8>) -> Self {
         Self {
@@ -44,4 +36,9 @@ impl Response {
     pub const fn content(&self) -> &ByteSizedVec<u8> {
         &self.content
     }
+}
+
+impl Parameter for Handler {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

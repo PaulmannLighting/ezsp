@@ -105,17 +105,13 @@ where
             .resolve()
     }
 
-    async fn set_channel(&self, channel: u8) -> impl Future<Output = Result<(), Error>> + Send {
+    async fn set_channel(&self, channel: u8) -> Result<(), Error> {
         self.communicate::<_, set_channel::Response>(set_channel::Command::new(channel))
             .await?
             .resolve()
     }
 
-    async fn set_power(
-        &self,
-        tx_power_mode: u16,
-        power: i8,
-    ) -> impl Future<Output = Result<(), Error>> + Send {
+    async fn set_power(&self, tx_power_mode: u16, power: i8) -> Result<(), Error> {
         self.communicate::<_, set_power::Response>(set_power::Command::new(tx_power_mode, power))
             .await?
             .resolve()
@@ -139,13 +135,13 @@ where
             .resolve()
     }
 
-    async fn stop_stream(&self) -> impl Future<Output = Result<(), Error>> + Send {
+    async fn stop_stream(&self) -> Result<(), Error> {
         self.communicate::<_, stop_stream::Response>(stop_stream::Command)
             .await?
             .resolve()
     }
 
-    async fn stop_tone(&self) -> impl Future<Output = Result<(), Error>> + Send {
+    async fn stop_tone(&self) -> Result<(), Error> {
         self.communicate::<_, stop_tone::Response>(stop_tone::Command)
             .await?
             .resolve()

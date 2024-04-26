@@ -6,13 +6,13 @@ use crate::frame::Parameter;
 const ID: u16 = 0x00A0;
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
-pub struct Response {
+pub struct Handler {
     status: u8,
     initiator_smac: SmacData,
     responder_smac: SmacData,
 }
 
-impl Response {
+impl Handler {
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }
@@ -28,7 +28,7 @@ impl Response {
     }
 }
 
-impl Parameter for Response {
+impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

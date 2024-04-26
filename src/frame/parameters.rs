@@ -38,7 +38,7 @@ pub trait Parameter: Send + Sync {
 pub enum Handler {
     BootloadTransmitComplete(bootloader::bootload_transmit_complete_handler::Handler),
     CalculateSmacs(cbke::calculate_smacs_handler::Handler),
-    CalculateSmacs283k1(cbke::calculate_smacs283k1::Response),
+    CalculateSmacs283k1(cbke::calculate_smacs_handler283k1::Handler),
     MfglibRxHandler(mfglib::rx_handler::Handler),
     // TODO: implement all.
 }

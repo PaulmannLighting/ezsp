@@ -1,9 +1,13 @@
-use crate::ember::{NodeId, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+
+use crate::ember::{NodeId, Status};
+use crate::error::Resolve;
+use crate::frame::Parameter;
+use crate::Error;
 
 const ID: u16 = 0x009C;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     target: NodeId,
     scan_channels: u32,
@@ -26,41 +30,27 @@ impl Command {
             scan_count,
         }
     }
-
-    pub fn target(&self) -> NodeId {
-        self.target
-    }
-
-    #[must_use]
-    pub const fn scan_channels(&self) -> u32 {
-        self.scan_channels
-    }
-
-    #[must_use]
-    pub const fn scan_duration(&self) -> u8 {
-        self.scan_duration
-    }
-
-    #[must_use]
-    pub const fn scan_count(&self) -> u16 {
-        self.scan_count
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+impl Resolve for Response {
+    type Result = ();
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status).resolve()
     }
 }

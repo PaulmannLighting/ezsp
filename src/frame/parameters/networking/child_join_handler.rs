@@ -2,11 +2,12 @@ use le_stream::derive::FromLeBytes;
 
 use crate::ember::node::Type;
 use crate::ember::{Eui64, NodeId};
+use crate::frame::Parameter;
 
 const ID: u16 = 0x0023;
 
 #[derive(Debug, Eq, PartialEq, FromLeBytes)]
-pub struct Response {
+pub struct Handler {
     index: u8,
     joining: bool,
     child_id: NodeId,
@@ -14,7 +15,7 @@ pub struct Response {
     child_type: u8,
 }
 
-impl Response {
+impl Handler {
     #[must_use]
     pub const fn index(&self) -> u8 {
         self.index
@@ -38,4 +39,9 @@ impl Response {
     pub fn child_type(&self) -> Result<Type, u8> {
         Type::try_from(self.child_type)
     }
+}
+
+impl Parameter for Handler {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

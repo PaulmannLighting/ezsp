@@ -1,7 +1,8 @@
+use std::future::Future;
+
 use crate::error::Resolve;
 use crate::frame::parameters::mfglib::end;
 use crate::{Error, Transport};
-use std::future::Future;
 
 pub trait Mfglib {
     /// Deactivate use of `Mfglib` test routines; restores the hardware to the state it was in prior

@@ -1,12 +1,14 @@
+use le_stream::derive::FromLeBytes;
+
 use crate::ember::device::Update;
 use crate::ember::join::Decision;
 use crate::ember::{Eui64, NodeId};
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::frame::Parameter;
 
 const ID: u16 = 0x0024;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response {
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+pub struct Handler {
     new_node_id: NodeId,
     new_node_eui64: Eui64,
     status: u8,
@@ -14,24 +16,7 @@ pub struct Response {
     parent_of_new_node_id: NodeId,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(
-        new_node_id: NodeId,
-        new_node_eui64: Eui64,
-        status: Update,
-        policy_decision: Decision,
-        parent_of_new_node_id: NodeId,
-    ) -> Self {
-        Self {
-            new_node_id,
-            new_node_eui64,
-            status: status.into(),
-            policy_decision: policy_decision.into(),
-            parent_of_new_node_id,
-        }
-    }
-
+impl Handler {
     #[must_use]
     pub const fn new_node_id(&self) -> NodeId {
         self.new_node_id
@@ -54,4 +39,9 @@ impl Response {
     pub const fn parent_of_new_node_id(&self) -> NodeId {
         self.parent_of_new_node_id
     }
+}
+
+impl Parameter for Handler {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

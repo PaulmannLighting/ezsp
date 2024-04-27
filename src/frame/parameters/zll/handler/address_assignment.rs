@@ -1,25 +1,18 @@
+use le_stream::derive::FromLeBytes;
+
 use crate::ember::zll::AddressAssignment;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::frame::Parameter;
 
 const ID: u16 = 0x00B8;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
-pub struct Response {
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+pub struct Handler {
     address_info: AddressAssignment,
     last_hop_lqi: u8,
     last_hop_rssi: i8,
 }
 
-impl Response {
-    #[must_use]
-    pub const fn new(address_info: AddressAssignment, last_hop_lqi: u8, last_hop_rssi: i8) -> Self {
-        Self {
-            address_info,
-            last_hop_lqi,
-            last_hop_rssi,
-        }
-    }
-
+impl Handler {
     #[must_use]
     pub const fn address_info(&self) -> &AddressAssignment {
         &self.address_info
@@ -34,4 +27,9 @@ impl Response {
     pub const fn last_hop_rssi(&self) -> i8 {
         self.last_hop_rssi
     }
+}
+
+impl Parameter for Handler {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

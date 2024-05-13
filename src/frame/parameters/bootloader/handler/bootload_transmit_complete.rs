@@ -18,7 +18,7 @@ impl Handler {
     }
 
     #[must_use]
-    pub const fn message(self) -> ByteSizedVec<u8> {
+    pub fn message(self) -> ByteSizedVec<u8> {
         self.message
     }
 }

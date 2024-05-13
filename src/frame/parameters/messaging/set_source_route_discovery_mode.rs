@@ -12,7 +12,7 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(mode: SourceRouteDiscoveryMode) -> Self {
+    pub fn new(mode: SourceRouteDiscoveryMode) -> Self {
         Self { mode: mode.into() }
     }
 }

@@ -1,10 +1,8 @@
 use std::fmt::Debug;
 
-use le_stream::derive::{FromLeBytes, ToLeBytes};
-use le_stream::{FromLeBytes, ToLeBytes};
-
 pub use handler::Handler;
 pub use header::{CallbackType, Control, FrameFormatVersion, Header, HighByte, LowByte, SleepMode};
+use le_stream::derive::{FromLeBytes, ToLeBytes};
 pub use parameters::Parameter;
 
 mod handler;

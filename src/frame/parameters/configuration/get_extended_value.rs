@@ -43,6 +43,6 @@ impl Resolve for Response {
     type Result = ByteSizedVec<u8>;
 
     fn resolve(self) -> Result<Self::Result, crate::Error> {
-        Status::try_from(self.status).resolve_to(self.value)
+        Status::try_from(self.status).resolve().map(|()| self.value)
     }
 }

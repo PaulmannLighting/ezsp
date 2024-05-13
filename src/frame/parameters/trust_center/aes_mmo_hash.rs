@@ -51,7 +51,10 @@ impl Response {
 
 impl From<Response> for Result<MmoHashContext, Error> {
     fn from(response: Response) -> Self {
-        response.status().resolve_to(response.return_context())
+        response
+            .status()
+            .resolve()
+            .map(|_| response.return_context())
     }
 }
 

@@ -2,7 +2,7 @@ use std::future::Future;
 
 use crate::ember::multi_phy::radio;
 use crate::ember::{
-    beacon, child, duty_cycle, neighbor, network, node, DeviceDutyCycles, Eui64, NodeId,
+    beacon, child, duty_cycle, neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
 };
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
@@ -10,7 +10,7 @@ use crate::frame::parameters::networking::{
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
     get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon, get_neighbor,
     get_neighbor_frame_counter, get_network_parameters, get_next_beacon, get_num_stored_beacons,
-    get_parent_child_parameters, get_radio_channel, get_radio_parameters,
+    get_parent_child_parameters, get_radio_channel, get_radio_parameters, get_route_table_entry,
 };
 use crate::{Error, Transport};
 
@@ -140,6 +140,15 @@ pub trait Networking {
         &self,
         phy_index: u8,
     ) -> impl Future<Output = Result<radio::Parameters, Error>> + Send;
+
+    /// Returns the route table entry at the given index.
+    ///
+    /// The route table size can be obtained using the
+    /// [`get_configuration_value()`](Self::get_configuration_value) command.
+    fn get_route_table_entry(
+        &self,
+        index: u8,
+    ) -> impl Future<Output = Result<route::TableEntry, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -284,6 +293,14 @@ where
     async fn get_radio_parameters(&self, phy_index: u8) -> Result<radio::Parameters, Error> {
         self.communicate::<_, get_radio_parameters::Response>(get_radio_parameters::Command::new(
             phy_index,
+        ))
+        .await?
+        .resolve()
+    }
+
+    async fn get_route_table_entry(&self, index: u8) -> Result<route::TableEntry, Error> {
+        self.communicate::<_, get_route_table_entry::Response>(get_route_table_entry::Command::new(
+            index,
         ))
         .await?
         .resolve()

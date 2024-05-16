@@ -11,7 +11,7 @@ use crate::frame::parameters::networking::{
     get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon, get_neighbor,
     get_neighbor_frame_counter, get_network_parameters, get_next_beacon, get_num_stored_beacons,
     get_parent_child_parameters, get_radio_channel, get_radio_parameters, get_route_table_entry,
-    get_routing_shortcut_threshold,
+    get_routing_shortcut_threshold, get_source_route_table_entry,
 };
 use crate::{Error, Transport};
 
@@ -154,6 +154,12 @@ pub trait Networking {
     /// Gets the routing shortcut threshold used to differentiate between directly using a neighbor
     /// vs. performing routing.
     fn get_routing_shortcut_threshold(&self) -> impl Future<Output = Result<u8, Error>> + Send;
+
+    /// Returns information about a source route table entry.
+    fn get_source_route_table_entry(
+        &self,
+        index: u8,
+    ) -> impl Future<Output = Result<(NodeId, u8), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -317,5 +323,13 @@ where
         )
         .await
         .map(|response| response.routing_shortcut_thresh())
+    }
+
+    async fn get_source_route_table_entry(&self, index: u8) -> Result<(NodeId, u8), Error> {
+        self.communicate::<_, get_source_route_table_entry::Response>(
+            get_source_route_table_entry::Command::new(index),
+        )
+        .await?
+        .resolve()
     }
 }

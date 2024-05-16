@@ -1,6 +1,5 @@
 use std::future::Future;
 
-use crate::ember::neighbor::TableEntry;
 use crate::ember::{beacon, child, duty_cycle, neighbor, network, DeviceDutyCycles, NodeId};
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
@@ -193,7 +192,7 @@ where
             .resolve()
     }
 
-    async fn get_neighbor(&self, index: u8) -> Result<TableEntry, Error> {
+    async fn get_neighbor(&self, index: u8) -> Result<neighbor::TableEntry, Error> {
         self.communicate::<_, get_neighbor::Response>(get_neighbor::Command::new(index))
             .await?
             .resolve()

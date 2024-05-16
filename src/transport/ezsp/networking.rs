@@ -1,10 +1,11 @@
 use std::future::Future;
 
-use crate::ember::{network, NodeId};
+use crate::ember::child::Data;
+use crate::ember::{child, network, NodeId};
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
-    find_unused_pan_id, form_network,
+    find_unused_pan_id, form_network, get_child_data,
 };
 use crate::{Error, Transport};
 
@@ -59,6 +60,9 @@ pub trait Networking {
         &self,
         parameters: network::Parameters,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Returns information about a child of the local node.
+    fn get_child_data(&self, index: u8) -> impl Future<Output = Result<child::Data, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -117,6 +121,12 @@ where
 
     async fn form_network(&self, parameters: network::Parameters) -> Result<(), Error> {
         self.communicate::<_, form_network::Response>(form_network::Command::new(parameters))
+            .await?
+            .resolve()
+    }
+
+    async fn get_child_data(&self, index: u8) -> Result<Data, Error> {
+        self.communicate::<_, get_child_data::Response>(get_child_data::Command::new(index))
             .await?
             .resolve()
     }

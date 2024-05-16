@@ -8,7 +8,7 @@ use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
     get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon, get_neighbor,
-    get_neighbor_frame_counter, get_network_parameters, get_next_beacon,
+    get_neighbor_frame_counter, get_network_parameters, get_next_beacon, get_num_stored_beacons,
 };
 use crate::{Error, Transport};
 
@@ -121,6 +121,9 @@ pub trait Networking {
     ///
     /// Beacons are stored in cache after issuing an active scan.
     fn get_next_beacon(&self) -> impl Future<Output = Result<beacon::Data, Error>> + Send;
+
+    /// Returns the number of cached beacons that have been collected from a scan.
+    fn get_num_stored_beacons(&self) -> impl Future<Output = Result<u8, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -239,5 +242,11 @@ where
         self.communicate::<_, get_next_beacon::Response>(get_next_beacon::Command)
             .await?
             .resolve()
+    }
+
+    async fn get_num_stored_beacons(&self) -> Result<u8, Error> {
+        self.communicate::<_, get_num_stored_beacons::Response>(get_num_stored_beacons::Command)
+            .await
+            .map(|response| response.num_beacons())
     }
 }

@@ -19,7 +19,7 @@ impl Parameter for Command {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
-    limits: Limits,
+    returned_limits: Limits,
 }
 
 impl Parameter for Response {
@@ -33,6 +33,6 @@ impl Resolve for Response {
     fn resolve(self) -> Result<Self::Result, Error> {
         Status::try_from(self.status)
             .resolve()
-            .map(|()| self.limits)
+            .map(|()| self.returned_limits)
     }
 }

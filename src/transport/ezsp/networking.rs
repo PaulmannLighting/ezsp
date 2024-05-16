@@ -4,6 +4,7 @@ use crate::ember::NodeId;
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
+    find_unused_pan_id,
 };
 use crate::{Error, Transport};
 
@@ -44,6 +45,13 @@ pub trait Networking {
         &self,
         have_current_network_key: bool,
         channel_mask: u32,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This function starts a series of scans which will return an available panId.
+    fn find_unused_pan_id(
+        &self,
+        channel_mask: u32,
+        duration: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -88,6 +96,15 @@ where
         self.communicate::<_, find_and_rejoin_network::Response>(
             find_and_rejoin_network::Command::new(have_current_network_key, channel_mask),
         )
+        .await?
+        .resolve()
+    }
+
+    async fn find_unused_pan_id(&self, channel_mask: u32, duration: u8) -> Result<(), Error> {
+        self.communicate::<_, find_unused_pan_id::Response>(find_unused_pan_id::Command::new(
+            channel_mask,
+            duration,
+        ))
         .await?
         .resolve()
     }

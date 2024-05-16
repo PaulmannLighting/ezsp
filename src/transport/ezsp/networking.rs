@@ -1,7 +1,8 @@
 use std::future::Future;
 
 use crate::ember::{
-    beacon, child, duty_cycle, neighbor, network, node, DeviceDutyCycles, Eui64, NodeId,
+    beacon, child, duty_cycle, multi_phy_radio, neighbor, network, node, DeviceDutyCycles, Eui64,
+    NodeId,
 };
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
@@ -9,7 +10,7 @@ use crate::frame::parameters::networking::{
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
     get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon, get_neighbor,
     get_neighbor_frame_counter, get_network_parameters, get_next_beacon, get_num_stored_beacons,
-    get_parent_child_parameters, get_radio_channel,
+    get_parent_child_parameters, get_radio_channel, get_radio_parameters,
 };
 use crate::{Error, Transport};
 
@@ -133,6 +134,12 @@ pub trait Networking {
 
     /// Gets the channel in use for sending and receiving messages.
     fn get_radio_channel(&self) -> impl Future<Output = Result<u8, Error>> + Send;
+
+    /// Returns the current radio parameters based on phy index.
+    fn get_radio_parameters(
+        &self,
+        phy_index: u8,
+    ) -> impl Future<Output = Result<multi_phy_radio::Parameters, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -272,5 +279,16 @@ where
         self.communicate::<_, get_radio_channel::Response>(get_radio_channel::Command)
             .await
             .map(|response| response.channel())
+    }
+
+    async fn get_radio_parameters(
+        &self,
+        phy_index: u8,
+    ) -> Result<multi_phy_radio::Parameters, Error> {
+        self.communicate::<_, get_radio_parameters::Response>(get_radio_parameters::Command::new(
+            phy_index,
+        ))
+        .await?
+        .resolve()
     }
 }

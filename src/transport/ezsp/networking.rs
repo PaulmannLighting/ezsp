@@ -1,11 +1,11 @@
 use std::future::Future;
 
-use crate::ember::{child, duty_cycle, network, DeviceDutyCycles, NodeId};
+use crate::ember::{beacon, child, duty_cycle, network, DeviceDutyCycles, NodeId};
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
-    get_duty_cycle_limits, get_duty_cycle_state,
+    get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon,
 };
 use crate::{Error, Transport};
 
@@ -84,6 +84,11 @@ pub trait Networking {
     /// Obtains the current duty cycle state.
     fn get_duty_cycle_state(&self)
         -> impl Future<Output = Result<duty_cycle::State, Error>> + Send;
+
+    /// Returns the first beacon in the cache.
+    ///
+    /// Beacons are stored in cache after issuing an active scan.
+    fn get_first_beacon(&self) -> impl Future<Output = Result<beacon::Iterator, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -168,6 +173,12 @@ where
 
     async fn get_duty_cycle_state(&self) -> Result<duty_cycle::State, Error> {
         self.communicate::<_, get_duty_cycle_state::Response>(get_duty_cycle_state::Command)
+            .await?
+            .resolve()
+    }
+
+    async fn get_first_beacon(&self) -> Result<beacon::Iterator, Error> {
+        self.communicate::<_, get_first_beacon::Response>(get_first_beacon::Command)
             .await?
             .resolve()
     }

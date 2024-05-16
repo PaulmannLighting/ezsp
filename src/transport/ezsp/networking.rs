@@ -9,7 +9,7 @@ use crate::frame::parameters::networking::{
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
     get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon, get_neighbor,
     get_neighbor_frame_counter, get_network_parameters, get_next_beacon, get_num_stored_beacons,
-    get_parent_child_parameters,
+    get_parent_child_parameters, get_radio_channel,
 };
 use crate::{Error, Transport};
 
@@ -130,6 +130,9 @@ pub trait Networking {
     fn get_parent_child_parameters(
         &self,
     ) -> impl Future<Output = Result<get_parent_child_parameters::Response, Error>> + Send;
+
+    /// Gets the channel in use for sending and receiving messages.
+    fn get_radio_channel(&self) -> impl Future<Output = Result<u8, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -263,5 +266,11 @@ where
             get_parent_child_parameters::Command,
         )
         .await
+    }
+
+    async fn get_radio_channel(&self) -> Result<u8, Error> {
+        self.communicate::<_, get_radio_channel::Response>(get_radio_channel::Command)
+            .await
+            .map(|response| response.channel())
     }
 }

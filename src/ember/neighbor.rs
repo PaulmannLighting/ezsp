@@ -1,7 +1,7 @@
 use crate::ember::types::Eui64;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct TableEntry {
     short_id: u16,
     average_lqi: u8,

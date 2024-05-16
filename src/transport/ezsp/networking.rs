@@ -1,11 +1,12 @@
 use std::future::Future;
 
-use crate::ember::{beacon, child, duty_cycle, network, DeviceDutyCycles, NodeId};
+use crate::ember::neighbor::TableEntry;
+use crate::ember::{beacon, child, duty_cycle, neighbor, network, DeviceDutyCycles, NodeId};
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
-    get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon,
+    get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon, get_neighbor,
 };
 use crate::{Error, Transport};
 
@@ -89,6 +90,15 @@ pub trait Networking {
     ///
     /// Beacons are stored in cache after issuing an active scan.
     fn get_first_beacon(&self) -> impl Future<Output = Result<beacon::Iterator, Error>> + Send;
+
+    /// Returns the neighbor table entry at the given index.
+    ///
+    /// The number of active neighbors can be obtained using the
+    /// [`neighbor_count()`](Self::neighbor_count) command.
+    fn get_neighbor(
+        &self,
+        index: u8,
+    ) -> impl Future<Output = Result<neighbor::TableEntry, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -179,6 +189,12 @@ where
 
     async fn get_first_beacon(&self) -> Result<beacon::Iterator, Error> {
         self.communicate::<_, get_first_beacon::Response>(get_first_beacon::Command)
+            .await?
+            .resolve()
+    }
+
+    async fn get_neighbor(&self, index: u8) -> Result<TableEntry, Error> {
+        self.communicate::<_, get_neighbor::Response>(get_neighbor::Command::new(index))
             .await?
             .resolve()
     }

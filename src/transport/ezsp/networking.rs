@@ -12,6 +12,7 @@ use crate::frame::parameters::networking::{
     get_neighbor_frame_counter, get_network_parameters, get_next_beacon, get_num_stored_beacons,
     get_parent_child_parameters, get_radio_channel, get_radio_parameters, get_route_table_entry,
     get_routing_shortcut_threshold, get_source_route_table_entry,
+    get_source_route_table_filled_size,
 };
 use crate::{Error, Transport};
 
@@ -160,6 +161,9 @@ pub trait Networking {
         &self,
         index: u8,
     ) -> impl Future<Output = Result<(NodeId, u8), Error>> + Send;
+
+    /// Returns the number of filled entries in source route table.
+    fn get_source_route_table_filled_size(&self) -> impl Future<Output = Result<u8, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -331,5 +335,13 @@ where
         )
         .await?
         .resolve()
+    }
+
+    async fn get_source_route_table_filled_size(&self) -> Result<u8, Error> {
+        self.communicate::<_, get_source_route_table_filled_size::Response>(
+            get_source_route_table_filled_size::Command,
+        )
+        .await
+        .map(|response| response.source_route_table_filled_size())
     }
 }

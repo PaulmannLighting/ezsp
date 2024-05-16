@@ -15,6 +15,7 @@ pub trait ProxyTable {
     fn lookup(&self, addr: Address) -> impl Future<Output = Result<u8, Error>> + Send;
 
     /// Update the GP Proxy table based on a GP pairing.
+    #[allow(clippy::too_many_arguments)]
     fn process_gp_pairing(
         &self,
         options: u32,

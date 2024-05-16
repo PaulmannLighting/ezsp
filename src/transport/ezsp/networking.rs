@@ -1,6 +1,5 @@
 use std::future::Future;
 
-use crate::ember::child::Data;
 use crate::ember::{child, network, NodeId};
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
@@ -125,7 +124,7 @@ where
             .resolve()
     }
 
-    async fn get_child_data(&self, index: u8) -> Result<Data, Error> {
+    async fn get_child_data(&self, index: u8) -> Result<child::Data, Error> {
         self.communicate::<_, get_child_data::Response>(get_child_data::Command::new(index))
             .await?
             .resolve()

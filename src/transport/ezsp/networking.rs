@@ -8,7 +8,7 @@ use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
     get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon, get_neighbor,
-    get_neighbor_frame_counter, get_network_parameters,
+    get_neighbor_frame_counter, get_network_parameters, get_next_beacon,
 };
 use crate::{Error, Transport};
 
@@ -116,6 +116,11 @@ pub trait Networking {
     fn get_network_parameters(
         &self,
     ) -> impl Future<Output = Result<(node::Type, network::Parameters), Error>> + Send;
+
+    /// Returns the next beacon in the cache.
+    ///
+    /// Beacons are stored in cache after issuing an active scan.
+    fn get_next_beacon(&self) -> impl Future<Output = Result<beacon::Data, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -226,6 +231,12 @@ where
 
     async fn get_network_parameters(&self) -> Result<(node::Type, network::Parameters), Error> {
         self.communicate::<_, get_network_parameters::Response>(get_network_parameters::Command)
+            .await?
+            .resolve()
+    }
+
+    async fn get_next_beacon(&self) -> Result<beacon::Data, Error> {
+        self.communicate::<_, get_next_beacon::Response>(get_next_beacon::Command)
             .await?
             .resolve()
     }

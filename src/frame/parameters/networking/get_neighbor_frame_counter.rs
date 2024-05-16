@@ -1,9 +1,12 @@
-use crate::ember::{Eui64, Status};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+
+use crate::ember::{Eui64, Status};
+use crate::error::Resolve;
+use crate::frame::Parameter;
 
 const ID: u16 = 0x003E;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     eui64: Eui64,
 }
@@ -13,34 +16,30 @@ impl Command {
     pub const fn new(eui64: Eui64) -> Self {
         Self { eui64 }
     }
-
-    #[must_use]
-    pub const fn eui64(&self) -> Eui64 {
-        self.eui64
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
     return_frame_counter: u32,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status, return_frame_counter: u32) -> Self {
-        Self {
-            status: status.into(),
-            return_frame_counter,
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
+impl Resolve for Response {
+    type Result = u32;
+
+    fn resolve(self) -> Result<Self::Result, crate::Error> {
         Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub const fn return_frame_counter(&self) -> u32 {
-        self.return_frame_counter
+            .resolve()
+            .map(|()| self.return_frame_counter)
     }
 }

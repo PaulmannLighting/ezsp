@@ -1,11 +1,12 @@
 use std::future::Future;
 
-use crate::ember::{beacon, child, duty_cycle, neighbor, network, DeviceDutyCycles, NodeId};
+use crate::ember::{beacon, child, duty_cycle, neighbor, network, DeviceDutyCycles, Eui64, NodeId};
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
     get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon, get_neighbor,
+    get_neighbor_frame_counter,
 };
 use crate::{Error, Transport};
 
@@ -98,6 +99,16 @@ pub trait Networking {
         &self,
         index: u8,
     ) -> impl Future<Output = Result<neighbor::TableEntry, Error>> + Send;
+
+    /// Return EmberStatus depending on whether the frame counter of the node is found in the
+    /// neighbor or child table.
+    ///
+    /// This function gets the last received frame counter as found in the Network Auxiliary header
+    /// for the specified neighbor or child
+    fn get_neighbor_frame_counter(
+        &self,
+        eui64: Eui64,
+    ) -> impl Future<Output = Result<u32, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -196,5 +207,13 @@ where
         self.communicate::<_, get_neighbor::Response>(get_neighbor::Command::new(index))
             .await?
             .resolve()
+    }
+
+    async fn get_neighbor_frame_counter(&self, eui64: Eui64) -> Result<u32, Error> {
+        self.communicate::<_, get_neighbor_frame_counter::Response>(
+            get_neighbor_frame_counter::Command::new(eui64),
+        )
+        .await?
+        .resolve()
     }
 }

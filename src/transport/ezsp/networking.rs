@@ -1,10 +1,10 @@
 use std::future::Future;
 
-use crate::ember::NodeId;
+use crate::ember::{network, NodeId};
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
-    find_unused_pan_id,
+    find_unused_pan_id, form_network,
 };
 use crate::{Error, Transport};
 
@@ -52,6 +52,12 @@ pub trait Networking {
         &self,
         channel_mask: u32,
         duration: u8,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Forms a new network by becoming the coordinator.
+    fn form_network(
+        &self,
+        parameters: network::Parameters,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -107,5 +113,11 @@ where
         ))
         .await?
         .resolve()
+    }
+
+    async fn form_network(&self, parameters: network::Parameters) -> Result<(), Error> {
+        self.communicate::<_, form_network::Response>(form_network::Command::new(parameters))
+            .await?
+            .resolve()
     }
 }

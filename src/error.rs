@@ -1,6 +1,6 @@
-use crate::{ember, ezsp};
-
 use std::fmt::{Debug, Display, Formatter};
+
+use crate::{ember, ezsp};
 
 #[derive(Debug)]
 pub enum Error {
@@ -8,6 +8,7 @@ pub enum Error {
     Ashv2(ashv2::Error),
     InvalidEzspStatus(u8),
     InvalidEmberStatus(u8),
+    InvalidEmberDutyCycleState(u8),
     Ezsp(ezsp::Status),
     Ember(ember::Status),
     ValueError(value::Error),
@@ -21,6 +22,9 @@ impl Display for Error {
             Self::Ashv2(error) => Display::fmt(error, f),
             Self::InvalidEzspStatus(status) => write!(f, "Invalid EZSP status: {status}"),
             Self::InvalidEmberStatus(status) => write!(f, "Invalid Ember status: {status}"),
+            Self::InvalidEmberDutyCycleState(state) => {
+                write!(f, "Invalid Ember duty cycle state: {state}")
+            }
             Self::Ezsp(status) => write!(f, "{}", u8::from(*status)),
             Self::Ember(status) => write!(f, "{}", u8::from(*status)),
             Self::ValueError(error) => Display::fmt(error, f),

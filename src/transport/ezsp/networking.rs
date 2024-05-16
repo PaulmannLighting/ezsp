@@ -5,7 +5,7 @@ use crate::error::Resolve;
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
-    get_duty_cycle_limits,
+    get_duty_cycle_limits, get_duty_cycle_state,
 };
 use crate::{Error, Transport};
 
@@ -80,6 +80,10 @@ pub trait Networking {
     fn get_duty_cycle_limits(
         &self,
     ) -> impl Future<Output = Result<duty_cycle::Limits, Error>> + Send;
+
+    /// Obtains the current duty cycle state.
+    fn get_duty_cycle_state(&self)
+        -> impl Future<Output = Result<duty_cycle::State, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -158,6 +162,12 @@ where
 
     async fn get_duty_cycle_limits(&self) -> Result<duty_cycle::Limits, Error> {
         self.communicate::<_, get_duty_cycle_limits::Response>(get_duty_cycle_limits::Command)
+            .await?
+            .resolve()
+    }
+
+    async fn get_duty_cycle_state(&self) -> Result<duty_cycle::State, Error> {
+        self.communicate::<_, get_duty_cycle_state::Response>(get_duty_cycle_state::Command)
             .await?
             .resolve()
     }

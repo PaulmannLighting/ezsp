@@ -1,10 +1,11 @@
 use std::future::Future;
 
-use crate::ember::{child, network, DeviceDutyCycles, NodeId};
+use crate::ember::{child, duty_cycle, network, DeviceDutyCycles, NodeId};
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
+    get_duty_cycle_limits,
 };
 use crate::{Error, Transport};
 
@@ -72,6 +73,12 @@ pub trait Networking {
         &self,
         max_devices: u8,
     ) -> impl Future<Output = Result<DeviceDutyCycles, Error>> + Send;
+
+    /// Obtains the current duty cycle limits that were previously set by a call to
+    /// emberSetDutyCycleLimitsInStack(), or the defaults set by the stack if no set call was made.
+    fn get_duty_cycle_limits(
+        &self,
+    ) -> impl Future<Output = Result<duty_cycle::Limits, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -146,5 +153,11 @@ where
         )
         .await?
         .resolve()
+    }
+
+    async fn get_duty_cycle_limits(&self) -> Result<duty_cycle::Limits, Error> {
+        self.communicate::<_, get_duty_cycle_limits::Response>(get_duty_cycle_limits::Command)
+            .await?
+            .resolve()
     }
 }

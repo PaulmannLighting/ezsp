@@ -12,7 +12,7 @@ use crate::frame::parameters::networking::{
     get_neighbor_frame_counter, get_network_parameters, get_next_beacon, get_num_stored_beacons,
     get_parent_child_parameters, get_radio_channel, get_radio_parameters, get_route_table_entry,
     get_routing_shortcut_threshold, get_source_route_table_entry,
-    get_source_route_table_filled_size, get_source_route_table_total_size, id,
+    get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
 };
 use crate::{Error, Transport};
 
@@ -170,6 +170,16 @@ pub trait Networking {
 
     /// Convert a node ID to a child index.
     fn id(&self, child_id: NodeId) -> impl Future<Output = Result<u8, Error>> + Send;
+
+    /// Causes the stack to associate with the network using the specified network parameters.
+    ///
+    /// It can take several seconds for the stack to associate with the local network.
+    /// Do not send messages until the stackStatusHandler callback informs you that the stack is up.
+    fn join_network(
+        &self,
+        node_type: node::Type,
+        parameters: network::Parameters,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -363,5 +373,17 @@ where
         self.communicate::<_, id::Response>(id::Command::new(child_id))
             .await
             .map(|response| response.child_index())
+    }
+
+    async fn join_network(
+        &self,
+        node_type: node::Type,
+        parameters: network::Parameters,
+    ) -> Result<(), Error> {
+        self.communicate::<_, join_network::Response>(join_network::Command::new(
+            node_type, parameters,
+        ))
+        .await?
+        .resolve()
     }
 }

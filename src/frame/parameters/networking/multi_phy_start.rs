@@ -1,4 +1,4 @@
-use crate::ember::multi_phy_nwk::Config;
+use crate::ember::multi_phy::nwk::Config;
 use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 

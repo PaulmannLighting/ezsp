@@ -1,8 +1,8 @@
 use std::future::Future;
 
+use crate::ember::multi_phy::radio;
 use crate::ember::{
-    beacon, child, duty_cycle, multi_phy_radio, neighbor, network, node, DeviceDutyCycles, Eui64,
-    NodeId,
+    beacon, child, duty_cycle, neighbor, network, node, DeviceDutyCycles, Eui64, NodeId,
 };
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
@@ -139,7 +139,7 @@ pub trait Networking {
     fn get_radio_parameters(
         &self,
         phy_index: u8,
-    ) -> impl Future<Output = Result<multi_phy_radio::Parameters, Error>> + Send;
+    ) -> impl Future<Output = Result<radio::Parameters, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -281,10 +281,7 @@ where
             .map(|response| response.channel())
     }
 
-    async fn get_radio_parameters(
-        &self,
-        phy_index: u8,
-    ) -> Result<multi_phy_radio::Parameters, Error> {
+    async fn get_radio_parameters(&self, phy_index: u8) -> Result<radio::Parameters, Error> {
         self.communicate::<_, get_radio_parameters::Response>(get_radio_parameters::Command::new(
             phy_index,
         ))

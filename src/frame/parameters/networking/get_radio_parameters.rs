@@ -1,6 +1,6 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-use crate::ember::multi_phy_radio::Parameters;
+use crate::ember::multi_phy::radio::Parameters;
 use crate::ember::Status;
 use crate::error::Resolve;
 use crate::frame::Parameter;

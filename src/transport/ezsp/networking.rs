@@ -1,10 +1,10 @@
 use std::future::Future;
 
-use crate::ember::{child, network, NodeId};
+use crate::ember::{child, network, DeviceDutyCycles, NodeId};
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
-    find_unused_pan_id, form_network, get_child_data,
+    find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
 };
 use crate::{Error, Transport};
 
@@ -62,6 +62,16 @@ pub trait Networking {
 
     /// Returns information about a child of the local node.
     fn get_child_data(&self, index: u8) -> impl Future<Output = Result<child::Data, Error>> + Send;
+
+    /// Returns the duty cycle of the stack's connected children that are being monitored, up to `max_devices`.
+    ///
+    /// It indicates the amount of overall duty cycle they have consumed (up to the suspend limit).
+    /// The first entry is always the local stack's nodeId, and thus the total aggregate duty cycle
+    /// for the device. The passed pointer arrayOfDeviceDutyCycles MUST have space for `max_devices`.
+    fn get_current_duty_cycle(
+        &self,
+        max_devices: u8,
+    ) -> impl Future<Output = Result<DeviceDutyCycles, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -128,5 +138,13 @@ where
         self.communicate::<_, get_child_data::Response>(get_child_data::Command::new(index))
             .await?
             .resolve()
+    }
+
+    async fn get_current_duty_cycle(&self, max_devices: u8) -> Result<DeviceDutyCycles, Error> {
+        self.communicate::<_, get_current_duty_cycle::Response>(
+            get_current_duty_cycle::Command::new(max_devices),
+        )
+        .await?
+        .resolve()
     }
 }

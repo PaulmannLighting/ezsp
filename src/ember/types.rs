@@ -12,3 +12,4 @@ pub type PublicKey283k1Data = [u8; 37];
 pub type PrivateKey283k1Data = [u8; 36];
 pub type Signature283k1Data = [u8; 72];
 pub type MessageDigest = [u8; 16];
+pub type DeviceDutyCycles = [u8; 134];

@@ -1,9 +1,13 @@
-use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+
+use crate::ember::{DeviceDutyCycles, Status};
+use crate::error::Resolve;
+use crate::frame::Parameter;
+use crate::Error;
 
 const ID: u16 = 0x004C;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     max_devices: u8,
 }
@@ -13,27 +17,30 @@ impl Command {
     pub const fn new(max_devices: u8) -> Self {
         Self { max_devices }
     }
-
-    #[must_use]
-    pub const fn max_devices(&self) -> u8 {
-        self.max_devices
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
+    device_duty_cycles: DeviceDutyCycles,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
+impl Resolve for Response {
+    type Result = DeviceDutyCycles;
+
+    fn resolve(self) -> Result<Self::Result, Error> {
         Status::try_from(self.status)
+            .resolve()
+            .map(|()| self.device_duty_cycles)
     }
 }

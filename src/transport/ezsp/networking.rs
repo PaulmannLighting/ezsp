@@ -1,12 +1,14 @@
 use std::future::Future;
 
-use crate::ember::{beacon, child, duty_cycle, neighbor, network, DeviceDutyCycles, Eui64, NodeId};
+use crate::ember::{
+    beacon, child, duty_cycle, neighbor, network, node, DeviceDutyCycles, Eui64, NodeId,
+};
 use crate::error::Resolve;
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
     get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon, get_neighbor,
-    get_neighbor_frame_counter,
+    get_neighbor_frame_counter, get_network_parameters,
 };
 use crate::{Error, Transport};
 
@@ -109,6 +111,11 @@ pub trait Networking {
         &self,
         eui64: Eui64,
     ) -> impl Future<Output = Result<u32, Error>> + Send;
+
+    /// Returns the current network parameters.
+    fn get_network_parameters(
+        &self,
+    ) -> impl Future<Output = Result<(node::Type, network::Parameters), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -215,5 +222,11 @@ where
         )
         .await?
         .resolve()
+    }
+
+    async fn get_network_parameters(&self) -> Result<(node::Type, network::Parameters), Error> {
+        self.communicate::<_, get_network_parameters::Response>(get_network_parameters::Command)
+            .await?
+            .resolve()
     }
 }

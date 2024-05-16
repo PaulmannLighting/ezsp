@@ -9,6 +9,7 @@ pub enum Error {
     InvalidEzspStatus(u8),
     InvalidEmberStatus(u8),
     InvalidEmberDutyCycleState(u8),
+    InvalidEmberNodeType(u8),
     Ezsp(ezsp::Status),
     Ember(ember::Status),
     ValueError(value::Error),
@@ -24,6 +25,9 @@ impl Display for Error {
             Self::InvalidEmberStatus(status) => write!(f, "Invalid Ember status: {status}"),
             Self::InvalidEmberDutyCycleState(state) => {
                 write!(f, "Invalid Ember duty cycle state: {state}")
+            }
+            Self::InvalidEmberNodeType(node_type) => {
+                write!(f, "Invalid Ember node type: {node_type}")
             }
             Self::Ezsp(status) => write!(f, "{}", u8::from(*status)),
             Self::Ember(status) => write!(f, "{}", u8::from(*status)),

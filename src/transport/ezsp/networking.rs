@@ -102,7 +102,7 @@ pub trait Networking {
         index: u8,
     ) -> impl Future<Output = Result<neighbor::TableEntry, Error>> + Send;
 
-    /// Return EmberStatus depending on whether the frame counter of the node is found in the
+    /// Return counter status depending on whether the frame counter of the node is found in the
     /// neighbor or child table.
     ///
     /// This function gets the last received frame counter as found in the Network Auxiliary header

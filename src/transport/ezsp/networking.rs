@@ -75,7 +75,8 @@ pub trait Networking {
     ) -> impl Future<Output = Result<DeviceDutyCycles, Error>> + Send;
 
     /// Obtains the current duty cycle limits that were previously set by a call to
-    /// emberSetDutyCycleLimitsInStack(), or the defaults set by the stack if no set call was made.
+    /// [`set_duty_cycle_limits_in_stack()`](Self::set_duty_cycle_limits_in_stack),
+    /// or the defaults set by the stack if no set call was made.
     fn get_duty_cycle_limits(
         &self,
     ) -> impl Future<Output = Result<duty_cycle::Limits, Error>> + Send;

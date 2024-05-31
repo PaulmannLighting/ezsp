@@ -1,9 +1,13 @@
-use crate::ember::Status;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
+
+use crate::ember::Status;
+use crate::error::Resolve;
+use crate::frame::Parameter;
+use crate::Error;
 
 const ID: u16 = 0x00FB;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     phy_index: u8,
     page: u8,
@@ -19,24 +23,14 @@ impl Command {
             channel,
         }
     }
-
-    #[must_use]
-    pub const fn phy_index(&self) -> u8 {
-        self.phy_index
-    }
-
-    #[must_use]
-    pub const fn page(&self) -> u8 {
-        self.page
-    }
-
-    #[must_use]
-    pub const fn channel(&self) -> u8 {
-        self.channel
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }
@@ -48,8 +42,17 @@ impl Response {
             status: status.into(),
         }
     }
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+impl Resolve for Response {
+    type Result = ();
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status).resolve()
     }
 }

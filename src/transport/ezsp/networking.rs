@@ -13,7 +13,7 @@ use crate::frame::parameters::networking::{
     get_parent_child_parameters, get_radio_channel, get_radio_parameters, get_route_table_entry,
     get_routing_shortcut_threshold, get_source_route_table_entry,
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
-    join_network_directly,
+    join_network_directly, leave_network,
 };
 use crate::{Error, Transport};
 
@@ -198,6 +198,12 @@ pub trait Networking {
         radio_tx_power: i8,
         clear_beacons_after_network_up: bool,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Causes the stack to leave the current network.
+    ///
+    /// This generates a stackStatusHandler callback to indicate that the network is down.
+    /// The radio will not be used until after sending a formNetwork or joinNetwork command.
+    fn leave_network(&self) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -420,5 +426,11 @@ where
         ))
         .await?
         .resolve()
+    }
+
+    async fn leave_network(&self) -> Result<(), Error> {
+        self.communicate::<_, leave_network::Response>(leave_network::Command)
+            .await
+            .map(drop)
     }
 }

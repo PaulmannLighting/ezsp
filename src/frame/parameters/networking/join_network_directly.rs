@@ -1,11 +1,15 @@
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+
 use crate::ember::beacon::Data;
 use crate::ember::node::Type;
 use crate::ember::Status;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::error::Resolve;
+use crate::frame::Parameter;
+use crate::Error;
 
 const ID: u16 = 0x003B;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     local_node_type: u8,
     beacon: Data,
@@ -28,28 +32,14 @@ impl Command {
             clear_beacons_after_network_up,
         }
     }
-
-    pub fn local_node_type(&self) -> Result<Type, u8> {
-        Type::try_from(self.local_node_type)
-    }
-
-    #[must_use]
-    pub const fn beacon(&self) -> &Data {
-        &self.beacon
-    }
-
-    #[must_use]
-    pub const fn radio_tx_power(&self) -> i8 {
-        self.radio_tx_power
-    }
-
-    #[must_use]
-    pub const fn clear_beacons_after_network_up(&self) -> bool {
-        self.clear_beacons_after_network_up
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }
@@ -61,8 +51,17 @@ impl Response {
             status: status.into(),
         }
     }
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+impl Resolve for Response {
+    type Result = ();
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status).resolve()
     }
 }

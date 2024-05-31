@@ -13,6 +13,7 @@ use crate::frame::parameters::networking::{
     get_parent_child_parameters, get_radio_channel, get_radio_parameters, get_route_table_entry,
     get_routing_shortcut_threshold, get_source_route_table_entry,
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
+    join_network_directly,
 };
 use crate::{Error, Transport};
 
@@ -179,6 +180,23 @@ pub trait Networking {
         &self,
         node_type: node::Type,
         parameters: network::Parameters,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Causes the stack to associate with the network using the specified network parameters in
+    /// the beacon parameter.
+    ///
+    /// It can take several seconds for the stack to associate with the local network.
+    /// Do not send messages until the stackStatusHandler callback informs you that the stack is up.
+    /// Unlike ::emberJoinNetwork(), this function does not issue an active scan before joining.
+    /// Instead, it will cause the local node to issue a MAC Association Request directly to the
+    /// specified target node. It is assumed that the beacon parameter is an artifact after issuing
+    /// an active scan. (For more information, see emberGetBestBeacon and emberGetNextBeacon.)
+    fn join_network_directly(
+        &self,
+        local_node_type: node::Type,
+        beacon: beacon::Data,
+        radio_tx_power: i8,
+        clear_beacons_after_network_up: bool,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -382,6 +400,23 @@ where
     ) -> Result<(), Error> {
         self.communicate::<_, join_network::Response>(join_network::Command::new(
             node_type, parameters,
+        ))
+        .await?
+        .resolve()
+    }
+
+    async fn join_network_directly(
+        &self,
+        local_node_type: node::Type,
+        beacon: beacon::Data,
+        radio_tx_power: i8,
+        clear_beacons_after_network_up: bool,
+    ) -> Result<(), Error> {
+        self.communicate::<_, join_network_directly::Response>(join_network_directly::Command::new(
+            local_node_type,
+            beacon,
+            radio_tx_power,
+            clear_beacons_after_network_up,
         ))
         .await?
         .resolve()

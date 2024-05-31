@@ -444,8 +444,8 @@ where
 
     async fn leave_network(&self) -> Result<(), Error> {
         self.communicate::<_, leave_network::Response>(leave_network::Command)
-            .await
-            .map(drop)
+            .await?
+            .resolve()
     }
 
     async fn multi_phy_set_radio_channel(
@@ -457,7 +457,7 @@ where
         self.communicate::<_, multi_phy_set_radio_channel::Response>(
             multi_phy_set_radio_channel::Command::new(phy_index, page, channel),
         )
-        .await
-        .map(drop)
+        .await?
+        .resolve()
     }
 }

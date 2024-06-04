@@ -14,7 +14,7 @@ use crate::frame::parameters::networking::{
     get_routing_shortcut_threshold, get_source_route_table_entry,
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
-    multi_phy_start, multi_phy_stop,
+    multi_phy_start, multi_phy_stop, neighbor_count,
 };
 use crate::{Error, Transport};
 
@@ -248,6 +248,9 @@ pub trait Networking {
 
     /// This causes to bring down the radio interface other than native.
     fn multi_phy_stop(&self, phy_index: u8) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Returns the number of active entries in the neighbor table.
+    fn neighbor_count(&self) -> impl Future<Output = Result<u8, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -518,5 +521,11 @@ where
         self.communicate::<_, multi_phy_stop::Response>(multi_phy_stop::Command::new(phy_index))
             .await?
             .resolve()
+    }
+
+    async fn neighbor_count(&self) -> Result<u8, Error> {
+        self.communicate::<_, neighbor_count::Response>(neighbor_count::Command)
+            .await
+            .map(|response| response.value())
     }
 }

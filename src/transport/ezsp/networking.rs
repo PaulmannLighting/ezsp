@@ -13,7 +13,7 @@ use crate::frame::parameters::networking::{
     get_parent_child_parameters, get_radio_channel, get_radio_parameters, get_route_table_entry,
     get_routing_shortcut_threshold, get_source_route_table_entry,
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
-    join_network_directly, leave_network, multi_phy_set_radio_channel,
+    join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
 };
 use crate::{Error, Transport};
 
@@ -217,6 +217,21 @@ pub trait Networking {
         phy_index: u8,
         page: u8,
         channel: u8,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets the radio output power for desired phy interface at which a node is operating.
+    ///
+    /// Ember radios have discrete power settings. For a list of available power settings,
+    /// see the technical specification for the RF communication module in your Developer Kit.
+    ///
+    /// Note: Care should be taken when using this api on a running network,
+    /// as it will directly impact the established link qualities neighboring
+    /// nodes have with the node on which it is called.
+    /// This can lead to disruption of existing routes and erratic network behavior.
+    fn multi_phy_set_radio_power(
+        &self,
+        phy_index: u8,
+        power: i8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -456,6 +471,14 @@ where
     ) -> Result<(), Error> {
         self.communicate::<_, multi_phy_set_radio_channel::Response>(
             multi_phy_set_radio_channel::Command::new(phy_index, page, channel),
+        )
+        .await?
+        .resolve()
+    }
+
+    async fn multi_phy_set_radio_power(&self, phy_index: u8, power: i8) -> Result<(), Error> {
+        self.communicate::<_, multi_phy_set_radio_power::Response>(
+            multi_phy_set_radio_power::Command::new(phy_index, power),
         )
         .await?
         .resolve()

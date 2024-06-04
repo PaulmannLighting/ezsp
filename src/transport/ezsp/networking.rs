@@ -1,6 +1,6 @@
 use std::future::Future;
 
-use crate::ember::multi_phy::radio;
+use crate::ember::multi_phy::{nwk, radio};
 use crate::ember::{
     beacon, child, duty_cycle, neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
 };
@@ -14,6 +14,7 @@ use crate::frame::parameters::networking::{
     get_routing_shortcut_threshold, get_source_route_table_entry,
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
+    multi_phy_start,
 };
 use crate::{Error, Transport};
 
@@ -232,6 +233,17 @@ pub trait Networking {
         &self,
         phy_index: u8,
         power: i8,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This causes to initialize the desired radio interface other than native and form a new
+    /// network by becoming the coordinator with same panId as native radio network.
+    fn multi_phy_start(
+        &self,
+        phy_index: u8,
+        page: u8,
+        channel: u8,
+        power: i8,
+        bitmask: nwk::Config,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -480,6 +492,21 @@ where
         self.communicate::<_, multi_phy_set_radio_power::Response>(
             multi_phy_set_radio_power::Command::new(phy_index, power),
         )
+        .await?
+        .resolve()
+    }
+
+    async fn multi_phy_start(
+        &self,
+        phy_index: u8,
+        page: u8,
+        channel: u8,
+        power: i8,
+        bitmask: nwk::Config,
+    ) -> Result<(), Error> {
+        self.communicate::<_, multi_phy_start::Response>(multi_phy_start::Command::new(
+            phy_index, page, channel, power, bitmask,
+        ))
         .await?
         .resolve()
     }

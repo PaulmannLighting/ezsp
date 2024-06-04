@@ -14,7 +14,7 @@ use crate::frame::parameters::networking::{
     get_routing_shortcut_threshold, get_source_route_table_entry,
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
-    multi_phy_start,
+    multi_phy_start, multi_phy_stop,
 };
 use crate::{Error, Transport};
 
@@ -245,6 +245,9 @@ pub trait Networking {
         power: i8,
         bitmask: nwk::Config,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This causes to bring down the radio interface other than native.
+    fn multi_phy_stop(&self, phy_index: u8) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -509,5 +512,11 @@ where
         ))
         .await?
         .resolve()
+    }
+
+    async fn multi_phy_stop(&self, phy_index: u8) -> Result<(), Error> {
+        self.communicate::<_, multi_phy_stop::Response>(multi_phy_stop::Command::new(phy_index))
+            .await?
+            .resolve()
     }
 }

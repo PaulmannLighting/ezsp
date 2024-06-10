@@ -13,7 +13,6 @@ impl From<u8> for Duration {
             0x00 => Self::Disable,
             0x01..=0xFE => Self::Seconds(value),
             0xFF => Self::Enable,
-            _ => unreachable!(),
         }
     }
 }

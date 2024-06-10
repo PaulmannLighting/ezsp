@@ -16,6 +16,7 @@ use crate::frame::parameters::networking::{
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
     multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state, permit_joining,
+    send_link_power_delta_request,
 };
 use crate::{Error, Transport};
 
@@ -274,6 +275,9 @@ pub trait Networking {
         &self,
         duration: network::Duration,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Send Link Power Delta Request from a child to its parent.
+    fn send_link_power_delta_request(&self) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -568,5 +572,13 @@ where
         self.communicate::<_, permit_joining::Response>(permit_joining::Command::new(duration))
             .await?
             .resolve()
+    }
+
+    async fn send_link_power_delta_request(&self) -> Result<(), Error> {
+        self.communicate::<_, send_link_power_delta_request::Response>(
+            send_link_power_delta_request::Command,
+        )
+        .await?
+        .resolve()
     }
 }

@@ -264,6 +264,7 @@ pub trait Networking {
         bitmask: &[InitBitmask],
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
+    /// Returns a value indicating whether the node is joining, joined to, or leaving a network.
     fn network_state(&self) -> impl Future<Output = Result<network::Status, Error>> + Send;
 }
 

@@ -1,5 +1,6 @@
 use std::num::TryFromIntError;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Duration {
     Disable,
     Seconds(u8),

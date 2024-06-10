@@ -9,9 +9,11 @@ pub enum Error {
     InvalidEzspStatus(u8),
     InvalidEmberStatus(u8),
     InvalidEmberDutyCycleState(u8),
+    InvalidEmberNetworkStatus(u8),
     InvalidEmberNodeType(u8),
     Ezsp(ezsp::Status),
     Ember(ember::Status),
+    EmberNetwork(ember::network::Status),
     ValueError(value::Error),
     Custom(String),
 }
@@ -26,11 +28,15 @@ impl Display for Error {
             Self::InvalidEmberDutyCycleState(state) => {
                 write!(f, "Invalid Ember duty cycle state: {state}")
             }
+            Self::InvalidEmberNetworkStatus(status) => {
+                write!(f, "Invalid Ember network status: {status}")
+            }
             Self::InvalidEmberNodeType(node_type) => {
                 write!(f, "Invalid Ember node type: {node_type}")
             }
-            Self::Ezsp(status) => write!(f, "{}", u8::from(*status)),
-            Self::Ember(status) => write!(f, "{}", u8::from(*status)),
+            Self::Ezsp(status) => write!(f, "Ezsp: {}", u8::from(*status)),
+            Self::Ember(status) => write!(f, "Ember: {}", u8::from(*status)),
+            Self::EmberNetwork(status) => write!(f, "Ember network: {}", u8::from(*status)),
             Self::ValueError(error) => Display::fmt(error, f),
             Self::Custom(msg) => Display::fmt(msg, f),
         }
@@ -53,6 +59,12 @@ impl From<ezsp::Status> for Error {
 impl From<ember::Status> for Error {
     fn from(status: ember::Status) -> Self {
         Self::Ember(status)
+    }
+}
+
+impl From<ember::network::Status> for Error {
+    fn from(status: ember::network::Status) -> Self {
+        Self::EmberNetwork(status)
     }
 }
 

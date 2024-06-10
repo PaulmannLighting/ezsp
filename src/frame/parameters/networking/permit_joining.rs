@@ -1,5 +1,6 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
+use crate::ember::network::Duration;
 use crate::ember::Status;
 use crate::error::Resolve;
 use crate::frame::Parameter;
@@ -14,8 +15,10 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(duration: u8) -> Self {
-        Self { duration }
+    pub fn new(duration: Duration) -> Self {
+        Self {
+            duration: duration.into(),
+        }
     }
 }
 

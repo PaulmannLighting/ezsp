@@ -6,7 +6,7 @@ use std::sync::mpsc::Sender;
 use ashv2::{FrameBuffer, Host};
 use le_stream::{FromLeBytes, ToLeBytes};
 use log::debug;
-use serialport::SerialPort;
+use serialport::{SerialPort, TTYPort};
 
 use crate::frame::{Control, Header, Parameter};
 use crate::transport::ashv2::response_handler::ResponseHandler;
@@ -28,14 +28,11 @@ impl Ashv2 {
     ///
     /// # Errors
     /// Returns an [`ashv2::Error`] if spawning fails.
-    pub fn spawn<S>(
-        serial_port: S,
+    pub fn spawn(
+        serial_port: TTYPort,
         control: Control,
         callback: Option<Sender<FrameBuffer>>,
-    ) -> Result<Self, ashv2::Error>
-    where
-        S: SerialPort + 'static,
-    {
+    ) -> Result<Self, ashv2::Error> {
         Ok(Self {
             host: Host::spawn(serial_port, callback)?,
             sequence: AtomicU8::new(0),

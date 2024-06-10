@@ -13,7 +13,6 @@ pub enum Error {
     InvalidEmberNodeType(u8),
     Ezsp(ezsp::Status),
     Ember(ember::Status),
-    EmberNetwork(ember::network::Status),
     ValueError(value::Error),
     Custom(String),
 }
@@ -36,7 +35,6 @@ impl Display for Error {
             }
             Self::Ezsp(status) => write!(f, "Ezsp: {}", u8::from(*status)),
             Self::Ember(status) => write!(f, "Ember: {}", u8::from(*status)),
-            Self::EmberNetwork(status) => write!(f, "Ember network: {}", u8::from(*status)),
             Self::ValueError(error) => Display::fmt(error, f),
             Self::Custom(msg) => Display::fmt(msg, f),
         }
@@ -59,12 +57,6 @@ impl From<ezsp::Status> for Error {
 impl From<ember::Status> for Error {
     fn from(status: ember::Status) -> Self {
         Self::Ember(status)
-    }
-}
-
-impl From<ember::network::Status> for Error {
-    fn from(status: ember::network::Status) -> Self {
-        Self::EmberNetwork(status)
     }
 }
 

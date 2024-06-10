@@ -15,7 +15,7 @@ use crate::frame::parameters::networking::{
     get_routing_shortcut_threshold, get_source_route_table_entry,
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
-    multi_phy_start, multi_phy_stop, neighbor_count, network_init,
+    multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state,
 };
 use crate::{Error, Transport};
 
@@ -263,6 +263,8 @@ pub trait Networking {
         &self,
         bitmask: &[InitBitmask],
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    fn network_state(&self) -> impl Future<Output = Result<network::Status, Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -543,6 +545,12 @@ where
 
     async fn network_init(&self, bitmask: &[InitBitmask]) -> Result<(), Error> {
         self.communicate::<_, network_init::Response>(network_init::Command::new(bitmask))
+            .await?
+            .resolve()
+    }
+
+    async fn network_state(&self) -> Result<network::Status, Error> {
+        self.communicate::<_, network_state::Response>(network_state::Command)
             .await?
             .resolve()
     }

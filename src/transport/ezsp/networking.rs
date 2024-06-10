@@ -270,6 +270,10 @@ pub trait Networking {
     /// Tells the stack to allow other nodes to join the network with this node as their parent.
     ///
     /// Joining is initially disabled by default.
+    ///
+    /// A duration of `0x00` disables joining.
+    /// A duration of `0xFF` enables joining.
+    /// Any other duration enables joining for that number of seconds.
     fn permit_joining(&self, duration: u8) -> impl Future<Output = Result<(), Error>> + Send;
 }
 

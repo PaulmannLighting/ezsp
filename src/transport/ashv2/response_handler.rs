@@ -79,8 +79,8 @@ where
         } else {
             error!(
                 "Invalid frame id. Expected {}, but got {}.",
-                header.id(),
-                R::ID
+                R::ID,
+                header.id()
             );
             None
         }

@@ -15,7 +15,7 @@ use crate::frame::parameters::networking::{
     get_routing_shortcut_threshold, get_source_route_table_entry,
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
-    multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state,
+    multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state, permit_joining,
 };
 use crate::{Error, Transport};
 
@@ -266,6 +266,11 @@ pub trait Networking {
 
     /// Returns a value indicating whether the node is joining, joined to, or leaving a network.
     fn network_state(&self) -> impl Future<Output = Result<network::Status, Error>> + Send;
+
+    /// Tells the stack to allow other nodes to join the network with this node as their parent.
+    ///
+    /// Joining is initially disabled by default.
+    fn permit_joining(&self, duration: u8) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -552,6 +557,12 @@ where
 
     async fn network_state(&self) -> Result<network::Status, Error> {
         self.communicate::<_, network_state::Response>(network_state::Command)
+            .await?
+            .resolve()
+    }
+
+    async fn permit_joining(&self, duration: u8) -> Result<(), Error> {
+        self.communicate::<_, permit_joining::Response>(permit_joining::Command::new(duration))
             .await?
             .resolve()
     }

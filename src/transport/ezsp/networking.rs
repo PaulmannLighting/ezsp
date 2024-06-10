@@ -5,6 +5,7 @@ use crate::ember::{
     beacon, child, duty_cycle, neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
 };
 use crate::error::Resolve;
+use crate::ezsp::network::InitBitmask;
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
@@ -14,7 +15,7 @@ use crate::frame::parameters::networking::{
     get_routing_shortcut_threshold, get_source_route_table_entry,
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
-    multi_phy_start, multi_phy_stop, neighbor_count,
+    multi_phy_start, multi_phy_stop, neighbor_count, network_init,
 };
 use crate::{Error, Transport};
 
@@ -251,6 +252,17 @@ pub trait Networking {
 
     /// Returns the number of active entries in the neighbor table.
     fn neighbor_count(&self) -> impl Future<Output = Result<u8, Error>> + Send;
+
+    /// Resume network operation after a reboot.
+    ///
+    /// The node retains its original type.
+    /// This should be called on startup whether the node was previously part of a network.
+    /// [`Status::NotJoined`](crate::ember::Status::NotJoined) is returned if the node is not part of a network.
+    /// This command accepts options to control the network initialization.
+    fn network_init(
+        &self,
+        bitmask: &[InitBitmask],
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -527,5 +539,11 @@ where
         self.communicate::<_, neighbor_count::Response>(neighbor_count::Command)
             .await
             .map(|response| response.value())
+    }
+
+    async fn network_init(&self, bitmask: &[InitBitmask]) -> Result<(), Error> {
+        self.communicate::<_, network_init::Response>(network_init::Command::new(bitmask))
+            .await?
+            .resolve()
     }
 }

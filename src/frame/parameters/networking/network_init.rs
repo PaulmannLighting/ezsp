@@ -1,59 +1,52 @@
-use crate::ember::Status;
-use crate::ezsp::network::InitBitmask;
+use itertools::Itertools;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use num_traits::ToPrimitive;
 
+use crate::ember::Status;
+use crate::error::Resolve;
+use crate::ezsp::network::InitBitmask;
+use crate::frame::Parameter;
+use crate::Error;
+
 const ID: u16 = 0x0017;
 
-type Bitmask = heapless::Vec<InitBitmask, 2>;
-
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     bitmask: u16,
 }
 
 impl Command {
     #[must_use]
-    pub fn new(bitmask: Bitmask) -> Self {
+    pub fn new(bitmask: &[InitBitmask]) -> Self {
         Self {
-            bitmask: bitmask.iter().filter_map(ToPrimitive::to_u16).sum(),
+            bitmask: bitmask
+                .iter()
+                .unique()
+                .filter_map(ToPrimitive::to_u16)
+                .sum(),
         }
-    }
-
-    #[must_use]
-    pub fn network_init_struct(&self) -> Bitmask {
-        let mut bitmask = Bitmask::new();
-
-        if self.bitmask & Into::<u16>::into(InitBitmask::ParentInfoInToken) != 0 {
-            bitmask
-                .push(InitBitmask::ParentInfoInToken)
-                .expect("Bitmask buffer should have sufficient capacity.");
-        }
-
-        if self.bitmask & Into::<u16>::into(InitBitmask::EndDeviceRejoinOnReboot) != 0 {
-            bitmask
-                .push(InitBitmask::EndDeviceRejoinOnReboot)
-                .expect("Bitmask buffer should have sufficient capacity.");
-        }
-
-        bitmask
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+impl Resolve for Response {
+    type Result = ();
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status).resolve()
     }
 }

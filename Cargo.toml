@@ -21,6 +21,7 @@ ashv2 = { git = "https://github.com/PaulmannLighting/ashv2.git", version = "0.1"
 le-stream = { git = "https://github.com/PaulmannLighting/le-stream.git", version = "0.1", features = ["derive", "heapless"] }
 log = "0.4"
 heapless = "0.8"
+itertools = "0.13"
 
 [features]
 ashv2 = ["dep:ashv2"]

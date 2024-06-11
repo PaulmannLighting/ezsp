@@ -19,7 +19,7 @@ use crate::frame::parameters::networking::{
     multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state, permit_joining,
     send_link_power_delta_request, set_broken_route_error_code, set_child_data, set_concentrator,
     set_duty_cycle_limits_in_stack, set_logical_and_radio_channel, set_manufacturer_code,
-    set_neighbor_frame_counter,
+    set_neighbor_frame_counter, set_power_descriptor,
 };
 use crate::{Error, Transport};
 
@@ -328,6 +328,15 @@ pub trait Networking {
         &self,
         eui64: Eui64,
         frame_counter: u32,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets the power descriptor to the specified value.
+    ///
+    /// The power descriptor is a dynamic value.
+    /// Therefore, you should call this function whenever the value changes.
+    fn set_power_descriptor(
+        &self,
+        power_descriptor: u16,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -703,5 +712,13 @@ where
         )
         .await?
         .resolve()
+    }
+
+    async fn set_power_descriptor(&self, power_descriptor: u16) -> Result<(), Error> {
+        self.communicate::<_, set_power_descriptor::Response>(set_power_descriptor::Command::new(
+            power_descriptor,
+        ))
+        .await
+        .map(drop)
     }
 }

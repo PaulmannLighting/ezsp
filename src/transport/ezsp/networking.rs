@@ -20,6 +20,7 @@ use crate::frame::parameters::networking::{
     send_link_power_delta_request, set_broken_route_error_code, set_child_data, set_concentrator,
     set_duty_cycle_limits_in_stack, set_logical_and_radio_channel, set_manufacturer_code,
     set_neighbor_frame_counter, set_power_descriptor, set_radio_channel,
+    set_radio_ieee802154_cca_mode,
 };
 use crate::{Error, Transport};
 
@@ -347,6 +348,12 @@ pub trait Networking {
     /// Note: Care should be taken when using this API,
     /// as all devices on a network must use the same channel.
     fn set_radio_channel(&self, channel: u8) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Set the configured 802.15.4 CCA mode in the radio.
+    fn set_radio_ieee802154_cca_mode(
+        &self,
+        cca_mode: u8,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -735,5 +742,13 @@ where
         self.communicate::<_, set_radio_channel::Response>(set_radio_channel::Command::new(channel))
             .await?
             .resolve()
+    }
+
+    async fn set_radio_ieee802154_cca_mode(&self, cca_mode: u8) -> Result<(), Error> {
+        self.communicate::<_, set_radio_ieee802154_cca_mode::Response>(
+            set_radio_ieee802154_cca_mode::Command::new(cca_mode),
+        )
+        .await?
+        .resolve()
     }
 }

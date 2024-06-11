@@ -16,7 +16,7 @@ use crate::frame::parameters::networking::{
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
     multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state, permit_joining,
-    send_link_power_delta_request, set_broken_route_error_code,
+    send_link_power_delta_request, set_broken_route_error_code, set_child_data,
 };
 use crate::{Error, Transport};
 
@@ -283,6 +283,13 @@ pub trait Networking {
     fn set_broken_route_error_code(
         &self,
         error_code: u8,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets child data to the child table token.
+    fn set_child_data(
+        &self,
+        index: u8,
+        child_data: child::Data,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -592,6 +599,14 @@ where
         self.communicate::<_, set_broken_route_error_code::Response>(
             set_broken_route_error_code::Command::new(error_code),
         )
+        .await?
+        .resolve()
+    }
+
+    async fn set_child_data(&self, index: u8, child_data: child::Data) -> Result<(), Error> {
+        self.communicate::<_, set_child_data::Response>(set_child_data::Command::new(
+            index, child_data,
+        ))
         .await?
         .resolve()
     }

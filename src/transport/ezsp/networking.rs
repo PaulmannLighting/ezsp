@@ -18,7 +18,7 @@ use crate::frame::parameters::networking::{
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
     multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state, permit_joining,
     send_link_power_delta_request, set_broken_route_error_code, set_child_data, set_concentrator,
-    set_duty_cycle_limits_in_stack,
+    set_duty_cycle_limits_in_stack, set_logical_and_radio_channel,
 };
 use crate::{Error, Transport};
 
@@ -306,6 +306,12 @@ pub trait Networking {
     fn set_duty_cycle_limits_in_stack(
         &self,
         limits: duty_cycle::Limits,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This call sets the radio channel in the stack and propagates the information to the hardware.
+    fn set_logical_and_radio_channel(
+        &self,
+        radio_channel: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -644,6 +650,14 @@ where
     ) -> Result<(), Error> {
         self.communicate::<_, set_duty_cycle_limits_in_stack::Response>(
             set_duty_cycle_limits_in_stack::Command::from(limits),
+        )
+        .await?
+        .resolve()
+    }
+
+    async fn set_logical_and_radio_channel(&self, radio_channel: u8) -> Result<(), Error> {
+        self.communicate::<_, set_logical_and_radio_channel::Response>(
+            set_logical_and_radio_channel::Command::new(radio_channel),
         )
         .await?
         .resolve()

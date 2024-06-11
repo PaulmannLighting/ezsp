@@ -1,7 +1,7 @@
 use std::future::Future;
 
+use crate::ember::concentrator;
 use crate::ember::multi_phy::{nwk, radio};
-use crate::ember::network::concentrator;
 use crate::ember::{
     beacon, child, duty_cycle, neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
 };

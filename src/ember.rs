@@ -3,6 +3,7 @@ pub mod aps;
 pub mod beacon;
 pub mod binding;
 pub mod child;
+pub mod concentrator;
 mod constants;
 pub mod counter;
 pub mod device;

@@ -1,6 +1,6 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
-use crate::ember::network::concentrator::Parameters;
+use crate::ember::concentrator::Parameters;
 use crate::ember::Status;
 use crate::error::Resolve;
 use crate::frame::Parameter;

@@ -16,7 +16,7 @@ use crate::frame::parameters::networking::{
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
     multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state, permit_joining,
-    send_link_power_delta_request, set_broken_route_error_code, set_child_data,
+    send_link_power_delta_request, set_broken_route_error_code, set_child_data, set_concentrator,
 };
 use crate::{Error, Transport};
 
@@ -290,6 +290,18 @@ pub trait Networking {
         &self,
         index: u8,
         child_data: child::Data,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Enable/disable concentrator support.
+    fn set_concentrator(
+        &self,
+        on: bool,
+        concentrator_type: u16,
+        min_time: u16,
+        max_time: u16,
+        route_error_threshold: u8,
+        delivery_failure_threshold: u8,
+        max_hops: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -606,6 +618,29 @@ where
     async fn set_child_data(&self, index: u8, child_data: child::Data) -> Result<(), Error> {
         self.communicate::<_, set_child_data::Response>(set_child_data::Command::new(
             index, child_data,
+        ))
+        .await?
+        .resolve()
+    }
+
+    async fn set_concentrator(
+        &self,
+        on: bool,
+        concentrator_type: u16,
+        min_time: u16,
+        max_time: u16,
+        route_error_threshold: u8,
+        delivery_failure_threshold: u8,
+        max_hops: u8,
+    ) -> Result<(), Error> {
+        self.communicate::<_, set_concentrator::Response>(set_concentrator::Command::new(
+            on,
+            concentrator_type,
+            min_time,
+            max_time,
+            route_error_threshold,
+            delivery_failure_threshold,
+            max_hops,
         ))
         .await?
         .resolve()

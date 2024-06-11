@@ -19,7 +19,7 @@ use crate::frame::parameters::networking::{
     multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state, permit_joining,
     send_link_power_delta_request, set_broken_route_error_code, set_child_data, set_concentrator,
     set_duty_cycle_limits_in_stack, set_logical_and_radio_channel, set_manufacturer_code,
-    set_neighbor_frame_counter, set_power_descriptor,
+    set_neighbor_frame_counter, set_power_descriptor, set_radio_channel,
 };
 use crate::{Error, Transport};
 
@@ -338,6 +338,15 @@ pub trait Networking {
         &self,
         power_descriptor: u16,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets the channel to use for sending and receiving messages.
+    ///
+    /// For a list of available radio channels, see the technical specification for the RF
+    /// communication module in your Developer Kit.
+    ///
+    /// Note: Care should be taken when using this API,
+    /// as all devices on a network must use the same channel.
+    fn set_radio_channel(&self, channel: u8) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -720,5 +729,11 @@ where
         ))
         .await
         .map(drop)
+    }
+
+    async fn set_radio_channel(&self, channel: u8) -> Result<(), Error> {
+        self.communicate::<_, set_radio_channel::Response>(set_radio_channel::Command::new(channel))
+            .await?
+            .resolve()
     }
 }

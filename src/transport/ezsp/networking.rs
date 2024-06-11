@@ -21,6 +21,7 @@ use crate::frame::parameters::networking::{
     set_duty_cycle_limits_in_stack, set_logical_and_radio_channel, set_manufacturer_code,
     set_neighbor_frame_counter, set_power_descriptor, set_radio_channel,
     set_radio_ieee802154_cca_mode, set_radio_power, set_routing_shortcut_threshold, start_scan,
+    stop_scan,
 };
 use crate::{Error, Transport};
 
@@ -379,6 +380,9 @@ pub trait Networking {
         channel_mask: u32,
         duration: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Terminates a scan in progress.
+    fn stop_scan(&self) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -804,5 +808,11 @@ where
         ))
         .await?
         .resolve()
+    }
+
+    async fn stop_scan(&self) -> Result<(), Error> {
+        self.communicate::<_, stop_scan::Response>(stop_scan::Command)
+            .await?
+            .resolve()
     }
 }

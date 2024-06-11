@@ -1,7 +1,8 @@
-use crate::ember::node::Type;
-use crate::ember::types::{Eui64, NodeId};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use num_traits::FromPrimitive;
+
+use crate::ember::node::Type;
+use crate::ember::types::{Eui64, NodeId};
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Data {

@@ -279,6 +279,7 @@ pub trait Networking {
     /// Send Link Power Delta Request from a child to its parent.
     fn send_link_power_delta_request(&self) -> impl Future<Output = Result<(), Error>> + Send;
 
+    /// Sets the error code that is sent back from a router with a broken route.
     fn set_broken_route_error_code(
         &self,
         error_code: u8,

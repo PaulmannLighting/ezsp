@@ -18,7 +18,7 @@ use crate::frame::parameters::networking::{
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
     multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state, permit_joining,
     send_link_power_delta_request, set_broken_route_error_code, set_child_data, set_concentrator,
-    set_duty_cycle_limits_in_stack, set_logical_and_radio_channel,
+    set_duty_cycle_limits_in_stack, set_logical_and_radio_channel, set_manufacturer_code,
 };
 use crate::{Error, Transport};
 
@@ -316,6 +316,11 @@ pub trait Networking {
         &self,
         radio_channel: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets the manufacturer code to the specified value.
+    ///
+    /// The manufacturer code is one of the fields of the node descriptor.
+    fn set_manufacturer_code(&self, code: u16) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -670,5 +675,13 @@ where
         )
         .await?
         .resolve()
+    }
+
+    async fn set_manufacturer_code(&self, code: u16) -> Result<(), Error> {
+        self.communicate::<_, set_manufacturer_code::Response>(set_manufacturer_code::Command::new(
+            code,
+        ))
+        .await
+        .map(drop)
     }
 }

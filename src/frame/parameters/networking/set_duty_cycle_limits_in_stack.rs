@@ -1,40 +1,43 @@
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+
 use crate::ember::duty_cycle::Limits;
 use crate::ember::Status;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use crate::error::Resolve;
+use crate::frame::Parameter;
+use crate::Error;
 
 const ID: u16 = 0x0040;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     limits: Limits,
 }
 
-impl Command {
-    #[must_use]
-    pub const fn new(limits: Limits) -> Self {
+impl From<Limits> for Command {
+    fn from(limits: Limits) -> Self {
         Self { limits }
-    }
-
-    #[must_use]
-    pub const fn limits(&self) -> &Limits {
-        &self.limits
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+impl Resolve for Response {
+    type Result = ();
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status).resolve()
     }
 }

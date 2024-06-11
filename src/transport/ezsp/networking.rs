@@ -1,6 +1,7 @@
 use std::future::Future;
 
 use crate::ember::concentrator;
+use crate::ember::duty_cycle::Limits;
 use crate::ember::multi_phy::{nwk, radio};
 use crate::ember::{
     beacon, child, duty_cycle, neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
@@ -18,6 +19,7 @@ use crate::frame::parameters::networking::{
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
     multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state, permit_joining,
     send_link_power_delta_request, set_broken_route_error_code, set_child_data, set_concentrator,
+    set_duty_cycle_limits_in_stack,
 };
 use crate::{Error, Transport};
 
@@ -297,6 +299,14 @@ pub trait Networking {
     fn set_concentrator(
         &self,
         parameters: Option<concentrator::Parameters>,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Set the current duty cycle limits configuration.
+    ///
+    /// The Default limits set by stack if this call is not made.
+    fn set_duty_cycle_limits_in_stack(
+        &self,
+        limits: duty_cycle::Limits,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -625,6 +635,14 @@ where
         self.communicate::<_, set_concentrator::Response>(set_concentrator::Command::from(
             parameters,
         ))
+        .await?
+        .resolve()
+    }
+
+    async fn set_duty_cycle_limits_in_stack(&self, limits: Limits) -> Result<(), Error> {
+        self.communicate::<_, set_duty_cycle_limits_in_stack::Response>(
+            set_duty_cycle_limits_in_stack::Command::from(limits),
+        )
         .await?
         .resolve()
     }

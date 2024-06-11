@@ -19,7 +19,7 @@ impl Parameters {
     /// # Errors
     /// Returns a [`TryFromIntError`] if the `min_time` or `max_time` values are too large to fit.
     pub fn new(
-        concentrator_type: u16,
+        concentrator_type: Type,
         min_time: Duration,
         max_time: Duration,
         route_error_threshold: u8,
@@ -27,7 +27,7 @@ impl Parameters {
         max_hops: u8,
     ) -> Result<Self, TryFromIntError> {
         Ok(Self {
-            concentrator_type,
+            concentrator_type: concentrator_type as u16,
             min_time: min_time.as_secs().try_into()?,
             max_time: max_time.as_secs().try_into()?,
             route_error_threshold,
@@ -35,4 +35,11 @@ impl Parameters {
             max_hops,
         })
     }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[repr(u16)]
+pub enum Type {
+    LowRam = 0xFFF8,
+    HighRam = 0xFFF9,
 }

@@ -20,7 +20,7 @@ use crate::frame::parameters::networking::{
     send_link_power_delta_request, set_broken_route_error_code, set_child_data, set_concentrator,
     set_duty_cycle_limits_in_stack, set_logical_and_radio_channel, set_manufacturer_code,
     set_neighbor_frame_counter, set_power_descriptor, set_radio_channel,
-    set_radio_ieee802154_cca_mode,
+    set_radio_ieee802154_cca_mode, set_radio_power,
 };
 use crate::{Error, Transport};
 
@@ -354,6 +354,17 @@ pub trait Networking {
         &self,
         cca_mode: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets the radio output power at which a node is operating.
+    ///
+    /// Ember radios have discrete power settings. For a list of available power settings,
+    /// see the technical specification for the RF communication module in your Developer Kit.
+    ///
+    /// Note: Care should be taken when using this API on a running network,
+    /// as it will directly impact the established link qualities neighboring nodes have with
+    /// the node on which it is called.
+    /// This can lead to disruption of existing routes and erratic network behavior.
+    fn set_radio_power(&self, power: i8) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -750,5 +761,11 @@ where
         )
         .await?
         .resolve()
+    }
+
+    async fn set_radio_power(&self, power: i8) -> Result<(), Error> {
+        self.communicate::<_, set_radio_power::Response>(set_radio_power::Command::new(power))
+            .await?
+            .resolve()
     }
 }

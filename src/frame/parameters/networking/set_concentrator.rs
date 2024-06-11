@@ -14,16 +14,12 @@ pub struct Command {
     parameters: Parameters,
 }
 
-impl Command {
-    #[must_use]
-    pub const fn new(on: bool, parameters: Parameters) -> Self {
-        Self { on, parameters }
-    }
-}
-
 impl From<Option<Parameters>> for Command {
     fn from(parameters: Option<Parameters>) -> Self {
-        Self::new(parameters.is_some(), parameters.unwrap_or_default())
+        Self {
+            on: parameters.is_some(),
+            parameters: parameters.unwrap_or_default(),
+        }
     }
 }
 

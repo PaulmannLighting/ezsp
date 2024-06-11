@@ -1,7 +1,6 @@
 use std::future::Future;
 
 use crate::ember::concentrator;
-use crate::ember::duty_cycle::Limits;
 use crate::ember::multi_phy::{nwk, radio};
 use crate::ember::{
     beacon, child, duty_cycle, neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
@@ -639,7 +638,10 @@ where
         .resolve()
     }
 
-    async fn set_duty_cycle_limits_in_stack(&self, limits: Limits) -> Result<(), Error> {
+    async fn set_duty_cycle_limits_in_stack(
+        &self,
+        limits: duty_cycle::Limits,
+    ) -> Result<(), Error> {
         self.communicate::<_, set_duty_cycle_limits_in_stack::Response>(
             set_duty_cycle_limits_in_stack::Command::from(limits),
         )

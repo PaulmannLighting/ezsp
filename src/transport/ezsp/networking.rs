@@ -19,6 +19,7 @@ use crate::frame::parameters::networking::{
     multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state, permit_joining,
     send_link_power_delta_request, set_broken_route_error_code, set_child_data, set_concentrator,
     set_duty_cycle_limits_in_stack, set_logical_and_radio_channel, set_manufacturer_code,
+    set_neighbor_frame_counter,
 };
 use crate::{Error, Transport};
 
@@ -321,6 +322,13 @@ pub trait Networking {
     ///
     /// The manufacturer code is one of the fields of the node descriptor.
     fn set_manufacturer_code(&self, code: u16) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets the frame counter for the neighbor or child.
+    fn set_neighbor_frame_counter(
+        &self,
+        eui64: Eui64,
+        frame_counter: u32,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -683,5 +691,17 @@ where
         ))
         .await
         .map(drop)
+    }
+
+    async fn set_neighbor_frame_counter(
+        &self,
+        eui64: Eui64,
+        frame_counter: u32,
+    ) -> Result<(), Error> {
+        self.communicate::<_, set_neighbor_frame_counter::Response>(
+            set_neighbor_frame_counter::Command::new(eui64, frame_counter),
+        )
+        .await?
+        .resolve()
     }
 }

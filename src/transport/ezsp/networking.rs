@@ -1,9 +1,9 @@
 use std::future::Future;
 
-use crate::ember::concentrator;
-use crate::ember::multi_phy::{nwk, radio};
 use crate::ember::{
-    beacon, child, duty_cycle, neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
+    beacon, child, concentrator, duty_cycle,
+    multi_phy::{nwk, radio},
+    neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
 };
 use crate::error::Resolve;
 use crate::ezsp::network::InitBitmask;

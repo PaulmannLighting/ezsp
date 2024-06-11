@@ -20,7 +20,7 @@ use crate::frame::parameters::networking::{
     send_link_power_delta_request, set_broken_route_error_code, set_child_data, set_concentrator,
     set_duty_cycle_limits_in_stack, set_logical_and_radio_channel, set_manufacturer_code,
     set_neighbor_frame_counter, set_power_descriptor, set_radio_channel,
-    set_radio_ieee802154_cca_mode, set_radio_power,
+    set_radio_ieee802154_cca_mode, set_radio_power, set_routing_shortcut_threshold,
 };
 use crate::{Error, Transport};
 
@@ -365,6 +365,12 @@ pub trait Networking {
     /// the node on which it is called.
     /// This can lead to disruption of existing routes and erratic network behavior.
     fn set_radio_power(&self, power: i8) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets the routing shortcut threshold to directly use a neighbor instead of performing routing.
+    fn set_routing_shortcut_threshold(
+        &self,
+        cost_thresh: u8,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Networking for T
@@ -767,5 +773,13 @@ where
         self.communicate::<_, set_radio_power::Response>(set_radio_power::Command::new(power))
             .await?
             .resolve()
+    }
+
+    async fn set_routing_shortcut_threshold(&self, cost_thresh: u8) -> Result<(), Error> {
+        self.communicate::<_, set_routing_shortcut_threshold::Response>(
+            set_routing_shortcut_threshold::Command::new(cost_thresh),
+        )
+        .await?
+        .resolve()
     }
 }

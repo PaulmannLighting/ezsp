@@ -11,8 +11,10 @@ pub enum Error {
     InvalidEmberDutyCycleState(u8),
     InvalidEmberNetworkStatus(u8),
     InvalidEmberNodeType(u8),
+    InvalidSiliconlabsStatus(u32),
     Ezsp(ezsp::Status),
     Ember(ember::Status),
+    Siliconlabs(siliconlabs::Status),
     ValueError(value::Error),
     Custom(String),
 }
@@ -33,8 +35,12 @@ impl Display for Error {
             Self::InvalidEmberNodeType(node_type) => {
                 write!(f, "Invalid Ember node type: {node_type}")
             }
+            Self::InvalidSiliconlabsStatus(status) => {
+                write!(f, "Invalid Siliconlabs status: {status}")
+            }
             Self::Ezsp(status) => write!(f, "Ezsp: {}", u8::from(*status)),
             Self::Ember(status) => write!(f, "Ember: {}", u8::from(*status)),
+            Self::Siliconlabs(status) => write!(f, "Siliconlabs: {}", u32::from(*status)),
             Self::ValueError(error) => Display::fmt(error, f),
             Self::Custom(msg) => Display::fmt(msg, f),
         }
@@ -86,6 +92,23 @@ pub trait Resolve {
     type Result;
 
     fn resolve(self) -> Result<Self::Result, Error>;
+}
+
+impl Resolve for Result<siliconlabs::Status, u32> {
+    type Result = ();
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        match self {
+            Ok(status) => {
+                if let siliconlabs::Status::Ok = status {
+                    Ok(())
+                } else {
+                    Err(Error::Siliconlabs(status))
+                }
+            }
+            Err(error) => Err(Error::InvalidSiliconlabsStatus(error)),
+        }
+    }
 }
 
 pub mod value {

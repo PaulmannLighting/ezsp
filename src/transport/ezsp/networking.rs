@@ -6,7 +6,7 @@ use crate::ember::{
     neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
 };
 use crate::error::Resolve;
-use crate::ezsp::network::InitBitmask;
+use crate::ezsp::network::{scan, InitBitmask};
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
@@ -20,7 +20,7 @@ use crate::frame::parameters::networking::{
     send_link_power_delta_request, set_broken_route_error_code, set_child_data, set_concentrator,
     set_duty_cycle_limits_in_stack, set_logical_and_radio_channel, set_manufacturer_code,
     set_neighbor_frame_counter, set_power_descriptor, set_radio_channel,
-    set_radio_ieee802154_cca_mode, set_radio_power, set_routing_shortcut_threshold,
+    set_radio_ieee802154_cca_mode, set_radio_power, set_routing_shortcut_threshold, start_scan,
 };
 use crate::{Error, Transport};
 
@@ -370,6 +370,14 @@ pub trait Networking {
     fn set_routing_shortcut_threshold(
         &self,
         cost_thresh: u8,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This function will start a scan.
+    fn start_scan(
+        &self,
+        scan_type: scan::Type,
+        channel_mask: u32,
+        duration: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -779,6 +787,21 @@ where
         self.communicate::<_, set_routing_shortcut_threshold::Response>(
             set_routing_shortcut_threshold::Command::new(cost_thresh),
         )
+        .await?
+        .resolve()
+    }
+
+    async fn start_scan(
+        &self,
+        scan_type: scan::Type,
+        channel_mask: u32,
+        duration: u8,
+    ) -> Result<(), Error> {
+        self.communicate::<_, start_scan::Response>(start_scan::Command::new(
+            scan_type,
+            channel_mask,
+            duration,
+        ))
         .await?
         .resolve()
     }

@@ -1,10 +1,14 @@
-use crate::ezsp::network::scan::Type;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use siliconlabs::Status;
 
+use crate::error::Resolve;
+use crate::ezsp::network::scan::Type;
+use crate::frame::Parameter;
+use crate::Error;
+
 const ID: u16 = 0x001A;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     scan_type: u8,
     channel_mask: u32,
@@ -20,36 +24,27 @@ impl Command {
             duration,
         }
     }
-
-    pub fn scan_type(&self) -> Result<Type, u8> {
-        Type::try_from(self.scan_type)
-    }
-
-    #[must_use]
-    pub const fn channel_mask(&self) -> u32 {
-        self.channel_mask
-    }
-
-    #[must_use]
-    pub const fn duration(&self) -> u8 {
-        self.duration
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u32,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u32> {
-        Status::try_from(self.status)
+impl Resolve for Response {
+    type Result = ();
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status).resolve()
     }
 }

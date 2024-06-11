@@ -10,10 +10,10 @@ use crate::ezsp::network::InitBitmask;
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,
-    get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon, get_neighbor,
-    get_neighbor_frame_counter, get_network_parameters, get_next_beacon, get_num_stored_beacons,
-    get_parent_child_parameters, get_radio_channel, get_radio_parameters, get_route_table_entry,
-    get_routing_shortcut_threshold, get_source_route_table_entry,
+    get_duty_cycle_limits, get_duty_cycle_state, get_first_beacon, get_logical_channel,
+    get_neighbor, get_neighbor_frame_counter, get_network_parameters, get_next_beacon,
+    get_num_stored_beacons, get_parent_child_parameters, get_radio_channel, get_radio_parameters,
+    get_route_table_entry, get_routing_shortcut_threshold, get_source_route_table_entry,
     get_source_route_table_filled_size, get_source_route_table_total_size, id, join_network,
     join_network_directly, leave_network, multi_phy_set_radio_channel, multi_phy_set_radio_power,
     multi_phy_start, multi_phy_stop, neighbor_count, network_init, network_state, permit_joining,
@@ -102,6 +102,9 @@ pub trait Networking {
     ///
     /// Beacons are stored in cache after issuing an active scan.
     fn get_first_beacon(&self) -> impl Future<Output = Result<beacon::Iterator, Error>> + Send;
+
+    /// Get the logical channel from the ZLL stack.
+    fn get_logical_channel(&self) -> impl Future<Output = Result<u8, Error>> + Send;
 
     /// Returns the neighbor table entry at the given index.
     ///
@@ -405,6 +408,12 @@ where
         self.communicate::<_, get_first_beacon::Response>(get_first_beacon::Command)
             .await?
             .resolve()
+    }
+
+    async fn get_logical_channel(&self) -> Result<u8, Error> {
+        self.communicate::<_, get_logical_channel::Response>(get_logical_channel::Command)
+            .await
+            .map(|response| response.logical_channel())
     }
 
     async fn get_neighbor(&self, index: u8) -> Result<neighbor::TableEntry, Error> {

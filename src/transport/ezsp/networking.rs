@@ -1,6 +1,7 @@
 use std::future::Future;
 
 use crate::ember::multi_phy::{nwk, radio};
+use crate::ember::network::concentrator;
 use crate::ember::{
     beacon, child, duty_cycle, neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
 };
@@ -295,13 +296,7 @@ pub trait Networking {
     /// Enable/disable concentrator support.
     fn set_concentrator(
         &self,
-        on: bool,
-        concentrator_type: u16,
-        min_time: u16,
-        max_time: u16,
-        route_error_threshold: u8,
-        delivery_failure_threshold: u8,
-        max_hops: u8,
+        parameters: Option<concentrator::Parameters>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -625,22 +620,10 @@ where
 
     async fn set_concentrator(
         &self,
-        on: bool,
-        concentrator_type: u16,
-        min_time: u16,
-        max_time: u16,
-        route_error_threshold: u8,
-        delivery_failure_threshold: u8,
-        max_hops: u8,
+        parameters: Option<concentrator::Parameters>,
     ) -> Result<(), Error> {
-        self.communicate::<_, set_concentrator::Response>(set_concentrator::Command::new(
-            on,
-            concentrator_type,
-            min_time,
-            max_time,
-            route_error_threshold,
-            delivery_failure_threshold,
-            max_hops,
+        self.communicate::<_, set_concentrator::Response>(set_concentrator::Command::from(
+            parameters,
         ))
         .await?
         .resolve()

@@ -1,5 +1,6 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
+use crate::ember::network::concentrator::Parameters;
 use crate::ember::Status;
 use crate::error::Resolve;
 use crate::frame::Parameter;
@@ -10,34 +11,19 @@ const ID: u16 = 0x0010;
 #[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     on: bool,
-    concentrator_type: u16,
-    min_time: u16,
-    max_time: u16,
-    route_error_threshold: u8,
-    delivery_failure_threshold: u8,
-    max_hops: u8,
+    parameters: Parameters,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(
-        on: bool,
-        concentrator_type: u16,
-        min_time: u16,
-        max_time: u16,
-        route_error_threshold: u8,
-        delivery_failure_threshold: u8,
-        max_hops: u8,
-    ) -> Self {
-        Self {
-            on,
-            concentrator_type,
-            min_time,
-            max_time,
-            route_error_threshold,
-            delivery_failure_threshold,
-            max_hops,
-        }
+    pub const fn new(on: bool, parameters: Parameters) -> Self {
+        Self { on, parameters }
+    }
+}
+
+impl From<Option<Parameters>> for Command {
+    fn from(parameters: Option<Parameters>) -> Self {
+        Self::new(parameters.is_some(), parameters.unwrap_or_default())
     }
 }
 

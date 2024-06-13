@@ -51,19 +51,19 @@ impl TryFrom<u8> for ConcentratorType {
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]
-pub enum RouteRecordState {
+pub enum RecordState {
     NoLongerNeeded = 0x00,
     Sent = 0x01,
     Needed = 0x02,
 }
 
-impl From<RouteRecordState> for u8 {
-    fn from(route_record_state: RouteRecordState) -> Self {
+impl From<RecordState> for u8 {
+    fn from(route_record_state: RecordState) -> Self {
         route_record_state as Self
     }
 }
 
-impl TryFrom<u8> for RouteRecordState {
+impl TryFrom<u8> for RecordState {
     type Error = u8;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
@@ -89,7 +89,7 @@ impl TableEntry {
         status: Status,
         age: u8,
         concentrator_type: ConcentratorType,
-        route_record_state: RouteRecordState,
+        route_record_state: RecordState,
     ) -> Self {
         Self {
             destination,
@@ -125,9 +125,9 @@ impl TableEntry {
         ConcentratorType::try_from(self.concentrator_type)
     }
 
-    pub fn route_record_state(&self) -> Result<RouteRecordState, u8> {
+    pub fn route_record_state(&self) -> Result<RecordState, u8> {
         if let Ok(ConcentratorType::HighRam) = self.concentrator_type() {
-            RouteRecordState::try_from(self.route_record_state)
+            RecordState::try_from(self.route_record_state)
         } else {
             Err(self.route_record_state)
         }

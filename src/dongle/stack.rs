@@ -1,5 +1,6 @@
-use crate::ezsp::{config, decision, policy};
 use std::collections::HashMap;
+
+use crate::ezsp::{config, decision, policy};
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Stack {

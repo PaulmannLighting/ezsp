@@ -88,10 +88,18 @@ impl Struct {
         }
     }
 
+    /// Returns the bitmask.
+    ///
+    /// # Errors
+    /// Returns the number of the bitmask if the bitmask is invalid.
     pub fn bitmask(&self) -> Result<Bitmask, u16> {
         Bitmask::try_from(self.bitmask)
     }
 
+    /// Returns the type.
+    ///
+    /// # Errors
+    /// Returns the number of the type if the type is invalid.
     pub fn typ(&self) -> Result<Type, u8> {
         Type::try_from(self.typ)
     }
@@ -132,6 +140,7 @@ pub struct TransientData {
 }
 
 impl TransientData {
+    #[must_use]
     pub fn new(
         eui64: Eui64,
         key_data: Data,
@@ -148,6 +157,10 @@ impl TransientData {
         }
     }
 
+    /// Tries to create a new transient data.
+    ///
+    /// # Errors
+    /// Returns a [`TryFromIntError`] if the remaining time is too large.
     pub fn try_new(
         eui64: Eui64,
         key_data: Data,
@@ -174,6 +187,10 @@ impl TransientData {
         &self.key_data
     }
 
+    /// Returns the bitmask.
+    ///
+    /// # Errors
+    /// Returns the number of the bitmask if the bitmask is invalid.
     pub fn bitmask(&self) -> Result<Bitmask, u16> {
         Bitmask::try_from(self.bitmask)
     }

@@ -1,9 +1,10 @@
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+
 use crate::ember::gp::security::FrameCounter;
 use crate::ember::gp::sink::{ListEntry, LIST_ENTRIES};
 use crate::ember::gp::Address;
 use crate::ember::key::Data;
 use crate::ember::NodeId;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 type Status = u8;
 
@@ -22,6 +23,7 @@ pub struct TableEntry {
 }
 
 impl TableEntry {
+    #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub const fn new(
         status: Status,

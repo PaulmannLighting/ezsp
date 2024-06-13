@@ -1,7 +1,8 @@
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+
 use crate::ember::node::Type;
 use crate::ember::zll::{SecurityAlgorithmData, State};
 use crate::ember::{zigbee, Eui64, NodeId};
-use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Network {
@@ -17,6 +18,7 @@ pub struct Network {
 }
 
 impl Network {
+    #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub fn new(
         zigbee_network: zigbee::Network,
@@ -43,45 +45,53 @@ impl Network {
     }
 
     #[must_use]
-    pub fn zigbee_network(&self) -> &zigbee::Network {
+    pub const fn zigbee_network(&self) -> &zigbee::Network {
         &self.zigbee_network
     }
 
     #[must_use]
-    pub fn security_algorithm(&self) -> &SecurityAlgorithmData {
+    pub const fn security_algorithm(&self) -> &SecurityAlgorithmData {
         &self.security_algorithm
     }
 
     #[must_use]
-    pub fn eui64(&self) -> Eui64 {
+    pub const fn eui64(&self) -> Eui64 {
         self.eui64
     }
 
     #[must_use]
-    pub fn node_id(&self) -> NodeId {
+    pub const fn node_id(&self) -> NodeId {
         self.node_id
     }
 
+    /// Return the network state.
+    ///
+    /// # Errors
+    /// Returns the [`u16`] value of the state if it has an invalid value.
     pub fn state(&self) -> Result<State, u16> {
         State::try_from(self.state)
     }
 
+    /// Return the node type.
+    ///
+    /// # Errors
+    /// Returns the [`u8`] value of the type if it has an invalid value.
     pub fn node_type(&self) -> Result<Type, u8> {
         Type::try_from(self.node_type)
     }
 
     #[must_use]
-    pub fn number_sub_devices(&self) -> u8 {
+    pub const fn number_sub_devices(&self) -> u8 {
         self.number_sub_devices
     }
 
     #[must_use]
-    pub fn total_group_identifiers(&self) -> u8 {
+    pub const fn total_group_identifiers(&self) -> u8 {
         self.total_group_identifiers
     }
 
     #[must_use]
-    pub fn rssi_correction(&self) -> u8 {
+    pub const fn rssi_correction(&self) -> u8 {
         self.rssi_correction
     }
 }

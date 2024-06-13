@@ -87,6 +87,10 @@ impl Frame {
         self.destination_endpoint
     }
 
+    /// Returns the options set in the frame.
+    ///
+    /// # Panics
+    /// This function will panic if the options buffer does not have sufficient capacity.
     #[must_use]
     pub fn options(&self) -> Options {
         let mut options = Options::new();

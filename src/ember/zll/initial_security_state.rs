@@ -31,6 +31,10 @@ impl InitialSecurityState {
         self.bitmask
     }
 
+    /// Returns the key index.
+    ///
+    /// # Errors
+    /// Returns the [`u8`] value of the key index if it is not a valid [`KeyIndex`].
     pub fn key_index(&self) -> Result<KeyIndex, u8> {
         KeyIndex::try_from(self.key_index)
     }

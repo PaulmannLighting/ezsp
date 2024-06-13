@@ -32,32 +32,32 @@ impl DeviceInfoRecord {
     }
 
     #[must_use]
-    pub fn ieee_address(&self) -> Eui64 {
+    pub const fn ieee_address(&self) -> Eui64 {
         self.ieee_address
     }
 
     #[must_use]
-    pub fn endpoint_id(&self) -> u8 {
+    pub const fn endpoint_id(&self) -> u8 {
         self.endpoint_id
     }
 
     #[must_use]
-    pub fn profile_id(&self) -> u16 {
+    pub const fn profile_id(&self) -> u16 {
         self.profile_id
     }
 
     #[must_use]
-    pub fn device_id(&self) -> u16 {
+    pub const fn device_id(&self) -> u16 {
         self.device_id
     }
 
     #[must_use]
-    pub fn version(&self) -> u8 {
+    pub const fn version(&self) -> u8 {
         self.version
     }
 
     #[must_use]
-    pub fn group_id_count(&self) -> u8 {
+    pub const fn group_id_count(&self) -> u8 {
         self.group_id_count
     }
 }

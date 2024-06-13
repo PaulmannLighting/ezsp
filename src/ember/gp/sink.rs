@@ -100,31 +100,29 @@ pub struct ListEntry {
 }
 
 impl ListEntry {
+    /// Returns the type of the list entry.
+    ///
+    /// # Errors
+    /// Returns the [`u8`] value of the type if it is not a valid [`Type`].
     pub fn typ(&self) -> Result<Type, u8> {
         Type::try_from(self.typ)
     }
 
+    #[must_use]
     pub fn payload(&self) -> Option<Payload> {
-        if let Ok(typ) = self.typ() {
-            match typ {
-                Type::FullUnicast => Address::from_le_bytes(&mut self.bytes.iter().copied())
+        self.typ().map_or(None, |typ| match typ {
+            Type::DGroupCast | Type::GroupCast => {
+                Group::from_le_bytes(&mut self.bytes.iter().copied())
                     .ok()
-                    .map(Payload::Unicast),
-
-                Type::DGroupCast => Group::from_le_bytes(&mut self.bytes.iter().copied())
-                    .ok()
-                    .map(Payload::GroupList),
-                Type::GroupCast => Group::from_le_bytes(&mut self.bytes.iter().copied())
-                    .ok()
-                    .map(Payload::GroupList),
-                Type::LwUnicast => Address::from_le_bytes(&mut self.bytes.iter().copied())
-                    .ok()
-                    .map(Payload::Unicast),
-                Type::Unused => None,
+                    .map(Payload::GroupList)
             }
-        } else {
-            None
-        }
+            Type::LwUnicast | Type::FullUnicast => {
+                Address::from_le_bytes(&mut self.bytes.iter().copied())
+                    .ok()
+                    .map(Payload::Unicast)
+            }
+            Type::Unused => None,
+        })
     }
 }
 
@@ -143,6 +141,7 @@ pub struct TableEntry {
 }
 
 impl TableEntry {
+    #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub const fn new(
         status: Status,

@@ -32,6 +32,6 @@ impl Resolve for Result<Status, u8> {
     type Result = Status;
 
     fn resolve(self) -> Result<Self::Result, Error> {
-        self.map_err(|status| Error::InvalidEmberNetworkStatus(status))
+        self.map_err(Error::InvalidEmberNetworkStatus)
     }
 }

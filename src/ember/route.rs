@@ -101,6 +101,7 @@ impl TableEntry {
         }
     }
 
+    #[must_use]
     pub const fn destination(&self) -> Option<u16> {
         if self.destination == ENTRY_UNUSED {
             None
@@ -109,24 +110,38 @@ impl TableEntry {
         }
     }
 
+    #[must_use]
     pub const fn next_hop(&self) -> u16 {
         self.next_hop
     }
 
+    /// Returns the status of the entry.
+    ///
+    /// # Errors
+    /// Returns the invalid status code number if the status is invalid.
     pub fn status(&self) -> Result<Status, u8> {
         Status::try_from(self.status)
     }
 
+    #[must_use]
     pub const fn age(&self) -> u8 {
         self.age
     }
 
+    /// Returns the concentrator type of the entry.
+    ///
+    /// # Errors
+    /// Returns the invalid concentrator type code number if the concentrator type is invalid.
     pub fn concentrator_type(&self) -> Result<ConcentratorType, u8> {
         ConcentratorType::try_from(self.concentrator_type)
     }
 
+    /// Returns the route record state of the entry.
+    ///
+    /// # Errors
+    /// Returns the invalid route record state code number if the route record state is invalid.
     pub fn route_record_state(&self) -> Result<RecordState, u8> {
-        if let Ok(ConcentratorType::HighRam) = self.concentrator_type() {
+        if self.concentrator_type() == Ok(ConcentratorType::HighRam) {
             RecordState::try_from(self.route_record_state)
         } else {
             Err(self.route_record_state)

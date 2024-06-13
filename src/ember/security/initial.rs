@@ -46,6 +46,7 @@ pub struct State {
 }
 
 impl State {
+    #[must_use]
     pub fn new(
         bitmask: Bitmask,
         preconfigured_key: Data,
@@ -62,6 +63,10 @@ impl State {
         }
     }
 
+    /// Returns the bitmask of the security state.
+    ///
+    /// # Errors
+    /// Returns the [`u8`] value of the bitmask if it is not a valid [`Bitmask`].
     pub fn bitmask(&self) -> Result<Bitmask, u16> {
         Bitmask::try_from(self.bitmask)
     }

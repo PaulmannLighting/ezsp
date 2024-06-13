@@ -43,6 +43,10 @@ impl State {
         }
     }
 
+    /// Returns the bitmask.
+    ///
+    /// # Errors
+    /// Returns the [`u16`] value of the bitmask if it is not a valid [`Bitmask`].
     pub fn bitmask(&self) -> Result<Bitmask, u16> {
         Bitmask::try_from(self.bitmask)
     }

@@ -1,7 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Type {
     UnknownDevice = 0x00,
     Coordinator = 0x01,
@@ -12,8 +13,7 @@ pub enum Type {
 
 impl From<Type> for u8 {
     fn from(typ: Type) -> Self {
-        typ.to_u8()
-            .expect("Type should always be convertible to u8.")
+        typ as Self
     }
 }
 

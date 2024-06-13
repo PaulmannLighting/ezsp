@@ -1,7 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u16)]
 pub enum Bitmask {
     NoOptions = 0x0000,
     ParentInfoInToken = 0x0001,
@@ -10,9 +11,7 @@ pub enum Bitmask {
 
 impl From<Bitmask> for u16 {
     fn from(init_bitmask: Bitmask) -> Self {
-        init_bitmask
-            .to_u16()
-            .expect("InitBitmask should always be convertible to u8.")
+        init_bitmask as Self
     }
 }
 

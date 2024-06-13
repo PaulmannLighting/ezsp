@@ -1,8 +1,10 @@
-use num_derive::{FromPrimitive, ToPrimitive};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+use num_derive::FromPrimitive;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Mac {
     NoData = 0x31,
     JoinedNetwork = 0x32,
@@ -32,6 +34,12 @@ impl Display for Mac {
             Self::NoAckReceived => write!(f, "no ACK received"),
             Self::IndirectTimeout => write!(f, "indirect timeout"),
         }
+    }
+}
+
+impl From<Mac> for u8 {
+    fn from(mac: Mac) -> Self {
+        mac as Self
     }
 }
 

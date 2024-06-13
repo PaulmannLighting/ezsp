@@ -1,10 +1,11 @@
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::FromLeBytes;
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
+
 use crate::ember::gp::security::FrameCounter;
 use crate::ember::key::Data;
 use crate::ember::{gp, Eui64, NodeId};
-use le_stream::derive::{FromLeBytes, ToLeBytes};
-use le_stream::FromLeBytes;
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
 
 // Documentation: https://docs.silabs.com/d/zigbee-stack-api/7.2.2/gp-types-h
 
@@ -61,7 +62,8 @@ impl Group {
     }
 }
 
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum Type {
     FullUnicast = 0x00,
     DGroupCast = 0x01,
@@ -72,8 +74,7 @@ pub enum Type {
 
 impl From<Type> for u8 {
     fn from(typ: Type) -> Self {
-        typ.to_u8()
-            .expect("Type should always be convertible to u8.")
+        typ as Self
     }
 }
 

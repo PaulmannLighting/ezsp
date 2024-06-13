@@ -1,7 +1,7 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::ToPrimitive;
+use num_derive::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Misc {
     Started = 0x70,
     Connected = 0x71,
@@ -29,7 +29,6 @@ pub enum Misc {
 
 impl From<Misc> for u8 {
     fn from(misc: Misc) -> Self {
-        misc.to_u8()
-            .expect("Misc should always be convertible to u8.")
+        misc as Self
     }
 }

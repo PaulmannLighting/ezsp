@@ -1,3 +1,19 @@
+use std::fmt::{Debug, Display, Formatter};
+
+use num_traits::FromPrimitive;
+
+pub use adc::Adc;
+pub use application::Application;
+pub use eeprom::Eeprom;
+pub use err::{Bootloader, Err, Flash};
+pub use mac::Mac;
+pub use phy::Phy;
+pub use serial::Serial;
+pub use sim_eeprom::SimEeprom;
+
+use crate::error::Resolve;
+use crate::Error;
+
 mod adc;
 mod application;
 mod eeprom;
@@ -6,19 +22,6 @@ mod mac;
 mod phy;
 mod serial;
 mod sim_eeprom;
-
-use crate::error::Resolve;
-use crate::Error;
-pub use adc::Adc;
-pub use application::Application;
-pub use eeprom::Eeprom;
-pub use err::{Bootloader, Err, Flash};
-pub use mac::Mac;
-use num_traits::{FromPrimitive, ToPrimitive};
-pub use phy::Phy;
-pub use serial::Serial;
-pub use sim_eeprom::SimEeprom;
-use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 #[repr(u8)]
@@ -188,9 +191,66 @@ impl std::error::Error for Status {
 
 impl From<Status> for u8 {
     fn from(status: Status) -> Self {
-        status
-            .to_u8()
-            .expect("Status should always be convertible to u8.")
+        match status {
+            Status::Success => 0x00,
+            Status::ErrFatal => 0x01,
+            Status::BadArgument => 0x02,
+            Status::Eeprom(eeprom) => eeprom.into(),
+            Status::NoBuffers => 0x18,
+            Status::Serial(serial) => serial.into(),
+            Status::Mac(mac) => mac.into(),
+            Status::SimEeprom(sim_eeprom) => sim_eeprom.into(),
+            Status::Err(err) => err.into(),
+            Status::DeliveryFailed => 0x66,
+            Status::BindingIndexOutOfRange => 0x69,
+            Status::AddressTableIndexOutOfRange => 0x6A,
+            Status::InvalidBindingIndex => 0x6C,
+            Status::InvalidCall => 0x70,
+            Status::CostNotKnown => 0x71,
+            Status::MaxMessageLimitReached => 0x72,
+            Status::MessageTooLong => 0x74,
+            Status::BindingIsActive => 0x75,
+            Status::AddressTableEntryIsActive => 0x76,
+            Status::Adc(adc) => adc.into(),
+            Status::SleepInterrupted => 0x85,
+            Status::Phy(phy) => phy.into(),
+            Status::NetworkUp => 0x90,
+            Status::NetworkDown => 0x91,
+            Status::NotJoined => 0x93,
+            Status::JoinFailed => 0x94,
+            Status::InvalidSecurityLevel => 0x95,
+            Status::MoveFailed => 0x96,
+            Status::CannotJoinAsRouter => 0x98,
+            Status::NodeIdChanged => 0x99,
+            Status::PanIdChanged => 0x9A,
+            Status::NetworkOpened => 0x9C,
+            Status::NetworkClosed => 0x9D,
+            Status::NoBeacons => 0xAB,
+            Status::ReceivedKeyInTheClear => 0xAC,
+            Status::NoNetworkKeyReceived => 0xAD,
+            Status::NoLinkKeyReceived => 0xAE,
+            Status::PreconfiguredKeyRequired => 0xAF,
+            Status::NetworkBusy => 0xA1,
+            Status::InvalidEndpoint => 0xA3,
+            Status::BindingHasChanged => 0xA4,
+            Status::InsufficientRandomData => 0xA5,
+            Status::ApsEncryptionError => 0xA6,
+            Status::SecurityStateNotSet => 0xA8,
+            Status::SourceRouteFailure => 0xA9,
+            Status::ManyToOneRouteFailure => 0xAA,
+            Status::StackAndHardwareMismatch => 0xB0,
+            Status::IndexOutOfRange => 0xB1,
+            Status::KeyTableInvalidAddress => 0xB3,
+            Status::TableFull => 0xB4,
+            Status::LibraryNotPresent => 0xB5,
+            Status::TableEntryErased => 0xB6,
+            Status::SecurityConfigurationInvalid => 0xB7,
+            Status::TooSoonForSwitchKey => 0xB8,
+            Status::OperationInProgress => 0xBA,
+            Status::KeyNotAuthorized => 0xBB,
+            Status::SecurityDataInvalid => 0xBD,
+            Status::Application(application) => application.into(),
+        }
     }
 }
 
@@ -276,79 +336,6 @@ impl Resolve for Result<Status, u8> {
             Ok(status) => status.ok().map_err(Error::Ember),
             Err(status) => Err(Error::InvalidEmberStatus(status)),
         }
-    }
-}
-
-impl ToPrimitive for Status {
-    fn to_i64(&self) -> Option<i64> {
-        self.to_u8().map(i64::from)
-    }
-
-    fn to_u8(&self) -> Option<u8> {
-        match self {
-            Self::Success => Some(0x00),
-            Self::ErrFatal => Some(0x01),
-            Self::BadArgument => Some(0x02),
-            Self::Eeprom(eeprom) => eeprom.to_u8(),
-            Self::NoBuffers => Some(0x18),
-            Self::Serial(serial) => serial.to_u8(),
-            Self::Mac(mac) => mac.to_u8(),
-            Self::SimEeprom(sim_eeprom) => sim_eeprom.to_u8(),
-            Self::Err(err) => err.to_u8(),
-            Self::DeliveryFailed => Some(0x66),
-            Self::BindingIndexOutOfRange => Some(0x69),
-            Self::AddressTableIndexOutOfRange => Some(0x6A),
-            Self::InvalidBindingIndex => Some(0x6C),
-            Self::InvalidCall => Some(0x70),
-            Self::CostNotKnown => Some(0x71),
-            Self::MaxMessageLimitReached => Some(0x72),
-            Self::MessageTooLong => Some(0x74),
-            Self::BindingIsActive => Some(0x75),
-            Self::AddressTableEntryIsActive => Some(0x76),
-            Self::Adc(adc) => adc.to_u8(),
-            Self::SleepInterrupted => Some(0x85),
-            Self::Phy(phy) => phy.to_u8(),
-            Self::NetworkUp => Some(0x90),
-            Self::NetworkDown => Some(0x91),
-            Self::NotJoined => Some(0x93),
-            Self::JoinFailed => Some(0x94),
-            Self::InvalidSecurityLevel => Some(0x95),
-            Self::MoveFailed => Some(0x96),
-            Self::CannotJoinAsRouter => Some(0x98),
-            Self::NodeIdChanged => Some(0x99),
-            Self::PanIdChanged => Some(0x9A),
-            Self::NetworkOpened => Some(0x9C),
-            Self::NetworkClosed => Some(0x9D),
-            Self::NoBeacons => Some(0xAB),
-            Self::ReceivedKeyInTheClear => Some(0xAC),
-            Self::NoNetworkKeyReceived => Some(0xAD),
-            Self::NoLinkKeyReceived => Some(0xAE),
-            Self::PreconfiguredKeyRequired => Some(0xAF),
-            Self::NetworkBusy => Some(0xA1),
-            Self::InvalidEndpoint => Some(0xA3),
-            Self::BindingHasChanged => Some(0xA4),
-            Self::InsufficientRandomData => Some(0xA5),
-            Self::ApsEncryptionError => Some(0xA6),
-            Self::SecurityStateNotSet => Some(0xA8),
-            Self::SourceRouteFailure => Some(0xA9),
-            Self::ManyToOneRouteFailure => Some(0xAA),
-            Self::StackAndHardwareMismatch => Some(0xB0),
-            Self::IndexOutOfRange => Some(0xB1),
-            Self::KeyTableInvalidAddress => Some(0xB3),
-            Self::TableFull => Some(0xB4),
-            Self::LibraryNotPresent => Some(0xB5),
-            Self::TableEntryErased => Some(0xB6),
-            Self::SecurityConfigurationInvalid => Some(0xB7),
-            Self::TooSoonForSwitchKey => Some(0xB8),
-            Self::OperationInProgress => Some(0xBA),
-            Self::KeyNotAuthorized => Some(0xBB),
-            Self::SecurityDataInvalid => Some(0xBD),
-            Self::Application(application) => application.to_u8(),
-        }
-    }
-
-    fn to_u64(&self) -> Option<u64> {
-        self.to_u8().map(u64::from)
     }
 }
 

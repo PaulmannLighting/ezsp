@@ -1,7 +1,7 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::ToPrimitive;
+use num_derive::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Error {
     VersionNotSet = 0x30,
     InvalidFrameId = 0x31,
@@ -28,8 +28,6 @@ pub enum Error {
 
 impl From<Error> for u8 {
     fn from(error: Error) -> Self {
-        error
-            .to_u8()
-            .expect("Error should always be convertible to u8.")
+        error as Self
     }
 }

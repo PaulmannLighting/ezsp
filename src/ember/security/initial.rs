@@ -1,10 +1,12 @@
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
+
 use crate::ember::key::Data;
 use crate::ember::Eui64;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
 
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
+#[repr(u16)]
 pub enum Bitmask {
     StandardSecurityMode = 0x0000,
     DistributedTrustCenterMode = 0x0002,
@@ -22,9 +24,7 @@ pub enum Bitmask {
 
 impl From<Bitmask> for u16 {
     fn from(bitmask: Bitmask) -> Self {
-        bitmask
-            .to_u16()
-            .expect("Bitmask should always be convertible to u16.")
+        bitmask as Self
     }
 }
 

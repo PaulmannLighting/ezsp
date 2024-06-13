@@ -1,9 +1,10 @@
-mod mfg;
-mod stack;
+use num_traits::FromPrimitive;
 
 pub use mfg::Mfg;
-use num_traits::{FromPrimitive, ToPrimitive};
 pub use stack::Stack;
+
+mod mfg;
+mod stack;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Id {
@@ -13,7 +14,10 @@ pub enum Id {
 
 impl From<Id> for u8 {
     fn from(id: Id) -> Self {
-        id.to_u8().expect("Id should always be convertible to u8.")
+        match id {
+            Id::Mfg(manufacturing) => manufacturing.into(),
+            Id::Stack(stack) => stack.into(),
+        }
     }
 }
 
@@ -26,22 +30,6 @@ impl FromPrimitive for Id {
         Mfg::from_u64(n)
             .map(Self::Mfg)
             .or_else(|| Stack::from_u64(n).map(Self::Stack))
-    }
-}
-
-impl ToPrimitive for Id {
-    fn to_i64(&self) -> Option<i64> {
-        match self {
-            Self::Mfg(manufacturing) => manufacturing.to_i64(),
-            Self::Stack(stack) => stack.to_i64(),
-        }
-    }
-
-    fn to_u64(&self) -> Option<u64> {
-        match self {
-            Self::Mfg(manufacturing) => manufacturing.to_u64(),
-            Self::Stack(stack) => stack.to_u64(),
-        }
     }
 }
 

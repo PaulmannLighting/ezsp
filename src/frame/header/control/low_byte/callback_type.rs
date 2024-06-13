@@ -1,7 +1,7 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::ToPrimitive;
+use num_derive::FromPrimitive;
 
-#[derive(Debug, Clone, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum CallbackType {
     Reserved = 0b11,
     Asynchronous = 0b01,
@@ -10,8 +10,6 @@ pub enum CallbackType {
 
 impl From<CallbackType> for u8 {
     fn from(callback_type: CallbackType) -> Self {
-        callback_type
-            .to_u8()
-            .expect("CallbackType should always be convertible to u8.")
+        callback_type as Self
     }
 }

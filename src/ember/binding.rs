@@ -1,9 +1,11 @@
-use crate::ember::types::Eui64;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+use crate::ember::types::Eui64;
+
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum Type {
     Unused = 0x00,
     Unicast = 0x01,
@@ -13,8 +15,7 @@ pub enum Type {
 
 impl From<Type> for u8 {
     fn from(typ: Type) -> Self {
-        typ.to_u8()
-            .expect("Type should always be convertible to u8.")
+        typ as Self
     }
 }
 

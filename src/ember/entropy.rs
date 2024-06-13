@@ -1,7 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Source {
     Error = 0,
     Radio = 1,
@@ -11,9 +12,7 @@ pub enum Source {
 
 impl From<Source> for u8 {
     fn from(source: Source) -> Self {
-        source
-            .to_u8()
-            .expect("Source should always be convertible to u8.")
+        source as Self
     }
 }
 

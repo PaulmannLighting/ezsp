@@ -1,12 +1,13 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
 /// Indicates the type of scan to be performed.
 ///
 /// Possible values are: [`Type::EnergyScan`] and [`Type::ActiveScan`].
 /// For each type, the respective callback for reporting results is: energyScanResultHandler and networkFoundHandler.
 /// The energy scan and active scan report errors and completion via the scanCompleteHandler.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Type {
     EnergyScan = 0x00,
     ActiveScan = 0x01,
@@ -14,8 +15,7 @@ pub enum Type {
 
 impl From<Type> for u8 {
     fn from(typ: Type) -> Self {
-        typ.to_u8()
-            .expect("Type should always be convertible to u8.")
+        typ as Self
     }
 }
 

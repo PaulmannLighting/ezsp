@@ -1,10 +1,11 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
 const ENTRY_UNUSED: u16 = 0xFFFF;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Status {
     Active = 0x00,
     Discovered = 0x01,
@@ -14,9 +15,7 @@ pub enum Status {
 
 impl From<Status> for u8 {
     fn from(status: Status) -> Self {
-        status
-            .to_u8()
-            .expect("Status should always be convertible to u8.")
+        status as Self
     }
 }
 
@@ -28,7 +27,8 @@ impl TryFrom<u8> for Status {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum ConcentratorType {
     NotAConcentrator = 0x00,
     LowRam = 0x01,
@@ -37,9 +37,7 @@ pub enum ConcentratorType {
 
 impl From<ConcentratorType> for u8 {
     fn from(concentrator_type: ConcentratorType) -> Self {
-        concentrator_type
-            .to_u8()
-            .expect("ConcentratorType should always be convertible to u8.")
+        concentrator_type as Self
     }
 }
 
@@ -51,7 +49,8 @@ impl TryFrom<u8> for ConcentratorType {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum RouteRecordState {
     NoLongerNeeded = 0x00,
     Sent = 0x01,
@@ -60,9 +59,7 @@ pub enum RouteRecordState {
 
 impl From<RouteRecordState> for u8 {
     fn from(route_record_state: RouteRecordState) -> Self {
-        route_record_state
-            .to_u8()
-            .expect("RouteRecordState should always be convertible to u8.")
+        route_record_state as Self
     }
 }
 

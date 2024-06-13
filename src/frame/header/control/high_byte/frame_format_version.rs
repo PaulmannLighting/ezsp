@@ -1,11 +1,11 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::ToPrimitive;
+use num_derive::FromPrimitive;
 
 pub const FRAME_FORMAT_VERSION_MASK_LOW: u8 = 0b0000_0001;
 pub const FRAME_FORMAT_VERSION_MASK_HIGH: u8 = 0b0000_0010;
 const FRAME_FORMAT_VERSION_OFFSET: u8 = 1;
 
-#[derive(Debug, Clone, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum FrameFormatVersion {
     One = 0b10,
     Zero = 0b00,
@@ -13,9 +13,7 @@ pub enum FrameFormatVersion {
 
 impl From<FrameFormatVersion> for u8 {
     fn from(frame_format_version: FrameFormatVersion) -> Self {
-        frame_format_version
-            .to_u8()
-            .expect("FrameFormatVersion should always be convertible to u8.")
+        frame_format_version as Self
     }
 }
 

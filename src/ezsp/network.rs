@@ -1,9 +1,10 @@
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
+
 pub mod scan;
 
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
-
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u16)]
 pub enum InitBitmask {
     NoOptions = 0x0000,
     ParentInfoInToken = 0x0001,
@@ -12,9 +13,7 @@ pub enum InitBitmask {
 
 impl From<InitBitmask> for u16 {
     fn from(init_bitmask: InitBitmask) -> Self {
-        init_bitmask
-            .to_u16()
-            .expect("InitBitmask should always be convertible to u16.")
+        init_bitmask as Self
     }
 }
 
@@ -26,7 +25,8 @@ impl TryFrom<u16> for InitBitmask {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Status {
     NoNetwork = 0x00,
     JoiningNetwork = 0x01,
@@ -37,9 +37,7 @@ pub enum Status {
 
 impl From<Status> for u8 {
     fn from(status: Status) -> Self {
-        status
-            .to_u8()
-            .expect("Status should always be convertible to u8.")
+        status as Self
     }
 }
 

@@ -1,7 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum PassthroughType {
     None = 0x00,
     SeInterPan = 0x01,
@@ -11,9 +12,7 @@ pub enum PassthroughType {
 
 impl From<PassthroughType> for u8 {
     fn from(passthrough_type: PassthroughType) -> Self {
-        passthrough_type
-            .to_u8()
-            .expect("PassthroughType should always be convertible to u8.")
+        passthrough_type as Self
     }
 }
 

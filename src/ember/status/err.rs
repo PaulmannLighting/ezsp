@@ -1,11 +1,13 @@
-mod bootloader;
-mod flash;
+use std::error::Error;
+use std::fmt::{Display, Formatter};
+
+use num_traits::FromPrimitive;
 
 pub use bootloader::Bootloader;
 pub use flash::Flash;
-use num_traits::{FromPrimitive, ToPrimitive};
-use std::error::Error;
-use std::fmt::{Display, Formatter};
+
+mod bootloader;
+mod flash;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 pub enum Err {
@@ -24,6 +26,15 @@ impl Display for Err {
 
 impl Error for Err {}
 
+impl From<Err> for u8 {
+    fn from(err: Err) -> Self {
+        match err {
+            Err::Flash(flash) => flash.into(),
+            Err::Bootloader(bootloader) => bootloader.into(),
+        }
+    }
+}
+
 impl FromPrimitive for Err {
     fn from_i64(n: i64) -> Option<Self> {
         u8::try_from(n).ok().and_then(Self::from_u8)
@@ -39,22 +50,5 @@ impl FromPrimitive for Err {
 
     fn from_u64(n: u64) -> Option<Self> {
         u8::try_from(n).ok().and_then(Self::from_u8)
-    }
-}
-
-impl ToPrimitive for Err {
-    fn to_i64(&self) -> Option<i64> {
-        self.to_u8().map(i64::from)
-    }
-
-    fn to_u8(&self) -> Option<u8> {
-        match self {
-            Self::Flash(flash) => flash.to_u8(),
-            Self::Bootloader(bootloader) => bootloader.to_u8(),
-        }
-    }
-
-    fn to_u64(&self) -> Option<u64> {
-        self.to_u8().map(u64::from)
     }
 }

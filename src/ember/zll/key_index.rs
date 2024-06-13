@@ -1,7 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum KeyIndex {
     Development = 0x00,
     Master = 0x04,
@@ -10,9 +11,7 @@ pub enum KeyIndex {
 
 impl From<KeyIndex> for u8 {
     fn from(key_index: KeyIndex) -> Self {
-        key_index
-            .to_u8()
-            .expect("KeyIndex should always be convertible to u8.")
+        key_index as Self
     }
 }
 

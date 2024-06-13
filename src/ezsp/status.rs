@@ -1,12 +1,14 @@
+use num_traits::FromPrimitive;
+
+pub use ash::Ash;
+pub use error::Error;
+pub use spi_err::SpiErr;
+
+use crate::error::Resolve;
+
 mod ash;
 mod error;
 mod spi_err;
-
-use crate::error::Resolve;
-pub use ash::Ash;
-pub use error::Error;
-use num_traits::{FromPrimitive, ToPrimitive};
-pub use spi_err::SpiErr;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 #[repr(u8)]
@@ -50,6 +52,28 @@ impl Status {
     }
 }
 
+impl From<Status> for u8 {
+    fn from(status: Status) -> Self {
+        match status {
+            Status::Success => 0x00,
+            Status::SpiErr(spi_err) => spi_err.into(),
+            Status::AshInProgress => 0x20,
+            Status::HostFatalError => 0x21,
+            Status::AshNcpFatalError => 0x22,
+            Status::DataFrameTooLong => 0x23,
+            Status::DataFrameTooShort => 0x24,
+            Status::NoTxSpace => 0x25,
+            Status::NoRxSpace => 0x26,
+            Status::NoRxData => 0x27,
+            Status::NotConnected => 0x28,
+            Status::Error(error) => error.into(),
+            Status::Ash(ash) => ash.into(),
+            Status::CpcErrorInit => 0x86,
+            Status::NoError => 0xFF,
+        }
+    }
+}
+
 impl FromPrimitive for Status {
     fn from_i64(n: i64) -> Option<Self> {
         u8::try_from(n).ok().and_then(Self::from_u8)
@@ -89,44 +113,6 @@ impl Resolve for Result<Status, u8> {
             Ok(status) => status.ok().map_err(crate::Error::Ezsp),
             Err(status) => Err(crate::Error::InvalidEzspStatus(status)),
         }
-    }
-}
-
-impl ToPrimitive for Status {
-    fn to_i64(&self) -> Option<i64> {
-        self.to_u8().map(i64::from)
-    }
-
-    fn to_u8(&self) -> Option<u8> {
-        match self {
-            Self::Success => Some(0x00),
-            Self::SpiErr(spi_err) => spi_err.to_u8(),
-            Self::AshInProgress => Some(0x20),
-            Self::HostFatalError => Some(0x21),
-            Self::AshNcpFatalError => Some(0x22),
-            Self::DataFrameTooLong => Some(0x23),
-            Self::DataFrameTooShort => Some(0x24),
-            Self::NoTxSpace => Some(0x25),
-            Self::NoRxSpace => Some(0x26),
-            Self::NoRxData => Some(0x27),
-            Self::NotConnected => Some(0x28),
-            Self::Error(error) => error.to_u8(),
-            Self::Ash(ash) => ash.to_u8(),
-            Self::CpcErrorInit => Some(0x86),
-            Self::NoError => Some(0xFF),
-        }
-    }
-
-    fn to_u64(&self) -> Option<u64> {
-        self.to_u8().map(u64::from)
-    }
-}
-
-impl From<Status> for u8 {
-    fn from(status: Status) -> Self {
-        status
-            .to_u8()
-            .expect("Status should always be convertible to u8.")
     }
 }
 

@@ -1,8 +1,10 @@
-use num_derive::{FromPrimitive, ToPrimitive};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+use num_derive::FromPrimitive;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Phy {
     TxUnderflow = 0x88,
     TxIncomplete = 0x89,
@@ -26,6 +28,12 @@ impl Display for Phy {
             Self::OscillatorCheckFailed => write!(f, "oscillator check failed"),
             Self::AckReceived => write!(f, "ACK received"),
         }
+    }
+}
+
+impl From<Phy> for u8 {
+    fn from(phy: Phy) -> Self {
+        phy as Self
     }
 }
 

@@ -1,13 +1,16 @@
-use crate::ember::types::Eui64;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
 use std::num::TryFromIntError;
 use std::time::Duration;
 
+use le_stream::derive::{FromLeBytes, ToLeBytes};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
+
+use crate::ember::types::Eui64;
+
 pub type Data = [u8; 16];
 
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum Type {
     TrustCenterLinkKey = 0x01,
     CurrentNetworkKey = 0x03,
@@ -17,8 +20,7 @@ pub enum Type {
 
 impl From<Type> for u8 {
     fn from(typ: Type) -> Self {
-        typ.to_u8()
-            .expect("Method should always be convertible to u8.")
+        typ as Self
     }
 }
 
@@ -30,7 +32,8 @@ impl TryFrom<u8> for Type {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u16)]
 pub enum Bitmask {
     HasSequenceNumber = 0x00001,
     HasOutgoingFrameCounter = 0x0002,
@@ -40,9 +43,7 @@ pub enum Bitmask {
 
 impl From<Bitmask> for u16 {
     fn from(bitmask: Bitmask) -> Self {
-        bitmask
-            .to_u16()
-            .expect("Bitmask should always be convertible to u16.")
+        bitmask as Self
     }
 }
 
@@ -205,9 +206,13 @@ pub enum Status {
 
 impl From<Status> for u8 {
     fn from(status: Status) -> Self {
-        status
-            .to_u8()
-            .expect("Status should always be convertible to u8.")
+        match status {
+            Status::AppLinkKeyEstablished => 0x01,
+            Status::TrustCenterLinkKeyEstablished => 0x03,
+            Status::KeyEstablishmentTimeout => 0x04,
+            Status::KeyTableFull => 0x05,
+            Status::Tc(tc) => tc.into(),
+        }
     }
 }
 
@@ -227,22 +232,6 @@ impl FromPrimitive for Status {
     }
 }
 
-impl ToPrimitive for Status {
-    fn to_i64(&self) -> Option<i64> {
-        self.to_u64().and_then(|n| n.try_into().ok())
-    }
-
-    fn to_u64(&self) -> Option<u64> {
-        match self {
-            Self::AppLinkKeyEstablished => Some(0x01),
-            Self::TrustCenterLinkKeyEstablished => Some(0x03),
-            Self::KeyEstablishmentTimeout => Some(0x04),
-            Self::KeyTableFull => Some(0x05),
-            Self::Tc(tc) => tc.to_u64(),
-        }
-    }
-}
-
 impl TryFrom<u8> for Status {
     type Error = u8;
 
@@ -251,7 +240,8 @@ impl TryFrom<u8> for Status {
     }
 }
 
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum Tc {
     RespondedToKeyRequest = 0x06,
     AppKeySentToRequester = 0x07,
@@ -269,7 +259,7 @@ pub enum Tc {
 
 impl From<Tc> for u8 {
     fn from(tc: Tc) -> Self {
-        tc.to_u8().expect("Tc should always be convertible to u8.")
+        tc as Self
     }
 }
 

@@ -1,10 +1,11 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
 use crate::error::Resolve;
 use crate::Error;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Status {
     NoNetwork = 0x00,
     JoiningNetwork = 0x01,
@@ -15,9 +16,7 @@ pub enum Status {
 
 impl From<Status> for u8 {
     fn from(status: Status) -> Self {
-        status
-            .to_u8()
-            .expect("Status should always be convertible to u8.")
+        status as Self
     }
 }
 

@@ -1,7 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Units {
     Inactive = 0x00,
     MsTime = 0x01,
@@ -11,9 +12,7 @@ pub enum Units {
 
 impl From<Units> for u8 {
     fn from(units: Units) -> Self {
-        units
-            .to_u8()
-            .expect("Units should always be convertible to u8.")
+        units as Self
     }
 }
 

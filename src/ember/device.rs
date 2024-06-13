@@ -1,7 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum Update {
     StandardSecuritySecuredRejoin = 0x00,
     StandardSecurityUnsecuredJoin = 0x01,
@@ -11,9 +12,7 @@ pub enum Update {
 
 impl From<Update> for u8 {
     fn from(update: Update) -> Self {
-        update
-            .to_u8()
-            .expect("Update should always be convertible to u8.")
+        update as Self
     }
 }
 

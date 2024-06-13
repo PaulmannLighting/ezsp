@@ -1,8 +1,10 @@
-use num_derive::{FromPrimitive, ToPrimitive};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+use num_derive::FromPrimitive;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Application {
     Error0 = 0xF0,
     Error1 = 0xF1,
@@ -42,6 +44,12 @@ impl Display for Application {
             Self::Error14 => write!(f, "error #14"),
             Self::Error15 => write!(f, "error #15"),
         }
+    }
+}
+
+impl From<Application> for u8 {
+    fn from(application: Application) -> Self {
+        application as Self
     }
 }
 

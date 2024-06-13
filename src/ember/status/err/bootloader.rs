@@ -1,8 +1,10 @@
-use num_derive::{FromPrimitive, ToPrimitive};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+use num_derive::FromPrimitive;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Bootloader {
     TrapTableBad = 0x58,
     TrapUnknown = 0x59,
@@ -16,6 +18,12 @@ impl Display for Bootloader {
             Self::TrapUnknown => write!(f, "trap unknown"),
             Self::NoImage => write!(f, "no image"),
         }
+    }
+}
+
+impl From<Bootloader> for u8 {
+    fn from(bootloader: Bootloader) -> Self {
+        bootloader as Self
     }
 }
 

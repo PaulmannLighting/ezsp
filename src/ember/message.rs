@@ -1,7 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum Incoming {
     Unicast = 0x00,
     UnicastReply = 0x01,
@@ -14,9 +15,7 @@ pub enum Incoming {
 
 impl From<Incoming> for u8 {
     fn from(incoming: Incoming) -> Self {
-        incoming
-            .to_u8()
-            .expect("Incoming should always be convertible to u8.")
+        incoming as Self
     }
 }
 
@@ -28,7 +27,8 @@ impl TryFrom<u8> for Incoming {
     }
 }
 
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum Outgoing {
     Direct = 0x00,
     ViaAddressTable = 0x01,
@@ -39,9 +39,7 @@ pub enum Outgoing {
 
 impl From<Outgoing> for u8 {
     fn from(outgoing: Outgoing) -> Self {
-        outgoing
-            .to_u8()
-            .expect("Outgoing should always be convertible to u8.")
+        outgoing as Self
     }
 }
 

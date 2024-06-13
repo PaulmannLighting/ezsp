@@ -1,8 +1,10 @@
-use num_derive::{FromPrimitive, ToPrimitive};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+use num_derive::FromPrimitive;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Eeprom {
     MfgStackVersionMismatch = 0x04,
     MfgVersionMismatch = 0x06,
@@ -16,6 +18,12 @@ impl Display for Eeprom {
             Self::MfgVersionMismatch => write!(f, "MFG version mismatch"),
             Self::StackVersionMismatch => write!(f, "stack version mismatch"),
         }
+    }
+}
+
+impl From<Eeprom> for u8 {
+    fn from(eeprom: Eeprom) -> Self {
+        eeprom as Self
     }
 }
 

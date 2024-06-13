@@ -1,7 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum PowerMode {
     RxOn = 0x00,
     Off = 0x01,
@@ -9,9 +10,7 @@ pub enum PowerMode {
 
 impl From<PowerMode> for u8 {
     fn from(power_mode: PowerMode) -> Self {
-        power_mode
-            .to_u8()
-            .expect("PowerMode should always be convertible to u8.")
+        power_mode as Self
     }
 }
 

@@ -1,7 +1,7 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::ToPrimitive;
+use num_derive::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum SpiErr {
     Fatal = 0x10,
     NcpReset = 0x11,
@@ -21,8 +21,6 @@ pub enum SpiErr {
 
 impl From<SpiErr> for u8 {
     fn from(spi_err: SpiErr) -> Self {
-        spi_err
-            .to_u8()
-            .expect("SpiErr should always be convertible to u8.")
+        spi_err as Self
     }
 }

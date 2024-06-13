@@ -1,7 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Id {
     TrustCenter = 0x00,
     BindingModification = 0x01,
@@ -17,7 +18,7 @@ pub enum Id {
 
 impl From<Id> for u8 {
     fn from(id: Id) -> Self {
-        id.to_u8().expect("Id should always be convertible to u8.")
+        id as Self
     }
 }
 

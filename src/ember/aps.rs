@@ -1,10 +1,11 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
 pub type Options = heapless::Vec<Option, 10>;
 
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
+#[repr(u16)]
 pub enum Option {
     None = 0x0000,
     Encryption = 0x0020,
@@ -21,9 +22,7 @@ pub enum Option {
 
 impl From<Option> for u16 {
     fn from(option: Option) -> Self {
-        option
-            .to_u16()
-            .expect("Option should always be convertible to u16.")
+        option as Self
     }
 }
 
@@ -62,7 +61,7 @@ impl Frame {
             cluster_id,
             source_endpoint,
             destination_endpoint,
-            options: options.iter().filter_map(ToPrimitive::to_u16).sum(),
+            options: options.into_iter().map(u16::from).sum(),
             group_id,
             sequence,
         }

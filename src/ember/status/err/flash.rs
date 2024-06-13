@@ -1,8 +1,10 @@
-use num_derive::{FromPrimitive, ToPrimitive};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+use num_derive::FromPrimitive;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Flash {
     WriteInhibited = 0x46,
     VerifyFailed = 0x47,
@@ -18,6 +20,12 @@ impl Display for Flash {
             Self::ProgFail => write!(f, "programming failed"),
             Self::EraseFail => write!(f, "erasing failed"),
         }
+    }
+}
+
+impl From<Flash> for u8 {
+    fn from(flash: Flash) -> Self {
+        flash as Self
     }
 }
 

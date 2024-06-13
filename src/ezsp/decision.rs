@@ -1,7 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Id {
     DeferJoinsRejoinsHaveLinkKey = 0x07,
     DisallowBindingModification = 0x10,
@@ -24,7 +25,7 @@ pub enum Id {
 
 impl From<Id> for u8 {
     fn from(id: Id) -> Self {
-        id.to_u8().expect("ID should always be convertible to u8.")
+        id as Self
     }
 }
 
@@ -36,7 +37,8 @@ impl TryFrom<u8> for Id {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Bitmask {
     Default = 0x00,
     AllowJoins = 0x01,
@@ -49,9 +51,7 @@ pub enum Bitmask {
 
 impl From<Bitmask> for u8 {
     fn from(bitmask: Bitmask) -> Self {
-        bitmask
-            .to_u8()
-            .expect("Bitmask should always be convertible to u8.")
+        bitmask as Self
     }
 }
 

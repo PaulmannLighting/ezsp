@@ -1,7 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum NetworkOperation {
     FormNetwork = 0x00,
     JoinTarget = 0x01,
@@ -9,9 +10,7 @@ pub enum NetworkOperation {
 
 impl From<NetworkOperation> for u8 {
     fn from(network_operation: NetworkOperation) -> Self {
-        network_operation
-            .to_u8()
-            .expect("NetworkOperation should always be convertible to u8.")
+        network_operation as Self
     }
 }
 

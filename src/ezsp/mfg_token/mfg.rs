@@ -1,7 +1,7 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::ToPrimitive;
+use num_derive::FromPrimitive;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, FromPrimitive)]
+#[repr(u8)]
 pub enum Mfg {
     CustomVersion = 0x00,
     String = 0x01,
@@ -19,8 +19,6 @@ pub enum Mfg {
 
 impl From<Mfg> for u8 {
     fn from(manufacturing: Mfg) -> Self {
-        manufacturing
-            .to_u8()
-            .expect("Mfg should always be convertible to u8.")
+        manufacturing as Self
     }
 }

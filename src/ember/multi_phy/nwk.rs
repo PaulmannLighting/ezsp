@@ -1,16 +1,15 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Config {
     BroadcastSupport = 0x01,
 }
 
 impl From<Config> for u8 {
     fn from(config: Config) -> Self {
-        config
-            .to_u8()
-            .expect("Config should always be convertible to u8.")
+        config as Self
     }
 }
 

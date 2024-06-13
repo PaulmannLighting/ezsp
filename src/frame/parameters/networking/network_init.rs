@@ -1,6 +1,5 @@
 use itertools::Itertools;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use num_traits::ToPrimitive;
 
 use crate::ember::Status;
 use crate::error::Resolve;
@@ -19,11 +18,7 @@ impl Command {
     #[must_use]
     pub fn new(bitmask: &[InitBitmask]) -> Self {
         Self {
-            bitmask: bitmask
-                .iter()
-                .unique()
-                .filter_map(ToPrimitive::to_u16)
-                .sum(),
+            bitmask: bitmask.iter().unique().copied().map(u16::from).sum(),
         }
     }
 }

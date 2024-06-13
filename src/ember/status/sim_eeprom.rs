@@ -1,8 +1,10 @@
-use num_derive::{FromPrimitive, ToPrimitive};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+use num_derive::FromPrimitive;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum SimEeprom {
     ErasePageGreen = 0x43,
     ErasePageRed = 0x44,
@@ -22,6 +24,12 @@ impl Display for SimEeprom {
             Self::Init2Failed => write!(f, "init #2 failed"),
             Self::Init3Failed => write!(f, "init #3 failed"),
         }
+    }
+}
+
+impl From<SimEeprom> for u8 {
+    fn from(sim_eeprom: SimEeprom) -> Self {
+        sim_eeprom as Self
     }
 }
 

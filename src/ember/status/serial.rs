@@ -1,8 +1,10 @@
-use num_derive::{FromPrimitive, ToPrimitive};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+use num_derive::FromPrimitive;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Serial {
     InvalidBaudRate = 0x20,
     InvalidPort = 0x21,
@@ -26,6 +28,12 @@ impl Display for Serial {
             Self::RxEmpty => write!(f, "RX empty"),
             Self::RxOverrunError => write!(f, "RX overrun error"),
         }
+    }
+}
+
+impl From<Serial> for u8 {
+    fn from(serial: Serial) -> Self {
+        serial as Self
     }
 }
 

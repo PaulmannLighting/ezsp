@@ -1,8 +1,10 @@
-use num_derive::{FromPrimitive, ToPrimitive};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+use num_derive::FromPrimitive;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[repr(u8)]
 pub enum Adc {
     ConversionDone = 0x80,
     ConversionBusy = 0x81,
@@ -18,6 +20,12 @@ impl Display for Adc {
             Self::ConversionDeferred => write!(f, "conversion deferred"),
             Self::NoConversionPending => write!(f, "no conversion pending"),
         }
+    }
+}
+
+impl From<Adc> for u8 {
+    fn from(adc: Adc) -> Self {
+        adc as Self
     }
 }
 

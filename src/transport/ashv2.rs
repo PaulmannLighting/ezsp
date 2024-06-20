@@ -6,7 +6,7 @@ use std::sync::mpsc::Sender;
 use ashv2::{FrameBuffer, Host};
 use le_stream::{FromLeBytes, ToLeBytes};
 use log::debug;
-use serialport::{SerialPort, TTYPort};
+use serialport::TTYPort;
 
 use crate::frame::{Control, Header, Parameter};
 use crate::transport::ashv2::response_handler::ResponseHandler;

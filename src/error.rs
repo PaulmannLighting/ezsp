@@ -91,6 +91,10 @@ impl std::error::Error for Error {
 pub trait Resolve {
     type Result;
 
+    /// Resolve to a result type.
+    ///
+    /// # Errors
+    /// Return [`Error`] in case of errors.
     fn resolve(self) -> Result<Self::Result, Error>;
 }
 

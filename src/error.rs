@@ -104,7 +104,7 @@ impl Resolve for Result<siliconlabs::Status, u32> {
     fn resolve(self) -> Result<Self::Result, Error> {
         match self {
             Ok(status) => {
-                if let siliconlabs::Status::Ok = status {
+                if status == siliconlabs::Status::Ok {
                     Ok(())
                 } else {
                     Err(Error::Siliconlabs(status))

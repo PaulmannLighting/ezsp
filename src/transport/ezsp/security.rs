@@ -33,7 +33,6 @@ where
     async fn clear_key_table(&self) -> Result<(), Error> {
         self.communicate::<_, clear_key_table::Response>(clear_key_table::Command)
             .await?
-            .status()
             .resolve()
     }
 

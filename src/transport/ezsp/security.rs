@@ -11,13 +11,16 @@ use crate::{Error, Transport};
 
 pub trait Security {
     /// Check whether a key context can be used to load a valid key.
-    fn check_key_context(&self, context: ManContext) -> impl Future<Output = Result<(), Error>>;
+    fn check_key_context(
+        &self,
+        context: ManContext,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This function clears the key table of the current network.
-    fn clear_key_table(&self) -> impl Future<Output = Result<(), Error>>;
+    fn clear_key_table(&self) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Clear all the transient link keys from RAM.
-    fn clear_transient_link_keys(&self) -> impl Future<Output = Result<(), Error>>;
+    fn clear_transient_link_keys(&self) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Security for T

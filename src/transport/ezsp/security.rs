@@ -5,7 +5,7 @@ use siliconlabs::zigbee::security::ManContext;
 
 use crate::error::Resolve;
 use crate::frame::parameters::security::{
-    check_key_context, clear_key_table, clear_transient_link_keys,
+    check_key_context, clear_key_table, clear_transient_link_keys, export_transient_key_by_index,
 };
 use crate::{Error, Transport};
 
@@ -21,6 +21,12 @@ pub trait Security {
 
     /// Clear all the transient link keys from RAM.
     fn clear_transient_link_keys(&self) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Export a transient link key from a given table index.
+    fn export_transient_key_by_index(
+        &self,
+        index: u8,
+    ) -> impl Future<Output = Result<export_transient_key_by_index::Response, Error>> + Send;
 }
 
 impl<T> Security for T
@@ -45,5 +51,16 @@ where
         )
         .await
         .map(drop)
+    }
+
+    async fn export_transient_key_by_index(
+        &self,
+        index: u8,
+    ) -> Result<export_transient_key_by_index::Response, Error> {
+        self.communicate::<_, export_transient_key_by_index::Response>(
+            export_transient_key_by_index::Command::new(index),
+        )
+        .await?
+        .resolve()
     }
 }

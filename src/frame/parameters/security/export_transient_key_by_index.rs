@@ -1,10 +1,12 @@
+use crate::error::Resolve;
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManContext, ManKey};
 use siliconlabs::Status;
 
 const ID: u16 = 0x0112;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     index: u8,
 }
@@ -14,14 +16,14 @@ impl Command {
     pub const fn new(index: u8) -> Self {
         Self { index }
     }
-
-    #[must_use]
-    pub const fn index(&self) -> u8 {
-        self.index
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     context: ManContext,
     plaintext_key: ManKey,
@@ -30,21 +32,6 @@ pub struct Response {
 }
 
 impl Response {
-    #[must_use]
-    pub fn new(
-        context: ManContext,
-        plaintext_key: ManKey,
-        key_data: ManApsKeyMetadata,
-        status: Status,
-    ) -> Self {
-        Self {
-            context,
-            plaintext_key,
-            key_data,
-            status: status.into(),
-        }
-    }
-
     #[must_use]
     pub const fn context(&self) -> &ManContext {
         &self.context
@@ -59,8 +46,17 @@ impl Response {
     pub const fn key_data(&self) -> &ManApsKeyMetadata {
         &self.key_data
     }
+}
 
-    pub fn status(&self) -> Result<Status, u32> {
-        Status::try_from(self.status)
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+impl Resolve for Response {
+    type Result = Self;
+
+    fn resolve(self) -> Result<Self::Result, crate::Error> {
+        Status::try_from(self.status).resolve().map(|()| self)
     }
 }

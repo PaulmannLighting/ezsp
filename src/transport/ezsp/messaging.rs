@@ -276,7 +276,7 @@ pub trait Messaging {
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Tells the stack whether the normal interval between retransmissions of a retried
-    /// unicast message should be increased by EMBER_INDIRECT_TRANSMISSION_TIMEOUT.
+    /// unicast message should be increased by `EMBER_INDIRECT_TRANSMISSION_TIMEOUT`.
     ///
     /// The interval needs to be increased when sending to a sleepy node so that the message is not
     /// retransmitted until the destination has had time to wake up and poll its parent.

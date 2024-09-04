@@ -67,7 +67,7 @@ where
             },
             Err(error) => {
                 drop(buffer);
-                self.result().replace(Err(error));
+                self.replace_result(Err(error));
                 HandleResult::Failed
             }
         }
@@ -122,11 +122,8 @@ where
         debug!("Releasing lock on result.");
     }
 
-    fn result_is_none(&self) -> bool {
-        debug!("Locking result.");
-        let is_some = self.result().is_none();
-        debug!("Releasing lock on result.");
-        is_some
+    fn has_failed(&self) -> bool {
+        self.result().as_ref().map_or(false, Result::is_err)
     }
 }
 
@@ -171,12 +168,12 @@ where
     fn handle(&self, event: Event) -> HandleResult {
         match event {
             Event::DataReceived(bytes) => {
-                if self.result_is_none() {
-                    self.extend_buffer(bytes);
-                    self.try_parse()
-                } else {
-                    HandleResult::Completed
+                if self.has_failed() {
+                    return HandleResult::Failed;
                 }
+
+                self.extend_buffer(bytes);
+                self.try_parse()
             }
             Event::TransmissionCompleted => {
                 self.result()

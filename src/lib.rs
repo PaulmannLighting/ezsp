@@ -15,3 +15,4 @@ pub use transport::{
     Mfglib, Networking, ProxyTable, Security, SinkTable, TokenInterface, Transport, TrustCenter,
     Utilities, Wwah, Zll,
 };
+pub type Result<T> = std::result::Result<T, Error>;

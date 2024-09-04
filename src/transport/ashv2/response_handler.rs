@@ -55,9 +55,11 @@ where
                         warn!("Found excess byte in response: {byte:?}");
                     }
 
+                    drop(buffer);
                     HandleResult::Completed
                 }
                 Err(error) => {
+                    drop(buffer);
                     error!("Error: {error}");
                     self.replace_result(Err("Incomplete data".to_string().into()));
                     HandleResult::Continue

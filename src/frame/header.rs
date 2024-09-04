@@ -17,7 +17,7 @@ where
 
 impl<T> Header<T>
 where
-    T: Copy + Debug + Eq + From<Control> + Into<Control>,
+    T: Copy + Debug + Eq + From<Control> + Into<Control> + Into<u16>,
 {
     #[must_use]
     pub const fn new(sequence: u8, control: T, id: T) -> Self {
@@ -41,7 +41,7 @@ where
 
 impl<T> FromLeBytes for Header<T>
 where
-    T: Copy + Debug + Eq + From<Control> + Into<Control> + FromLeBytes,
+    T: Copy + Debug + Eq + From<Control> + Into<Control> + Into<u16> + FromLeBytes,
 {
     fn from_le_bytes<I>(bytes: &mut I) -> le_stream::Result<Self>
     where

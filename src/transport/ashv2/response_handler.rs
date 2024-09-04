@@ -1,3 +1,4 @@
+use crate::frame::parameters::utilities::invalid_command;
 use crate::frame::{Frame, Parameter};
 use crate::{Error, Header};
 use ashv2::{Event, HandleResult, Handler, Response};
@@ -38,18 +39,15 @@ where
         }
     }
 
-    #[allow(clippy::significant_drop_tightening)]
     fn try_parse(&self) -> HandleResult {
-        // TODO: handle possible "invalid_command::Response"
         let buffer = self.buffer();
         let mut bytes = buffer.iter().copied().enumerate().map(|(index, byte)| {
             debug!("Byte #{index}: {byte:?}");
             byte
         });
 
-        Self::parse_header(&mut bytes).map_or(
-            HandleResult::Failed,
-            |header| match R::from_le_bytes(&mut bytes) {
+        match Self::parse_header(&mut bytes) {
+            Ok(header) => match R::from_le_bytes(&mut bytes) {
                 Ok(parameters) => {
                     self.replace_result(Ok(Frame::new(header, parameters)));
 
@@ -65,24 +63,36 @@ where
                     HandleResult::Continue
                 }
             },
-        )
+            Err(error) => {
+                drop(buffer);
+                self.result().replace(Err(error));
+                HandleResult::Failed
+            }
+        }
     }
 
-    fn parse_header<T>(bytes: &mut T) -> Option<Header<R::Id>>
+    fn parse_header<T>(bytes: &mut T) -> Result<Header<R::Id>, Error>
     where
         T: Iterator<Item = u8>,
     {
-        let header = Header::from_le_bytes(bytes).ok()?;
+        let header = Header::from_le_bytes(bytes)?;
 
         if header.id() == R::ID {
-            Some(header)
+            Ok(header)
+        } else if Into::<u16>::into(header.id()) == invalid_command::Response::ID {
+            Err(Error::InvalidCommand(
+                invalid_command::Response::from_le_bytes(bytes)?,
+            ))
         } else {
             error!(
                 "Invalid frame id. Expected {}, but got {}.",
                 R::ID,
                 header.id()
             );
-            None
+            Err(Error::InvalidHeader {
+                expected: Into::<u16>::into(R::ID),
+                found: Into::<u16>::into(header.id()),
+            })
         }
     }
 

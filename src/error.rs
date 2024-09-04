@@ -1,5 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 
+use crate::frame::parameters::utilities::invalid_command;
 use crate::{ember, ezsp};
 
 #[derive(Debug)]
@@ -15,7 +16,13 @@ pub enum Error {
     Ezsp(ezsp::Status),
     Ember(ember::Status),
     Siliconlabs(siliconlabs::Status),
+    IncompleteData(le_stream::Error),
     ValueError(value::Error),
+    InvalidHeader {
+        expected: u16,
+        found: u16,
+    },
+    InvalidCommand(invalid_command::Response),
     Custom(String),
 }
 
@@ -41,7 +48,12 @@ impl Display for Error {
             Self::Ezsp(status) => write!(f, "Ezsp: {}", u8::from(*status)),
             Self::Ember(status) => write!(f, "Ember: {}", u8::from(*status)),
             Self::Siliconlabs(status) => write!(f, "Siliconlabs: {}", u32::from(*status)),
+            Self::IncompleteData(error) => Display::fmt(error, f),
             Self::ValueError(error) => Display::fmt(error, f),
+            Self::InvalidHeader { expected, found } => {
+                write!(f, "Invalid header: expected {expected}, found {found}")
+            }
+            Self::InvalidCommand(response) => write!(f, "Invalid command: {:?}", response.reason()),
             Self::Custom(msg) => Display::fmt(msg, f),
         }
     }
@@ -69,6 +81,18 @@ impl From<ember::Status> for Error {
 impl From<value::Error> for Error {
     fn from(error: value::Error) -> Self {
         Self::ValueError(error)
+    }
+}
+
+impl From<le_stream::Error> for Error {
+    fn from(error: le_stream::Error) -> Self {
+        Self::IncompleteData(error)
+    }
+}
+
+impl From<invalid_command::Response> for Error {
+    fn from(response: invalid_command::Response) -> Self {
+        Self::InvalidCommand(response)
     }
 }
 

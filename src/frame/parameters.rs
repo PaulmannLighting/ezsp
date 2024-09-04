@@ -28,6 +28,7 @@ pub trait Parameter: Send + Sync {
         + Sync
         + From<Control>
         + Into<Control>
+        + Into<u16>
         + FromLeBytes
         + ToLeBytes;
     const ID: Self::Id;

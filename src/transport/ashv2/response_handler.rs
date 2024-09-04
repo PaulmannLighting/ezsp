@@ -172,6 +172,7 @@ where
                     return HandleResult::Failed;
                 }
 
+                // TODO: Handle rejected bytes.
                 self.extend_buffer(bytes);
                 self.try_parse()
             }

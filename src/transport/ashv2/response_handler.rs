@@ -158,24 +158,14 @@ where
 {
     fn handle(&self, event: Event) -> HandleResult {
         match event {
-            Event::DataReceived(data) => match data {
-                Ok(bytes) => {
-                    if self.result_is_none() {
-                        self.extend_buffer(bytes);
-                        self.try_parse()
-                    } else {
-                        HandleResult::Completed
-                    }
+            Event::DataReceived(bytes) => {
+                if self.result_is_none() {
+                    self.extend_buffer(bytes);
+                    self.try_parse()
+                } else {
+                    HandleResult::Completed
                 }
-                Err(error) => {
-                    if self.result_is_none() {
-                        self.replace_result(Err(error.into()));
-                        HandleResult::Failed
-                    } else {
-                        HandleResult::Completed
-                    }
-                }
-            },
+            }
             Event::TransmissionCompleted => {
                 self.result()
                     .as_ref()

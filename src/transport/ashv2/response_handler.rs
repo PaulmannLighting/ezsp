@@ -39,7 +39,8 @@ where
         }
     }
 
-    fn try_parse(&self) -> HandleResult {
+    fn try_parse(&self, chunk: &[u8]) -> HandleResult {
+        self.extend_buffer(chunk);
         let buffer = self.buffer();
         let mut bytes = buffer.iter().copied().enumerate().map(|(index, byte)| {
             debug!("Byte #{index}: {byte:?}");
@@ -168,13 +169,8 @@ where
     fn handle(&self, event: Event) -> HandleResult {
         match event {
             Event::DataReceived(bytes) => {
-                if self.has_failed() {
-                    return HandleResult::Failed;
-                }
-
                 // TODO: Handle rejected bytes.
-                self.extend_buffer(bytes);
-                self.try_parse()
+                self.try_parse(bytes)
             }
             Event::TransmissionCompleted => {
                 self.result()

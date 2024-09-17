@@ -9,7 +9,7 @@ pub mod mac_passthrough_message;
 pub mod message_sent;
 pub mod poll;
 pub mod poll_complete;
-pub mod raw_transmit_complete_handler;
+pub mod raw_transmit_complete;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
@@ -24,7 +24,7 @@ pub enum Handler {
     MessageSent(message_sent::Handler),
     Poll(poll::Handler),
     PollComplete(poll_complete::Handler),
-    RawTransmitCompleteHandler(raw_transmit_complete_handler::Handler),
+    RawTransmitComplete(raw_transmit_complete::Handler),
 }
 
 impl From<id_conflict::Handler> for Handler {
@@ -93,8 +93,8 @@ impl From<poll_complete::Handler> for Handler {
     }
 }
 
-impl From<raw_transmit_complete_handler::Handler> for Handler {
-    fn from(handler: raw_transmit_complete_handler::Handler) -> Self {
-        Self::RawTransmitCompleteHandler(handler)
+impl From<raw_transmit_complete::Handler> for Handler {
+    fn from(handler: raw_transmit_complete::Handler) -> Self {
+        Self::RawTransmitComplete(handler)
     }
 }

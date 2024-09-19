@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use le_stream::derive::ToLeBytes;
 
+/// Concentrator parameters.
 #[derive(Clone, Debug, Default, Eq, PartialEq, ToLeBytes)]
 pub struct Parameters {
     concentrator_type: u16,

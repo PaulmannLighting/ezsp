@@ -4,7 +4,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::types::Eui64;
 
-/// The type of the binding.
+/// Ember binding type.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum Type {

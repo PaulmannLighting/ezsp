@@ -1,7 +1,7 @@
+use super::payload::Payload;
 use crate::error::Resolve;
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManContext, ManKey};
 use siliconlabs::Status;
 
 const ID: u16 = 0x0112;
@@ -25,27 +25,8 @@ impl Parameter for Command {
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
-    context: ManContext,
-    plaintext_key: ManKey,
-    key_data: ManApsKeyMetadata,
+    payload: Payload,
     status: u32,
-}
-
-impl Response {
-    #[must_use]
-    pub const fn context(&self) -> &ManContext {
-        &self.context
-    }
-
-    #[must_use]
-    pub const fn plaintext_key(&self) -> &ManKey {
-        &self.plaintext_key
-    }
-
-    #[must_use]
-    pub const fn key_data(&self) -> &ManApsKeyMetadata {
-        &self.key_data
-    }
 }
 
 impl Parameter for Response {
@@ -54,9 +35,11 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Result = Self;
+    type Result = Payload;
 
     fn resolve(self) -> Result<Self::Result, crate::Error> {
-        Status::try_from(self.status).resolve().map(|()| self)
+        Status::try_from(self.status)
+            .resolve()
+            .map(|_| self.payload)
     }
 }

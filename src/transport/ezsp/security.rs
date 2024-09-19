@@ -8,7 +8,7 @@ use crate::error::Resolve;
 use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
     export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key,
-    find_key_table_entry, get_aps_key_info, get_current_security_state,
+    find_key_table_entry, get_aps_key_info, get_current_security_state, get_network_key_info,
 };
 use crate::{Error, Transport};
 
@@ -75,6 +75,11 @@ pub trait Security {
 
     /// Gets the current security state that is being used by a device that is joined in the network.
     fn get_current_security_state(&self) -> impl Future<Output = Result<State, Error>> + Send;
+
+    /// Retrieve information about the current and alternate network key, excluding their contents.
+    fn get_network_key_info(
+        &self,
+    ) -> impl Future<Output = Result<siliconlabs::zigbee::security::ManNetworkKeyInfo, Error>> + Send;
 }
 
 impl<T> Security for T
@@ -184,5 +189,13 @@ where
         )
         .await?
         .resolve()
+    }
+
+    async fn get_network_key_info(
+        &self,
+    ) -> Result<siliconlabs::zigbee::security::ManNetworkKeyInfo, Error> {
+        self.communicate::<_, get_network_key_info::Response>(get_network_key_info::Command)
+            .await?
+            .resolve()
     }
 }

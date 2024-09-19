@@ -1,40 +1,37 @@
+use crate::error::Resolve;
+use crate::frame::Parameter;
+use crate::Error;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use siliconlabs::zigbee::security::ManNetworkKeyInfo;
 use siliconlabs::Status;
 
 const ID: u16 = 0x0116;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command;
 
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u32,
     network_key_info: ManNetworkKeyInfo,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status, network_key_info: ManNetworkKeyInfo) -> Self {
-        Self {
-            status: status.into(),
-            network_key_info,
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u32> {
+impl Resolve for Response {
+    type Result = ManNetworkKeyInfo;
+
+    fn resolve(self) -> Result<Self::Result, Error> {
         Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub const fn network_key_info(&self) -> &ManNetworkKeyInfo {
-        &self.network_key_info
+            .resolve()
+            .map(|_| self.network_key_info)
     }
 }

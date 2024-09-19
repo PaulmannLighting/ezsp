@@ -59,6 +59,16 @@ impl Display for Error {
     }
 }
 
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            #[cfg(feature = "ashv2")]
+            Self::Ashv2(error) => Some(error),
+            _ => None,
+        }
+    }
+}
+
 #[cfg(feature = "ashv2")]
 impl From<ashv2::Error> for Error {
     fn from(error: ashv2::Error) -> Self {
@@ -99,16 +109,6 @@ impl From<invalid_command::Response> for Error {
 impl From<String> for Error {
     fn from(msg: String) -> Self {
         Self::Custom(msg)
-    }
-}
-
-impl std::error::Error for Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            #[cfg(feature = "ashv2")]
-            Self::Ashv2(error) => Some(error),
-            _ => None,
-        }
     }
 }
 

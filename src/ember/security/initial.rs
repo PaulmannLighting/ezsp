@@ -86,6 +86,8 @@ impl TryFrom<u16> for Bitmask {
     }
 }
 
+/// The security data used to set the configuration for the stack,
+/// or the retrieved configuration currently in use.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct State {
     bitmask: u16,
@@ -96,6 +98,7 @@ pub struct State {
 }
 
 impl State {
+    /// Create a new security state.
     #[must_use]
     pub fn new(
         bitmask: Bitmask,
@@ -113,7 +116,8 @@ impl State {
         }
     }
 
-    /// Returns the bitmask of the security state.
+    /// Return the bitmask indicating the security state used to indicate what the
+    /// security configuration will be when the device forms or joins the network.
     ///
     /// # Errors
     /// Returns the [`u8`] value of the bitmask if it is not a valid [`Bitmask`].
@@ -121,21 +125,41 @@ impl State {
         Bitmask::try_from(self.bitmask)
     }
 
+    /// Return the pre-configured Key data that should be used when forming or joining the network.
+    ///
+    /// The security bitmask must be set with the `EMBER_HAVE_PRECONFIGURED_KEY` bit
+    /// to indicate that the key contains valid data.
     #[must_use]
     pub const fn preconfigured_key(&self) -> &Data {
         &self.preconfigured_key
     }
 
+    /// Return the Network Key that should be used by the Trust Center when it forms the network,
+    /// or the Network Key currently in use by a joined device.
+    ///
+    /// The security bitmask must be set with `EMBER_HAVE_NETWORK_KEY`
+    /// to indicate that the key contains valid data.
     #[must_use]
     pub const fn network_key(&self) -> &Data {
         &self.network_key
     }
 
+    /// Return the sequence number associated with the network key.
+    ///
+    /// This is only valid if the `EMBER_HAVE_NETWORK_KEY` has been set in the security bitmask.
     #[must_use]
     pub const fn network_key_sequence_number(&self) -> u8 {
         self.network_key_sequence_number
     }
 
+    /// Return this is the long address of the trust center on the network that will be joined.
+    ///
+    /// It is usually NOT set prior to joining the network and instead it is learned during
+    /// the joining message exchange.
+    /// This field is only examined if `EMBER_HAVE_TRUST_CENTER_EUI64` is set in  the
+    /// `EmberInitialSecurityState::bitmask`.
+    /// Most devices should clear that bit and leave this field alone.
+    /// This field must be set when using commissioning mode.
     #[must_use]
     pub const fn preconfigured_trust_center_eui64(&self) -> Eui64 {
         self.preconfigured_trust_center_eui64

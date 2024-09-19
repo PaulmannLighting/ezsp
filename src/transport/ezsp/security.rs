@@ -118,8 +118,8 @@ where
         self.communicate::<_, erase_key_table_entry::Response>(erase_key_table_entry::Command::new(
             index,
         ))
-        .await
-        .map(drop)
+        .await?
+        .resolve()
     }
 
     async fn export_key(&self, man_context: ManContext) -> Result<ManKey, Error> {

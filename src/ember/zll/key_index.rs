@@ -1,11 +1,15 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
+/// Ember ZLL key index.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum KeyIndex {
+    /// Key encryption algorithm for use during development.
     Development = 0x00,
+    /// Key encryption algorithm shared by all certified devices.
     Master = 0x04,
+    /// Key encryption algorithm for use during development and certification.
     Certification = 0x0F,
 }
 

@@ -148,6 +148,7 @@ impl Struct {
     }
 }
 
+/// The transient key data structure.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct TransientData {
     eui64: Eui64,
@@ -158,6 +159,7 @@ pub struct TransientData {
 }
 
 impl TransientData {
+    /// Create new transient data.
     #[must_use]
     pub fn new(
         eui64: Eui64,
@@ -175,7 +177,7 @@ impl TransientData {
         }
     }
 
-    /// Tries to create a new transient data.
+    /// Try to create a new transient data.
     ///
     /// # Errors
     /// Returns a [`TryFromIntError`] if the remaining time is too large.
@@ -195,11 +197,13 @@ impl TransientData {
         })
     }
 
+    /// Return the IEEE address paired with the transient link key.
     #[must_use]
     pub const fn eui64(&self) -> Eui64 {
         self.eui64
     }
 
+    /// Return the key data structure matching the transient key.
     #[must_use]
     pub const fn data(&self) -> &Data {
         &self.key_data
@@ -207,22 +211,29 @@ impl TransientData {
 
     /// Returns the bitmask.
     ///
+    /// This bitmask indicates whether various fields in the structure contain valid data.
+    ///
     /// # Errors
     /// Returns the number of the bitmask if the bitmask is invalid.
     pub fn bitmask(&self) -> Result<Bitmask, u16> {
         Bitmask::try_from(self.bitmask)
     }
 
+    /// Return the number of seconds remaining before the key is automatically
+    /// timed out of the transient key table.
     #[must_use]
     pub const fn remaining_time_seconds(&self) -> u16 {
         self.remaining_time_seconds
     }
 
+    /// Return the time remaining before the key is automatically
+    /// timed out of the transient key table.
     #[must_use]
     pub const fn remaining_time(&self) -> Duration {
         Duration::from_secs(self.remaining_time_seconds as u64)
     }
 
+    /// Return the network index indicates which NWK uses this key.
     #[must_use]
     pub const fn network_index(&self) -> u8 {
         self.network_index

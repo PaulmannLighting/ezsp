@@ -66,6 +66,7 @@ impl TryFrom<u16> for Bitmask {
     }
 }
 
+/// A structure containing a key and its associated data.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Struct {
     bitmask: u16,
@@ -78,6 +79,7 @@ pub struct Struct {
 }
 
 impl Struct {
+    /// Creates a new Ember key struct.
     #[must_use]
     pub fn new(
         bitmask: Bitmask,
@@ -99,7 +101,7 @@ impl Struct {
         }
     }
 
-    /// Returns the bitmask.
+    /// Return a bitmask indicating the presence of data within the various fields in the structure.
     ///
     /// # Errors
     /// Returns the number of the bitmask if the bitmask is invalid.
@@ -107,7 +109,7 @@ impl Struct {
         Bitmask::try_from(self.bitmask)
     }
 
-    /// Returns the type.
+    /// Return the type of the key.
     ///
     /// # Errors
     /// Returns the number of the type if the type is invalid.
@@ -115,26 +117,31 @@ impl Struct {
         Type::try_from(self.typ)
     }
 
+    /// Return the actual key data.
     #[must_use]
     pub const fn key(&self) -> &Data {
         &self.key
     }
 
+    /// Return the outgoing frame counter associated with the key.
     #[must_use]
     pub const fn outgoing_frame_counter(&self) -> u32 {
         self.outgoing_frame_counter
     }
 
+    /// Return the frame counter of the partner device associated with the key.
     #[must_use]
     pub const fn incoming_frame_counter(&self) -> u32 {
         self.incoming_frame_counter
     }
 
+    /// Return the sequence number associated with the key.
     #[must_use]
     pub const fn sequence_number(&self) -> u8 {
         self.sequence_number
     }
 
+    /// Return the IEEE address of the partner device also in possession of the key.
     #[must_use]
     pub const fn partner_eui64(&self) -> Eui64 {
         self.partner_eui64

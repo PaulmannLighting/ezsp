@@ -1,7 +1,7 @@
 use crate::ember::token;
 use crate::error::Resolve;
 use crate::frame::parameters::token_interface::{
-    get_token_count, get_token_data, get_token_info, gp_security_test_vectors,
+    get_token_count, get_token_data, get_token_info, gp_security_test_vectors, reset_node,
 };
 use crate::Transport;
 use std::future::Future;
@@ -25,6 +25,9 @@ pub trait TokenInterface {
 
     /// Run GP security test vectors.
     fn gp_security_test_vectors(&self) -> impl Future<Output = Result<(), crate::Error>> + Send;
+
+    /// Reset the node by calling `halReboot`.
+    fn reset_node(&self) -> impl Future<Output = Result<(), crate::Error>> + Send;
 }
 
 impl<T> TokenInterface for T
@@ -51,6 +54,12 @@ where
 
     async fn gp_security_test_vectors(&self) -> Result<(), crate::Error> {
         self.communicate::<_, gp_security_test_vectors::Response>(gp_security_test_vectors::Command)
+            .await?
+            .resolve()
+    }
+
+    async fn reset_node(&self) -> Result<(), crate::Error> {
+        self.communicate::<_, reset_node::Response>(reset_node::Command)
             .await?
             .resolve()
     }

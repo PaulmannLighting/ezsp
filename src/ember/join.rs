@@ -1,12 +1,19 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
+/// Ember join decision.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum Decision {
+    /// Allow the node to join. The joining node should have a pre-configured key.
+    ///
+    /// The security data sent to it will be encrypted with that key.
     UsePreconfiguredKey = 0x00,
+    /// Allow the node to join. Send the network key in-the-clear to the joining device.
     SendKeyInTheClear = 0x01,
+    /// Deny join.
     DenyJoin = 0x02,
+    /// Take no action.
     NoAction = 0x03,
 }
 

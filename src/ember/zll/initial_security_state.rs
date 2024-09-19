@@ -2,6 +2,8 @@ use crate::ember::key::Data;
 use crate::ember::zll::KeyIndex;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
+/// Describes the initial security features and requirements
+/// that will be used when forming or joining ZLL networks.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct InitialSecurityState {
     bitmask: u32,
@@ -11,6 +13,7 @@ pub struct InitialSecurityState {
 }
 
 impl InitialSecurityState {
+    /// Create a new initial security state.
     #[must_use]
     pub fn new(
         bitmask: u32,
@@ -26,12 +29,15 @@ impl InitialSecurityState {
         }
     }
 
+    /// Return the bitmask.
+    ///
+    /// This is currently unused and reserved for future use.
     #[must_use]
     pub const fn bitmask(&self) -> u32 {
         self.bitmask
     }
 
-    /// Returns the key index.
+    /// Return the key encryption algorithm advertised by the application.
     ///
     /// # Errors
     /// Returns the [`u8`] value of the key index if it is not a valid [`KeyIndex`].
@@ -39,11 +45,13 @@ impl InitialSecurityState {
         KeyIndex::try_from(self.key_index)
     }
 
+    /// Return the encryption key for use by algorithms that require it.
     #[must_use]
     pub const fn encryption_key(&self) -> &Data {
         &self.encryption_key
     }
 
+    /// Return the pre-configured link key used during classical ZigBee commissioning.
     #[must_use]
     pub const fn preconfigured_key(&self) -> &Data {
         &self.preconfigured_key

@@ -3,10 +3,15 @@ use std::num::TryFromIntError;
 const OFF: u8 = 0x00;
 const ON: u8 = 0xFF;
 
+/// Network joining duration.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Duration {
+    /// Joining is disabled.
     Disable,
+    /// Joining is enabled for a specific amount of seconds.
+    #[allow(private_interfaces)]
     Seconds(Seconds),
+    /// Joining is enabled indefinitely.
     Enable,
 }
 

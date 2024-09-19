@@ -1,7 +1,7 @@
 use std::future::Future;
 
 use siliconlabs;
-use siliconlabs::zigbee::security::{ManContext, ManKey};
+use siliconlabs::zigbee::security::{ManContext, ManFlags, ManKey};
 
 use crate::ember::{security::current::State, Eui64};
 use crate::error::Resolve;
@@ -9,7 +9,7 @@ use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
     export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key,
     find_key_table_entry, get_aps_key_info, get_current_security_state, get_network_key_info,
-    import_key, import_link_key,
+    import_key, import_link_key, import_transient_key,
 };
 use crate::{Error, Transport};
 
@@ -95,6 +95,15 @@ pub trait Security {
         index: u8,
         address: Eui64,
         plaintext_key: ManKey,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Import a transient link key.
+    fn import_transient_key(
+        &self,
+        context: ManContext,
+        eui64: Eui64,
+        plaintext_key: ManKey,
+        flags: ManFlags,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -231,6 +240,23 @@ where
             index,
             address,
             plaintext_key,
+        ))
+        .await?
+        .resolve()
+    }
+
+    async fn import_transient_key(
+        &self,
+        context: ManContext,
+        eui64: Eui64,
+        plaintext_key: ManKey,
+        flags: ManFlags,
+    ) -> Result<(), Error> {
+        self.communicate::<_, import_transient_key::Response>(import_transient_key::Command::new(
+            context,
+            eui64,
+            plaintext_key,
+            flags,
         ))
         .await?
         .resolve()

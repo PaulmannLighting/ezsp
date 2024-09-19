@@ -1,18 +1,22 @@
 use std::num::TryFromIntError;
 
+const OFF: u8 = 0x00;
+const ON: u8 = 0xFF;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Duration {
     Disable,
-    Seconds(u8),
+    Seconds(Seconds),
     Enable,
 }
 
 impl From<u8> for Duration {
     fn from(value: u8) -> Self {
         match value {
-            0x00 => Self::Disable,
-            0x01..=0xFE => Self::Seconds(value),
-            0xFF => Self::Enable,
+            OFF => Self::Disable,
+            0x01..=0xFE => Self::Seconds(Seconds(value)),
+            ON => Self::Enable,
+            _ => unreachable!(),
         }
     }
 }
@@ -29,8 +33,17 @@ impl From<Duration> for u8 {
     fn from(value: Duration) -> Self {
         match value {
             Duration::Disable => 0x00,
-            Duration::Seconds(value) => value,
+            Duration::Seconds(value) => value.into(),
             Duration::Enable => 0xFF,
         }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct Seconds(u8);
+
+impl From<Seconds> for u8 {
+    fn from(value: Seconds) -> Self {
+        value.0
     }
 }

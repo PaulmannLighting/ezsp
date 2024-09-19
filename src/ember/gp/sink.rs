@@ -10,6 +10,7 @@ use crate::ember::gp::security::FrameCounter;
 use crate::ember::key::Data;
 use crate::ember::{gp, Eui64, NodeId};
 
+/// Amount of entries in a sink list.
 pub const LIST_ENTRIES: usize = 2;
 
 pub type Status = u8;

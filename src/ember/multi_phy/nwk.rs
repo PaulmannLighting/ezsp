@@ -1,9 +1,11 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
+/// Ember multi phy network configuration.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]
 pub enum Config {
+    /// Enable broadcast support on Routers.
     BroadcastSupport = 0x01,
 }
 

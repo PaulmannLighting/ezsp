@@ -20,7 +20,7 @@ pub enum SourceRouteDiscoveryMode {
 }
 
 impl From<SourceRouteDiscoveryMode> for u8 {
-    fn from(mode: SourceRouteDiscoveryMode) -> u8 {
-        mode as u8
+    fn from(mode: SourceRouteDiscoveryMode) -> Self {
+        mode as Self
     }
 }

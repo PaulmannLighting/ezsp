@@ -155,6 +155,7 @@ impl ListEntry {
     }
 }
 
+/// The internal representation of a sink table entry.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct TableEntry {
     status: Status,
@@ -170,6 +171,7 @@ pub struct TableEntry {
 }
 
 impl TableEntry {
+    /// Create a new sink table entry.
     #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub const fn new(
@@ -198,51 +200,61 @@ impl TableEntry {
         }
     }
 
+    /// Return the internal status of the sink table entry.
     #[must_use]
     pub const fn status(&self) -> Status {
         self.status
     }
 
+    /// Return the tunneling options (this contains both options and extendedOptions from the spec).
     #[must_use]
     pub const fn options(&self) -> u32 {
         self.options
     }
 
+    /// Return the addressing info of the GPD.
     #[must_use]
     pub const fn gpd(&self) -> &gp::Address {
         &self.gpd
     }
 
+    /// Return the device id for the GPD.
     #[must_use]
     pub const fn device_id(&self) -> u8 {
         self.device_id
     }
 
+    /// Return the list of sinks (hardcoded to 2 which is the spec minimum).
     #[must_use]
     pub const fn sink_list(&self) -> &[ListEntry; LIST_ENTRIES] {
         &self.sink_list
     }
 
+    /// Return the assigned alias for the GPD.
     #[must_use]
     pub const fn assigned_alias(&self) -> NodeId {
         self.assigned_alias
     }
 
+    /// Return the assigned alias for the GPD.
     #[must_use]
     pub const fn group_cast_radius(&self) -> u8 {
         self.group_cast_radius
     }
 
+    /// Return the security options field.
     #[must_use]
     pub const fn security_options(&self) -> u8 {
         self.security_options
     }
 
+    /// Return the security frame counter of the GPD.
     #[must_use]
     pub const fn gpd_security_frame_counter(&self) -> FrameCounter {
         self.gpd_security_frame_counter
     }
 
+    /// Return the key to use for GPD.
     #[must_use]
     pub const fn gpd_key(&self) -> &Data {
         &self.gpd_key

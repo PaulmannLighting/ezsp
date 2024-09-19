@@ -10,7 +10,7 @@ pub mod types;
 
 pub use error::{value::Error as ValueError, Error};
 pub use frame::{CallbackType, Control, FrameFormatVersion, Header, HighByte, LowByte, SleepMode};
-pub use resolve::Resolve;
+pub(crate) use resolve::Resolve;
 pub use result::Result;
 #[cfg(feature = "ashv2")]
 pub use transport::Ashv2;

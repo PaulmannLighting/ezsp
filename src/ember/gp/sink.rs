@@ -1,3 +1,6 @@
+/// Ember GP sink structs.
+///
+/// For details, see https://docs.silabs.com/d/zigbee-stack-api/7.2.2/gp-types-h
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use le_stream::FromLeBytes;
 use num_derive::FromPrimitive;
@@ -6,8 +9,6 @@ use num_traits::FromPrimitive;
 use crate::ember::gp::security::FrameCounter;
 use crate::ember::key::Data;
 use crate::ember::{gp, Eui64, NodeId};
-
-// Documentation: https://docs.silabs.com/d/zigbee-stack-api/7.2.2/gp-types-h
 
 pub const LIST_ENTRIES: usize = 2;
 

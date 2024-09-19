@@ -32,28 +32,51 @@ impl TryFrom<u8> for State {
     }
 }
 
+/// A structure containing duty cycle limit configurations.
+///
+/// All limits are absolute, and are required to be as follows:
+///
+/// `susp_limit` > `crit_thresh` > `limit_thresh`
+///
+/// For example:
+///
+/// `susp_limit = 250` (2.5%), `crit_thresh = 180` (1.8%), `limit_thresh = 100` (1.00%).
+///
+/// See [EmberDutyCycleLimits Struct Reference](https://docs.silabs.com/zigbee/6.6/em35x/structEmberDutyCycleLimits)
+/// for more information.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Limits {
-    vendor_id: u16,
-    vendor_string: [u8; 7],
+    crit_thresh: u16,
+    limit_thresh: u16,
+    susp_limit: u16,
 }
 
 impl Limits {
+    /// Create a new duty cycle limit configuration.
     #[must_use]
-    pub const fn new(vendor_id: u16, vendor_string: [u8; 7]) -> Self {
+    pub const fn new(crit_thresh: u16, limit_thresh: u16, susp_limit: u16) -> Self {
         Self {
-            vendor_id,
-            vendor_string,
+            crit_thresh,
+            limit_thresh,
+            susp_limit,
         }
     }
 
+    /// Return the critical threshold in % * 100.
     #[must_use]
-    pub const fn vendor_id(&self) -> u16 {
-        self.vendor_id
+    pub const fn crit_thresh(&self) -> u16 {
+        self.crit_thresh
     }
 
+    /// Return the limited threshold in % * 100.
     #[must_use]
-    pub const fn vendor_string(&self) -> &[u8; 7] {
-        &self.vendor_string
+    pub const fn limit_thresh(&self) -> u16 {
+        self.limit_thresh
+    }
+
+    /// Return the suspended limit (LBT) in % * 100.
+    #[must_use]
+    pub const fn susp_limit(&self) -> u16 {
+        self.susp_limit
     }
 }

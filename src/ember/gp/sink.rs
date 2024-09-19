@@ -73,13 +73,19 @@ impl Group {
     }
 }
 
+/// Enver GP sink type.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum Type {
+    /// Full unicast.
     FullUnicast = 0x00,
+    /// D-group cast.
     DGroupCast = 0x01,
+    /// Group cast.
     GroupCast = 0x02,
+    /// LW-unicast.
     LwUnicast = 0x03,
+    /// Unused.
     Unused = 0xFF,
 }
 

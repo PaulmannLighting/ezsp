@@ -2,6 +2,7 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 use crate::ember::types::PanId;
 
+/// Beacon data structure.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Data {
     channel: u8,
@@ -14,9 +15,13 @@ pub struct Data {
     pan_id: PanId,
     extended_pan_id: u64,
     sender: u16,
+    enhanced: bool,
+    permit_join: bool,
+    has_capacity: bool,
 }
 
 impl Data {
+    /// Create a new beacon data structure.
     #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub const fn new(
@@ -30,6 +35,9 @@ impl Data {
         pan_id: PanId,
         extended_pan_id: u64,
         sender: u16,
+        enhanced: bool,
+        permit_join: bool,
+        has_capacity: bool,
     ) -> Self {
         Self {
             channel,
@@ -42,57 +50,94 @@ impl Data {
             pan_id,
             extended_pan_id,
             sender,
+            enhanced,
+            permit_join,
+            has_capacity,
         }
     }
 
+    /// Return the channel of the received beacon.
     #[must_use]
     pub const fn channel(&self) -> u8 {
         self.channel
     }
 
+    /// Return the LQI of the received beacon.
     #[must_use]
     pub const fn lqi(&self) -> u8 {
         self.lqi
     }
 
+    /// Return the RSSI of the received beacon.
     #[must_use]
     pub const fn rssi(&self) -> i8 {
         self.rssi
     }
 
+    /// Return the depth of the received beacon.
     #[must_use]
     pub const fn depth(&self) -> u8 {
         self.depth
     }
 
+    /// Return the network update ID of the received beacon.
     #[must_use]
     pub const fn nwk_update_id(&self) -> u8 {
         self.nwk_update_id
     }
 
+    /// Return the power level of the received beacon.
+    ///
+    /// This field is valid only if the beacon is an enhanced beacon.
     #[must_use]
-    pub const fn power(&self) -> i8 {
-        self.power
+    pub const fn power(&self) -> Option<i8> {
+        if self.enhanced {
+            Some(self.power)
+        } else {
+            None
+        }
     }
 
+    /// Return the TC connectivity and long uptime from capacity field.
     #[must_use]
     pub const fn parent_priority(&self) -> i8 {
         self.parent_priority
     }
 
+    /// Return the PAN ID of the received beacon.
     #[must_use]
     pub const fn pan_id(&self) -> PanId {
         self.pan_id
     }
 
+    /// Return the extended PAN ID of the received beacon.
     #[must_use]
     pub const fn extended_pan_id(&self) -> u64 {
         self.extended_pan_id
     }
 
+    /// Return the sender of the received beacon.
     #[must_use]
     pub const fn sender(&self) -> u16 {
         self.sender
+    }
+
+    /// Return whether the beacon is enhanced.
+    #[must_use]
+    pub const fn enhanced(&self) -> bool {
+        self.enhanced
+    }
+
+    /// Return whether the beacon is advertising permit join.
+    #[must_use]
+    pub const fn permit_join(&self) -> bool {
+        self.permit_join
+    }
+
+    /// Return whether the beacon is advertising capacity.
+    #[must_use]
+    pub const fn has_capacity(&self) -> bool {
+        self.has_capacity
     }
 }
 

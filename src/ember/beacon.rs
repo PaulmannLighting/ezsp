@@ -173,6 +173,7 @@ impl ClassificationParams {
     }
 }
 
+/// Defines an iterator that is used to loop over cached beacons.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Iterator {
     beacon: Data,
@@ -180,16 +181,19 @@ pub struct Iterator {
 }
 
 impl Iterator {
+    /// Create a new beacon iterator.
     #[must_use]
     pub const fn new(beacon: Data, index: u8) -> Self {
         Self { beacon, index }
     }
 
+    /// Return the retrieved beacon.
     #[must_use]
     pub const fn beacon(&self) -> &Data {
         &self.beacon
     }
 
+    /// Return the index of the retrieved beacon.
     #[must_use]
     pub const fn index(&self) -> u8 {
         self.index

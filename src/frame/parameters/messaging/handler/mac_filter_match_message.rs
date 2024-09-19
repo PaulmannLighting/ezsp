@@ -1,6 +1,6 @@
 use le_stream::derive::FromLeBytes;
 
-use crate::ember::mac::PassthroughType;
+use crate::ember::mac::PassThroughType;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 
@@ -21,8 +21,8 @@ impl Handler {
         self.filter_index_match
     }
 
-    pub fn legacy_passthrough_type(&self) -> Result<PassthroughType, u8> {
-        PassthroughType::try_from(self.legacy_passthrough_type)
+    pub fn legacy_passthrough_type(&self) -> Result<PassThroughType, u8> {
+        PassThroughType::try_from(self.legacy_passthrough_type)
     }
 
     #[must_use]

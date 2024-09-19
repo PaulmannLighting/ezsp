@@ -1,6 +1,6 @@
 use le_stream::derive::FromLeBytes;
 
-use crate::ember::mac::PassthroughType;
+use crate::ember::mac::PassThroughType;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 
@@ -15,8 +15,8 @@ pub struct Handler {
 }
 
 impl Handler {
-    pub fn message_type(&self) -> Result<PassthroughType, u8> {
-        PassthroughType::try_from(self.message_type)
+    pub fn message_type(&self) -> Result<PassThroughType, u8> {
+        PassThroughType::try_from(self.message_type)
     }
 
     #[must_use]

@@ -1,3 +1,9 @@
+//! The Ember ZNet Serial Protocol (`EZSP`)
+//!
+//! This library implements the Ember ZNet Serial Protocol, `EZSP` for short.  
+//! You can find the protocol's definition on [siliconlabs.com](https://www.silabs.com/documents/public/user-guides/ug100-ezsp-reference-guide.pdf).
+//!
+//! This library is free software and is not affiliated with Silicon Labs.
 pub mod dongle;
 pub mod ember;
 pub mod error;

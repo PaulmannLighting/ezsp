@@ -6,8 +6,8 @@ use siliconlabs::zigbee::security::ManContext;
 use crate::ember::Eui64;
 use crate::error::Resolve;
 use crate::frame::parameters::security::{
-    check_key_context, clear_key_table, clear_transient_link_keys, export_link_key_by_eui,
-    export_link_key_by_index, export_transient_key_by_index,
+    check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
+    export_link_key_by_eui, export_link_key_by_index, export_transient_key_by_index,
 };
 use crate::{Error, Transport};
 
@@ -24,23 +24,27 @@ pub trait Security {
     /// Clear all the transient link keys from RAM.
     fn clear_transient_link_keys(&self) -> impl Future<Output = Result<(), Error>> + Send;
 
+    /// This function erases the data in the key table entry at the specified index.
+    ///If the index is invalid, false is returned.
+    fn erase_key_table_entry(&self, index: u8) -> impl Future<Output = Result<(), Error>> + Send;
+
     /// Export a transient link key from a given table index.
     fn export_transient_key_by_index(
         &self,
         index: u8,
     ) -> impl Future<Output = Result<export_transient_key_by_index::Response, Error>> + Send;
 
-    /// Export the link key at given index from the key table.
-    fn export_link_key_by_index(
-        &self,
-        index: u8,
-    ) -> impl Future<Output = Result<export_link_key_by_index::Response, Error>> + Send;
-
     /// Export the link key associated with the given EUI from the key table.
     fn export_link_key_by_eui(
         &self,
         eui: Eui64,
     ) -> impl Future<Output = Result<export_link_key_by_eui::Response, Error>> + Send;
+
+    /// Export the link key at given index from the key table.
+    fn export_link_key_by_index(
+        &self,
+        index: u8,
+    ) -> impl Future<Output = Result<export_link_key_by_index::Response, Error>> + Send;
 }
 
 impl<T> Security for T
@@ -63,6 +67,14 @@ where
         self.communicate::<_, clear_transient_link_keys::Response>(
             clear_transient_link_keys::Command,
         )
+        .await
+        .map(drop)
+    }
+
+    async fn erase_key_table_entry(&self, index: u8) -> Result<(), Error> {
+        self.communicate::<_, erase_key_table_entry::Response>(erase_key_table_entry::Command::new(
+            index,
+        ))
         .await
         .map(drop)
     }

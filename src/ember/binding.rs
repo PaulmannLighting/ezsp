@@ -4,12 +4,20 @@ use num_traits::FromPrimitive;
 
 use crate::ember::types::Eui64;
 
+/// The type of the binding.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum Type {
+    /// A binding that is currently not in use.
     Unused = 0x00,
+    /// A unicast binding whose 64-bit identifier is the destination EUI64.
     Unicast = 0x01,
+    /// A unicast binding whose 64-bit identifier is the aggregator EUI64.
     ManyToOne = 0x02,
+    /// A multicast binding whose 64-bit identifier is the group  address.
+    ///
+    /// A multicast binding can be used to send messages to the group and to
+    /// receive messages sent to the group.
     Multicast = 0x03,
 }
 

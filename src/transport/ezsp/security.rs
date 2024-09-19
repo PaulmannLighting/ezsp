@@ -9,7 +9,7 @@ use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
     export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key,
     find_key_table_entry, get_aps_key_info, get_current_security_state, get_network_key_info,
-    import_key,
+    import_key, import_link_key,
 };
 use crate::{Error, Transport};
 
@@ -87,6 +87,14 @@ pub trait Security {
         &self,
         context: ManContext,
         key: ManKey,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Import an application link key into the key table.
+    fn import_link_key(
+        &self,
+        index: u8,
+        address: Eui64,
+        plaintext_key: ManKey,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -211,5 +219,20 @@ where
         self.communicate::<_, import_key::Response>(import_key::Command::new(context, key))
             .await?
             .resolve()
+    }
+
+    async fn import_link_key(
+        &self,
+        index: u8,
+        address: Eui64,
+        plaintext_key: ManKey,
+    ) -> Result<(), Error> {
+        self.communicate::<_, import_link_key::Response>(import_link_key::Command::new(
+            index,
+            address,
+            plaintext_key,
+        ))
+        .await?
+        .resolve()
     }
 }

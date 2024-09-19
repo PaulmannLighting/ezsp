@@ -84,6 +84,7 @@ impl TryFrom<u8> for RecordState {
     }
 }
 
+/// A route table entry stores information about the next hop along the route to the destination.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct TableEntry {
     destination: u16,
@@ -95,6 +96,7 @@ pub struct TableEntry {
 }
 
 impl TableEntry {
+    /// Create a new route table entry.
     #[must_use]
     pub fn new(
         destination: u16,
@@ -114,6 +116,9 @@ impl TableEntry {
         }
     }
 
+    /// Return the short id of the destination.
+    ///
+    /// A value of `0xFFFF` is translated to `None` and indicates the entry is unused.
     #[must_use]
     pub const fn destination(&self) -> Option<u16> {
         if self.destination == ENTRY_UNUSED {
@@ -123,12 +128,13 @@ impl TableEntry {
         }
     }
 
+    /// Return the short id of the next hop to this destination.
     #[must_use]
     pub const fn next_hop(&self) -> u16 {
         self.next_hop
     }
 
-    /// Returns the status of the entry.
+    /// Return the status of the entry.
     ///
     /// # Errors
     /// Returns the invalid status code number if the status is invalid.
@@ -136,12 +142,13 @@ impl TableEntry {
         Status::try_from(self.status)
     }
 
+    /// Return the number of seconds since this route entry was last used to send a packet.
     #[must_use]
     pub const fn age(&self) -> u8 {
         self.age
     }
 
-    /// Returns the concentrator type of the entry.
+    /// Return the concentrator type of the entry.
     ///
     /// # Errors
     /// Returns the invalid concentrator type code number if the concentrator type is invalid.
@@ -149,7 +156,7 @@ impl TableEntry {
         ConcentratorType::try_from(self.concentrator_type)
     }
 
-    /// Returns the route record state of the entry.
+    /// Return the route record state of the entry.
     ///
     /// # Errors
     /// Returns the invalid route record state code number if the route record state is invalid.

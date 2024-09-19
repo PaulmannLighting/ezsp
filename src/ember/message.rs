@@ -35,13 +35,25 @@ impl TryFrom<u8> for Incoming {
     }
 }
 
+/// Ember outgoing message type.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum Outgoing {
+    /// Unicast sent directly to an EmberNodeId.
     Direct = 0x00,
+    /// Unicast sent using an entry in the address table.
     ViaAddressTable = 0x01,
+    /// Unicast sent using an entry in the binding table.
     ViaBinding = 0x02,
+    /// Multicast message.
+    ///
+    /// This value is passed to `emberMessageSentHandler()` only.
+    /// It may not be passed to `emberSendUnicast()`.
     Multicast = 0x03,
+    /// Broadcast message.
+    ///
+    /// This value is passed to `emberMessageSentHandler()` only.
+    /// It may not be passed to `emberSendUnicast()`.
     Broadcast = 0x04,
 }
 

@@ -31,12 +31,39 @@ impl TryFrom<u8> for Decision {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+/// Ember join method.
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]
 pub enum Method {
+    /// Normally devices use MAC Association to join a network,
+    /// which respects the "permit joining" flag in the MAC Beacon.
+    ///
+    /// This value should be used by default.
+    #[default]
     MacAssociation = 0x00,
+    /// For those networks where the "permit joining" flag is never turned on,
+    /// they will need to use a ZigBee NWK Rejoin.
+    ///
+    /// This value causes the rejoin to be sent without NWK security and the Trust Center
+    /// will be asked to send the NWK key to the device.
+    /// The NWK key sent to the device can be encrypted with the device's corresponding
+    /// Trust Center link key.
+    /// That is determined by the [`Decision`] on the Trust Center returned by the
+    /// `emberTrustCenterJoinHandler()`.
     NwkRejoin = 0x01,
+    /// For those networks where the "permit joining" flag is never turned on,
+    /// they will need to use a ZigBee NWK Rejoin.
+    ///
+    /// This value causes the rejoin to be sent without NWK security and the Trust Center
+    /// will be asked to send the NWK key to the device.
+    /// The NWK key sent to the device can be encrypted with the device's corresponding
+    /// Trust Center link key.
+    /// That is determined by the [`Decision`] on the Trust Center returned by the
+    /// `emberTrustCenterJoinHandler()`.
     NwkRejoinHaveNwkKey = 0x02,
+    /// For those networks where all network and security information is known ahead of time,
+    /// a router device may be commissioned such that it does not need to send any messages
+    /// to begin communicating on the network.
     ConfiguredNwkState = 0x03,
 }
 

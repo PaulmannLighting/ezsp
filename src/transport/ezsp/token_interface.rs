@@ -3,7 +3,7 @@ use crate::ember::token::Data;
 use crate::error::Resolve;
 use crate::frame::parameters::token_interface::{
     get_token_count, get_token_data, get_token_info, gp_security_test_vectors, reset_node,
-    set_token_data,
+    set_token_data, token_factory_reset,
 };
 use crate::Transport;
 use std::future::Future;
@@ -37,6 +37,13 @@ pub trait TokenInterface {
         token: u32,
         index: u32,
         token_data: Data,
+    ) -> impl Future<Output = Result<(), crate::Error>> + Send;
+
+    /// Factory reset all configured Zigbee tokens.
+    fn token_factory_reset(
+        &self,
+        exclude_outgoing_fc: bool,
+        exclude_boot_counter: bool,
     ) -> impl Future<Output = Result<(), crate::Error>> + Send;
 }
 
@@ -82,6 +89,19 @@ where
     ) -> Result<(), crate::Error> {
         self.communicate::<_, set_token_data::Response>(set_token_data::Command::new(
             token, index, token_data,
+        ))
+        .await?
+        .resolve()
+    }
+
+    async fn token_factory_reset(
+        &self,
+        exclude_outgoing_fc: bool,
+        exclude_boot_counter: bool,
+    ) -> Result<(), crate::Error> {
+        self.communicate::<_, token_factory_reset::Response>(token_factory_reset::Command::new(
+            exclude_outgoing_fc,
+            exclude_boot_counter,
         ))
         .await?
         .resolve()

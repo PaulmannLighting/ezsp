@@ -52,9 +52,25 @@ pub struct Limits {
 }
 
 impl Limits {
-    /// Create a new duty cycle limit configuration.
+    /// Attempt to create a new duty cycle limit configuration, checking the limits.
     #[must_use]
-    pub const fn new(crit_thresh: u16, limit_thresh: u16, susp_limit: u16) -> Self {
+    pub const fn try_new(crit_thresh: u16, limit_thresh: u16, susp_limit: u16) -> Option<Self> {
+        if susp_limit > crit_thresh && crit_thresh > limit_thresh {
+            #[allow(unsafe_code)]
+            // SAFETY: We checked the limit constraints in the line above.
+            Some(unsafe { Self::new_unchecked(crit_thresh, limit_thresh, susp_limit) })
+        } else {
+            None
+        }
+    }
+
+    /// Create a new duty cycle limit configuration without checking the limits.
+    #[allow(unsafe_code)]
+    pub const unsafe fn new_unchecked(
+        crit_thresh: u16,
+        limit_thresh: u16,
+        susp_limit: u16,
+    ) -> Self {
         Self {
             crit_thresh,
             limit_thresh,

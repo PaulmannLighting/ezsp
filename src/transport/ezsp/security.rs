@@ -9,7 +9,7 @@ use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
     export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key,
     find_key_table_entry, get_aps_key_info, get_current_security_state, get_network_key_info,
-    import_key, import_link_key, import_transient_key,
+    import_key, import_link_key, import_transient_key, request_link_key,
 };
 use crate::{Error, Transport};
 
@@ -105,6 +105,23 @@ pub trait Security {
         plaintext_key: ManKey,
         flags: ManFlags,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// A function to request a Link Key from the Trust Center with another device on the Network
+    /// (which could be the Trust Center).
+    ///
+    /// A Link Key with the Trust Center is possible but the requesting device cannot be the Trust Center.
+    /// Link Keys are optional in ZigBee Standard Security and thus the stack cannot know whether the other device supports them.
+    ///
+    /// If `EMBER_REQUEST_KEY_TIMEOUT` is non-zero on the Trust Center and the partner device is not the Trust Center,
+    /// both devices must request keys with their partner device within the time period.
+    ///
+    /// The Trust Center only supports one outstanding key request at a time and therefore will ignore other requests.
+    /// If the timeout is zero then the Trust Center will immediately respond and not wait for the second request.
+    /// The Trust Center will always immediately respond to requests for a Link Key with it.
+    ///
+    /// Sleepy devices should poll at a higher rate until a response is received or the request times out.
+    /// The success or failure of the request is returned via `ezspZigbeeKeyEstablishmentHandler(...)`.
+    fn request_link_key(&self, partner: Eui64) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Security for T
@@ -260,5 +277,11 @@ where
         ))
         .await?
         .resolve()
+    }
+
+    async fn request_link_key(&self, partner: Eui64) -> Result<(), Error> {
+        self.communicate::<_, request_link_key::Response>(request_link_key::Command::new(partner))
+            .await?
+            .resolve()
     }
 }

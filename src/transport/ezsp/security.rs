@@ -71,7 +71,7 @@ pub trait Security {
     fn get_aps_key_info(
         &self,
         context_in: ManContext,
-    ) -> impl Future<Output = Result<get_aps_key_info::Response, Error>> + Send;
+    ) -> impl Future<Output = Result<get_aps_key_info::Payload, Error>> + Send;
 }
 
 impl<T> Security for T
@@ -167,7 +167,7 @@ where
     async fn get_aps_key_info(
         &self,
         context_in: ManContext,
-    ) -> Result<get_aps_key_info::Response, Error> {
+    ) -> Result<get_aps_key_info::Payload, Error> {
         self.communicate::<_, get_aps_key_info::Response>(get_aps_key_info::Command::new(
             context_in,
         ))

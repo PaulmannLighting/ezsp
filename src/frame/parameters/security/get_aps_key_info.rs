@@ -26,13 +26,12 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
-pub struct Response {
+pub struct Payload {
     eui: Eui64,
     key_data: ManApsKeyMetadata,
-    status: u32,
 }
 
-impl Response {
+impl Payload {
     #[must_use]
     pub const fn eui(&self) -> Eui64 {
         self.eui
@@ -44,15 +43,23 @@ impl Response {
     }
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+pub struct Response {
+    payload: Payload,
+    status: u32,
+}
+
 impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }
 
 impl Resolve for Response {
-    type Result = Self;
+    type Result = Payload;
 
     fn resolve(self) -> Result<Self::Result, Error> {
-        Status::try_from(self.status).resolve().map(|_| self)
+        Status::try_from(self.status)
+            .resolve()
+            .map(|_| self.payload)
     }
 }

@@ -35,6 +35,7 @@ impl TryFrom<u8> for Type {
     }
 }
 
+/// An entry in the binding table.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct TableEntry {
     typ: u8,
@@ -46,6 +47,7 @@ pub struct TableEntry {
 }
 
 impl TableEntry {
+    /// Create a new binding table entry.
     #[must_use]
     pub fn new(
         typ: Type,
@@ -65,7 +67,7 @@ impl TableEntry {
         }
     }
 
-    /// Return the table entry type.
+    /// Return the type of binding.
     ///
     /// # Errors
     /// Returns the [`u8`] value of the type if it has an invalid value.
@@ -73,26 +75,41 @@ impl TableEntry {
         Type::try_from(self.typ)
     }
 
+    /// Return the endpoint on the local node.
     #[must_use]
     pub const fn local(&self) -> u8 {
         self.local
     }
 
+    /// Return a cluster ID that matches one from the local endpoint's simple descriptor.
+    ///
+    /// This cluster ID is set by the provisioning application to indicate which part an
+    /// endpoint's functionality is bound to this particular remote node and is used to distinguish
+    /// between unicast and multicast bindings.
+    ///
+    /// Note that a binding can be used to send messages with any cluster ID,
+    /// not just the one listed in the binding.
     #[must_use]
     pub const fn cluster_id(&self) -> u16 {
         self.cluster_id
     }
 
+    /// Return the endpoint on the remote node (specified by identifier).
     #[must_use]
     pub const fn remote(&self) -> u8 {
         self.remote
     }
 
+    /// Return a 64-bit identifier.
+    ///
+    /// This is either the destination EUI64 (for unicasts)
+    /// or the 64-bit group address (for multicasts).
     #[must_use]
     pub const fn identifier(&self) -> Eui64 {
         self.identifier
     }
 
+    /// Return the index of the network the binding belongs to.
     #[must_use]
     pub const fn network_index(&self) -> u8 {
         self.network_index

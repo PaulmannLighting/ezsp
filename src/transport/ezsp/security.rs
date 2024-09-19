@@ -7,7 +7,8 @@ use crate::ember::Eui64;
 use crate::error::Resolve;
 use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
-    export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key_by_index,
+    export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key_by_eui,
+    export_transient_key_by_index,
 };
 use crate::{Error, Transport};
 
@@ -45,6 +46,12 @@ pub trait Security {
         &self,
         index: u8,
     ) -> impl Future<Output = Result<export_link_key_by_index::Response, Error>> + Send;
+
+    /// Export a transient link key associated with a given EUI64.
+    fn export_transient_key_by_eui(
+        &self,
+        eui: Eui64,
+    ) -> impl Future<Output = Result<export_transient_key_by_eui::Payload, Error>> + Send;
 
     /// Export a transient link key from a given table index.
     fn export_transient_key_by_index(
@@ -108,6 +115,17 @@ where
     ) -> Result<export_link_key_by_index::Response, Error> {
         self.communicate::<_, export_link_key_by_index::Response>(
             export_link_key_by_index::Command::new(index),
+        )
+        .await?
+        .resolve()
+    }
+
+    async fn export_transient_key_by_eui(
+        &self,
+        eui: Eui64,
+    ) -> Result<export_transient_key_by_eui::Payload, Error> {
+        self.communicate::<_, export_transient_key_by_eui::Response>(
+            export_transient_key_by_eui::Command::new(eui),
         )
         .await?
         .resolve()

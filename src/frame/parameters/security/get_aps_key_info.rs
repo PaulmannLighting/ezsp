@@ -34,15 +34,6 @@ pub struct Response {
 
 impl Response {
     #[must_use]
-    pub fn new(eui: Eui64, key_data: ManApsKeyMetadata, status: Status) -> Self {
-        Self {
-            eui,
-            key_data,
-            status: status.into(),
-        }
-    }
-
-    #[must_use]
     pub const fn eui(&self) -> Eui64 {
         self.eui
     }

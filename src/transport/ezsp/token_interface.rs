@@ -1,6 +1,8 @@
 use crate::ember::token;
 use crate::error::Resolve;
-use crate::frame::parameters::token_interface::{get_token_count, get_token_data, get_token_info};
+use crate::frame::parameters::token_interface::{
+    get_token_count, get_token_data, get_token_info, gp_security_test_vectors,
+};
 use crate::Transport;
 use std::future::Future;
 
@@ -20,6 +22,9 @@ pub trait TokenInterface {
         &self,
         index: u8,
     ) -> impl Future<Output = Result<token::Info, crate::Error>> + Send;
+
+    /// Run GP security test vectors.
+    fn gp_security_test_vectors(&self) -> impl Future<Output = Result<(), crate::Error>> + Send;
 }
 
 impl<T> TokenInterface for T
@@ -40,6 +45,12 @@ where
 
     async fn get_token_info(&self, index: u8) -> Result<token::Info, crate::Error> {
         self.communicate::<_, get_token_info::Response>(get_token_info::Command::new(index))
+            .await?
+            .resolve()
+    }
+
+    async fn gp_security_test_vectors(&self) -> Result<(), crate::Error> {
+        self.communicate::<_, gp_security_test_vectors::Response>(gp_security_test_vectors::Command)
             .await?
             .resolve()
     }

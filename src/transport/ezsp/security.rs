@@ -8,7 +8,7 @@ use crate::error::Resolve;
 use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
     export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key,
-    find_key_table_entry,
+    find_key_table_entry, get_aps_key_info,
 };
 use crate::{Error, Transport};
 
@@ -66,6 +66,12 @@ pub trait Security {
         address: Eui64,
         link_key: bool,
     ) -> impl Future<Output = Result<u8, Error>> + Send;
+
+    /// Retrieve metadata about an APS link key. Does not retrieve contents.
+    fn get_aps_key_info(
+        &self,
+        context_in: ManContext,
+    ) -> impl Future<Output = Result<get_aps_key_info::Response, Error>> + Send;
 }
 
 impl<T> Security for T
@@ -156,5 +162,16 @@ where
         ))
         .await
         .map(|response| response.index())
+    }
+
+    async fn get_aps_key_info(
+        &self,
+        context_in: ManContext,
+    ) -> Result<get_aps_key_info::Response, Error> {
+        self.communicate::<_, get_aps_key_info::Response>(get_aps_key_info::Command::new(
+            context_in,
+        ))
+        .await?
+        .resolve()
     }
 }

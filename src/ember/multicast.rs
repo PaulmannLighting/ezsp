@@ -1,5 +1,6 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
+/// Ember multicast ID.
 pub type Id = u16;
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]

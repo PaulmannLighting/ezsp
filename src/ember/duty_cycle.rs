@@ -65,6 +65,10 @@ impl Limits {
     }
 
     /// Create a new duty cycle limit configuration without checking the limits.
+    ///
+    /// # Safety
+    /// If the limits are not as follows: `susp_limit` > `crit_thresh` > `limit_thresh`,
+    /// the limits will cause undefined behaviour (UB).
     #[allow(unsafe_code)]
     pub const unsafe fn new_unchecked(
         crit_thresh: u16,

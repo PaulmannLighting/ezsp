@@ -4,6 +4,7 @@ use crate::ember::node::Type;
 use crate::ember::zll::{SecurityAlgorithmData, State};
 use crate::ember::{zigbee, Eui64, NodeId};
 
+/// The parameters of a ZLL network.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Network {
     zigbee_network: zigbee::Network,
@@ -18,6 +19,7 @@ pub struct Network {
 }
 
 impl Network {
+    /// Create a new ZLL network.
     #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub fn new(
@@ -44,27 +46,31 @@ impl Network {
         }
     }
 
+    /// Return the parameters of a ZigBee network.
     #[must_use]
     pub const fn zigbee_network(&self) -> &zigbee::Network {
         &self.zigbee_network
     }
 
+    /// Return the data associated with the ZLL security algorithm.
     #[must_use]
     pub const fn security_algorithm(&self) -> &SecurityAlgorithmData {
         &self.security_algorithm
     }
 
+    /// Return the associated EUI64.
     #[must_use]
     pub const fn eui64(&self) -> Eui64 {
         self.eui64
     }
 
+    /// Return the node id.
     #[must_use]
     pub const fn node_id(&self) -> NodeId {
         self.node_id
     }
 
-    /// Return the network state.
+    /// Return the ZLL state.
     ///
     /// # Errors
     /// Returns the [`u16`] value of the state if it has an invalid value.
@@ -80,16 +86,19 @@ impl Network {
         Type::try_from(self.node_type)
     }
 
+    /// Return the number of sub devices.
     #[must_use]
     pub const fn number_sub_devices(&self) -> u8 {
         self.number_sub_devices
     }
 
+    /// Return the total number of group identifiers.
     #[must_use]
     pub const fn total_group_identifiers(&self) -> u8 {
         self.total_group_identifiers
     }
 
+    /// Return the RSSI correction value.
     #[must_use]
     pub const fn rssi_correction(&self) -> u8 {
         self.rssi_correction

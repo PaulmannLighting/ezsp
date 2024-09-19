@@ -1,9 +1,12 @@
 use std::fmt::{Display, Formatter};
 use std::time::Duration;
 
+/// A general value error.
 #[derive(Debug)]
 pub enum Error {
+    /// The duration is too large.
     DurationTooLarge(Duration),
+    /// The decision ID is invalid.
     InvalidDecisionId(u8),
 }
 

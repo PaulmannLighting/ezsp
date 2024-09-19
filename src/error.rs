@@ -5,26 +5,39 @@ use std::fmt::{Debug, Display, Formatter};
 use crate::frame::parameters::utilities::invalid_command;
 use crate::{ember, ezsp};
 
+/// An error that can occur when communicating with an NCP.
 #[derive(Debug)]
 pub enum Error {
+    /// An `ASHv2` protocol-related error occurred.
     #[cfg(feature = "ashv2")]
     Ashv2(ashv2::Error),
+    /// An invalid [`ezsp::Status`] was received.
     InvalidEzspStatus(u8),
+    /// An invalid [`ember::Status`] was received.
     InvalidEmberStatus(u8),
+    /// An invalid [`ember::duty_cycle::State`] was received.
     InvalidEmberDutyCycleState(u8),
+    /// An invalid [`ember::network::Status`] was received.
     InvalidEmberNetworkStatus(u8),
+    /// An invalid [`ember::node::Type`] was received.
     InvalidEmberNodeType(u8),
+    /// An invalid [`siliconlabs::Status`] status was received.
     InvalidSiliconlabsStatus(u32),
+    /// The received [`ezsp::Status`] indicates an error.
     Ezsp(ezsp::Status),
+    /// The received [`ember::Status`] indicates an error.
     Ember(ember::Status),
+    /// The received [`siliconlabs::Status`] indicates an error.
     Siliconlabs(siliconlabs::Status),
+    /// The read data was incomplete.
     IncompleteData(le_stream::Error),
+    /// A value-related error occurred.
     ValueError(value::Error),
-    InvalidHeader {
-        expected: u16,
-        found: u16,
-    },
+    /// The header is invalid.
+    InvalidHeader { expected: u16, found: u16 },
+    /// The command is invalid.
     InvalidCommand(invalid_command::Response),
+    /// A custom error message.
     Custom(String),
 }
 

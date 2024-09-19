@@ -253,7 +253,7 @@ pub enum Status {
     /// The key table is full.
     KeyTableFull = 0x05,
     /// Trust Center status.
-    Tc(Tc),
+    TrustCenter(TrustCenter),
 }
 
 impl From<Status> for u8 {
@@ -263,7 +263,7 @@ impl From<Status> for u8 {
             Status::TrustCenterLinkKeyEstablished => 0x03,
             Status::KeyEstablishmentTimeout => 0x04,
             Status::KeyTableFull => 0x05,
-            Status::Tc(tc) => tc.into(),
+            Status::TrustCenter(trust_center) => trust_center.into(),
         }
     }
 }
@@ -279,7 +279,7 @@ impl FromPrimitive for Status {
             0x03 => Some(Self::TrustCenterLinkKeyEstablished),
             0x04 => Some(Self::KeyEstablishmentTimeout),
             0x05 => Some(Self::KeyTableFull),
-            n => Tc::from_u64(n).map(Self::Tc),
+            n => TrustCenter::from_u64(n).map(Self::TrustCenter),
         }
     }
 }
@@ -295,7 +295,7 @@ impl TryFrom<u8> for Status {
 /// Ember key Trust Center status.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
-pub enum Tc {
+pub enum TrustCenter {
     /// The Trust Center has responded to request for an application key.
     RespondedToKeyRequest = 0x06,
     /// The Trust Center has sent the application key to the requester.
@@ -322,13 +322,13 @@ pub enum Tc {
     RejectedAppKeyRequest = 0x11,
 }
 
-impl From<Tc> for u8 {
-    fn from(tc: Tc) -> Self {
+impl From<TrustCenter> for u8 {
+    fn from(tc: TrustCenter) -> Self {
         tc as Self
     }
 }
 
-impl TryFrom<u8> for Tc {
+impl TryFrom<u8> for TrustCenter {
     type Error = u8;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {

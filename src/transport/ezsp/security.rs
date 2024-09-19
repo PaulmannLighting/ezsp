@@ -8,6 +8,7 @@ use crate::error::Resolve;
 use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
     export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key,
+    find_key_table_entry,
 };
 use crate::{Error, Transport};
 
@@ -57,6 +58,14 @@ pub trait Security {
         &self,
         index: u8,
     ) -> impl Future<Output = Result<export_transient_key::Payload, Error>> + Send;
+
+    /// This function searches through the Key Table and tries to find the entry
+    /// that matches the passed search criteria.
+    fn find_key_table_entry(
+        &self,
+        address: Eui64,
+        link_key: bool,
+    ) -> impl Future<Output = Result<u8, Error>> + Send;
 }
 
 impl<T> Security for T
@@ -139,5 +148,13 @@ where
         )
         .await?
         .resolve()
+    }
+
+    async fn find_key_table_entry(&self, address: Eui64, link_key: bool) -> Result<u8, Error> {
+        self.communicate::<_, find_key_table_entry::Response>(find_key_table_entry::Command::new(
+            address, link_key,
+        ))
+        .await
+        .map(|response| response.index())
     }
 }

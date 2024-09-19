@@ -102,23 +102,23 @@ where
         .resolve()
     }
 
-    async fn export_link_key_by_index(
-        &self,
-        index: u8,
-    ) -> Result<export_link_key_by_index::Response, Error> {
-        self.communicate::<_, export_link_key_by_index::Response>(
-            export_link_key_by_index::Command::new(index),
-        )
-        .await?
-        .resolve()
-    }
-
     async fn export_link_key_by_eui(
         &self,
         eui: Eui64,
     ) -> Result<export_link_key_by_eui::Response, Error> {
         self.communicate::<_, export_link_key_by_eui::Response>(
             export_link_key_by_eui::Command::new(eui),
+        )
+        .await?
+        .resolve()
+    }
+
+    async fn export_link_key_by_index(
+        &self,
+        index: u8,
+    ) -> Result<export_link_key_by_index::Response, Error> {
+        self.communicate::<_, export_link_key_by_index::Response>(
+            export_link_key_by_index::Command::new(index),
         )
         .await?
         .resolve()

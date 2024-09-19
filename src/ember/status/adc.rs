@@ -3,12 +3,17 @@ use std::fmt::{Display, Formatter};
 
 use num_derive::FromPrimitive;
 
+/// Ember ADC status.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]
 pub enum Adc {
+    /// Conversion is complete.
     ConversionDone = 0x80,
+    /// Conversion cannot be done because a request is being processed.
     ConversionBusy = 0x81,
+    /// Conversion is deferred until the current request has been processed.
     ConversionDeferred = 0x82,
+    /// No results are pending.
     NoConversionPending = 0x84,
 }
 

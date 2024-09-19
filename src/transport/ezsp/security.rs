@@ -10,7 +10,7 @@ use crate::frame::parameters::security::{
     export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key,
     find_key_table_entry, get_aps_key_info, get_current_security_state, get_network_key_info,
     import_key, import_link_key, import_transient_key, request_link_key,
-    send_trust_center_link_key, set_initial_security_state,
+    send_trust_center_link_key, set_initial_security_state, update_tc_link_key,
 };
 use crate::{Error, Transport};
 
@@ -143,6 +143,16 @@ pub trait Security {
     fn set_initial_security_state(
         &self,
         state: security::initial::State,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Requests a new link key from the Trust Center.
+    ///
+    /// This function starts by sending a Node Descriptor request to the Trust Center to verify its
+    /// R21+ stack version compliance. A Request Key message will then be sent, followed by a
+    /// Verify Key Confirm message.
+    fn update_tc_link_key(
+        &self,
+        max_attempts: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -326,6 +336,14 @@ where
         self.communicate::<_, set_initial_security_state::Response>(
             set_initial_security_state::Command::new(state),
         )
+        .await?
+        .resolve()
+    }
+
+    async fn update_tc_link_key(&self, max_attempts: u8) -> Result<(), Error> {
+        self.communicate::<_, update_tc_link_key::Response>(update_tc_link_key::Command::new(
+            max_attempts,
+        ))
         .await?
         .resolve()
     }

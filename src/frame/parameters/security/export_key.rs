@@ -1,10 +1,13 @@
+use crate::error::Resolve;
+use crate::frame::Parameter;
+use crate::Error;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use siliconlabs::zigbee::security::{ManContext, ManKey};
 use siliconlabs::Status;
 
 const ID: u16 = 0x0114;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     context: ManContext,
 }
@@ -14,34 +17,28 @@ impl Command {
     pub const fn new(context: ManContext) -> Self {
         Self { context }
     }
-
-    #[must_use]
-    pub const fn context(&self) -> &ManContext {
-        &self.context
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     key: ManKey,
     status: u32,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(key: ManKey, status: Status) -> Self {
-        Self {
-            key,
-            status: status.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    #[must_use]
-    pub const fn key(&self) -> &ManKey {
-        &self.key
-    }
+impl Resolve for Response {
+    type Result = ManKey;
 
-    pub fn status(&self) -> Result<Status, u32> {
-        Status::try_from(self.status)
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status).resolve().map(|_| self.key)
     }
 }

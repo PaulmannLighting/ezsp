@@ -1,13 +1,13 @@
 use std::future::Future;
 
 use siliconlabs;
-use siliconlabs::zigbee::security::ManContext;
+use siliconlabs::zigbee::security::{ManContext, ManKey};
 
 use crate::ember::Eui64;
 use crate::error::Resolve;
 use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
-    export_link_key_by_eui, export_link_key_by_index, export_transient_key_by_index,
+    export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key_by_index,
 };
 use crate::{Error, Transport};
 
@@ -27,6 +27,12 @@ pub trait Security {
     /// This function erases the data in the key table entry at the specified index.
     ///If the index is invalid, false is returned.
     fn erase_key_table_entry(&self, index: u8) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Exports a key from security manager based on passed context.
+    fn export_key(
+        &self,
+        man_context: ManContext,
+    ) -> impl Future<Output = Result<ManKey, Error>> + Send;
 
     /// Export a transient link key from a given table index.
     fn export_transient_key_by_index(
@@ -77,6 +83,12 @@ where
         ))
         .await
         .map(drop)
+    }
+
+    async fn export_key(&self, man_context: ManContext) -> Result<ManKey, Error> {
+        self.communicate::<_, export_key::Response>(export_key::Command::new(man_context))
+            .await?
+            .resolve()
     }
 
     async fn export_transient_key_by_index(

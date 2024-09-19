@@ -36,7 +36,7 @@ impl TryFrom<u16> for Bitmask {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct State {
     bitmask: u16,
     preconfigured_key: Data,

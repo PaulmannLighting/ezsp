@@ -3,14 +3,14 @@ use std::future::Future;
 use siliconlabs;
 use siliconlabs::zigbee::security::{ManContext, ManFlags, ManKey};
 
-use crate::ember::{security::current::State, Eui64, NodeId};
+use crate::ember::{security, Eui64, NodeId};
 use crate::error::Resolve;
 use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
     export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key,
     find_key_table_entry, get_aps_key_info, get_current_security_state, get_network_key_info,
     import_key, import_link_key, import_transient_key, request_link_key,
-    send_trust_center_link_key,
+    send_trust_center_link_key, set_initial_security_state,
 };
 use crate::{Error, Transport};
 
@@ -76,7 +76,9 @@ pub trait Security {
     ) -> impl Future<Output = Result<get_aps_key_info::Payload, Error>> + Send;
 
     /// Gets the current security state that is being used by a device that is joined in the network.
-    fn get_current_security_state(&self) -> impl Future<Output = Result<State, Error>> + Send;
+    fn get_current_security_state(
+        &self,
+    ) -> impl Future<Output = Result<security::current::State, Error>> + Send;
 
     /// Retrieve information about the current and alternate network key, excluding their contents.
     fn get_network_key_info(
@@ -131,6 +133,16 @@ pub trait Security {
         &self,
         destination_node_id: NodeId,
         destination_eui64: Eui64,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets the security state that will be used by the device when it forms or joins the network.
+    ///
+    /// This call should not be used when restoring saved network state via networkInit as this will
+    /// result in a loss of security data and will cause communication problems when the device
+    /// re-enters the network.
+    fn set_initial_security_state(
+        &self,
+        state: security::initial::State,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -235,7 +247,7 @@ where
         .resolve()
     }
 
-    async fn get_current_security_state(&self) -> Result<State, Error> {
+    async fn get_current_security_state(&self) -> Result<security::current::State, Error> {
         self.communicate::<_, get_current_security_state::Response>(
             get_current_security_state::Command,
         )
@@ -302,6 +314,17 @@ where
     ) -> Result<(), Error> {
         self.communicate::<_, send_trust_center_link_key::Response>(
             send_trust_center_link_key::Command::new(destination_node_id, destination_eui64),
+        )
+        .await?
+        .resolve()
+    }
+
+    async fn set_initial_security_state(
+        &self,
+        state: security::initial::State,
+    ) -> Result<(), Error> {
+        self.communicate::<_, set_initial_security_state::Response>(
+            set_initial_security_state::Command::new(state),
         )
         .await?
         .resolve()

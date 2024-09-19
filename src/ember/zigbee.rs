@@ -1,8 +1,6 @@
 use crate::ember::types::PanId;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
-use rw_exact_ext::ReadExactExt;
 use std::array::IntoIter;
-use std::io::Read;
 use std::iter::{once, Chain, Once};
 
 /// The parameters of a ZigBee network.
@@ -71,29 +69,6 @@ impl Network {
     #[must_use]
     pub const fn nwk_update_id(&self) -> u8 {
         self.nwk_update_id
-    }
-
-    /// Reads the struct from a reader
-    ///
-    /// # Errors
-    /// Returns an [`std::io::Error`] on read errors.
-    pub fn read_from<R>(src: &mut R) -> std::io::Result<Self>
-    where
-        R: Read,
-    {
-        let channel = src.read_num_le()?;
-        let pan_id = src.read_num_le()?;
-        let extended_pan_id = src.read_num_le()?;
-        let allowing_join = src.read_bool()?;
-        let [stack_profile, nwk_update_id] = src.read_array_exact()?;
-        Ok(Self {
-            channel,
-            pan_id,
-            extended_pan_id,
-            allowing_join,
-            stack_profile,
-            nwk_update_id,
-        })
     }
 }
 

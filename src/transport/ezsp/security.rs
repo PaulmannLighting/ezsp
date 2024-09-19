@@ -110,8 +110,8 @@ where
         self.communicate::<_, clear_transient_link_keys::Response>(
             clear_transient_link_keys::Command,
         )
-        .await
-        .map(drop)
+        .await?
+        .resolve()
     }
 
     async fn erase_key_table_entry(&self, index: u8) -> Result<(), Error> {

@@ -114,6 +114,7 @@ pub enum Payload {
     GroupList(Group),
 }
 
+/// Ember GP sink list entry.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct ListEntry {
     typ: u8,
@@ -129,6 +130,13 @@ impl ListEntry {
         Type::try_from(self.typ)
     }
 
+    /// Returns the payload of the list entry.
+    ///
+    /// # Returns
+    /// [`Some(Payload)`] if it is a valid type.
+    ///
+    /// # Errors
+    /// Returns `None` if the type is [`Type::Unused`].
     #[must_use]
     pub fn payload(&self) -> Option<Payload> {
         self.typ().map_or(None, |typ| match typ {

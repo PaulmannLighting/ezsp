@@ -58,11 +58,15 @@ impl TryFrom<u8> for ConcentratorType {
     }
 }
 
+/// Ember route table entry route record state.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]
 pub enum RecordState {
+    /// Route record is no longer needed.
     NoLongerNeeded = 0x00,
+    /// A route record has been sent.
     Sent = 0x01,
+    /// A route record is needed.
     Needed = 0x02,
 }
 

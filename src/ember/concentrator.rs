@@ -38,9 +38,16 @@ impl Parameters {
     }
 }
 
+/// Ember concentrator type.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[repr(u16)]
 pub enum Type {
+    /// A concentrator with insufficient memory to store source routes for the entire network.
+    ///
+    /// Route records are sent to the concentrator prior to every inbound APS unicast.
     LowRam = 0xFFF8,
+    /// A concentrator with sufficient memory to store source routes for the entire network.
+    ///
+    /// Remote nodes stop sending route records once the concentrator has successfully received one.
     HighRam = 0xFFF9,
 }

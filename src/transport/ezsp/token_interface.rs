@@ -1,7 +1,9 @@
 use crate::ember::token;
+use crate::ember::token::Data;
 use crate::error::Resolve;
 use crate::frame::parameters::token_interface::{
     get_token_count, get_token_data, get_token_info, gp_security_test_vectors, reset_node,
+    set_token_data,
 };
 use crate::Transport;
 use std::future::Future;
@@ -28,6 +30,14 @@ pub trait TokenInterface {
 
     /// Reset the node by calling `halReboot`.
     fn reset_node(&self) -> impl Future<Output = Result<(), crate::Error>> + Send;
+
+    /// Sets the token data for a single token with provided key.
+    fn set_token_data(
+        &self,
+        token: u32,
+        index: u32,
+        token_data: Data,
+    ) -> impl Future<Output = Result<(), crate::Error>> + Send;
 }
 
 impl<T> TokenInterface for T
@@ -62,5 +72,18 @@ where
         self.communicate::<_, reset_node::Response>(reset_node::Command)
             .await?
             .resolve()
+    }
+
+    async fn set_token_data(
+        &self,
+        token: u32,
+        index: u32,
+        token_data: Data,
+    ) -> Result<(), crate::Error> {
+        self.communicate::<_, set_token_data::Response>(set_token_data::Command::new(
+            token, index, token_data,
+        ))
+        .await?
+        .resolve()
     }
 }

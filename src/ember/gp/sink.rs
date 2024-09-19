@@ -16,6 +16,7 @@ pub const LIST_ENTRIES: usize = 2;
 /// Type alias for the sink status.
 pub type Status = u8;
 
+/// Ember GP sink address.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Address {
     sink_eui: Eui64,
@@ -23,6 +24,7 @@ pub struct Address {
 }
 
 impl Address {
+    /// Create a new GP sink address.
     #[must_use]
     pub const fn new(sink_eui: Eui64, sink_node_id: NodeId) -> Self {
         Self {
@@ -31,11 +33,13 @@ impl Address {
         }
     }
 
+    /// Return the EUI64 of the sink.
     #[must_use]
     pub const fn sink_eui(&self) -> Eui64 {
         self.sink_eui
     }
 
+    /// Return the node ID of the sink.
     #[must_use]
     pub const fn sink_node_id(&self) -> NodeId {
         self.sink_node_id

@@ -24,9 +24,9 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Result = u8;
+    type Output = u8;
 
-    fn resolve(self) -> Result<Self::Result, Error> {
+    fn resolve(self) -> Result<Self::Output, Error> {
         Ok(self.count)
     }
 }

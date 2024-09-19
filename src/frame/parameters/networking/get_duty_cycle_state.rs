@@ -28,9 +28,9 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Result = State;
+    type Output = State;
 
-    fn resolve(self) -> Result<Self::Result, Error> {
+    fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(self.status).resolve().and_then(|()| {
             State::try_from(self.returned_state).map_err(Error::InvalidEmberDutyCycleState)
         })

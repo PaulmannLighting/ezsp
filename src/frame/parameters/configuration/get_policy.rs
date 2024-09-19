@@ -38,9 +38,9 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Result = decision::Id;
+    type Output = decision::Id;
 
-    fn resolve(self) -> Result<Self::Result, Error> {
+    fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(self.status).resolve().and_then(|_| {
             decision::Id::try_from(self.decision_id)
                 .map_err(|id| Error::ValueError(ValueError::InvalidDecisionId(id)))

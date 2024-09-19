@@ -106,9 +106,9 @@ impl FromPrimitive for Status {
 }
 
 impl Resolve for Result<Status, u8> {
-    type Result = ();
+    type Output = ();
 
-    fn resolve(self) -> Result<Self::Result, crate::Error> {
+    fn resolve(self) -> Result<Self::Output, crate::Error> {
         match self {
             Ok(status) => status.ok().map_err(crate::Error::Ezsp),
             Err(status) => Err(crate::Error::InvalidEzspStatus(status)),

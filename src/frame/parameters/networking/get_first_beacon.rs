@@ -27,9 +27,9 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Result = Iterator;
+    type Output = Iterator;
 
-    fn resolve(self) -> Result<Self::Result, crate::Error> {
+    fn resolve(self) -> Result<Self::Output, crate::Error> {
         Status::try_from(self.status)
             .resolve()
             .map(|()| self.beacon_iterator)

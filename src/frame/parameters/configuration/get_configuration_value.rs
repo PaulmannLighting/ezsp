@@ -38,9 +38,9 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Result = u16;
+    type Output = u16;
 
-    fn resolve(self) -> Result<Self::Result, Error> {
+    fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(self.status).resolve().map(|()| self.value)
     }
 }

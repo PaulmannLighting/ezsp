@@ -29,9 +29,9 @@ impl TryFrom<u8> for Status {
 }
 
 impl Resolve for Result<Status, u8> {
-    type Result = Status;
+    type Output = Status;
 
-    fn resolve(self) -> Result<Self::Result, Error> {
+    fn resolve(self) -> Result<Self::Output, Error> {
         self.map_err(Error::InvalidEmberNetworkStatus)
     }
 }

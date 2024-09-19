@@ -39,9 +39,9 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Result = ByteSizedVec<u8>;
+    type Output = ByteSizedVec<u8>;
 
-    fn resolve(self) -> Result<Self::Result, Error> {
+    fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(self.status).resolve().map(|_| self.value)
     }
 }

@@ -29,9 +29,9 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Result = (Type, Parameters);
+    type Output = (Type, Parameters);
 
-    fn resolve(self) -> Result<Self::Result, crate::Error> {
+    fn resolve(self) -> Result<Self::Output, crate::Error> {
         Status::try_from(self.status).resolve().and_then(|()| {
             Type::try_from(self.node_type)
                 .map_err(crate::Error::InvalidEmberNodeType)

@@ -34,9 +34,9 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Result = u8;
+    type Output = u8;
 
-    fn resolve(self) -> Result<Self::Result, crate::Error> {
+    fn resolve(self) -> Result<Self::Output, crate::Error> {
         Ok(self.index)
     }
 }

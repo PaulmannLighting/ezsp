@@ -329,9 +329,9 @@ impl FromPrimitive for Status {
 }
 
 impl Resolve for Result<Status, u8> {
-    type Result = ();
+    type Output = ();
 
-    fn resolve(self) -> Result<Self::Result, Error> {
+    fn resolve(self) -> Result<Self::Output, Error> {
         match self {
             Ok(status) => status.ok().map_err(Error::Ember),
             Err(status) => Err(Error::InvalidEmberStatus(status)),

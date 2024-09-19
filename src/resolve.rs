@@ -1,19 +1,19 @@
 use crate::{Error, Result};
 
 pub trait Resolve {
-    type Result;
+    type Output;
 
     /// Resolve to a result type.
     ///
     /// # Errors
     /// Return [`Error`] in case of errors.
-    fn resolve(self) -> Result<Self::Result>;
+    fn resolve(self) -> Result<Self::Output>;
 }
 
 impl Resolve for std::result::Result<siliconlabs::Status, u32> {
-    type Result = ();
+    type Output = ();
 
-    fn resolve(self) -> Result<Self::Result> {
+    fn resolve(self) -> Result<Self::Output> {
         match self {
             Ok(status) => {
                 if status == siliconlabs::Status::Ok {

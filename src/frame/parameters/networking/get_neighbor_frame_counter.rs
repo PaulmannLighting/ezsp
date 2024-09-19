@@ -35,9 +35,9 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Result = u32;
+    type Output = u32;
 
-    fn resolve(self) -> Result<Self::Result, crate::Error> {
+    fn resolve(self) -> Result<Self::Output, crate::Error> {
         Status::try_from(self.status)
             .resolve()
             .map(|()| self.return_frame_counter)

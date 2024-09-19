@@ -33,9 +33,9 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Result = bool;
+    type Output = bool;
 
-    fn resolve(self) -> Result<Self::Result, crate::Error> {
+    fn resolve(self) -> Result<Self::Output, crate::Error> {
         Ok(self.status)
     }
 }

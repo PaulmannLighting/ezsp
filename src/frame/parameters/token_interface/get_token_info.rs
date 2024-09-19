@@ -1,10 +1,13 @@
 use crate::ember::token::Info;
 use crate::ember::Status;
+use crate::error::Resolve;
+use crate::frame::Parameter;
+use crate::Error;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0101;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     index: u8,
 }
@@ -14,34 +17,30 @@ impl Command {
     pub const fn new(index: u8) -> Self {
         Self { index }
     }
-
-    #[must_use]
-    pub const fn index(&self) -> u8 {
-        self.index
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
     token_info: Info,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status, token_info: Info) -> Self {
-        Self {
-            status: status.into(),
-            token_info,
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
+impl Resolve for Response {
+    type Result = Info;
+
+    fn resolve(self) -> Result<Self::Result, Error> {
         Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub const fn token_info(&self) -> &Info {
-        &self.token_info
+            .resolve()
+            .map(|_| self.token_info)
     }
 }

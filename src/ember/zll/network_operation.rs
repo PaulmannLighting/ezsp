@@ -1,10 +1,14 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
+/// EZSP ZLL network operation.
+/// TODO: Move this to EZSP!
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum NetworkOperation {
+    /// ZLL form network command.
     FormNetwork = 0x00,
+    /// ZLL join target command.
     JoinTarget = 0x01,
 }
 

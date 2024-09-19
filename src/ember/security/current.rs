@@ -4,13 +4,21 @@ use num_traits::FromPrimitive;
 
 use crate::ember::types::Eui64;
 
+/// Ember current security bitmask.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u16)]
 pub enum Bitmask {
+    /// This denotes that the device is running in a network with ZigBee Standard Security.
     StandardSecurityMode = 0x0000,
+    /// This denotes that the device is running in a network without a centralized Trust Center.
     DistributedTrustCenterMode = 0x0002,
+    /// This denotes that the device has a Global Link Key.
+    ///
+    /// The Trust Center Link Key is the same across multiple nodes.
     GlobalLinkKey = 0x0004,
+    /// This denotes that the node has a Trust Center Link Key.
     HaveTrustCenterLinkKey = 0x0010,
+    /// This denotes that the Trust Center is using a Hashed Link Key.
     TrustCenterUsesHashedLinkKey = 0x0084,
 }
 

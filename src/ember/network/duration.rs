@@ -52,3 +52,9 @@ impl From<Seconds> for u8 {
         value.0
     }
 }
+
+impl From<Seconds> for std::time::Duration {
+    fn from(seconds: Seconds) -> Self {
+        Self::from_secs(seconds.0.into())
+    }
+}

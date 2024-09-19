@@ -5,7 +5,6 @@ use crate::ember::{
     multi_phy::{nwk, radio},
     neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
 };
-use crate::error::Resolve;
 use crate::ezsp::network::{scan, InitBitmask};
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
@@ -23,6 +22,7 @@ use crate::frame::parameters::networking::{
     set_radio_ieee802154_cca_mode, set_radio_power, set_routing_shortcut_threshold, start_scan,
     stop_scan,
 };
+use crate::Resolve;
 use crate::{Error, Transport};
 
 /// Networking frames.

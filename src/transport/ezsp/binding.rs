@@ -2,11 +2,11 @@ use std::future::Future;
 
 use crate::ember::binding::TableEntry;
 use crate::ember::NodeId;
-use crate::error::Resolve;
 use crate::frame::parameters::binding::{
     binding_is_active, clear_binding_table, delete_binding, get_binding,
     get_binding_remote_node_id, set_binding, set_binding_remote_node_id,
 };
+use crate::Resolve;
 use crate::{Error, Transport};
 
 pub trait Binding {

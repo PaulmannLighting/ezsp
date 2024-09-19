@@ -2,9 +2,9 @@ use crate::types::ByteSizedVec;
 
 use crate::ember::aes::MmoHashContext;
 use crate::ember::Status;
-use crate::error::Resolve;
 use crate::frame::Parameter;
 use crate::Error;
+use crate::Resolve;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x006F;

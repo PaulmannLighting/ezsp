@@ -1,10 +1,10 @@
 use crate::ember::token;
 use crate::ember::token::Data;
-use crate::error::Resolve;
 use crate::frame::parameters::token_interface::{
     get_token_count, get_token_data, get_token_info, gp_security_test_vectors, reset_node,
     set_token_data, token_factory_reset,
 };
+use crate::Resolve;
 use crate::Transport;
 use std::future::Future;
 

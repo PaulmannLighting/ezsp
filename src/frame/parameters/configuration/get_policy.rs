@@ -1,7 +1,7 @@
-use crate::error::Resolve;
 use crate::ezsp::Status;
 use crate::ezsp::{decision, policy};
 use crate::frame::Parameter;
+use crate::Resolve;
 use crate::{Error, ValueError};
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 

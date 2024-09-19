@@ -4,7 +4,7 @@ pub use ash::Ash;
 pub use error::Error;
 pub use spi_err::SpiErr;
 
-use crate::error::Resolve;
+use crate::Resolve;
 
 mod ash;
 mod error;

@@ -1,3 +1,5 @@
+pub mod value;
+
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::frame::parameters::utilities::invalid_command;
@@ -112,55 +114,4 @@ impl From<String> for Error {
     fn from(msg: String) -> Self {
         Self::Custom(msg)
     }
-}
-
-pub trait Resolve {
-    type Result;
-
-    /// Resolve to a result type.
-    ///
-    /// # Errors
-    /// Return [`Error`] in case of errors.
-    fn resolve(self) -> Result<Self::Result, Error>;
-}
-
-impl Resolve for Result<siliconlabs::Status, u32> {
-    type Result = ();
-
-    fn resolve(self) -> Result<Self::Result, Error> {
-        match self {
-            Ok(status) => {
-                if status == siliconlabs::Status::Ok {
-                    Ok(())
-                } else {
-                    Err(Error::Siliconlabs(status))
-                }
-            }
-            Err(error) => Err(Error::InvalidSiliconlabsStatus(error)),
-        }
-    }
-}
-
-pub mod value {
-    use std::fmt::{Display, Formatter};
-    use std::time::Duration;
-
-    #[derive(Debug)]
-    pub enum Error {
-        DurationTooLarge(Duration),
-        InvalidDecisionId(u8),
-    }
-
-    impl Display for Error {
-        fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-            match self {
-                Self::DurationTooLarge(duration) => {
-                    write!(f, "Duration too large: {}ms", duration.as_millis())
-                }
-                Self::InvalidDecisionId(id) => write!(f, "Invalid decision ID: {id}"),
-            }
-        }
-    }
-
-    impl std::error::Error for Error {}
 }

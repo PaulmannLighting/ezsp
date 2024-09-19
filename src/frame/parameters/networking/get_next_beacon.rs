@@ -2,8 +2,8 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 use crate::ember::beacon::Data;
 use crate::ember::Status;
-use crate::error::Resolve;
 use crate::frame::Parameter;
+use crate::Resolve;
 
 const ID: u16 = 0x0004;
 

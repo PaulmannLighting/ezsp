@@ -1,8 +1,8 @@
 use super::payload::Payload;
 use crate::ember::Eui64;
-use crate::error::Resolve;
 use crate::frame::Parameter;
 use crate::Error;
+use crate::Resolve;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use siliconlabs::Status;
 

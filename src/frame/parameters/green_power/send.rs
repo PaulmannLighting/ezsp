@@ -5,9 +5,9 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 use crate::ember::gp::Address;
 use crate::ember::Status;
 use crate::error::value::Error;
-use crate::error::Resolve;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
+use crate::Resolve;
 
 const ID: u16 = 0x00C6;
 

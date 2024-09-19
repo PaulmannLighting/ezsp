@@ -1,8 +1,8 @@
-use crate::error::Resolve;
 use crate::ezsp::value::ExtendedId;
 use crate::ezsp::Status;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
+use crate::Resolve;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0003;

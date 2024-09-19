@@ -2,11 +2,11 @@ use std::future::Future;
 
 use crate::ember::aes::MmoHashContext;
 use crate::ember::key::Data;
-use crate::error::Resolve;
 use crate::frame::parameters::trust_center::{
     aes_mmo_hash, broadcast_network_key_switch, broadcast_next_network_key,
 };
 use crate::types::ByteSizedVec;
+use crate::Resolve;
 use crate::{Error, Transport};
 
 pub trait TrustCenter {

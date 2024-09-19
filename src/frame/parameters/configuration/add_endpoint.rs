@@ -1,4 +1,4 @@
-use crate::error::Resolve;
+use crate::Resolve;
 use le_stream::derive::FromLeBytes;
 use le_stream::ToLeBytes;
 use std::array::IntoIter;

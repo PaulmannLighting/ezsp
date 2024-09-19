@@ -1,6 +1,6 @@
 use super::payload::Payload;
-use crate::error::Resolve;
 use crate::frame::Parameter;
+use crate::Resolve;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use siliconlabs::Status;
 

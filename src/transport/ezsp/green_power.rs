@@ -5,9 +5,9 @@ pub use proxy_table::ProxyTable;
 pub use sink_table::SinkTable;
 
 use crate::ember::gp::Address;
-use crate::error::Resolve;
 use crate::frame::parameters::green_power::{send, sink_commission, translation_table_clear};
 use crate::types::ByteSizedVec;
+use crate::Resolve;
 use crate::{Error, Transport};
 
 mod proxy_table;

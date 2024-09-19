@@ -2,10 +2,10 @@ use itertools::Itertools;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 use crate::ember::Status;
-use crate::error::Resolve;
 use crate::ezsp::network::InitBitmask;
 use crate::frame::Parameter;
 use crate::Error;
+use crate::Resolve;
 
 const ID: u16 = 0x0017;
 

@@ -11,8 +11,8 @@ pub use phy::Phy;
 pub use serial::Serial;
 pub use sim_eeprom::SimEeprom;
 
-use crate::error::Resolve;
 use crate::Error;
+use crate::Resolve;
 
 mod adc;
 mod application;

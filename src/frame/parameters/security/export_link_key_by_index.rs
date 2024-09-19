@@ -1,6 +1,6 @@
 use crate::ember::Eui64;
-use crate::error::Resolve;
 use crate::frame::Parameter;
+use crate::Resolve;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManKey};
 use siliconlabs::Status;

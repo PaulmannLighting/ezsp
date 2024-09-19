@@ -1,8 +1,8 @@
 use crate::ember::gp::proxy::TableEntry;
 use crate::ember::Status;
-use crate::error::Resolve;
 use crate::frame::Parameter;
 use crate::Error;
+use crate::Resolve;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x00C8;

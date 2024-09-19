@@ -1,11 +1,11 @@
 use std::future::Future;
 
-use crate::error::Resolve;
 use crate::frame::parameters::mfglib::{
     end, get_channel, get_power, send_packet, set_channel, set_power, start, start_stream,
     start_tone, stop_stream, stop_tone,
 };
 use crate::types::ByteSizedVec;
+use crate::Resolve;
 use crate::{Error, Transport};
 
 pub trait Mfglib {

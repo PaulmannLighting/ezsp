@@ -1,8 +1,8 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use crate::error::Resolve;
 use crate::Error;
+use crate::Resolve;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]

@@ -1,10 +1,10 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use siliconlabs::Status;
 
-use crate::error::Resolve;
 use crate::ezsp::network::scan::Type;
 use crate::frame::Parameter;
 use crate::Error;
+use crate::Resolve;
 
 const ID: u16 = 0x001A;
 

@@ -1,7 +1,6 @@
 use std::future::Future;
 
 use crate::ember::PanId;
-use crate::error::Resolve;
 use crate::ezsp::config::Id;
 use crate::ezsp::value::ExtendedId;
 use crate::ezsp::{decision, policy, value};
@@ -11,6 +10,7 @@ use crate::frame::parameters::configuration::{
     set_policy, set_value, version, write_attribute,
 };
 use crate::types::ByteSizedVec;
+use crate::Resolve;
 use crate::{Error, Transport};
 
 pub trait Configuration {

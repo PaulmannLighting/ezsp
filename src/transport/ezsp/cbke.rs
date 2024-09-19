@@ -4,7 +4,6 @@ use crate::ember::{
     Certificate283k1Data, CertificateData, MessageDigest, PrivateKeyData, PublicKey283k1Data,
     PublicKeyData, Signature283k1Data, SignatureData,
 };
-use crate::error::Resolve;
 use crate::frame::parameters::cbke::{
     calculate_smacs, calculate_smacs283k1, clear_temporary_data_maybe_store_link_key,
     clear_temporary_data_maybe_store_link_key283k1, dsa_sign, dsa_verify, dsa_verify283k1,
@@ -12,6 +11,7 @@ use crate::frame::parameters::cbke::{
     save_preinstalled_cbke_data283k1, set_preinstalled_cbke_data,
 };
 use crate::types::ByteSizedVec;
+use crate::Resolve;
 use crate::{Error, Transport};
 
 pub trait CertificateBasedKeyExchange {

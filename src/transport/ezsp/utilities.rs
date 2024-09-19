@@ -1,9 +1,9 @@
 use std::future::Future;
 use std::time::Duration;
 
-use crate::error::Resolve;
 use crate::frame::parameters::utilities::{custom_frame, debug_write, delay_test, echo};
 use crate::types::ByteSizedVec;
+use crate::Resolve;
 use crate::{Error, Transport};
 
 pub trait Utilities {

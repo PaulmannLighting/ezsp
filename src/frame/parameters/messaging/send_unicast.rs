@@ -3,10 +3,10 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 use crate::ember::aps::Frame;
 use crate::ember::message::Outgoing;
 use crate::ember::{NodeId, Status};
-use crate::error::Resolve;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 use crate::Error;
+use crate::Resolve;
 
 const ID: u16 = 0x0034;
 

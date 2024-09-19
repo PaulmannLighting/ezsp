@@ -4,7 +4,6 @@ use siliconlabs;
 use siliconlabs::zigbee::security::{ManContext, ManFlags, ManKey};
 
 use crate::ember::{security, Eui64, NodeId};
-use crate::error::Resolve;
 use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
     export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key,
@@ -12,6 +11,7 @@ use crate::frame::parameters::security::{
     import_key, import_link_key, import_transient_key, request_link_key,
     send_trust_center_link_key, set_initial_security_state, update_tc_link_key,
 };
+use crate::Resolve;
 use crate::{Error, Transport};
 
 pub trait Security {

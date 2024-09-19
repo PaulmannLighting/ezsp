@@ -1,6 +1,6 @@
-use crate::error::Resolve;
 use crate::frame::Parameter;
 use crate::Error;
+use crate::Resolve;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 use siliconlabs::zigbee::security::ManNetworkKeyInfo;
 use siliconlabs::Status;

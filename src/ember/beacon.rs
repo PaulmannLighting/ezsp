@@ -141,6 +141,7 @@ impl Data {
     }
 }
 
+/// The parameters related to beacon prioritization.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct ClassificationParams {
     min_rssi_for_receiving_pkts: i8,
@@ -148,6 +149,7 @@ pub struct ClassificationParams {
 }
 
 impl ClassificationParams {
+    /// Create new classification parameters.
     #[must_use]
     pub const fn new(min_rssi_for_receiving_pkts: i8, beacon_classification_mask: u16) -> Self {
         Self {
@@ -156,11 +158,15 @@ impl ClassificationParams {
         }
     }
 
+    /// Return the minimum RSSI value for receiving packets that is used in some beacon
+    /// prioritization algorithms.
     #[must_use]
     pub const fn min_rssi_for_receiving_pkts(&self) -> i8 {
         self.min_rssi_for_receiving_pkts
     }
 
+    /// Return the beacon classification mask that identifies which beacon prioritization algorithm
+    /// to pick and defines the relevant parameters.
     #[must_use]
     pub const fn beacon_classification_mask(&self) -> u16 {
         self.beacon_classification_mask

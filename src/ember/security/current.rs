@@ -36,6 +36,7 @@ impl TryFrom<u16> for Bitmask {
     }
 }
 
+/// The security options and information currently used by the stack.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct State {
     bitmask: u16,
@@ -43,6 +44,7 @@ pub struct State {
 }
 
 impl State {
+    /// Create a new current security state.
     #[must_use]
     pub fn new(bitmask: Bitmask, trust_center_long_address: Eui64) -> Self {
         Self {
@@ -51,7 +53,8 @@ impl State {
         }
     }
 
-    /// Returns the bitmask.
+    /// Return the bitmask indicating the security options currently in use
+    /// by a device joined in the network.
     ///
     /// # Errors
     /// Returns the [`u16`] value of the bitmask if it is not a valid [`Bitmask`].
@@ -59,6 +62,7 @@ impl State {
         Bitmask::try_from(self.bitmask)
     }
 
+    /// Return the IEEE Address of the Trust Center device.
     #[must_use]
     pub const fn trust_center_long_address(&self) -> Eui64 {
         self.trust_center_long_address

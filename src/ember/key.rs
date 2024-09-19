@@ -38,12 +38,17 @@ impl TryFrom<u8> for Type {
     }
 }
 
+/// Ember key struct bitmask.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u16)]
 pub enum Bitmask {
+    /// The key has a sequence number associated with it.
     HasSequenceNumber = 0x00001,
+    /// The key has an outgoing frame counter associated with it.
     HasOutgoingFrameCounter = 0x0002,
+    /// The key has an incoming frame counter associated with it.
     HasIncomingFrameCounter = 0x0004,
+    /// The key has a Partner IEEE address associated with it.
     HasPartnerEui64 = 0x0008,
 }
 

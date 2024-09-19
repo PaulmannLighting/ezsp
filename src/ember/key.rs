@@ -240,13 +240,19 @@ impl TransientData {
     }
 }
 
+/// Ember key status.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
 #[repr(u8)]
 pub enum Status {
+    /// The application link key has been established.
     AppLinkKeyEstablished = 0x01,
+    /// The Trust Center link key has been established.
     TrustCenterLinkKeyEstablished = 0x03,
+    /// The key establishment process has timed out.
     KeyEstablishmentTimeout = 0x04,
+    /// The key table is full.
     KeyTableFull = 0x05,
+    /// Trust Center status.
     Tc(Tc),
 }
 

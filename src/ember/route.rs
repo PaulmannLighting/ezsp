@@ -4,7 +4,7 @@ use num_traits::FromPrimitive;
 
 const ENTRY_UNUSED: u16 = 0xFFFF;
 
-/// Ember route table status.
+/// Ember route table entry status.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]
 pub enum Status {

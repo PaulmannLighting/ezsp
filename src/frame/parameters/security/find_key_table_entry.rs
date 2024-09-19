@@ -1,4 +1,5 @@
 use crate::ember::Eui64;
+use crate::error::Resolve;
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
@@ -27,14 +28,15 @@ pub struct Response {
     index: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub const fn index(&self) -> u8 {
-        self.index
-    }
-}
-
 impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl Resolve for Response {
+    type Result = u8;
+
+    fn resolve(self) -> Result<Self::Result, crate::Error> {
+        Ok(self.index)
+    }
 }

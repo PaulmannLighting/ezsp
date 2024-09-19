@@ -176,8 +176,8 @@ where
         self.communicate::<_, find_key_table_entry::Response>(find_key_table_entry::Command::new(
             address, link_key,
         ))
-        .await
-        .map(|response| response.index())
+        .await?
+        .resolve()
     }
 
     async fn get_aps_key_info(

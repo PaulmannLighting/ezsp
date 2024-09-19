@@ -46,6 +46,7 @@ impl Address {
     }
 }
 
+/// Ember GP sink group.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Group {
     group_id: u16,
@@ -53,16 +54,19 @@ pub struct Group {
 }
 
 impl Group {
+    /// Create a new GP sink group.
     #[must_use]
     pub const fn new(group_id: u16, alias: u16) -> Self {
         Self { group_id, alias }
     }
 
+    /// Return the group ID.
     #[must_use]
     pub const fn group_id(&self) -> u16 {
         self.group_id
     }
 
+    /// Return the alias.
     #[must_use]
     pub const fn alias(&self) -> u16 {
         self.alias

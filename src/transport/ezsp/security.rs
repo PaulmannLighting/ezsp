@@ -3,12 +3,12 @@ use std::future::Future;
 use siliconlabs;
 use siliconlabs::zigbee::security::{ManContext, ManKey};
 
-use crate::ember::Eui64;
+use crate::ember::{security::current::State, Eui64};
 use crate::error::Resolve;
 use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
     export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key,
-    find_key_table_entry, get_aps_key_info,
+    find_key_table_entry, get_aps_key_info, get_current_security_state,
 };
 use crate::{Error, Transport};
 
@@ -72,6 +72,9 @@ pub trait Security {
         &self,
         context_in: ManContext,
     ) -> impl Future<Output = Result<get_aps_key_info::Payload, Error>> + Send;
+
+    /// Gets the current security state that is being used by a device that is joined in the network.
+    fn get_current_security_state(&self) -> impl Future<Output = Result<State, Error>> + Send;
 }
 
 impl<T> Security for T
@@ -171,6 +174,14 @@ where
         self.communicate::<_, get_aps_key_info::Response>(get_aps_key_info::Command::new(
             context_in,
         ))
+        .await?
+        .resolve()
+    }
+
+    async fn get_current_security_state(&self) -> Result<State, Error> {
+        self.communicate::<_, get_current_security_state::Response>(
+            get_current_security_state::Command,
+        )
         .await?
         .resolve()
     }

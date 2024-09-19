@@ -1,5 +1,6 @@
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
+/// Ember token data.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
 pub struct Data {
     size: u32,
@@ -7,16 +8,19 @@ pub struct Data {
 }
 
 impl Data {
+    /// Create new token data.
     #[must_use]
     pub const fn new(size: u32, data: [u8; 64]) -> Self {
         Self { size, data }
     }
 
+    /// Return token data size in bytes.
     #[must_use]
     pub const fn size(&self) -> u32 {
         self.size
     }
 
+    /// Return token data array.
     #[must_use]
     pub const fn data(&self) -> &[u8; 64] {
         &self.data

@@ -3,24 +3,73 @@ use std::fmt::{Display, Formatter};
 
 use num_derive::FromPrimitive;
 
+/// Ember application status.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]
 pub enum Application {
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error0 = 0xF0,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error1 = 0xF1,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error2 = 0xF2,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error3 = 0xF3,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error4 = 0xF4,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error5 = 0xF5,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error6 = 0xF6,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error7 = 0xF7,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error8 = 0xF8,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error9 = 0xF9,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error10 = 0xFA,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error11 = 0xFB,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error12 = 0xFC,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error13 = 0xFD,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error14 = 0xFE,
+    /// This error is reserved for customer application use.
+    ///
+    /// This will never be returned from any portion of the network stack or HAL.
     Error15 = 0xFF,
 }
 

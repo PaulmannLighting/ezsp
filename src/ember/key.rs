@@ -7,6 +7,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::types::Eui64;
 
+/// Type alias for Ember key data.
 pub type Data = [u8; 16];
 
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]

@@ -2,13 +2,19 @@ use le_stream::derive::{FromLeBytes, ToLeBytes};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
+/// Ember duty cycle state.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum State {
+    /// No Duty cycle tracking or metrics are taking place.
     TrackingOff = 0x00,
+    /// Duty Cycle is tracked and has not exceeded any thresholds.
     LbtNormal = 0x01,
+    /// We have exceeded the limited threshold of our total duty cycle allotment.
     LbtLimitedThresholdReached = 0x02,
+    /// We have exceeded the critical threshold of our total duty cycle allotment.
     LbtCriticalThresholdReached = 0x03,
+    /// We have reached the suspend limit and are blocking all outbound transmissions.
     LbtSuspendLimitReached = 0x04,
 }
 

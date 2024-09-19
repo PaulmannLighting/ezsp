@@ -32,11 +32,15 @@ impl TryFrom<u8> for Status {
     }
 }
 
+/// Ember route table entry concentrator type.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]
 pub enum ConcentratorType {
+    /// Destination is not a concentrator.
     NotAConcentrator = 0x00,
+    /// Destination is a Low RAM Concentrator.
     LowRam = 0x01,
+    /// Destination is a High RAM Concentrator.
     HighRam = 0x02,
 }
 

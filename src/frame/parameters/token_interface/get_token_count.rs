@@ -1,30 +1,32 @@
+use crate::error::Resolve;
+use crate::frame::Parameter;
+use crate::Error;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0100;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command;
 
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     count: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub const fn new(count: u8) -> Self {
-        Self { count }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    #[must_use]
-    pub const fn count(&self) -> u8 {
-        self.count
+impl Resolve for Response {
+    type Result = u8;
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Ok(self.count)
     }
 }

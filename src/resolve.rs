@@ -1,9 +1,13 @@
 use crate::{Error, Result};
 
+/// Resolve types into a result of a certain output type.
 pub trait Resolve {
+    /// Output type.
     type Output;
 
     /// Resolve to a result type.
+    ///
+    /// Returns `Ok(Self::Output)` if the resolution is successful.
     ///
     /// # Errors
     /// Return [`Error`] in case of errors.

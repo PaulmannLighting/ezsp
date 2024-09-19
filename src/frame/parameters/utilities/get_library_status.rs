@@ -1,9 +1,9 @@
 use crate::ember::library::{Id, Status};
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0001;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Command {
     library_id: Id,
 }
@@ -20,7 +20,7 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Response {
     status: Status,
 }

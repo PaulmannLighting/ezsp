@@ -1,11 +1,11 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::node::Type;
 use crate::ember::zll::{SecurityAlgorithmData, State};
 use crate::ember::{zigbee, Eui64, NodeId};
 
 /// The parameters of a ZLL network.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Network {
     zigbee_network: zigbee::Network,
     security_algorithm: SecurityAlgorithmData,

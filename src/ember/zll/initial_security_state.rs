@@ -1,10 +1,10 @@
 use crate::ember::key::Data;
 use crate::ember::zll::KeyIndex;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// Describes the initial security features and requirements
 /// that will be used when forming or joining ZLL networks.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct InitialSecurityState {
     bitmask: u32,
     key_index: u8,

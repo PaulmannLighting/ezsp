@@ -1,11 +1,11 @@
-use le_stream::derive::FromLeBytes;
+use le_stream::derive::FromLeStream;
 
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x0054;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     payload: ByteSizedVec<u8>,
 }

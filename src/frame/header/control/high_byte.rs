@@ -1,5 +1,5 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
-use le_stream::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 pub use frame_format_version::FrameFormatVersion;
@@ -13,7 +13,7 @@ mod frame_format_version;
 const FRAME_FORMAT_VERSION_MASK: u8 =
     FRAME_FORMAT_VERSION_MASK_LOW + FRAME_FORMAT_VERSION_MASK_HIGH;
 
-#[derive(Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct HighByte(u8);
 
 impl HighByte {

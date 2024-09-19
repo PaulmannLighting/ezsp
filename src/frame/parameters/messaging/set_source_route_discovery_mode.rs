@@ -1,11 +1,11 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 use crate::types::SourceRouteDiscoveryMode;
 
 const ID: u16 = 0x005A;
 
-#[derive(Debug, Eq, PartialEq, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     mode: u8,
 }
@@ -22,7 +22,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     remaining_time: u32,
 }

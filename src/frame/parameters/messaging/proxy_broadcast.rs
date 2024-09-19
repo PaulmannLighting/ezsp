@@ -1,4 +1,4 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::aps::Frame;
 use crate::ember::{NodeId, Status};
@@ -9,7 +9,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x0037;
 
-#[derive(Debug, Eq, PartialEq, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     source: NodeId,
     destination: NodeId,
@@ -48,7 +48,7 @@ impl Parameter for Command {
     const ID: u16 = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
     aps_sequence: u8,

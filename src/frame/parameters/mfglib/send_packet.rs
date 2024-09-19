@@ -1,4 +1,4 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::Status;
 use crate::frame::Parameter;
@@ -8,7 +8,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x0089;
 
-#[derive(Debug, Eq, PartialEq, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     content: ByteSizedVec<u8>,
 }
@@ -25,7 +25,7 @@ impl Command {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
 }

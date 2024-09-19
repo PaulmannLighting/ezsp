@@ -1,7 +1,7 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// Data associated with the ZLL security algorithm.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct SecurityAlgorithmData {
     transaction_id: u32,
     response_id: u32,

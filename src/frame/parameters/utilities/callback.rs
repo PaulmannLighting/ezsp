@@ -1,10 +1,10 @@
-use le_stream::derive::ToLeBytes;
+use le_stream::derive::ToLeStream;
 
 use crate::frame::Parameter;
 
 const ID: u16 = 0x0006;
 
-#[derive(Debug, Eq, PartialEq, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
 impl Parameter for Command {

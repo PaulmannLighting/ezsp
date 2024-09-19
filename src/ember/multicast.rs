@@ -1,4 +1,4 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// Ember multicast ID.
 pub type Id = u16;
@@ -6,7 +6,7 @@ pub type Id = u16;
 /// A multicast table entry indicates that a particular endpoint is a member of a particular multicast group.
 ///
 /// Only devices with an endpoint in a multicast group will receive messages sent to that multicast group.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct TableEntry {
     multicast_id: Id,
     endpoint: u8,

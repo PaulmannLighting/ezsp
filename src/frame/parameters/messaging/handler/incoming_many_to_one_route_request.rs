@@ -1,11 +1,11 @@
-use le_stream::derive::FromLeBytes;
+use le_stream::derive::FromLeStream;
 
 use crate::ember::{Eui64, NodeId};
 use crate::frame::Parameter;
 
 const ID: u16 = 0x007D;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     source: NodeId,
     long_id: Eui64,

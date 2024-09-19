@@ -1,13 +1,13 @@
 use crate::frame::Parameter;
 use crate::Error;
 use crate::Resolve;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 use siliconlabs::zigbee::security::ManNetworkKeyInfo;
 use siliconlabs::Status;
 
 const ID: u16 = 0x0116;
 
-#[derive(Clone, Debug, Eq, PartialEq, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
 impl Parameter for Command {
@@ -15,7 +15,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u32,
     network_key_info: ManNetworkKeyInfo,

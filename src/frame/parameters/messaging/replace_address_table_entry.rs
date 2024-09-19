@@ -1,4 +1,4 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::{Eui64, NodeId, Status};
 use crate::frame::Parameter;
@@ -7,7 +7,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x0082;
 
-#[derive(Debug, Eq, PartialEq, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     address_table_index: u8,
     new_eui64: Eui64,
@@ -37,7 +37,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Payload {
     old_eui64: Eui64,
     old_id: NodeId,
@@ -61,7 +61,7 @@ impl Payload {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
     payload: Payload,

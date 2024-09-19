@@ -11,7 +11,7 @@ pub use ezsp::{
     Mfglib, Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities,
     Wwah, Zll,
 };
-use le_stream::{FromLeBytes, ToLeBytes};
+use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
 use std::future::Future;
 
@@ -25,6 +25,6 @@ pub trait Transport: Send + Sync {
     /// Communicate with the NCP.
     fn communicate<C, R>(&self, command: C) -> impl Future<Output = Result<R, Error>> + Send + Sync
     where
-        C: Parameter + ToLeBytes,
-        R: Clone + Debug + Send + Sync + Parameter + FromLeBytes + 'static;
+        C: Parameter + ToLeStream,
+        R: Clone + Debug + Send + Sync + Parameter + FromLeStream + 'static;
 }

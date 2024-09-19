@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 pub use handler::Handler;
 pub use header::{CallbackType, Control, FrameFormatVersion, Header, HighByte, LowByte, SleepMode};
@@ -11,7 +11,7 @@ mod header;
 pub mod parameters;
 
 /// A frame that contains a header and parameters.
-#[derive(Debug, FromLeBytes, ToLeBytes)]
+#[derive(Debug, FromLeStream, ToLeStream)]
 pub struct Frame<P>
 where
     P: Parameter,

@@ -1,7 +1,7 @@
-use le_stream::derive::FromLeBytes;
+use le_stream::derive::FromLeStream;
 use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManContext, ManKey};
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Payload {
     context: ManContext,
     plaintext_key: ManKey,

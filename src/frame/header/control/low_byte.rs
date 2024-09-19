@@ -1,5 +1,5 @@
 pub use callback_type::CallbackType;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 use log::warn;
 use num_traits::FromPrimitive;
 pub use sleep_mode::SleepMode;
@@ -24,7 +24,7 @@ const SLEEP_MODE_MASK_LOW: u8 = 0b0000_0001;
 const SLEEP_MODE_MASK_HIGH: u8 = 0b0000_0010;
 const SLEEP_MODE_OFFSET: u8 = 1;
 
-#[derive(Clone, Copy, Debug, Default, Ord, PartialOrd, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Copy, Debug, Default, Ord, PartialOrd, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct LowByte(u8);
 
 impl LowByte {

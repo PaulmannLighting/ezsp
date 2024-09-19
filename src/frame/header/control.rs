@@ -2,10 +2,11 @@ mod high_byte;
 mod low_byte;
 
 pub use high_byte::{FrameFormatVersion, HighByte};
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 pub use low_byte::{CallbackType, LowByte, SleepMode};
+use num_traits::ToBytes;
 
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Control {
     low: LowByte,
     high: HighByte,

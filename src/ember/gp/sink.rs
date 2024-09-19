@@ -1,8 +1,8 @@
 /// Ember GP sink structs.
 ///
 /// For details, see https://docs.silabs.com/d/zigbee-stack-api/7.2.2/gp-types-h
-use le_stream::derive::{FromLeBytes, ToLeBytes};
-use le_stream::FromLeBytes;
+use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::FromLeStream;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -17,7 +17,7 @@ pub const LIST_ENTRIES: usize = 2;
 pub type Status = u8;
 
 /// Ember GP sink address.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Address {
     sink_eui: Eui64,
     sink_node_id: NodeId,
@@ -47,7 +47,7 @@ impl Address {
 }
 
 /// Ember GP sink group.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Group {
     group_id: u16,
     alias: u16,
@@ -115,7 +115,7 @@ pub enum Payload {
 }
 
 /// Ember GP sink list entry.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct ListEntry {
     typ: u8,
     bytes: [u8; 10], // Size of union
@@ -141,12 +141,12 @@ impl ListEntry {
     pub fn payload(&self) -> Option<Payload> {
         self.typ().map_or(None, |typ| match typ {
             Type::DGroupCast | Type::GroupCast => {
-                Group::from_le_bytes(&mut self.bytes.iter().copied())
+                Group::from_le_stream(&mut self.bytes.iter().copied())
                     .ok()
                     .map(Payload::GroupList)
             }
             Type::LwUnicast | Type::FullUnicast => {
-                Address::from_le_bytes(&mut self.bytes.iter().copied())
+                Address::from_le_stream(&mut self.bytes.iter().copied())
                     .ok()
                     .map(Payload::Unicast)
             }
@@ -156,7 +156,7 @@ impl ListEntry {
 }
 
 /// The internal representation of a sink table entry.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct TableEntry {
     status: Status,
     options: u32,

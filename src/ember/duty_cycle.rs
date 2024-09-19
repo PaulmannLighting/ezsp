@@ -1,4 +1,4 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -44,7 +44,7 @@ impl TryFrom<u8> for State {
 ///
 /// See [EmberDutyCycleLimits Struct Reference](https://docs.silabs.com/zigbee/6.6/em35x/structEmberDutyCycleLimits)
 /// for more information.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Limits {
     crit_thresh: u16,
     limit_thresh: u16,

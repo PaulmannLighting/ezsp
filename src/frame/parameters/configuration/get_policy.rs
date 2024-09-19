@@ -3,11 +3,11 @@ use crate::ezsp::{decision, policy};
 use crate::frame::Parameter;
 use crate::Resolve;
 use crate::{Error, ValueError};
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0056;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Command {
     policy_id: u8,
 }
@@ -26,7 +26,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
     decision_id: u8,

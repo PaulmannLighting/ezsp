@@ -1,7 +1,7 @@
 use std::num::TryFromIntError;
 use std::time::Duration;
 
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -67,7 +67,7 @@ impl TryFrom<u16> for Bitmask {
 }
 
 /// A structure containing a key and its associated data.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Struct {
     bitmask: u16,
     typ: u8,
@@ -149,7 +149,7 @@ impl Struct {
 }
 
 /// The transient key data structure.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct TransientData {
     eui64: Eui64,
     key_data: Data,

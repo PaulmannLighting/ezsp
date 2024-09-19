@@ -1,6 +1,6 @@
 use crate::Resolve;
-use le_stream::derive::FromLeBytes;
-use le_stream::ToLeBytes;
+use le_stream::derive::FromLeStream;
+use le_stream::ToLeStream;
 use std::array::IntoIter;
 use std::iter::{Chain, FlatMap};
 
@@ -42,7 +42,7 @@ impl Command {
     }
 }
 
-impl ToLeBytes for Command {
+impl ToLeStream for Command {
     type Iter = Chain<
         Chain<
             Chain<
@@ -60,20 +60,20 @@ impl ToLeBytes for Command {
         FlatMap<<ByteSizedVec<u16> as IntoIterator>::IntoIter, [u8; 2], fn(u16) -> [u8; 2]>,
     >;
 
-    fn to_le_bytes(self) -> Self::Iter {
+    fn to_le_stream(self) -> Self::Iter {
         self.endpoint
-            .to_le_bytes()
+            .to_le_stream()
             .into_iter()
-            .chain(self.profile_id.to_le_bytes())
-            .chain(self.device_id.to_le_bytes())
-            .chain(self.app_flags.to_le_bytes())
-            .chain((self.input_clusters.len() as u8).to_le_bytes())
+            .chain(self.profile_id.to_le_stream())
+            .chain(self.device_id.to_le_stream())
+            .chain(self.app_flags.to_le_stream())
+            .chain((self.input_clusters.len() as u8).to_le_stream())
             .chain(
                 self.input_clusters
                     .into_iter()
                     .flat_map(u16::to_le_bytes as fn(u16) -> [u8; 2]),
             )
-            .chain((self.output_clusters.len() as u8).to_le_bytes())
+            .chain((self.output_clusters.len() as u8).to_le_stream())
             .chain(
                 self.output_clusters
                     .into_iter()
@@ -87,7 +87,7 @@ impl Parameter for Command {
     const ID: u16 = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
 }

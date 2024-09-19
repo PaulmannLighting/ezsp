@@ -1,11 +1,11 @@
 use crate::ember::Status;
 use crate::ezsp::mfg_token::Id;
 use crate::types::ByteSizedVec;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x000C;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Command {
     token_id: u8,
     token_data: ByteSizedVec<u8>,
@@ -30,7 +30,7 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Response {
     status: u8,
 }

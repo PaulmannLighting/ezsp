@@ -1,9 +1,9 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::types::PanId;
 
 /// Beacon data structure.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Data {
     channel: u8,
     lqi: u8,
@@ -142,7 +142,7 @@ impl Data {
 }
 
 /// The parameters related to beacon prioritization.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct ClassificationParams {
     min_rssi_for_receiving_pkts: i8,
     beacon_classification_mask: u16,
@@ -174,7 +174,7 @@ impl ClassificationParams {
 }
 
 /// Defines an iterator that is used to loop over cached beacons.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Iterator {
     beacon: Data,
     index: u8,

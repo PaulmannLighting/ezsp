@@ -1,11 +1,11 @@
-use le_stream::derive::FromLeBytes;
+use le_stream::derive::FromLeStream;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
 
 const ID: u16 = 0x0098;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     status: u8,
 }

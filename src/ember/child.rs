@@ -1,11 +1,11 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::ember::node::Type;
 use crate::ember::types::{Eui64, NodeId};
 
 /// A structure containing a child node's data.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Data {
     eui64: Eui64,
     typ: u8,

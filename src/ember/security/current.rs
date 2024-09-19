@@ -1,4 +1,4 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -37,7 +37,7 @@ impl TryFrom<u16> for Bitmask {
 }
 
 /// The security options and information currently used by the stack.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct State {
     bitmask: u16,
     trust_center_long_address: Eui64,

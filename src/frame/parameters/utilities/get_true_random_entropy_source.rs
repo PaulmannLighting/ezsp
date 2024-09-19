@@ -1,9 +1,9 @@
 use crate::ember::entropy::Source;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x004F;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Command;
 
 impl Command {
@@ -13,7 +13,7 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Response {
     entropy_source: u8,
 }

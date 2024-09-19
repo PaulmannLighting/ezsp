@@ -1,10 +1,10 @@
 use std::num::TryFromIntError;
 use std::time::Duration;
 
-use le_stream::derive::ToLeBytes;
+use le_stream::derive::ToLeStream;
 
 /// Concentrator parameters.
-#[derive(Clone, Debug, Default, Eq, PartialEq, ToLeBytes)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, ToLeStream)]
 pub struct Parameters {
     concentrator_type: u16,
     min_time: u16,

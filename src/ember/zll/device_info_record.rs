@@ -1,8 +1,8 @@
 use crate::ember::Eui64;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// Information about a specific ZLL Device.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct DeviceInfoRecord {
     ieee_address: Eui64,
     endpoint_id: u8,

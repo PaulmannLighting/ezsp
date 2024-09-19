@@ -1,10 +1,10 @@
 use crate::frame::Parameter;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
 
 const ID: u8 = 0x00;
 
-#[derive(Debug, Eq, PartialEq, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     desired_protocol_version: u8,
 }
@@ -28,7 +28,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID as u16;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     protocol_version: u8,
     stack_type: u8,
@@ -57,7 +57,7 @@ impl Parameter for Response {
     const ID: Self::Id = ID as u16;
 }
 
-#[derive(Debug, Eq, PartialEq, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeStream)]
 pub struct LegacyCommand(Command);
 
 impl From<Command> for LegacyCommand {
@@ -71,7 +71,7 @@ impl Parameter for LegacyCommand {
     const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct LegacyResponse(Response);
 
 impl From<Response> for LegacyResponse {

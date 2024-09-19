@@ -1,4 +1,4 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::gp::security::FrameCounter;
 use crate::ember::gp::sink::{ListEntry, LIST_ENTRIES};
@@ -9,7 +9,7 @@ use crate::ember::NodeId;
 type Status = u8;
 
 /// The internal representation of a proxy table entry.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct TableEntry {
     status: Status,
     options: u32,

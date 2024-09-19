@@ -1,8 +1,8 @@
 use crate::ember::{MulticastId, NodeId};
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// ZLL address assignment data.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct AddressAssignment {
     node_id: NodeId,
     free_node_id_min: NodeId,

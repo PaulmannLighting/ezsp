@@ -1,11 +1,11 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::ember::join::Method;
 use crate::ember::types::PanId;
 
 /// Network parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Parameters {
     extended_pan_id: u64,
     pan_id: PanId,

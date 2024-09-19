@@ -2,7 +2,7 @@ use crate::frame::parameters::utilities::invalid_command;
 use crate::frame::{Frame, Parameter};
 use crate::{Error, Header};
 use ashv2::{Event, HandleResult, Handler, Response};
-use le_stream::FromLeBytes;
+use le_stream::FromLeStream;
 use log::{debug, error, warn};
 use std::fmt::Debug;
 use std::future::Future;
@@ -24,7 +24,7 @@ where
 
 impl<R> ResponseHandler<R>
 where
-    R: Parameter + FromLeBytes,
+    R: Parameter + FromLeStream,
 {
     #[must_use]
     pub const fn new(
@@ -48,7 +48,7 @@ where
         });
 
         match Self::parse_header(&mut bytes) {
-            Ok(header) => match R::from_le_bytes(&mut bytes) {
+            Ok(header) => match R::from_le_stream(&mut bytes) {
                 Ok(parameters) => {
                     self.replace_result(Ok(Frame::new(header, parameters)));
 
@@ -78,13 +78,13 @@ where
     where
         T: Iterator<Item = u8>,
     {
-        let header = Header::from_le_bytes(bytes)?;
+        let header = Header::from_le_stream(bytes)?;
 
         if header.id() == R::ID {
             Ok(header)
         } else if Into::<u16>::into(header.id()) == invalid_command::Response::ID {
             Err(Error::InvalidCommand(
-                invalid_command::Response::from_le_bytes(bytes)?,
+                invalid_command::Response::from_le_stream(bytes)?,
             ))
         } else {
             error!(
@@ -130,7 +130,7 @@ where
 
 impl<R> Default for ResponseHandler<R>
 where
-    R: Parameter + FromLeBytes,
+    R: Parameter + FromLeStream,
 {
     fn default() -> Self {
         Self::new(
@@ -164,7 +164,7 @@ where
 
 impl<R> Handler for ResponseHandler<R>
 where
-    R: Debug + Send + Sync + Parameter + FromLeBytes,
+    R: Debug + Send + Sync + Parameter + FromLeStream,
 {
     fn handle(&self, event: Event) -> HandleResult {
         match event {
@@ -201,7 +201,7 @@ where
 
 impl<R> Response for ResponseHandler<R>
 where
-    R: Clone + Debug + Send + Sync + Parameter + FromLeBytes,
+    R: Clone + Debug + Send + Sync + Parameter + FromLeStream,
 {
     type Result = R;
     type Error = Error;

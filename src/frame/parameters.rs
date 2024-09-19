@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display};
 
-use le_stream::{FromLeBytes, ToLeBytes};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::Control;
 
@@ -29,7 +29,7 @@ pub trait Parameter: Send + Sync {
         + From<Control>
         + Into<Control>
         + Into<u16>
-        + FromLeBytes
-        + ToLeBytes;
+        + FromLeStream
+        + ToLeStream;
     const ID: Self::Id;
 }

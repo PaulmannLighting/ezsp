@@ -4,7 +4,7 @@ use std::sync::atomic::Ordering::SeqCst;
 use std::sync::mpsc::Sender;
 
 use ashv2::{FrameBuffer, Host};
-use le_stream::{FromLeBytes, ToLeBytes};
+use le_stream::{FromLeStream, ToLeStream};
 use log::debug;
 use serialport::TTYPort;
 
@@ -56,12 +56,12 @@ impl Transport for Ashv2 {
 
     async fn communicate<C, R>(&self, command: C) -> Result<R, Error>
     where
-        C: Parameter + ToLeBytes,
-        R: Clone + Debug + Send + Sync + Parameter + FromLeBytes + 'static,
+        C: Parameter + ToLeStream,
+        R: Clone + Debug + Send + Sync + Parameter + FromLeStream + 'static,
     {
         let mut payload = Vec::new();
-        payload.extend(self.next_header::<R>().to_le_bytes());
-        payload.extend(command.to_le_bytes());
+        payload.extend(self.next_header::<R>().to_le_stream());
+        payload.extend(command.to_le_stream());
         debug!("Sending payload: {payload:?}");
         self.host.communicate::<ResponseHandler<R>>(&payload).await
     }

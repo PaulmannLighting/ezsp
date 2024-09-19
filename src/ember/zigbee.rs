@@ -1,10 +1,8 @@
 use crate::ember::types::PanId;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
-use std::array::IntoIter;
-use std::iter::{once, Chain, Once};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// The parameters of a ZigBee network.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Network {
     channel: u8,
     pan_id: PanId,
@@ -69,28 +67,5 @@ impl Network {
     #[must_use]
     pub const fn nwk_update_id(&self) -> u8 {
         self.nwk_update_id
-    }
-}
-
-impl IntoIterator for Network {
-    type Item = u8;
-    type IntoIter = Chain<
-        Chain<
-            Chain<
-                Chain<Chain<Once<Self::Item>, IntoIter<Self::Item, 2>>, IntoIter<Self::Item, 8>>,
-                Once<Self::Item>,
-            >,
-            IntoIter<Self::Item, 1>,
-        >,
-        IntoIter<Self::Item, 1>,
-    >;
-
-    fn into_iter(self) -> Self::IntoIter {
-        once(self.channel)
-            .chain(self.pan_id.to_le_bytes())
-            .chain(self.extended_pan_id.to_le_bytes())
-            .chain(once(self.allowing_join.into()))
-            .chain(self.stack_profile.to_le_bytes())
-            .chain(self.nwk_update_id.to_le_bytes())
     }
 }

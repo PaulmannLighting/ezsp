@@ -1,4 +1,4 @@
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -85,7 +85,7 @@ impl TryFrom<u8> for RecordState {
 }
 
 /// A route table entry stores information about the next hop along the route to the destination.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct TableEntry {
     destination: u16,
     next_hop: u16,

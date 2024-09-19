@@ -1,11 +1,11 @@
-use le_stream::derive::FromLeBytes;
+use le_stream::derive::FromLeStream;
 
 use crate::ember::zigbee::Network;
 use crate::frame::Parameter;
 
 const ID: u16 = 0x001B;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     network_found: Network,
     last_hop_lqi: u8,

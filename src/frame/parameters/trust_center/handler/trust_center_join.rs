@@ -1,4 +1,4 @@
-use le_stream::derive::FromLeBytes;
+use le_stream::derive::FromLeStream;
 
 use crate::ember::device::Update;
 use crate::ember::join::Decision;
@@ -7,7 +7,7 @@ use crate::frame::Parameter;
 
 const ID: u16 = 0x0024;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     new_node_id: NodeId,
     new_node_eui64: Eui64,

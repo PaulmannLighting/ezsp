@@ -1,4 +1,4 @@
-use le_stream::derive::FromLeBytes;
+use le_stream::derive::FromLeStream;
 
 use crate::ember::Eui64;
 use crate::frame::Parameter;
@@ -6,7 +6,7 @@ use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x0092;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     long_id: Eui64,
     last_hop_lqi: u8,

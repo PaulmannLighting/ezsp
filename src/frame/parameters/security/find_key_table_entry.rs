@@ -1,11 +1,11 @@
 use crate::ember::Eui64;
 use crate::frame::Parameter;
 use crate::Resolve;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0075;
 
-#[derive(Clone, Debug, Eq, PartialEq, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     address: Eui64,
     link_key: bool,
@@ -23,7 +23,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     index: u8,
 }

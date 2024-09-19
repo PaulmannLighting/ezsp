@@ -1,13 +1,13 @@
 use crate::ember::Eui64;
 use crate::frame::Parameter;
 use crate::Resolve;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManKey};
 use siliconlabs::Status;
 
 const ID: u16 = 0x010F;
 
-#[derive(Debug, Eq, PartialEq, ToLeBytes)]
+#[derive(Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     index: u8,
 }
@@ -29,7 +29,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     eui: Eui64,
     plaintext_key: ManKey,

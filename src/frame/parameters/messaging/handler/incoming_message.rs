@@ -1,4 +1,4 @@
-use le_stream::derive::FromLeBytes;
+use le_stream::derive::FromLeStream;
 
 use crate::ember::aps::Frame;
 use crate::ember::message::Incoming;
@@ -8,7 +8,7 @@ use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x0045;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     typ: u8,
     aps_frame: Frame,

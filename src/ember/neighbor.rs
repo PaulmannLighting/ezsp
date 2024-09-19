@@ -1,9 +1,9 @@
 use crate::ember::types::Eui64;
-use le_stream::derive::{FromLeBytes, ToLeBytes};
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// A neighbor table entry stores information about the
 /// reliability of RF links to and from neighboring nodes.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct TableEntry {
     short_id: u16,
     average_lqi: u8,

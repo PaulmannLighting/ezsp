@@ -292,20 +292,33 @@ impl TryFrom<u8> for Status {
     }
 }
 
+/// Ember key Trust Center status.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum Tc {
+    /// The Trust Center has responded to request for an application key.
     RespondedToKeyRequest = 0x06,
+    /// The Trust Center has sent the application key to the requester.
     AppKeySentToRequester = 0x07,
+    /// The Trust Center has failed to respond to a request for an application key.
     ResponseToKeyRequestFailed = 0x08,
+    /// The Trust Center does not support the key type requested.
     RequestKeyTypeNotSupported = 0x09,
+    /// The Trust Center does not have a link key for the requester.
     NoLinkKeyForRequester = 0x0A,
+    /// The Trust Center does not have a EUI64 for the requester.
     RequesterEui64Unknown = 0x0B,
+    /// The Trust Center has received the first application key request.
     ReceivedFirstAppKeyRequest = 0x0C,
+    /// The Trust Center has timed out waiting for the second application key request.
     TimeoutWaitingForSecondAppKeyRequest = 0x0D,
+    /// The Trust Center has received a request for an application key that does not match the key it is expecting.
     NonMatchingAppKeyRequestReceived = 0x0E,
+    /// The Trust Center has failed to send the application keys.
     FailedToSendAppKeys = 0x0F,
+    /// The Trust Center has failed to store the application key request.
     FailedToStoreAppKeyRequest = 0x10,
+    /// The Trust Center has rejected the application key request.
     RejectedAppKeyRequest = 0x11,
 }
 

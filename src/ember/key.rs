@@ -10,12 +10,17 @@ use crate::ember::types::Eui64;
 /// Type alias for Ember key data.
 pub type Data = [u8; 16];
 
+/// Ember key type.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum Type {
+    /// A shared key between the Trust Center and a device.
     TrustCenterLinkKey = 0x01,
+    /// The current active Network Key used by all devices in the network.
     CurrentNetworkKey = 0x03,
+    /// The alternate Network Key that was previously in use, or the newer key that will be switched to.
     NextNetworkKey = 0x04,
+    /// An Application Link Key shared with another (non-Trust Center) device.
     ApplicationLinkKey = 0x05,
 }
 

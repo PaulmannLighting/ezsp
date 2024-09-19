@@ -1,9 +1,12 @@
 use crate::ember::{Eui64, NodeId, Status};
+use crate::error::Resolve;
+use crate::frame::Parameter;
+use crate::Error;
 use le_stream::derive::{FromLeBytes, ToLeBytes};
 
 const ID: u16 = 0x0067;
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeBytes)]
 pub struct Command {
     destination_node_id: NodeId,
     destination_eui64: Eui64,
@@ -17,32 +20,27 @@ impl Command {
             destination_eui64,
         }
     }
-
-    #[must_use]
-    pub const fn destination_node_id(&self) -> NodeId {
-        self.destination_node_id
-    }
-
-    #[must_use]
-    pub const fn destination_eui64(&self) -> Eui64 {
-        self.destination_eui64
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeBytes)]
 pub struct Response {
     status: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+impl Resolve for Response {
+    type Result = ();
+
+    fn resolve(self) -> Result<Self::Result, Error> {
+        Status::try_from(self.status).resolve()
     }
 }

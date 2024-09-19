@@ -3,13 +3,14 @@ use std::future::Future;
 use siliconlabs;
 use siliconlabs::zigbee::security::{ManContext, ManFlags, ManKey};
 
-use crate::ember::{security::current::State, Eui64};
+use crate::ember::{security::current::State, Eui64, NodeId};
 use crate::error::Resolve;
 use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,
     export_key, export_link_key_by_eui, export_link_key_by_index, export_transient_key,
     find_key_table_entry, get_aps_key_info, get_current_security_state, get_network_key_info,
     import_key, import_link_key, import_transient_key, request_link_key,
+    send_trust_center_link_key,
 };
 use crate::{Error, Transport};
 
@@ -122,6 +123,15 @@ pub trait Security {
     /// Sleepy devices should poll at a higher rate until a response is received or the request times out.
     /// The success or failure of the request is returned via `ezspZigbeeKeyEstablishmentHandler(...)`.
     fn request_link_key(&self, partner: Eui64) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This function sends an APS TransportKey command containing the current trust center link key.
+    ///
+    /// The node to which the command is sent is specified via the short and long address arguments.
+    fn send_trust_center_link_key(
+        &self,
+        destination_node_id: NodeId,
+        destination_eui64: Eui64,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Security for T
@@ -283,5 +293,17 @@ where
         self.communicate::<_, request_link_key::Response>(request_link_key::Command::new(partner))
             .await?
             .resolve()
+    }
+
+    async fn send_trust_center_link_key(
+        &self,
+        destination_node_id: NodeId,
+        destination_eui64: Eui64,
+    ) -> Result<(), Error> {
+        self.communicate::<_, send_trust_center_link_key::Response>(
+            send_trust_center_link_key::Command::new(destination_node_id, destination_eui64),
+        )
+        .await?
+        .resolve()
     }
 }

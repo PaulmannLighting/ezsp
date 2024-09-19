@@ -103,10 +103,14 @@ impl TryFrom<u8> for Type {
     }
 }
 
+/// Ember GP sink payload.
 #[derive(Debug, Eq, PartialEq)]
 pub enum Payload {
+    /// Unicast.
     Unicast(Address),
+    /// Group cast.
     GroupCast(Group),
+    /// Group list.
     GroupList(Group),
 }
 

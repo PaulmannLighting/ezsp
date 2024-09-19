@@ -64,6 +64,8 @@ impl std::error::Error for Error {
         match self {
             #[cfg(feature = "ashv2")]
             Self::Ashv2(error) => Some(error),
+            Self::IncompleteData(error) => Some(error),
+            Self::ValueError(error) => Some(error),
             _ => None,
         }
     }

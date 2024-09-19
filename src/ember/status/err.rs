@@ -9,9 +9,12 @@ pub use flash::Flash;
 mod bootloader;
 mod flash;
 
+/// Ember error status.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 pub enum Err {
+    /// Ember flash error status.
     Flash(Flash),
+    /// Ember bootloader error status.
     Bootloader(Bootloader),
 }
 

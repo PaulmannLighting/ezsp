@@ -34,12 +34,6 @@ pub trait Security {
         man_context: ManContext,
     ) -> impl Future<Output = Result<ManKey, Error>> + Send;
 
-    /// Export a transient link key from a given table index.
-    fn export_transient_key_by_index(
-        &self,
-        index: u8,
-    ) -> impl Future<Output = Result<export_transient_key_by_index::Response, Error>> + Send;
-
     /// Export the link key associated with the given EUI from the key table.
     fn export_link_key_by_eui(
         &self,
@@ -51,6 +45,12 @@ pub trait Security {
         &self,
         index: u8,
     ) -> impl Future<Output = Result<export_link_key_by_index::Response, Error>> + Send;
+
+    /// Export a transient link key from a given table index.
+    fn export_transient_key_by_index(
+        &self,
+        index: u8,
+    ) -> impl Future<Output = Result<export_transient_key_by_index::Response, Error>> + Send;
 }
 
 impl<T> Security for T
@@ -91,17 +91,6 @@ where
             .resolve()
     }
 
-    async fn export_transient_key_by_index(
-        &self,
-        index: u8,
-    ) -> Result<export_transient_key_by_index::Response, Error> {
-        self.communicate::<_, export_transient_key_by_index::Response>(
-            export_transient_key_by_index::Command::new(index),
-        )
-        .await?
-        .resolve()
-    }
-
     async fn export_link_key_by_eui(
         &self,
         eui: Eui64,
@@ -119,6 +108,17 @@ where
     ) -> Result<export_link_key_by_index::Response, Error> {
         self.communicate::<_, export_link_key_by_index::Response>(
             export_link_key_by_index::Command::new(index),
+        )
+        .await?
+        .resolve()
+    }
+
+    async fn export_transient_key_by_index(
+        &self,
+        index: u8,
+    ) -> Result<export_transient_key_by_index::Response, Error> {
+        self.communicate::<_, export_transient_key_by_index::Response>(
+            export_transient_key_by_index::Command::new(index),
         )
         .await?
         .resolve()

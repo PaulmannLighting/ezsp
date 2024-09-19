@@ -13,6 +13,7 @@ use crate::ember::{gp, Eui64, NodeId};
 /// Amount of entries in a sink list.
 pub const LIST_ENTRIES: usize = 2;
 
+/// Type alias for the sink status.
 pub type Status = u8;
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeBytes, ToLeBytes)]

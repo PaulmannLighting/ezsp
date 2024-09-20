@@ -90,28 +90,38 @@ impl TryFrom<u8> for Id {
     }
 }
 
+/// This is the policy decision bitmask that controls the trust center decision strategies.
+///
+/// The bitmask is modified and extracted from the [`Id`] for supporting bitmask operations.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
-#[repr(u8)]
+#[repr(u16)]
 pub enum Bitmask {
-    Default = 0x00,
-    AllowJoins = 0x01,
-    AllowUnsecuredRejoins = 0x02,
-    SendKeyInClear = 0x04,
-    IgnoreUnsecuredRejoins = 0x08,
-    JoinsUseInstallCodeKey = 0x10,
-    DeferJoins = 0x20,
+    /// Disallow joins and rejoins.
+    Default = 0x0000,
+    /// Send the network key to all joining devices.
+    AllowJoins = 0x0001,
+    /// Send the network key to all rejoining devices.
+    AllowUnsecuredRejoins = 0x0002,
+    /// Send the network key in the clear.
+    SendKeyInClear = 0x0004,
+    /// Do nothing for unsecured rejoins.
+    IgnoreUnsecuredRejoins = 0x0008,
+    /// Allow joins if there is an entry in the transient key table.
+    JoinsUseInstallCodeKey = 0x0010,
+    /// Delay sending the network key to a new joining device.
+    DeferJoins = 0x0020,
 }
 
-impl From<Bitmask> for u8 {
+impl From<Bitmask> for u16 {
     fn from(bitmask: Bitmask) -> Self {
         bitmask as Self
     }
 }
 
-impl TryFrom<u8> for Bitmask {
-    type Error = u8;
+impl TryFrom<u16> for Bitmask {
+    type Error = u16;
 
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::from_u8(value).ok_or(value)
+    fn try_from(value: u16) -> Result<Self, Self::Error> {
+        Self::from_u16(value).ok_or(value)
     }
 }

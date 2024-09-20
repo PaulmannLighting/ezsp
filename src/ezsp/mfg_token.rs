@@ -6,9 +6,12 @@ pub use stack::Stack;
 mod mfg;
 mod stack;
 
+/// Manufacturing token IDs used by `ezspGetMfgToken()`.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Id {
+    /// IDs pertaining to the manufacturer.
     Mfg(Mfg),
+    /// IDs pertaining to the stack.
     Stack(Stack),
 }
 

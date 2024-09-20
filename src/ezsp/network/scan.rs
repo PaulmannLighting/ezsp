@@ -9,7 +9,9 @@ use num_traits::FromPrimitive;
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]
 pub enum Type {
+    /// An energy scan scans each channel for its RSSI value.
     EnergyScan = 0x00,
+    /// An active scan scans each channel for available networks.
     ActiveScan = 0x01,
 }
 

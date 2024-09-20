@@ -3,11 +3,16 @@ use num_traits::FromPrimitive;
 
 pub mod scan;
 
+/// Bitmask options for `emberNetworkInit()`.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u16)]
 pub enum InitBitmask {
+    /// No options for Network Init.
     NoOptions = 0x0000,
+    /// Save parent info (node ID and EUI64) in a token during joining/rejoin,
+    /// and restore on reboot.
     ParentInfoInToken = 0x0001,
+    /// Send a rejoin request as an end device on reboot if parent information is persisted.
     EndDeviceRejoinOnReboot = 0x0002,
 }
 

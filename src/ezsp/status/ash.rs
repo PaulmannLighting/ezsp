@@ -61,7 +61,7 @@ impl TryFrom<Values> for Ash {
             Values::AshStatus => Ok(Self::Misc(Misc::Status)),
             Values::AshTx => Ok(Self::Misc(Misc::Tx)),
             Values::AshRx => Ok(Self::Misc(Misc::Rx)),
-            value => Err(value),
+            _ => Err(value),
         }
     }
 }

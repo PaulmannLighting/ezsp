@@ -1,44 +1,47 @@
-/// Type alias for the Ember node ID.
+/// 16-bit ZigBee network address.
 pub type NodeId = u16;
 
-/// Type alias for the Ember PAN ID.
+/// 802.15.4 PAN ID.
 pub type PanId = u16;
 
-/// Type alias for the Ember multicast ID.
+/// 16-bit ZigBee multicast group identifier.
 pub type MulticastId = u16;
 
-/// Type alias for the Eui64.
+/// EUI 64-bit ID (an IEEE address).
 pub type Eui64 = u64;
 
-/// Type alias for the Ember certificate data.
+/// The implicit certificate used in CBKE.
 pub type CertificateData = [u8; 48];
 
-/// Type alias for the Ember public key data.
+/// The public key data used in CBKE.
 pub type PublicKeyData = [u8; 22];
 
-/// Type alias for the Ember private key data.
+/// The private key data used in CBKE.
 pub type PrivateKeyData = [u8; 21];
 
-/// Type alias for the Ember SMAC data.
+/// The Shared Message Authentication Code data used in CBKE.
 pub type SmacData = [u8; 16];
 
-/// Type alias for the Ember signature data.
+/// An ECDSA signature
 pub type SignatureData = [u8; 42];
 
-/// Type alias for the Ember certificate 283k1 data.
+/// The implicit certificate used in CBKE.
 pub type Certificate283k1Data = [u8; 74];
 
-/// Type alias for the Ember public key 283k1 data.
+/// The public key data used in CBKE.
 pub type PublicKey283k1Data = [u8; 37];
 
-/// Type alias for the Ember private key 283k1 data.
+/// The private key data used in CBKE.
 pub type PrivateKey283k1Data = [u8; 36];
 
-/// Type alias for the Ember signature 283k1 data.
+/// An ECDSA signature
 pub type Signature283k1Data = [u8; 72];
 
-/// Type alias for the Ember message digest.
+/// The calculated digest of a message
 pub type MessageDigest = [u8; 16];
 
-/// Type alias for the Ember device duty cycles.
+/// Consumed duty cycles up to maxDevices.
+///
+/// When the number of children that are being monitored is less than maxDevices,
+/// the `EmberNodeId` element in the `EmberPerDeviceDutyCycle` will be `0xFFFF`.
 pub type DeviceDutyCycles = [u8; 134];

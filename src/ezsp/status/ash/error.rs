@@ -1,10 +1,11 @@
 use crate::ezsp::status::values::Values;
 use num_traits::FromPrimitive;
 
+/// ASH-related errors.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Error {
     /// Fatal error detected by NCP.
-    NcpFatalError,
+    NcpFatal,
     /// Incompatible ASH version.
     Version,
     /// Exceeded max ACK timeouts.
@@ -24,7 +25,7 @@ pub enum Error {
 impl From<Error> for Values {
     fn from(error: Error) -> Self {
         match error {
-            Error::NcpFatalError => Self::AshNcpFatalError,
+            Error::NcpFatal => Self::AshNcpFatalError,
             Error::Version => Self::AshErrorVersion,
             Error::Timeouts => Self::AshErrorTimeouts,
             Error::ResetFail => Self::AshErrorResetFail,
@@ -41,7 +42,7 @@ impl TryFrom<Values> for Error {
 
     fn try_from(value: Values) -> Result<Self, Self::Error> {
         match value {
-            Values::AshNcpFatalError => Ok(Self::NcpFatalError),
+            Values::AshNcpFatalError => Ok(Self::NcpFatal),
             Values::AshErrorVersion => Ok(Self::Version),
             Values::AshErrorTimeouts => Ok(Self::Timeouts),
             Values::AshErrorResetFail => Ok(Self::ResetFail),

@@ -84,7 +84,7 @@ impl From<Values> for Status {
             Values::SpiErrUnsupportedSpiCommand => Self::SpiErr(SpiErr::UnsupportedSpiCommand),
             Values::AshInProgress => Self::Ash(Ash::Misc(ash::Misc::InProgress)),
             Values::HostFatalError => Self::HostFatalError,
-            Values::AshNcpFatalError => Self::Ash(Ash::Error(ash::Error::NcpFatalError)),
+            Values::AshNcpFatalError => Self::Ash(Ash::Error(ash::Error::NcpFatal)),
             Values::DataFrameTooLong => Self::DataFrameTooLong,
             Values::DataFrameTooShort => Self::DataFrameTooShort,
             Values::NoTxSpace => Self::NoTxSpace,
@@ -228,7 +228,7 @@ impl From<Status> for Values {
                     ash::Misc::Rx => Self::AshRx,
                 },
                 Ash::Error(error) => match error {
-                    ash::Error::NcpFatalError => Self::AshNcpFatalError,
+                    ash::Error::NcpFatal => Self::AshNcpFatalError,
                     ash::Error::Version => Self::AshErrorVersion,
                     ash::Error::Timeouts => Self::AshErrorTimeouts,
                     ash::Error::ResetFail => Self::AshErrorResetFail,

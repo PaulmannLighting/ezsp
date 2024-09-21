@@ -30,7 +30,7 @@ impl TryFrom<Values> for Ash {
 
     fn try_from(value: Values) -> Result<Self, <Self as TryFrom<Values>>::Error> {
         match value {
-            Values::AshNcpFatalError => Ok(Self::Error(Error::NcpFatalError)),
+            Values::AshNcpFatalError => Ok(Self::Error(Error::NcpFatal)),
             Values::AshErrorVersion => Ok(Self::Error(Error::Version)),
             Values::AshErrorTimeouts => Ok(Self::Error(Error::Timeouts)),
             Values::AshErrorResetFail => Ok(Self::Error(Error::ResetFail)),

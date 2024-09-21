@@ -14,8 +14,11 @@ pub enum Error {
     ResetFail,
     /// Unexpected ncp reset.
     NcpReset,
+    /// Invalid ncp processor type.
     NcpType,
+    /// Invalid ncp reset method.
     ResetMethod,
+    /// XON/XOFF not supported by host driver.
     XOnXOff,
 }
 

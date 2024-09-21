@@ -2,6 +2,8 @@ use std::fmt::{Debug, Display, Formatter};
 
 use num_traits::FromPrimitive;
 
+use crate::Error;
+use crate::Resolve;
 pub use adc::Adc;
 pub use application::Application;
 pub use eeprom::Eeprom;
@@ -10,9 +12,7 @@ pub use mac::Mac;
 pub use phy::Phy;
 pub use serial::Serial;
 pub use sim_eeprom::SimEeprom;
-
-use crate::Error;
-use crate::Resolve;
+use values::Values;
 
 mod adc;
 mod application;
@@ -25,19 +25,18 @@ mod sim_eeprom;
 mod values;
 
 /// Ember status.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
-#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Status {
     /// The generic 'no error' message.
-    Success = 0x00,
+    Success,
     /// The generic 'fatal error' message.
-    ErrFatal = 0x01,
+    ErrFatal,
     /// An invalid value was passed as an argument to a function.
-    BadArgument = 0x02,
+    BadArgument,
     /// EEPROM status.
     Eeprom(Eeprom),
     /// There are no more buffers.
-    NoBuffers = 0x18,
+    NoBuffers,
     /// Serial status.
     Serial(Serial),
     /// MAC status.
@@ -47,142 +46,142 @@ pub enum Status {
     /// Erroneous messages.
     Err(err::Err),
     /// The APS layer attempted to send or deliver a message, but it failed.
-    DeliveryFailed = 0x66,
+    DeliveryFailed,
     /// This binding index is out of range of the current binding table.
-    BindingIndexOutOfRange = 0x69,
+    BindingIndexOutOfRange,
     /// This address table index is out of range for the current address table.
-    AddressTableIndexOutOfRange = 0x6A,
+    AddressTableIndexOutOfRange,
     /// An invalid binding table index was given to a function.
-    InvalidBindingIndex = 0x6C,
+    InvalidBindingIndex,
     /// The API call is not allowed given the current state of the stack.
-    InvalidCall = 0x70,
+    InvalidCall,
     /// The link cost to a node is not known.
-    CostNotKnown = 0x71,
+    CostNotKnown,
     /// The maximum number of in-flight messages (i.e. EMBER_APS_UNICAST_MESSAGE_COUNT) has been reached.
-    MaxMessageLimitReached = 0x72,
+    MaxMessageLimitReached,
     /// The message to be transmitted is too big to fit into a single over-the-air packet.
-    MessageTooLong = 0x74,
+    MessageTooLong,
     /// The application is trying to delete or overwrite a binding that is in use.
-    BindingIsActive = 0x75,
+    BindingIsActive,
     /// The application is trying to overwrite an address table entry that is in use.
-    AddressTableEntryIsActive = 0x76,
+    AddressTableEntryIsActive,
     /// ADC status.
     Adc(Adc),
     /// Sleeping (for a duration) has been abnormally interrupted and exited prematurely.
-    SleepInterrupted = 0x85,
+    SleepInterrupted,
     /// PHY status.
     Phy(Phy),
     /// The stack software has completed initialization and is ready to send and receive packets over the air.
-    NetworkUp = 0x90,
+    NetworkUp,
     /// The network is not operating.
-    NetworkDown = 0x91,
+    NetworkDown,
     /// The node has not joined a network.
-    NotJoined = 0x93,
+    NotJoined,
     /// An attempt to join a network failed.
-    JoinFailed = 0x94,
+    JoinFailed,
     /// The chosen security level (the value of `EMBER_SECURITY_LEVEL`) is not supported by the stack.
-    InvalidSecurityLevel = 0x95,
+    InvalidSecurityLevel,
     /// After moving, a mobile node's attempt to re-establish contact with the network failed.
-    MoveFailed = 0x96,
+    MoveFailed,
     /// An attempt to join as a router failed due to a ZigBee versus ZigBee Pro incompatibility.
     ///
     /// ZigBee devices joining ZigBee Pro networks (or vice versa) must join as End Devices, not Routers.
-    CannotJoinAsRouter = 0x98,
+    CannotJoinAsRouter,
     /// The local node ID has changed.
     ///
     /// The application can obtain the new node ID by calling `emberGetNodeId()`.
-    NodeIdChanged = 0x99,
+    NodeIdChanged,
     /// The local PAN ID has changed.
     ///
     /// The application can obtain the new PAN ID by calling `emberGetPanId()`.
-    PanIdChanged = 0x9A,
+    PanIdChanged,
     /// The network has been opened for joining.
-    NetworkOpened = 0x9C,
+    NetworkOpened,
     /// The network has been closed for joining.
-    NetworkClosed = 0x9D,
+    NetworkClosed,
     /// An attempt to join or rejoin the network failed because
     /// no router beacons could be heard by the joining node.
-    NoBeacons = 0xAB,
+    NoBeacons,
     /// An attempt was made to join a Secured Network using a pre-configured key,
     /// but the Trust Center sent back a Network Key in-the-clear when an encrypted
     /// Network Key was required.
-    ReceivedKeyInTheClear = 0xAC,
+    ReceivedKeyInTheClear,
     /// An attempt was made to join a Secured Network, but the device did not receive a Network Key.
-    NoNetworkKeyReceived = 0xAD,
+    NoNetworkKeyReceived,
     /// After a device joined a Secured Network, a Link Key was requested but no response was ever received.
-    NoLinkKeyReceived = 0xAE,
+    NoLinkKeyReceived,
     /// An attempt was made to join a Secured Network without a pre-configured key,
     /// but the Trust Center sent encrypted data using a pre-configured key.
-    PreconfiguredKeyRequired = 0xAF,
+    PreconfiguredKeyRequired,
     /// A message cannot be sent because the network is currently overloaded.
-    NetworkBusy = 0xA1,
+    NetworkBusy,
     /// The application tried to send a message using an endpoint that it has not defined.
-    InvalidEndpoint = 0xA3,
+    InvalidEndpoint,
     /// The application tried to use a binding that has been remotely modified
     /// and the change has not yet been reported to the application.
-    BindingHasChanged = 0xA4,
+    BindingHasChanged,
     /// An attempt to generate random bytes failed because of insufficient random data from the radio.
-    InsufficientRandomData = 0xA5,
+    InsufficientRandomData,
     /// There was an error in trying to encrypt at the APS  Level.
     ///
     /// This could result from either an inability to determine the long address of the
     /// recipient from the short address (no entry in the binding table) or there is no
     /// link key entry in the table associated with the destination, or there was a failure
     /// to load the correct key into the encryption core.
-    ApsEncryptionError = 0xA6,
+    ApsEncryptionError,
     /// There was an attempt to form or join a network with security
     /// without calling `emberSetInitialSecurityState()` first.
-    SecurityStateNotSet = 0xA8,
+    SecurityStateNotSet,
     /// A ZigBee route error command frame was received indicating that
     /// a source routed message from this node failed en route
-    SourceRouteFailure = 0xA9,
+    SourceRouteFailure,
     /// A ZigBee route error command frame was received indicating that a message sent
     /// to this node along a many-to-one route failed en route.
     ///
     /// The route error frame was delivered by an ad-hoc search for a functioning route.
-    ManyToOneRouteFailure = 0xAA,
+    ManyToOneRouteFailure,
     /// A critical and fatal error indicating that the version of the stack trying
     /// to run does not match with the chip it is running on.
     ///
     /// The software (stack) on the chip must be replaced with software
     /// that is compatible with the chip.
-    StackAndHardwareMismatch = 0xB0,
+    StackAndHardwareMismatch,
     /// An index was passed into the function that was larger than the valid range.
-    IndexOutOfRange = 0xB1,
+    IndexOutOfRange,
     /// There was an attempt to set an entry in the key table  using an invalid long address.
     ///
     /// An entry cannot be set using either the local device's or Trust Center's IEEE address.
     /// Or an entry already exists in the table with the same IEEE address.
     /// An Address of all zeros or  all F's are not valid addresses in 802.15.4.
-    KeyTableInvalidAddress = 0xB3,
+    KeyTableInvalidAddress,
     /// There are no empty entries left in the table.
-    TableFull = 0xB4,
+    TableFull,
     /// The requested function cannot be executed because the library that contains
     /// the necessary functionality is not present.
-    LibraryNotPresent = 0xB5,
+    LibraryNotPresent,
     /// The requested table entry has been erased and contains no valid data.
-    TableEntryErased = 0xB6,
+    TableEntryErased,
     /// There was an attempt to set a security configuration that is not valid
     /// given the other security settings.
-    SecurityConfigurationInvalid = 0xB7,
+    SecurityConfigurationInvalid,
     /// There was an attempt to broadcast a key switch too quickly after broadcasting the next network key.
     ///
     /// The Trust Center must wait at least a period equal to the broadcast timeout
     /// so that all routers have a chance to receive the broadcast of the new network key.
-    TooSoonForSwitchKey = 0xB8,
+    TooSoonForSwitchKey,
     /// The stack accepted the command and is currently processing the request.
     ///
     /// The results will be returned via an appropriate handler.
-    OperationInProgress = 0xBA,
+    OperationInProgress,
     /// The message could not be sent because the link key corresponding to the destination
     /// is not authorized for use in APS data messages.
     ///
     /// APS Commands (sent by the stack) are allowed.
     /// To use it for encryption of APS data messages it must be authorized using
     /// a key agreement protocol (such as CBKE).
-    KeyNotAuthorized = 0xBB,
+    KeyNotAuthorized,
     /// The security data provided was not valid, or an integrity check failed.
-    SecurityDataInvalid = 0xBD,
+    SecurityDataInvalid,
     /// Application status.
     Application(Application),
 }
@@ -286,6 +285,197 @@ impl std::error::Error for Status {
             Self::Phy(phy) => Some(phy),
             Self::Application(application) => Some(application),
             _ => None,
+        }
+    }
+}
+
+impl From<Status> for Values {
+    fn from(value: Status) -> Self {
+        match value {
+            Status::Success => Values::Success,
+            Status::ErrFatal => Values::ErrFatal,
+            Status::BadArgument => Values::BadArgument,
+            Status::Eeprom(eeprom) => eeprom.into(),
+            Status::NoBuffers => Values::NoBuffers,
+            Status::Serial(serial) => serial.into(),
+            Status::Mac(mac) => mac.into(),
+            Status::SimEeprom(sim_eeprom) => sim_eeprom.into(),
+            Status::Err(err) => err.into(),
+            Status::DeliveryFailed => Values::DeliveryFailed,
+            Status::BindingIndexOutOfRange => Values::BindingIndexOutOfRange,
+            Status::AddressTableIndexOutOfRange => Values::AddressTableIndexOutOfRange,
+            Status::InvalidBindingIndex => Values::InvalidBindingIndex,
+            Status::InvalidCall => Values::InvalidCall,
+            Status::CostNotKnown => Values::CostNotKnown,
+            Status::MaxMessageLimitReached => Values::MaxMessageLimitReached,
+            Status::MessageTooLong => Values::MessageTooLong,
+            Status::BindingIsActive => Values::BindingIsActive,
+            Status::AddressTableEntryIsActive => Values::AddressTableEntryIsActive,
+            Status::Adc(adc) => adc.into(),
+            Status::SleepInterrupted => Values::SleepInterrupted,
+            Status::Phy(phy) => phy.into(),
+            Status::NetworkUp => Values::NetworkUp,
+            Status::NetworkDown => Values::NetworkDown,
+            Status::NotJoined => Values::NotJoined,
+            Status::JoinFailed => Values::JoinFailed,
+            Status::InvalidSecurityLevel => Values::InvalidSecurityLevel,
+            Status::MoveFailed => Values::MoveFailed,
+            Status::CannotJoinAsRouter => Values::CannotJoinAsRouter,
+            Status::NodeIdChanged => Values::NodeIdChanged,
+            Status::PanIdChanged => Values::PanIdChanged,
+            Status::NetworkOpened => Values::NetworkOpened,
+            Status::NetworkClosed => Values::NetworkClosed,
+            Status::NoBeacons => Values::NoBeacons,
+            Status::ReceivedKeyInTheClear => Values::ReceivedKeyInTheClear,
+            Status::NoNetworkKeyReceived => Values::NoNetworkKeyReceived,
+            Status::NoLinkKeyReceived => Values::NoLinkKeyReceived,
+            Status::PreconfiguredKeyRequired => Values::PreconfiguredKeyRequired,
+            Status::NetworkBusy => Values::NetworkBusy,
+            Status::InvalidEndpoint => Values::InvalidEndpoint,
+            Status::BindingHasChanged => Values::BindingHasChanged,
+            Status::InsufficientRandomData => Values::InsufficientRandomData,
+            Status::ApsEncryptionError => Values::ApsEncryptionError,
+            Status::SecurityStateNotSet => Values::SecurityStateNotSet,
+            Status::SourceRouteFailure => Values::SourceRouteFailure,
+            Status::ManyToOneRouteFailure => Values::ManyToOneRouteFailure,
+            Status::StackAndHardwareMismatch => Values::StackAndHardwareMismatch,
+            Status::IndexOutOfRange => Values::IndexOutOfRange,
+            Status::KeyTableInvalidAddress => Values::KeyTableInvalidAddress,
+            Status::TableFull => Values::TableFull,
+            Status::LibraryNotPresent => Values::LibraryNotPresent,
+            Status::TableEntryErased => Values::TableEntryErased,
+            Status::SecurityConfigurationInvalid => Values::SecurityConfigurationInvalid,
+            Status::TooSoonForSwitchKey => Values::TooSoonForSwitchKey,
+            Status::OperationInProgress => Values::OperationInProgress,
+            Status::KeyNotAuthorized => Values::KeyNotAuthorized,
+            Status::SecurityDataInvalid => Values::SecurityDataInvalid,
+            Status::Application(application) => application.into(),
+        }
+    }
+}
+
+impl From<Values> for Status {
+    fn from(value: Values) -> Self {
+        match value {
+            Values::Success => Status::Success,
+            Values::ErrFatal => Status::ErrFatal,
+            Values::BadArgument => Status::BadArgument,
+            Values::EepromMfgStackVersionMismatch => {
+                Status::Eeprom(Eeprom::MfgStackVersionMismatch)
+            }
+            Values::EepromMfgVersionMismatch => Status::Eeprom(Eeprom::MfgVersionMismatch),
+            Values::EepromStackVersionMismatch => Status::Eeprom(Eeprom::StackVersionMismatch),
+            Values::NoBuffers => Status::NoBuffers,
+            Values::SerialInvalidBaudRate => Status::Serial(Serial::InvalidBaudRate),
+            Values::SerialInvalidPort => Status::Serial(Serial::InvalidPort),
+            Values::SerialTxOverflow => Status::Serial(Serial::TxOverflow),
+            Values::SerialRxOverflow => Status::Serial(Serial::RxOverflow),
+            Values::SerialRxFrameError => Status::Serial(Serial::RxFrameError),
+            Values::SerialRxParityError => Status::Serial(Serial::RxParityError),
+            Values::SerialRxEmpty => Status::Serial(Serial::RxEmpty),
+            Values::SerialRxOverrunError => Status::Serial(Serial::RxOverrunError),
+            Values::MacNoData => Status::Mac(Mac::NoData),
+            Values::MacJoinedNetwork => Status::Mac(Mac::JoinedNetwork),
+            Values::MacBadScanDuration => Status::Mac(Mac::BadScanDuration),
+            Values::MacIncorrectScanType => Status::Mac(Mac::IncorrectScanType),
+            Values::MacInvalidChannelMask => Status::Mac(Mac::InvalidChannelMask),
+            Values::MacCommandTransmitFailure => Status::Mac(Mac::CommandTransmitFailure),
+            Values::MacTransmitQueueFull => Status::Mac(Mac::TransmitQueueFull),
+            Values::MacUnknownHeaderType => Status::Mac(Mac::UnknownHeaderType),
+            Values::MacScanning => Status::Mac(Mac::Scanning),
+            Values::MacNoAckReceived => Status::Mac(Mac::NoAckReceived),
+            Values::MacIndirectTimeout => Status::Mac(Mac::IndirectTimeout),
+            Values::SimEepromErasePageGreen => Status::SimEeprom(SimEeprom::ErasePageGreen),
+            Values::SimEepromErasePageRed => Status::SimEeprom(SimEeprom::ErasePageRed),
+            Values::SimEepromFull => Status::SimEeprom(SimEeprom::Full),
+            Values::SimEepromInit1Failed => Status::SimEeprom(SimEeprom::Init1Failed),
+            Values::SimEepromInit2Failed => Status::SimEeprom(SimEeprom::Init2Failed),
+            Values::SimEepromInit3Failed => Status::SimEeprom(SimEeprom::Init3Failed),
+            Values::ErrFlashWriteInhibited => Status::Err(Err::Flash(Flash::WriteInhibited)),
+            Values::ErrFlashVerifyFailed => Status::Err(Err::Flash(Flash::VerifyFailed)),
+            Values::ErrFlashProgFail => Status::Err(Err::Flash(Flash::ProgFail)),
+            Values::ErrFlashEraseFail => Status::Err(Err::Flash(Flash::EraseFail)),
+            Values::ErrBootloaderTrapTableBad => {
+                Status::Err(Err::Bootloader(Bootloader::TrapTableBad))
+            }
+            Values::ErrBootloaderTrapUnknown => {
+                Status::Err(Err::Bootloader(Bootloader::TrapUnknown))
+            }
+            Values::ErrBootloaderNoImage => Status::Err(Err::Bootloader(Bootloader::NoImage)),
+            Values::DeliveryFailed => Status::DeliveryFailed,
+            Values::BindingIndexOutOfRange => Status::BindingIndexOutOfRange,
+            Values::AddressTableIndexOutOfRange => Status::AddressTableIndexOutOfRange,
+            Values::InvalidBindingIndex => Status::InvalidBindingIndex,
+            Values::InvalidCall => Status::InvalidCall,
+            Values::CostNotKnown => Status::CostNotKnown,
+            Values::MaxMessageLimitReached => Status::MaxMessageLimitReached,
+            Values::MessageTooLong => Status::MessageTooLong,
+            Values::BindingIsActive => Status::BindingIsActive,
+            Values::AddressTableEntryIsActive => Status::AddressTableEntryIsActive,
+            Values::AdcConversionDone => Status::Adc(Adc::ConversionDone),
+            Values::AdcConversionBusy => Status::Adc(Adc::ConversionBusy),
+            Values::AdcConversionDeferred => Status::Adc(Adc::ConversionDeferred),
+            Values::AdcNoConversionPending => Status::Adc(Adc::NoConversionPending),
+            Values::SleepInterrupted => Status::SleepInterrupted,
+            Values::PhyTxUnderflow => Status::Phy(Phy::TxUnderflow),
+            Values::PhyTxIncomplete => Status::Phy(Phy::TxIncomplete),
+            Values::PhyInvalidChannel => Status::Phy(Phy::InvalidChannel),
+            Values::PhyInvalidPower => Status::Phy(Phy::InvalidPower),
+            Values::PhyTxBusy => Status::Phy(Phy::TxBusy),
+            Values::PhyTxCcaFail => Status::Phy(Phy::TxCcaFail),
+            Values::PhyOscillatorCheckFailed => Status::Phy(Phy::OscillatorCheckFailed),
+            Values::PhyAckReceived => Status::Phy(Phy::AckReceived),
+            Values::NetworkUp => Status::NetworkUp,
+            Values::NetworkDown => Status::NetworkDown,
+            Values::NotJoined => Status::NotJoined,
+            Values::JoinFailed => Status::JoinFailed,
+            Values::InvalidSecurityLevel => Status::InvalidSecurityLevel,
+            Values::MoveFailed => Status::MoveFailed,
+            Values::CannotJoinAsRouter => Status::CannotJoinAsRouter,
+            Values::NodeIdChanged => Status::NodeIdChanged,
+            Values::PanIdChanged => Status::PanIdChanged,
+            Values::NetworkOpened => Status::NetworkOpened,
+            Values::NetworkClosed => Status::NetworkClosed,
+            Values::NoBeacons => Status::NoBeacons,
+            Values::ReceivedKeyInTheClear => Status::ReceivedKeyInTheClear,
+            Values::NoNetworkKeyReceived => Status::NoNetworkKeyReceived,
+            Values::NoLinkKeyReceived => Status::NoLinkKeyReceived,
+            Values::PreconfiguredKeyRequired => Status::PreconfiguredKeyRequired,
+            Values::NetworkBusy => Status::NetworkBusy,
+            Values::InvalidEndpoint => Status::InvalidEndpoint,
+            Values::BindingHasChanged => Status::BindingHasChanged,
+            Values::InsufficientRandomData => Status::InsufficientRandomData,
+            Values::ApsEncryptionError => Status::ApsEncryptionError,
+            Values::SecurityStateNotSet => Status::SecurityStateNotSet,
+            Values::SourceRouteFailure => Status::SourceRouteFailure,
+            Values::ManyToOneRouteFailure => Status::ManyToOneRouteFailure,
+            Values::StackAndHardwareMismatch => Status::StackAndHardwareMismatch,
+            Values::IndexOutOfRange => Status::IndexOutOfRange,
+            Values::KeyTableInvalidAddress => Status::KeyTableInvalidAddress,
+            Values::TableFull => Status::TableFull,
+            Values::LibraryNotPresent => Status::LibraryNotPresent,
+            Values::TableEntryErased => Status::TableEntryErased,
+            Values::SecurityConfigurationInvalid => Status::SecurityConfigurationInvalid,
+            Values::TooSoonForSwitchKey => Status::TooSoonForSwitchKey,
+            Values::OperationInProgress => Status::OperationInProgress,
+            Values::KeyNotAuthorized => Status::KeyNotAuthorized,
+            Values::SecurityDataInvalid => Status::SecurityDataInvalid,
+            Values::ApplicationError0 => Status::Application(Application::Error0),
+            Values::ApplicationError1 => Status::Application(Application::Error1),
+            Values::ApplicationError2 => Status::Application(Application::Error2),
+            Values::ApplicationError3 => Status::Application(Application::Error3),
+            Values::ApplicationError4 => Status::Application(Application::Error4),
+            Values::ApplicationError5 => Status::Application(Application::Error5),
+            Values::ApplicationError6 => Status::Application(Application::Error6),
+            Values::ApplicationError7 => Status::Application(Application::Error7),
+            Values::ApplicationError8 => Status::Application(Application::Error8),
+            Values::ApplicationError9 => Status::Application(Application::Error9),
+            Values::ApplicationError10 => Status::Application(Application::Error10),
+            Values::ApplicationError11 => Status::Application(Application::Error11),
+            Values::ApplicationError12 => Status::Application(Application::Error12),
+            Values::ApplicationError13 => Status::Application(Application::Error13),
+            Values::ApplicationError14 => Status::Application(Application::Error14),
+            Values::ApplicationError15 => Status::Application(Application::Error15),
         }
     }
 }

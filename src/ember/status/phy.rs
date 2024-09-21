@@ -1,30 +1,30 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-use num_derive::FromPrimitive;
+use super::values::Values;
+use num_traits::FromPrimitive;
 
 /// Ember PHY status.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
-#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Phy {
     /// The transmit hardware buffer underflowed.
-    TxUnderflow = 0x88,
+    TxUnderflow,
     /// The transmit hardware did not finish transmitting a packet.
-    TxIncomplete = 0x89,
+    TxIncomplete,
     /// An unsupported channel setting was specified.
-    InvalidChannel = 0x8A,
+    InvalidChannel,
     /// An unsupported power setting was specified.
-    InvalidPower = 0x8B,
+    InvalidPower,
     /// The packet cannot be transmitted because the physical MAC layer is currently transmitting a packet.
     ///
     /// (This is used for the MAC backoff algorithm.)
-    TxBusy = 0x8C,
+    TxBusy,
     /// The transmit attempt failed because all CCA attempts indicated that the channel was busy.
-    TxCcaFail = 0x8D,
+    TxCcaFail,
     /// The software installed on the hardware doesn't recognize the hardware radio type.
-    OscillatorCheckFailed = 0x8E,
+    OscillatorCheckFailed,
     /// The expected ACK was received after the last transmission.
-    AckReceived = 0x8F,
+    AckReceived,
 }
 
 impl Display for Phy {
@@ -42,10 +42,57 @@ impl Display for Phy {
     }
 }
 
-impl From<Phy> for u8 {
+impl Error for Phy {}
+
+impl From<Phy> for Values {
     fn from(phy: Phy) -> Self {
-        phy as Self
+        match phy {
+            Phy::TxUnderflow => Values::PhyTxUnderflow,
+            Phy::TxIncomplete => Values::PhyTxIncomplete,
+            Phy::InvalidChannel => Values::PhyInvalidChannel,
+            Phy::InvalidPower => Values::PhyInvalidPower,
+            Phy::TxBusy => Values::PhyTxBusy,
+            Phy::TxCcaFail => Values::PhyTxCcaFail,
+            Phy::OscillatorCheckFailed => Values::PhyOscillatorCheckFailed,
+            Phy::AckReceived => Values::PhyAckReceived,
+        }
     }
 }
 
-impl Error for Phy {}
+impl From<Phy> for u8 {
+    fn from(phy: Phy) -> Self {
+        Values::from(phy).into()
+    }
+}
+
+impl TryFrom<Values> for Phy {
+    type Error = Values;
+
+    fn try_from(value: Values) -> Result<Self, Self::Error> {
+        match value {
+            Values::PhyTxUnderflow => Ok(Self::TxUnderflow),
+            Values::PhyTxIncomplete => Ok(Self::TxIncomplete),
+            Values::PhyInvalidChannel => Ok(Self::InvalidChannel),
+            Values::PhyInvalidPower => Ok(Self::InvalidPower),
+            Values::PhyTxBusy => Ok(Self::TxBusy),
+            Values::PhyTxCcaFail => Ok(Self::TxCcaFail),
+            Values::PhyOscillatorCheckFailed => Ok(Self::OscillatorCheckFailed),
+            Values::PhyAckReceived => Ok(Self::AckReceived),
+            _ => Err(value),
+        }
+    }
+}
+
+impl FromPrimitive for Phy {
+    fn from_i64(n: i64) -> Option<Self> {
+        Values::from_i64(n).and_then(|value| Self::try_from(value).ok())
+    }
+
+    fn from_u8(n: u8) -> Option<Self> {
+        Values::from_u8(n).and_then(|value| Self::try_from(value).ok())
+    }
+
+    fn from_u64(n: u64) -> Option<Self> {
+        Values::from_u64(n).and_then(|value| Self::try_from(value).ok())
+    }
+}

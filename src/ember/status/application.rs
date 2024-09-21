@@ -1,76 +1,76 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-use num_derive::FromPrimitive;
+use super::values::Values;
+use num_traits::FromPrimitive;
 
 /// Ember application status.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
-#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Application {
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error0 = 0xF0,
+    Error0,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error1 = 0xF1,
+    Error1,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error2 = 0xF2,
+    Error2,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error3 = 0xF3,
+    Error3,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error4 = 0xF4,
+    Error4,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error5 = 0xF5,
+    Error5,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error6 = 0xF6,
+    Error6,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error7 = 0xF7,
+    Error7,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error8 = 0xF8,
+    Error8,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error9 = 0xF9,
+    Error9,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error10 = 0xFA,
+    Error10,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error11 = 0xFB,
+    Error11,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error12 = 0xFC,
+    Error12,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error13 = 0xFD,
+    Error13,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error14 = 0xFE,
+    Error14,
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
-    Error15 = 0xFF,
+    Error15,
 }
 
 impl Display for Application {
@@ -96,10 +96,73 @@ impl Display for Application {
     }
 }
 
-impl From<Application> for u8 {
+impl Error for Application {}
+
+impl From<Application> for Values {
     fn from(application: Application) -> Self {
-        application as Self
+        match application {
+            Application::Error0 => Values::ApplicationError0,
+            Application::Error1 => Values::ApplicationError1,
+            Application::Error2 => Values::ApplicationError2,
+            Application::Error3 => Values::ApplicationError3,
+            Application::Error4 => Values::ApplicationError4,
+            Application::Error5 => Values::ApplicationError5,
+            Application::Error6 => Values::ApplicationError6,
+            Application::Error7 => Values::ApplicationError7,
+            Application::Error8 => Values::ApplicationError8,
+            Application::Error9 => Values::ApplicationError9,
+            Application::Error10 => Values::ApplicationError10,
+            Application::Error11 => Values::ApplicationError11,
+            Application::Error12 => Values::ApplicationError12,
+            Application::Error13 => Values::ApplicationError13,
+            Application::Error14 => Values::ApplicationError14,
+            Application::Error15 => Values::ApplicationError15,
+        }
     }
 }
 
-impl Error for Application {}
+impl From<Application> for u8 {
+    fn from(application: Application) -> Self {
+        Values::from(application).into()
+    }
+}
+
+impl TryFrom<Values> for Application {
+    type Error = Values;
+
+    fn try_from(value: Values) -> Result<Self, Self::Error> {
+        match value {
+            Values::ApplicationError0 => Ok(Self::Error0),
+            Values::ApplicationError1 => Ok(Self::Error1),
+            Values::ApplicationError2 => Ok(Self::Error2),
+            Values::ApplicationError3 => Ok(Self::Error3),
+            Values::ApplicationError4 => Ok(Self::Error4),
+            Values::ApplicationError5 => Ok(Self::Error5),
+            Values::ApplicationError6 => Ok(Self::Error6),
+            Values::ApplicationError7 => Ok(Self::Error7),
+            Values::ApplicationError8 => Ok(Self::Error8),
+            Values::ApplicationError9 => Ok(Self::Error9),
+            Values::ApplicationError10 => Ok(Self::Error10),
+            Values::ApplicationError11 => Ok(Self::Error11),
+            Values::ApplicationError12 => Ok(Self::Error12),
+            Values::ApplicationError13 => Ok(Self::Error13),
+            Values::ApplicationError14 => Ok(Self::Error14),
+            Values::ApplicationError15 => Ok(Self::Error15),
+            _ => Err(value),
+        }
+    }
+}
+
+impl FromPrimitive for Application {
+    fn from_i64(n: i64) -> Option<Self> {
+        Values::from_i64(n).and_then(|value| Self::try_from(value).ok())
+    }
+
+    fn from_u8(n: u8) -> Option<Self> {
+        Values::from_u8(n).and_then(|value| Self::try_from(value).ok())
+    }
+
+    fn from_u64(n: u64) -> Option<Self> {
+        Values::from_u64(n).and_then(|value| Self::try_from(value).ok())
+    }
+}

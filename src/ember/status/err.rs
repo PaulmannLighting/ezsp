@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 
 use num_traits::FromPrimitive;
 
+use super::values::Values;
 pub use bootloader::Bootloader;
 pub use flash::Flash;
 
@@ -10,7 +11,7 @@ mod bootloader;
 mod flash;
 
 /// Ember error status.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Err {
     /// Ember flash error status.
     Flash(Flash),
@@ -29,6 +30,15 @@ impl Display for Err {
 
 impl Error for Err {}
 
+impl From<Err> for Values {
+    fn from(err: Err) -> Self {
+        match err {
+            Err::Flash(flash) => flash.into(),
+            Err::Bootloader(bootloader) => bootloader.into(),
+        }
+    }
+}
+
 impl From<Err> for u8 {
     fn from(err: Err) -> Self {
         match err {
@@ -38,20 +48,33 @@ impl From<Err> for u8 {
     }
 }
 
+impl TryFrom<Values> for Err {
+    type Error = Values;
+
+    fn try_from(value: Values) -> Result<Self, Self::Error> {
+        match value {
+            Values::ErrFlashWriteInhibited => Ok(Self::Flash(Flash::WriteInhibited)),
+            Values::ErrFlashVerifyFailed => Ok(Self::Flash(Flash::VerifyFailed)),
+            Values::ErrFlashProgFail => Ok(Self::Flash(Flash::ProgFail)),
+            Values::ErrFlashEraseFail => Ok(Self::Flash(Flash::EraseFail)),
+            Values::ErrBootloaderTrapTableBad => Ok(Self::Bootloader(Bootloader::TrapTableBad)),
+            Values::ErrBootloaderTrapUnknown => Ok(Self::Bootloader(Bootloader::TrapUnknown)),
+            Values::ErrBootloaderNoImage => Ok(Self::Bootloader(Bootloader::NoImage)),
+            _ => Err(value),
+        }
+    }
+}
+
 impl FromPrimitive for Err {
     fn from_i64(n: i64) -> Option<Self> {
-        u8::try_from(n).ok().and_then(Self::from_u8)
+        Values::from_i64(n).and_then(|value| Self::try_from(value).ok())
     }
 
     fn from_u8(n: u8) -> Option<Self> {
-        match n {
-            0x46..=0x4C => Flash::from_u8(n).map(Self::Flash),
-            0x58..=0x5A => Bootloader::from_u8(n).map(Self::Bootloader),
-            _ => None,
-        }
+        Values::from_u8(n).and_then(|value| Self::try_from(value).ok())
     }
 
     fn from_u64(n: u64) -> Option<Self> {
-        u8::try_from(n).ok().and_then(Self::from_u8)
+        Values::from_u64(n).and_then(|value| Self::try_from(value).ok())
     }
 }

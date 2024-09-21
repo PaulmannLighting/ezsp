@@ -1,37 +1,37 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-use num_derive::FromPrimitive;
+use super::values::Values;
+use num_traits::FromPrimitive;
 
 /// Ember MAC status.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
-#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Mac {
     /// No pending data exists for device doing a data poll.
-    NoData = 0x31,
+    NoData,
     /// Attempt to scan when we are joined to a network.
-    JoinedNetwork = 0x32,
+    JoinedNetwork,
     /// Scan duration must be 0 to 14 inclusive.
     ///
     /// Attempt was made to scan with an incorrect duration value.
-    BadScanDuration = 0x33,
+    BadScanDuration,
     /// `emberStartScan` was called with an incorrect scan type.
-    IncorrectScanType = 0x34,
+    IncorrectScanType,
     /// `emberStartScan` was called with an invalid channel mask.
-    InvalidChannelMask = 0x35,
+    InvalidChannelMask,
     /// Failed to scan current channel because we were unable to transmit the relevant MAC command.
-    CommandTransmitFailure = 0x36,
+    CommandTransmitFailure,
     /// The MAC transmit queue is full.
-    TransmitQueueFull = 0x39,
+    TransmitQueueFull,
     /// MAC header FCR error on receive.
-    UnknownHeaderType = 0x3A,
+    UnknownHeaderType,
     /// The MAC can't complete this task because it is scanning.
-    Scanning = 0x3D,
+    Scanning,
     /// We expected to receive an ACK following the transmission,
     /// but the MAC level ACK was never received.
-    NoAckReceived = 0x40,
+    NoAckReceived,
     /// Indirect data message timed out before polled.
-    IndirectTimeout = 0x42,
+    IndirectTimeout,
 }
 
 impl Display for Mac {
@@ -52,10 +52,63 @@ impl Display for Mac {
     }
 }
 
-impl From<Mac> for u8 {
+impl Error for Mac {}
+
+impl From<Mac> for Values {
     fn from(mac: Mac) -> Self {
-        mac as Self
+        match mac {
+            Mac::NoData => Values::MacNoData,
+            Mac::JoinedNetwork => Values::MacJoinedNetwork,
+            Mac::BadScanDuration => Values::MacBadScanDuration,
+            Mac::IncorrectScanType => Values::MacIncorrectScanType,
+            Mac::InvalidChannelMask => Values::MacInvalidChannelMask,
+            Mac::CommandTransmitFailure => Values::MacCommandTransmitFailure,
+            Mac::TransmitQueueFull => Values::MacTransmitQueueFull,
+            Mac::UnknownHeaderType => Values::MacUnknownHeaderType,
+            Mac::Scanning => Values::MacScanning,
+            Mac::NoAckReceived => Values::MacNoAckReceived,
+            Mac::IndirectTimeout => Values::MacIndirectTimeout,
+        }
     }
 }
 
-impl Error for Mac {}
+impl From<Mac> for u8 {
+    fn from(mac: Mac) -> Self {
+        Values::from(mac).into()
+    }
+}
+
+impl TryFrom<Values> for Mac {
+    type Error = Values;
+
+    fn try_from(value: Values) -> Result<Self, Self::Error> {
+        match value {
+            Values::MacNoData => Ok(Self::NoData),
+            Values::MacJoinedNetwork => Ok(Self::JoinedNetwork),
+            Values::MacBadScanDuration => Ok(Self::BadScanDuration),
+            Values::MacIncorrectScanType => Ok(Self::IncorrectScanType),
+            Values::MacInvalidChannelMask => Ok(Self::InvalidChannelMask),
+            Values::MacCommandTransmitFailure => Ok(Self::CommandTransmitFailure),
+            Values::MacTransmitQueueFull => Ok(Self::TransmitQueueFull),
+            Values::MacUnknownHeaderType => Ok(Self::UnknownHeaderType),
+            Values::MacScanning => Ok(Self::Scanning),
+            Values::MacNoAckReceived => Ok(Self::NoAckReceived),
+            Values::MacIndirectTimeout => Ok(Self::IndirectTimeout),
+            _ => Err(value),
+        }
+    }
+}
+
+impl FromPrimitive for Mac {
+    fn from_i64(n: i64) -> Option<Self> {
+        Values::from_i64(n).and_then(|value| Self::try_from(value).ok())
+    }
+
+    fn from_u8(n: u8) -> Option<Self> {
+        Values::from_u8(n).and_then(|value| Self::try_from(value).ok())
+    }
+
+    fn from_u64(n: u64) -> Option<Self> {
+        Values::from_u64(n).and_then(|value| Self::try_from(value).ok())
+    }
+}

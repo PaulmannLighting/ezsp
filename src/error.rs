@@ -34,7 +34,12 @@ pub enum Error {
     /// A value-related error occurred.
     ValueError(value::Error),
     /// The header is invalid.
-    InvalidHeader { expected: u16, found: u16 },
+    InvalidHeader {
+        /// The expected header.
+        expected: u16,
+        /// The found header.
+        found: u16,
+    },
     /// The command is invalid.
     InvalidCommand(invalid_command::Response),
     /// A custom error message.

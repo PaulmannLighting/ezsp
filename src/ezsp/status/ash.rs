@@ -1,6 +1,6 @@
 use num_traits::FromPrimitive;
 
-use crate::ezsp::status::values::Values;
+use super::values::Values;
 pub use error::Error;
 pub use misc::Misc;
 

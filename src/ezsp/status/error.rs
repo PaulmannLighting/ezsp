@@ -1,4 +1,4 @@
-use crate::ezsp::status::values::Values;
+use super::values::Values;
 use num_traits::FromPrimitive;
 
 /// EZSP errors.

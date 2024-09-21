@@ -83,7 +83,7 @@ impl TryFrom<Values> for Error {
             Values::ErrorUnsupportedControl => Ok(Self::UnsupportedControl),
             Values::ErrorUnsecureFrame => Ok(Self::UnsecureFrame),
             Values::ErrorSerialInit => Ok(Self::SerialInit),
-            value => Err(value),
+            _ => Err(value),
         }
     }
 }

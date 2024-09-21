@@ -1,9 +1,10 @@
-pub mod value;
+mod value;
 
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::frame::parameters::utilities::invalid_command;
 use crate::{ember, ezsp};
+pub use value::Error as ValueError;
 
 /// An error that can occur when communicating with an NCP.
 #[derive(Debug)]

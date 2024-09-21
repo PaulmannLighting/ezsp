@@ -13,7 +13,7 @@ mod result;
 pub mod transport;
 pub mod types;
 
-pub use error::{value::Error as ValueError, Error};
+pub use error::{Error, ValueError};
 pub use frame::{CallbackType, Control, FrameFormatVersion, Header, HighByte, LowByte, SleepMode};
 pub(crate) use resolve::Resolve;
 pub use result::Result;

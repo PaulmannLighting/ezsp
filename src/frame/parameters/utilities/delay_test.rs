@@ -1,4 +1,4 @@
-use crate::error::value::Error;
+use crate::error::ValueError;
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use std::time::Duration;
@@ -11,11 +11,11 @@ pub struct Command {
 }
 
 impl Command {
-    pub fn new(delay: Duration) -> Result<Self, Error> {
+    pub fn new(delay: Duration) -> Result<Self, ValueError> {
         delay
             .as_millis()
             .try_into()
-            .map_err(|_| Error::DurationTooLarge(delay))
+            .map_err(|_| ValueError::DurationTooLarge(delay))
             .map(|delay| Self { delay })
     }
 }

@@ -101,22 +101,22 @@ impl Error for Application {}
 impl From<Application> for Values {
     fn from(application: Application) -> Self {
         match application {
-            Application::Error0 => Values::ApplicationError0,
-            Application::Error1 => Values::ApplicationError1,
-            Application::Error2 => Values::ApplicationError2,
-            Application::Error3 => Values::ApplicationError3,
-            Application::Error4 => Values::ApplicationError4,
-            Application::Error5 => Values::ApplicationError5,
-            Application::Error6 => Values::ApplicationError6,
-            Application::Error7 => Values::ApplicationError7,
-            Application::Error8 => Values::ApplicationError8,
-            Application::Error9 => Values::ApplicationError9,
-            Application::Error10 => Values::ApplicationError10,
-            Application::Error11 => Values::ApplicationError11,
-            Application::Error12 => Values::ApplicationError12,
-            Application::Error13 => Values::ApplicationError13,
-            Application::Error14 => Values::ApplicationError14,
-            Application::Error15 => Values::ApplicationError15,
+            Application::Error0 => Self::ApplicationError0,
+            Application::Error1 => Self::ApplicationError1,
+            Application::Error2 => Self::ApplicationError2,
+            Application::Error3 => Self::ApplicationError3,
+            Application::Error4 => Self::ApplicationError4,
+            Application::Error5 => Self::ApplicationError5,
+            Application::Error6 => Self::ApplicationError6,
+            Application::Error7 => Self::ApplicationError7,
+            Application::Error8 => Self::ApplicationError8,
+            Application::Error9 => Self::ApplicationError9,
+            Application::Error10 => Self::ApplicationError10,
+            Application::Error11 => Self::ApplicationError11,
+            Application::Error12 => Self::ApplicationError12,
+            Application::Error13 => Self::ApplicationError13,
+            Application::Error14 => Self::ApplicationError14,
+            Application::Error15 => Self::ApplicationError15,
         }
     }
 }

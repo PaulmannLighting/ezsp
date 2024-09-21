@@ -57,17 +57,17 @@ impl Error for Mac {}
 impl From<Mac> for Values {
     fn from(mac: Mac) -> Self {
         match mac {
-            Mac::NoData => Values::MacNoData,
-            Mac::JoinedNetwork => Values::MacJoinedNetwork,
-            Mac::BadScanDuration => Values::MacBadScanDuration,
-            Mac::IncorrectScanType => Values::MacIncorrectScanType,
-            Mac::InvalidChannelMask => Values::MacInvalidChannelMask,
-            Mac::CommandTransmitFailure => Values::MacCommandTransmitFailure,
-            Mac::TransmitQueueFull => Values::MacTransmitQueueFull,
-            Mac::UnknownHeaderType => Values::MacUnknownHeaderType,
-            Mac::Scanning => Values::MacScanning,
-            Mac::NoAckReceived => Values::MacNoAckReceived,
-            Mac::IndirectTimeout => Values::MacIndirectTimeout,
+            Mac::NoData => Self::MacNoData,
+            Mac::JoinedNetwork => Self::MacJoinedNetwork,
+            Mac::BadScanDuration => Self::MacBadScanDuration,
+            Mac::IncorrectScanType => Self::MacIncorrectScanType,
+            Mac::InvalidChannelMask => Self::MacInvalidChannelMask,
+            Mac::CommandTransmitFailure => Self::MacCommandTransmitFailure,
+            Mac::TransmitQueueFull => Self::MacTransmitQueueFull,
+            Mac::UnknownHeaderType => Self::MacUnknownHeaderType,
+            Mac::Scanning => Self::MacScanning,
+            Mac::NoAckReceived => Self::MacNoAckReceived,
+            Mac::IndirectTimeout => Self::MacIndirectTimeout,
         }
     }
 }

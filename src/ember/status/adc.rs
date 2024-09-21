@@ -33,10 +33,10 @@ impl Error for Adc {}
 impl From<Adc> for Values {
     fn from(adc: Adc) -> Self {
         match adc {
-            Adc::ConversionDone => Values::AdcConversionDone,
-            Adc::ConversionBusy => Values::AdcConversionBusy,
-            Adc::ConversionDeferred => Values::AdcConversionDeferred,
-            Adc::NoConversionPending => Values::AdcNoConversionPending,
+            Adc::ConversionDone => Self::AdcConversionDone,
+            Adc::ConversionBusy => Self::AdcConversionBusy,
+            Adc::ConversionDeferred => Self::AdcConversionDeferred,
+            Adc::NoConversionPending => Self::AdcNoConversionPending,
         }
     }
 }

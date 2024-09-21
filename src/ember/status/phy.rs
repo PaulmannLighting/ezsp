@@ -47,14 +47,14 @@ impl Error for Phy {}
 impl From<Phy> for Values {
     fn from(phy: Phy) -> Self {
         match phy {
-            Phy::TxUnderflow => Values::PhyTxUnderflow,
-            Phy::TxIncomplete => Values::PhyTxIncomplete,
-            Phy::InvalidChannel => Values::PhyInvalidChannel,
-            Phy::InvalidPower => Values::PhyInvalidPower,
-            Phy::TxBusy => Values::PhyTxBusy,
-            Phy::TxCcaFail => Values::PhyTxCcaFail,
-            Phy::OscillatorCheckFailed => Values::PhyOscillatorCheckFailed,
-            Phy::AckReceived => Values::PhyAckReceived,
+            Phy::TxUnderflow => Self::PhyTxUnderflow,
+            Phy::TxIncomplete => Self::PhyTxIncomplete,
+            Phy::InvalidChannel => Self::PhyInvalidChannel,
+            Phy::InvalidPower => Self::PhyInvalidPower,
+            Phy::TxBusy => Self::PhyTxBusy,
+            Phy::TxCcaFail => Self::PhyTxCcaFail,
+            Phy::OscillatorCheckFailed => Self::PhyOscillatorCheckFailed,
+            Phy::AckReceived => Self::PhyAckReceived,
         }
     }
 }

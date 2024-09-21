@@ -1,8 +1,8 @@
 use crate::ezsp::status::values::Values;
 use num_traits::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
-#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+
 pub enum Error {
     /// Fatal error detected by NCP.
     NcpFatalError,
@@ -22,14 +22,14 @@ pub enum Error {
 impl From<Error> for Values {
     fn from(error: Error) -> Self {
         match error {
-            Error::NcpFatalError => Values::AshNcpFatalError,
-            Error::Version => Values::AshErrorVersion,
-            Error::Timeouts => Values::AshErrorTimeouts,
-            Error::ResetFail => Values::AshErrorResetFail,
-            Error::NcpReset => Values::AshErrorNcpReset,
-            Error::NcpType => Values::AshErrorNcpType,
-            Error::ResetMethod => Values::AshErrorResetMethod,
-            Error::XOnXOff => Values::AshErrorXOnXOff,
+            Error::NcpFatalError => Self::AshNcpFatalError,
+            Error::Version => Self::AshErrorVersion,
+            Error::Timeouts => Self::AshErrorTimeouts,
+            Error::ResetFail => Self::AshErrorResetFail,
+            Error::NcpReset => Self::AshErrorNcpReset,
+            Error::NcpType => Self::AshErrorNcpType,
+            Error::ResetMethod => Self::AshErrorResetMethod,
+            Error::XOnXOff => Self::AshErrorXOnXOff,
         }
     }
 }

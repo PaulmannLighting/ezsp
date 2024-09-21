@@ -1,8 +1,7 @@
 use crate::ezsp::status::values::Values;
 use num_traits::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
-#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Error {
     VersionNotSet,
     InvalidFrameId,
@@ -31,28 +30,28 @@ pub enum Error {
 impl From<Error> for Values {
     fn from(error: Error) -> Self {
         match error {
-            Error::VersionNotSet => Values::ErrorVersionNotSet,
-            Error::InvalidFrameId => Values::ErrorInvalidFrameId,
-            Error::WrongDirection => Values::ErrorWrongDirection,
-            Error::Truncated => Values::ErrorTruncated,
-            Error::Overflow => Values::ErrorOverflow,
-            Error::OutOfMemory => Values::ErrorOutOfMemory,
-            Error::InvalidValue => Values::ErrorInvalidValue,
-            Error::InvalidId => Values::ErrorInvalidId,
-            Error::InvalidCall => Values::ErrorInvalidCall,
-            Error::NoResponse => Values::ErrorNoResponse,
-            Error::CommandTooLong => Values::ErrorCommandTooLong,
-            Error::QueueFull => Values::ErrorQueueFull,
-            Error::CommandFiltered => Values::ErrorCommandFiltered,
-            Error::SecurityKeyAlreadySet => Values::ErrorSecurityKeyAlreadySet,
-            Error::SecurityTypeInvalid => Values::ErrorSecurityTypeInvalid,
-            Error::SecurityParametersInvalid => Values::ErrorSecurityParametersInvalid,
-            Error::SecurityParametersAlreadySet => Values::ErrorSecurityParametersAlreadySet,
-            Error::SecurityKeyNotSet => Values::ErrorSecurityKeyNotSet,
-            Error::SecurityParametersNotSet => Values::ErrorSecurityParametersNotSet,
-            Error::UnsupportedControl => Values::ErrorUnsupportedControl,
-            Error::UnsecureFrame => Values::ErrorUnsecureFrame,
-            Error::SerialInit => Values::ErrorSerialInit,
+            Error::VersionNotSet => Self::ErrorVersionNotSet,
+            Error::InvalidFrameId => Self::ErrorInvalidFrameId,
+            Error::WrongDirection => Self::ErrorWrongDirection,
+            Error::Truncated => Self::ErrorTruncated,
+            Error::Overflow => Self::ErrorOverflow,
+            Error::OutOfMemory => Self::ErrorOutOfMemory,
+            Error::InvalidValue => Self::ErrorInvalidValue,
+            Error::InvalidId => Self::ErrorInvalidId,
+            Error::InvalidCall => Self::ErrorInvalidCall,
+            Error::NoResponse => Self::ErrorNoResponse,
+            Error::CommandTooLong => Self::ErrorCommandTooLong,
+            Error::QueueFull => Self::ErrorQueueFull,
+            Error::CommandFiltered => Self::ErrorCommandFiltered,
+            Error::SecurityKeyAlreadySet => Self::ErrorSecurityKeyAlreadySet,
+            Error::SecurityTypeInvalid => Self::ErrorSecurityTypeInvalid,
+            Error::SecurityParametersInvalid => Self::ErrorSecurityParametersInvalid,
+            Error::SecurityParametersAlreadySet => Self::ErrorSecurityParametersAlreadySet,
+            Error::SecurityKeyNotSet => Self::ErrorSecurityKeyNotSet,
+            Error::SecurityParametersNotSet => Self::ErrorSecurityParametersNotSet,
+            Error::UnsupportedControl => Self::ErrorUnsupportedControl,
+            Error::UnsecureFrame => Self::ErrorUnsecureFrame,
+            Error::SerialInit => Self::ErrorSerialInit,
         }
     }
 }

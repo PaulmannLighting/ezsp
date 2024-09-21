@@ -1,8 +1,7 @@
 use crate::ezsp::status::values::Values;
 use num_traits::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
-#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Misc {
     /// Operation not yet complete.
     InProgress,
@@ -33,29 +32,29 @@ pub enum Misc {
 impl From<Misc> for Values {
     fn from(misc: Misc) -> Self {
         match misc {
-            Misc::InProgress => Values::AshInProgress,
-            Misc::Started => Values::AshStarted,
-            Misc::Connected => Values::AshConnected,
-            Misc::Disconnected => Values::AshDisconnected,
-            Misc::AckTimeout => Values::AshAckTimeout,
-            Misc::Cancelled => Values::AshCancelled,
-            Misc::OutOfSequence => Values::AshOutOfSequence,
-            Misc::BadCrc => Values::AshBadCrc,
-            Misc::CommError => Values::AshCommError,
-            Misc::BadAckNum => Values::AshBadAckNum,
-            Misc::TooShort => Values::AshTooShort,
-            Misc::TooLong => Values::AshTooLong,
-            Misc::BadControl => Values::AshBadControl,
-            Misc::BadLength => Values::AshBadLength,
-            Misc::AckReceived => Values::AshAckReceived,
-            Misc::AckSent => Values::AshAckSent,
-            Misc::NakReceived => Values::AshNakReceived,
-            Misc::NakSent => Values::AshNakSent,
-            Misc::RstReceived => Values::AshRstReceived,
-            Misc::RstSent => Values::AshRstSent,
-            Misc::Status => Values::AshStatus,
-            Misc::Tx => Values::AshTx,
-            Misc::Rx => Values::AshRx,
+            Misc::InProgress => Self::AshInProgress,
+            Misc::Started => Self::AshStarted,
+            Misc::Connected => Self::AshConnected,
+            Misc::Disconnected => Self::AshDisconnected,
+            Misc::AckTimeout => Self::AshAckTimeout,
+            Misc::Cancelled => Self::AshCancelled,
+            Misc::OutOfSequence => Self::AshOutOfSequence,
+            Misc::BadCrc => Self::AshBadCrc,
+            Misc::CommError => Self::AshCommError,
+            Misc::BadAckNum => Self::AshBadAckNum,
+            Misc::TooShort => Self::AshTooShort,
+            Misc::TooLong => Self::AshTooLong,
+            Misc::BadControl => Self::AshBadControl,
+            Misc::BadLength => Self::AshBadLength,
+            Misc::AckReceived => Self::AshAckReceived,
+            Misc::AckSent => Self::AshAckSent,
+            Misc::NakReceived => Self::AshNakReceived,
+            Misc::NakSent => Self::AshNakSent,
+            Misc::RstReceived => Self::AshRstReceived,
+            Misc::RstSent => Self::AshRstSent,
+            Misc::Status => Self::AshStatus,
+            Misc::Tx => Self::AshTx,
+            Misc::Rx => Self::AshRx,
         }
     }
 }

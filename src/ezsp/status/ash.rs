@@ -8,7 +8,7 @@ mod error;
 mod misc;
 
 /// Status related to ASH.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Ash {
     /// Errors.
     Error(Error),

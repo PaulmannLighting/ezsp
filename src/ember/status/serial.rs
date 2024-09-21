@@ -45,14 +45,14 @@ impl Error for Serial {}
 impl From<Serial> for Values {
     fn from(serial: Serial) -> Self {
         match serial {
-            Serial::InvalidBaudRate => Values::SerialInvalidBaudRate,
-            Serial::InvalidPort => Values::SerialInvalidPort,
-            Serial::TxOverflow => Values::SerialTxOverflow,
-            Serial::RxOverflow => Values::SerialRxOverflow,
-            Serial::RxFrameError => Values::SerialRxFrameError,
-            Serial::RxParityError => Values::SerialRxParityError,
-            Serial::RxEmpty => Values::SerialRxEmpty,
-            Serial::RxOverrunError => Values::SerialRxOverrunError,
+            Serial::InvalidBaudRate => Self::SerialInvalidBaudRate,
+            Serial::InvalidPort => Self::SerialInvalidPort,
+            Serial::TxOverflow => Self::SerialTxOverflow,
+            Serial::RxOverflow => Self::SerialRxOverflow,
+            Serial::RxFrameError => Self::SerialRxFrameError,
+            Serial::RxParityError => Self::SerialRxParityError,
+            Serial::RxEmpty => Self::SerialRxEmpty,
+            Serial::RxOverrunError => Self::SerialRxOverrunError,
         }
     }
 }

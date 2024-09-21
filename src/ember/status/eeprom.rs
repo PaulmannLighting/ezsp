@@ -33,9 +33,9 @@ impl Error for Eeprom {}
 impl From<Eeprom> for Values {
     fn from(eeprom: Eeprom) -> Self {
         match eeprom {
-            Eeprom::MfgStackVersionMismatch => Values::EepromMfgStackVersionMismatch,
-            Eeprom::MfgVersionMismatch => Values::EepromMfgVersionMismatch,
-            Eeprom::StackVersionMismatch => Values::EepromStackVersionMismatch,
+            Eeprom::MfgStackVersionMismatch => Self::EepromMfgStackVersionMismatch,
+            Eeprom::MfgVersionMismatch => Self::EepromMfgVersionMismatch,
+            Eeprom::StackVersionMismatch => Self::EepromStackVersionMismatch,
         }
     }
 }

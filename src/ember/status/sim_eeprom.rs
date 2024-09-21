@@ -60,12 +60,12 @@ impl Error for SimEeprom {}
 impl From<SimEeprom> for Values {
     fn from(sim_eeprom: SimEeprom) -> Self {
         match sim_eeprom {
-            SimEeprom::ErasePageGreen => Values::SimEepromErasePageGreen,
-            SimEeprom::ErasePageRed => Values::SimEepromErasePageRed,
-            SimEeprom::Full => Values::SimEepromFull,
-            SimEeprom::Init1Failed => Values::SimEepromInit1Failed,
-            SimEeprom::Init2Failed => Values::SimEepromInit2Failed,
-            SimEeprom::Init3Failed => Values::SimEepromInit3Failed,
+            SimEeprom::ErasePageGreen => Self::SimEepromErasePageGreen,
+            SimEeprom::ErasePageRed => Self::SimEepromErasePageRed,
+            SimEeprom::Full => Self::SimEepromFull,
+            SimEeprom::Init1Failed => Self::SimEepromInit1Failed,
+            SimEeprom::Init2Failed => Self::SimEepromInit2Failed,
+            SimEeprom::Init3Failed => Self::SimEepromInit3Failed,
         }
     }
 }

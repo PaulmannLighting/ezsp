@@ -1,8 +1,7 @@
 use crate::ezsp::status::values::Values;
 use num_traits::FromPrimitive;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
-#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum SpiErr {
     Fatal,
     NcpReset,
@@ -23,20 +22,20 @@ pub enum SpiErr {
 impl From<SpiErr> for Values {
     fn from(spi_err: SpiErr) -> Self {
         match spi_err {
-            SpiErr::Fatal => Values::SpiErrFatal,
-            SpiErr::NcpReset => Values::SpiErrNcpReset,
-            SpiErr::OversizedEzspFrame => Values::SpiErrOversizedEzspFrame,
-            SpiErr::AbortedTransaction => Values::SpiErrAbortedTransaction,
-            SpiErr::MissingFrameTerminator => Values::SpiErrMissingFrameTerminator,
-            SpiErr::WaitSectionTimeout => Values::SpiErrWaitSectionTimeout,
-            SpiErr::NoFrameTerminator => Values::SpiErrNoFrameTerminator,
-            SpiErr::EzspCommandOversized => Values::SpiErrEzspCommandOversized,
-            SpiErr::EzspResponseOversized => Values::SpiErrEzspResponseOversized,
-            SpiErr::WaitingForResponse => Values::SpiWaitingForResponse,
-            SpiErr::HandshakeTimeout => Values::SpiErrHandshakeTimeout,
-            SpiErr::StartupTimeout => Values::SpiErrStartupTimeout,
-            SpiErr::StartupFail => Values::SpiErrStartupFail,
-            SpiErr::UnsupportedSpiCommand => Values::SpiErrUnsupportedSpiCommand,
+            SpiErr::Fatal => Self::SpiErrFatal,
+            SpiErr::NcpReset => Self::SpiErrNcpReset,
+            SpiErr::OversizedEzspFrame => Self::SpiErrOversizedEzspFrame,
+            SpiErr::AbortedTransaction => Self::SpiErrAbortedTransaction,
+            SpiErr::MissingFrameTerminator => Self::SpiErrMissingFrameTerminator,
+            SpiErr::WaitSectionTimeout => Self::SpiErrWaitSectionTimeout,
+            SpiErr::NoFrameTerminator => Self::SpiErrNoFrameTerminator,
+            SpiErr::EzspCommandOversized => Self::SpiErrEzspCommandOversized,
+            SpiErr::EzspResponseOversized => Self::SpiErrEzspResponseOversized,
+            SpiErr::WaitingForResponse => Self::SpiWaitingForResponse,
+            SpiErr::HandshakeTimeout => Self::SpiErrHandshakeTimeout,
+            SpiErr::StartupTimeout => Self::SpiErrStartupTimeout,
+            SpiErr::StartupFail => Self::SpiErrStartupFail,
+            SpiErr::UnsupportedSpiCommand => Self::SpiErrUnsupportedSpiCommand,
         }
     }
 }

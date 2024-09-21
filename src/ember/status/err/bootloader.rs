@@ -31,9 +31,9 @@ impl Error for Bootloader {}
 impl From<Bootloader> for Values {
     fn from(bootloader: Bootloader) -> Self {
         match bootloader {
-            Bootloader::TrapTableBad => Values::ErrBootloaderTrapTableBad,
-            Bootloader::TrapUnknown => Values::ErrBootloaderTrapUnknown,
-            Bootloader::NoImage => Values::ErrBootloaderNoImage,
+            Bootloader::TrapTableBad => Self::ErrBootloaderTrapTableBad,
+            Bootloader::TrapUnknown => Self::ErrBootloaderTrapUnknown,
+            Bootloader::NoImage => Self::ErrBootloaderNoImage,
         }
     }
 }

@@ -49,10 +49,10 @@ impl Error for Flash {}
 impl From<Flash> for Values {
     fn from(flash: Flash) -> Self {
         match flash {
-            Flash::WriteInhibited => Values::ErrFlashWriteInhibited,
-            Flash::VerifyFailed => Values::ErrFlashVerifyFailed,
-            Flash::ProgFail => Values::ErrFlashProgFail,
-            Flash::EraseFail => Values::ErrFlashEraseFail,
+            Flash::WriteInhibited => Self::ErrFlashWriteInhibited,
+            Flash::VerifyFailed => Self::ErrFlashVerifyFailed,
+            Flash::ProgFail => Self::ErrFlashProgFail,
+            Flash::EraseFail => Self::ErrFlashEraseFail,
         }
     }
 }

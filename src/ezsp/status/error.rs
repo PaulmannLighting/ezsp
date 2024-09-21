@@ -1,29 +1,56 @@
 use crate::ezsp::status::values::Values;
 use num_traits::FromPrimitive;
 
+/// EZSP errors.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Error {
+    /// The NCP received a command before the EZSP version had been set.
     VersionNotSet,
+    /// The NCP received a command containing an unsupported frame ID.
     InvalidFrameId,
+    /// The direction flag in the frame control field was incorrect.
     WrongDirection,
+    /// The truncated flag in the frame control field was set,
+    /// indicating there was not enough memory available to complete the response
+    /// or that the response would have exceeded the maximum EZSP frame length.
     Truncated,
+    /// The overflow flag in the frame control field was set,
+    /// indicating one or more callbacks occurred since the previous response
+    /// and there was not enough memory available to report them to the Host.
     Overflow,
+    /// Insufficient memory was available.
     OutOfMemory,
+    /// The value was out of bounds.
     InvalidValue,
+    /// The configuration id was not recognized.
     InvalidId,
+    /// Configuration values can no longer be modified.
     InvalidCall,
+    /// The NCP failed to respond to a command.
     NoResponse,
+    /// The length of the command exceeded the maximum EZSP frame length.
     CommandTooLong,
+    /// The UART receive queue was full causing a callback response to be dropped.
     QueueFull,
+    /// The command has been filtered out by NCP.
     CommandFiltered,
+    /// EZSP Security Key is already set.
     SecurityKeyAlreadySet,
+    /// EZSP Security Type is invalid.
     SecurityTypeInvalid,
+    /// EZSP Security Parameters are invalid.
     SecurityParametersInvalid,
+    /// EZSP Security Parameters are already set.
     SecurityParametersAlreadySet,
+    /// EZSP Security Key is not set.
     SecurityKeyNotSet,
+    /// EZSP Security Parameters are not set.
     SecurityParametersNotSet,
+    /// Received frame with unsupported control byte.
     UnsupportedControl,
+    /// Received frame is unsecure, when security is established.
     UnsecureFrame,
+    /// Serial port initialization failed.
     SerialInit,
 }
 

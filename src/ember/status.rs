@@ -22,6 +22,7 @@ mod mac;
 mod phy;
 mod serial;
 mod sim_eeprom;
+mod values;
 
 /// Ember status.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]

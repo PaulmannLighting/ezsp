@@ -1,31 +1,54 @@
 use crate::ezsp::status::values::Values;
 use num_traits::FromPrimitive;
 
+/// ASH-related status.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Misc {
     /// Operation not yet complete.
     InProgress,
+    /// ASH protocol started.
     Started,
+    /// ASH protocol connected.
     Connected,
+    /// ASH protocol disconnected.
     Disconnected,
+    /// Timer expired waiting for ack.
     AckTimeout,
+    /// Frame in progress cancelled.
     Cancelled,
+    /// Received frame out of sequence.
     OutOfSequence,
+    /// Received frame with CRC error.
     BadCrc,
+    /// Received frame with comm error.
     CommError,
+    /// Received frame with bad ackNum.
     BadAckNum,
+    /// Received frame shorter than minimum.
     TooShort,
+    /// Received frame longer than maximum.
     TooLong,
+    /// Received frame with illegal control byte.
     BadControl,
+    /// Received frame with illegal length for its type.
     BadLength,
+    /// Received ASH Ack.
     AckReceived,
+    /// Sent ASH Ack.
     AckSent,
+    /// Received ASH Nak.
     NakReceived,
+    /// Sent ASH Nak.
     NakSent,
+    /// Received ASH RST.
     RstReceived,
+    /// Sent ASH RST.
     RstSent,
+    /// ASH Status.
     Status,
+    /// ASH TX.
     Tx,
+    /// ASH RX.
     Rx,
 }
 

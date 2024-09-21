@@ -2,7 +2,6 @@ use crate::ezsp::status::values::Values;
 use num_traits::FromPrimitive;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-
 pub enum Error {
     /// Fatal error detected by NCP.
     NcpFatalError,

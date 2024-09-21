@@ -59,7 +59,7 @@ impl TryFrom<Values> for SpiErr {
             Values::SpiErrStartupTimeout => Ok(Self::StartupTimeout),
             Values::SpiErrStartupFail => Ok(Self::StartupFail),
             Values::SpiErrUnsupportedSpiCommand => Ok(Self::UnsupportedSpiCommand),
-            value => Err(value),
+            _ => Err(value),
         }
     }
 }

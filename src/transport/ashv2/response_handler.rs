@@ -48,7 +48,7 @@ where
         });
 
         match Self::parse_header(&mut bytes) {
-            Ok(header) => match R::from_le_stream(&mut bytes) {
+            Ok(header) => match R::from_le_stream_exact(&mut bytes) {
                 Ok(parameters) => {
                     self.replace_result(Ok(Frame::new(header, parameters)));
 
@@ -60,10 +60,18 @@ where
                     HandleResult::Completed
                 }
                 Err(error) => {
-                    drop(buffer);
                     error!("Error: {error}");
-                    self.replace_result(Err("Incomplete data".to_string().into()));
-                    HandleResult::Continue
+                    drop(buffer);
+                    match error {
+                        le_stream::Error::UnexpectedEndOfStream => {
+                            self.replace_result(Err("Incomplete data".to_string().into()));
+                            HandleResult::Continue
+                        }
+                        le_stream::Error::StreamNotExhausted(byte) => {
+                            self.replace_result(Err(format!("Excess data: {byte:?}").into()));
+                            HandleResult::Failed
+                        }
+                    }
                 }
             },
             Err(error) => {
@@ -74,17 +82,19 @@ where
         }
     }
 
-    fn parse_header<T>(bytes: &mut T) -> Result<Header<R::Id>, Error>
+    fn parse_header<T>(mut bytes: T) -> Result<Header<R::Id>, Error>
     where
         T: Iterator<Item = u8>,
     {
-        let header = Header::from_le_stream(bytes)?;
+        let header =
+            Header::from_le_stream(&mut bytes).ok_or(le_stream::Error::UnexpectedEndOfStream)?;
 
         if header.id() == R::ID {
             Ok(header)
         } else if Into::<u16>::into(header.id()) == invalid_command::Response::ID {
             Err(Error::InvalidCommand(
-                invalid_command::Response::from_le_stream(bytes)?,
+                invalid_command::Response::from_le_stream(bytes)
+                    .ok_or(le_stream::Error::UnexpectedEndOfStream)?,
             ))
         } else {
             error!(
@@ -166,7 +176,7 @@ impl<R> Handler for ResponseHandler<R>
 where
     R: Debug + Send + Sync + Parameter + FromLeStream,
 {
-    fn handle(&self, event: Event) -> HandleResult {
+    fn handle(&self, event: Event<'_>) -> HandleResult {
         match event {
             Event::DataReceived(bytes) => {
                 // TODO: Handle rejected bytes.

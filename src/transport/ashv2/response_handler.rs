@@ -48,32 +48,7 @@ where
         });
 
         match Self::parse_header(&mut bytes) {
-            Ok(header) => match R::from_le_stream_exact(&mut bytes) {
-                Ok(parameters) => {
-                    self.replace_result(Ok(Frame::new(header, parameters)));
-
-                    for byte in bytes {
-                        warn!("Found excess byte in response: {byte:?}");
-                    }
-
-                    drop(buffer);
-                    HandleResult::Completed
-                }
-                Err(error) => {
-                    error!("Error: {error}");
-                    drop(buffer);
-                    match error {
-                        le_stream::Error::UnexpectedEndOfStream => {
-                            self.replace_result(Err("Incomplete data".to_string().into()));
-                            HandleResult::Continue
-                        }
-                        le_stream::Error::StreamNotExhausted(byte) => {
-                            self.replace_result(Err(format!("Excess data: {byte:?}").into()));
-                            HandleResult::Failed
-                        }
-                    }
-                }
-            },
+            Ok(header) => self.parse_frame(header, bytes),
             Err(error) => {
                 drop(buffer);
                 self.replace_result(Err(error));
@@ -106,6 +81,36 @@ where
                 expected: Into::<u16>::into(R::ID),
                 found: Into::<u16>::into(header.id()),
             })
+        }
+    }
+
+    fn parse_frame<T>(&self, header: Header<R::Id>, mut bytes: T) -> HandleResult
+    where
+        T: Iterator<Item = u8>,
+    {
+        match R::from_le_stream_exact(&mut bytes) {
+            Ok(parameters) => {
+                self.replace_result(Ok(Frame::new(header, parameters)));
+
+                for byte in bytes {
+                    warn!("Found excess byte in response: {byte:?}");
+                }
+
+                HandleResult::Completed
+            }
+            Err(error) => {
+                error!("Error: {error}");
+                match error {
+                    le_stream::Error::UnexpectedEndOfStream => {
+                        self.replace_result(Err("Incomplete data".to_string().into()));
+                        HandleResult::Continue
+                    }
+                    le_stream::Error::StreamNotExhausted(byte) => {
+                        self.replace_result(Err(format!("Excess data: {byte:?}").into()));
+                        HandleResult::Failed
+                    }
+                }
+            }
         }
     }
 

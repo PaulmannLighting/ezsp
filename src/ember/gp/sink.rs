@@ -141,14 +141,10 @@ impl ListEntry {
     pub fn payload(&self) -> Option<Payload> {
         self.typ().map_or(None, |typ| match typ {
             Type::DGroupCast | Type::GroupCast => {
-                Group::from_le_stream(&mut self.bytes.iter().copied())
-                    .ok()
-                    .map(Payload::GroupList)
+                Group::from_le_stream(&mut self.bytes.iter().copied()).map(Payload::GroupList)
             }
             Type::LwUnicast | Type::FullUnicast => {
-                Address::from_le_stream(&mut self.bytes.iter().copied())
-                    .ok()
-                    .map(Payload::Unicast)
+                Address::from_le_stream(&mut self.bytes.iter().copied()).map(Payload::Unicast)
             }
             Type::Unused => None,
         })

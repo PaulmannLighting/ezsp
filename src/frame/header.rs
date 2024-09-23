@@ -43,14 +43,14 @@ impl<T> FromLeStream for Header<T>
 where
     T: Copy + Debug + Eq + From<Control> + Into<Control> + Into<u16> + FromLeStream,
 {
-    fn from_le_stream<I>(bytes: &mut I) -> le_stream::Result<Self>
+    fn from_le_stream<I>(mut bytes: I) -> Option<Self>
     where
         I: Iterator<Item = u8>,
     {
-        let sequence = <u8 as FromLeStream>::from_le_stream(bytes)?;
-        let control = T::from_le_stream(bytes)?;
+        let sequence = <u8 as FromLeStream>::from_le_stream(&mut bytes)?;
+        let control = T::from_le_stream(&mut bytes)?;
         let id = T::from_le_stream(bytes)?;
-        Ok(Self::new(sequence, control, id))
+        Some(Self::new(sequence, control, id))
     }
 }
 

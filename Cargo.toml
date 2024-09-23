@@ -18,7 +18,7 @@ rw-exact-ext = { git = "https://github.com/PaulmannLighting/rw-exact-ext.git", v
 serialport = { version = "4.3", default-features = false }
 siliconlabs = { git = "ssh://git@github.com/PaulmannLighting/siliconlabs.git", version = "0.2", features = ["le-stream"] }
 ashv2 = { git = "https://github.com/PaulmannLighting/ashv2.git", version = "0.1", optional = true }
-le-stream = { version = "0.2", features = ["derive", "heapless"] }
+le-stream = { version = "0.4" }
 log = "0.4"
 heapless = "0.8"
 itertools = "0.13"

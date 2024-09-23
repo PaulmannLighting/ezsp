@@ -57,6 +57,7 @@ pub enum Id {
     NwkOpenDuration = 0x42,
     TransientDeviceTimeout = 0x43,
     KeyStorageVersion = 0x44,
+    DelayedJoinActivation = 0x45,
 }
 
 impl From<Id> for u8 {

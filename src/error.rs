@@ -9,9 +9,8 @@ pub use value::Error as ValueError;
 /// An error that can occur when communicating with an NCP.
 #[derive(Debug)]
 pub enum Error {
-    /// An `ASHv2` protocol-related error occurred.
-    #[cfg(feature = "ashv2")]
-    Ashv2(ashv2::Error),
+    /// An I/O error occurred.
+    Io(std::io::Error),
     /// An invalid [`ezsp::Status`] was received.
     InvalidEzspStatus(u8),
     /// An invalid [`ember::Status`] was received.
@@ -50,8 +49,7 @@ pub enum Error {
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            #[cfg(feature = "ashv2")]
-            Self::Ashv2(error) => Display::fmt(error, f),
+            Self::Io(error) => Display::fmt(error, f),
             Self::InvalidEzspStatus(status) => write!(f, "Invalid EZSP status: {status}"),
             Self::InvalidEmberStatus(status) => write!(f, "Invalid Ember status: {status}"),
             Self::InvalidEmberDutyCycleState(state) => {
@@ -83,8 +81,7 @@ impl Display for Error {
 impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            #[cfg(feature = "ashv2")]
-            Self::Ashv2(error) => Some(error),
+            Self::Io(error) => Some(error),
             Self::IncompleteData(error) => Some(error),
             Self::ValueError(error) => Some(error),
             _ => None,
@@ -92,10 +89,9 @@ impl std::error::Error for Error {
     }
 }
 
-#[cfg(feature = "ashv2")]
-impl From<ashv2::Error> for Error {
-    fn from(error: ashv2::Error) -> Self {
-        Self::Ashv2(error)
+impl From<std::io::Error> for Error {
+    fn from(error: std::io::Error) -> Self {
+        Self::Io(error)
     }
 }
 

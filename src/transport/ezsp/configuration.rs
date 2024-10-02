@@ -20,7 +20,7 @@ pub trait Configuration {
     /// Once the status of the stack changes to [`Status::NetworkUp`](crate::ember::Status::NetworkUp),
     /// endpoints can no longer be added and this command will respond with [`Error::InvalidCall`](crate::ezsp::Error::InvalidCall).
     fn add_endpoint(
-        &self,
+        &mut self,
         endpoint: u8,
         profile_id: u16,
         device_id: u16,
@@ -31,38 +31,38 @@ pub trait Configuration {
 
     /// Reads a configuration value from the NCP.
     fn get_configuration_value(
-        &self,
+        &mut self,
         config_id: Id,
     ) -> impl Future<Output = Result<u16, Error>> + Send;
 
     /// Reads a value from the NCP but passes an extra argument specific to the value being retrieved.
     fn get_extended_value(
-        &self,
+        &mut self,
         value_id: ExtendedId,
         characteristics: u32,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
 
     /// Allows the Host to read the policies used by the NCP to make fast decisions.
     fn get_policy(
-        &self,
+        &mut self,
         policy_id: policy::Id,
     ) -> impl Future<Output = Result<decision::Id, Error>> + Send;
 
     /// Reads a value from the NCP.
     fn get_value(
-        &self,
+        &mut self,
         value_id: value::Id,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
 
     /// Legacy implementation of [`version()`](Self::version) using a shortened header.
     fn legacy_version(
-        &self,
+        &mut self,
         desired_protocol_version: u8,
     ) -> impl Future<Output = Result<version::Response, Error>> + Send;
 
     /// Read attribute data on NCP endpoints.
     fn read_attribute(
-        &self,
+        &mut self,
         endpoint: u8,
         cluster: u16,
         attribute_id: u16,
@@ -72,7 +72,7 @@ pub trait Configuration {
 
     /// Triggers a pan id update message.
     fn send_pan_id_update(
-        &self,
+        &mut self,
         new_pan: PanId,
     ) -> impl Future<Output = Result<bool, Error>> + Send;
 
@@ -81,28 +81,28 @@ pub trait Configuration {
     /// configuration values can no longer be modified
     /// and this command will respond with [`Error::InvalidCall`](crate::ezsp::Error::InvalidCall).
     fn set_configuration_value(
-        &self,
+        &mut self,
         config_id: Id,
         value: u16,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Allows the Host to control the broadcast behaviour of a routing device used by the NCP.
     fn set_passive_ack_config(
-        &self,
+        &mut self,
         config: u8,
         min_acks_needed: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Allows the Host to change the policies used by the NCP to make fast decisions.
     fn set_policy(
-        &self,
+        &mut self,
         policy_id: policy::Id,
         decision_id: decision::Id,
     ) -> impl Future<Output = Result<(), Error>>;
 
     /// Writes a value to the NCP.
     fn set_value(
-        &self,
+        &mut self,
         value_id: value::Id,
         value: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
@@ -111,14 +111,14 @@ pub trait Configuration {
     /// before any other command.
     /// The response provides information about the firmware running on the NCP.
     fn version(
-        &self,
+        &mut self,
         desired_protocol_version: u8,
     ) -> impl Future<Output = Result<version::Response, Error>> + Send;
 
     /// Write attribute data on NCP endpoints.
     #[allow(clippy::too_many_arguments)]
     fn write_attribute(
-        &self,
+        &mut self,
         endpoint: u8,
         cluster: u16,
         attribute_id: u16,
@@ -135,7 +135,7 @@ where
     T: Transport,
 {
     async fn add_endpoint(
-        &self,
+        &mut self,
         endpoint: u8,
         profile_id: u16,
         device_id: u16,
@@ -155,7 +155,7 @@ where
         .resolve()
     }
 
-    async fn get_configuration_value(&self, config_id: Id) -> Result<u16, Error> {
+    async fn get_configuration_value(&mut self, config_id: Id) -> Result<u16, Error> {
         self.communicate::<_, get_configuration_value::Response>(
             get_configuration_value::Command::new(config_id),
         )
@@ -164,7 +164,7 @@ where
     }
 
     async fn get_extended_value(
-        &self,
+        &mut self,
         value_id: ExtendedId,
         characteristics: u32,
     ) -> Result<ByteSizedVec<u8>, Error> {
@@ -176,20 +176,20 @@ where
         .resolve()
     }
 
-    async fn get_policy(&self, policy_id: policy::Id) -> Result<decision::Id, Error> {
+    async fn get_policy(&mut self, policy_id: policy::Id) -> Result<decision::Id, Error> {
         self.communicate::<_, get_policy::Response>(get_policy::Command::new(policy_id))
             .await?
             .resolve()
     }
 
-    async fn get_value(&self, value_id: value::Id) -> Result<ByteSizedVec<u8>, Error> {
+    async fn get_value(&mut self, value_id: value::Id) -> Result<ByteSizedVec<u8>, Error> {
         self.communicate::<_, get_value::Response>(get_value::Command::new(value_id))
             .await?
             .resolve()
     }
 
     async fn legacy_version(
-        &self,
+        &mut self,
         desired_protocol_version: u8,
     ) -> Result<version::Response, Error> {
         self.communicate::<_, version::LegacyResponse>(version::LegacyCommand::from(
@@ -200,7 +200,7 @@ where
     }
 
     async fn read_attribute(
-        &self,
+        &mut self,
         endpoint: u8,
         cluster: u16,
         attribute_id: u16,
@@ -218,7 +218,7 @@ where
         .resolve()
     }
 
-    async fn send_pan_id_update(&self, new_pan: PanId) -> Result<bool, Error> {
+    async fn send_pan_id_update(&mut self, new_pan: PanId) -> Result<bool, Error> {
         self.communicate::<_, send_pan_id_update::Response>(send_pan_id_update::Command::new(
             new_pan,
         ))
@@ -226,7 +226,7 @@ where
         .resolve()
     }
 
-    async fn set_configuration_value(&self, config_id: Id, value: u16) -> Result<(), Error> {
+    async fn set_configuration_value(&mut self, config_id: Id, value: u16) -> Result<(), Error> {
         self.communicate::<_, set_configuration_value::Response>(
             set_configuration_value::Command::new(config_id, value),
         )
@@ -234,7 +234,11 @@ where
         .resolve()
     }
 
-    async fn set_passive_ack_config(&self, config: u8, min_acks_needed: u8) -> Result<(), Error> {
+    async fn set_passive_ack_config(
+        &mut self,
+        config: u8,
+        min_acks_needed: u8,
+    ) -> Result<(), Error> {
         self.communicate::<_, set_passive_ack_config::Response>(
             set_passive_ack_config::Command::new(config, min_acks_needed),
         )
@@ -243,7 +247,7 @@ where
     }
 
     async fn set_policy(
-        &self,
+        &mut self,
         policy_id: policy::Id,
         decision_id: decision::Id,
     ) -> Result<(), Error> {
@@ -255,19 +259,23 @@ where
         .resolve()
     }
 
-    async fn set_value(&self, value_id: value::Id, value: ByteSizedVec<u8>) -> Result<(), Error> {
+    async fn set_value(
+        &mut self,
+        value_id: value::Id,
+        value: ByteSizedVec<u8>,
+    ) -> Result<(), Error> {
         self.communicate::<_, set_value::Response>(set_value::Command::new(value_id, value))
             .await?
             .resolve()
     }
 
-    async fn version(&self, desired_protocol_version: u8) -> Result<version::Response, Error> {
+    async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
         self.communicate::<_, version::Response>(version::Command::new(desired_protocol_version))
             .await
     }
 
     async fn write_attribute(
-        &self,
+        &mut self,
         endpoint: u8,
         cluster: u16,
         attribute_id: u16,

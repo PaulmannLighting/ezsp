@@ -21,7 +21,7 @@ pub trait CertificateBasedKeyExchange {
     /// It also stores the unverified link key data in temporary storage on the NCP until the key
     /// establishment is complete.
     fn calculate_smacs(
-        &self,
+        &mut self,
         am_initiator: bool,
         partner_certificate: CertificateData,
         partner_ephemeral_public_key: PublicKeyData,
@@ -34,7 +34,7 @@ pub trait CertificateBasedKeyExchange {
     /// It also stores the unverified link key data in temporary storage on the NCP until the
     /// key establishment is complete.
     fn calculate_smacs283k1(
-        &self,
+        &mut self,
         am_initiator: bool,
         partner_certificate: Certificate283k1Data,
         partner_ephemeral_public_key: PublicKey283k1Data,
@@ -46,7 +46,7 @@ pub trait CertificateBasedKeyExchange {
     /// If storeLinKey is true it moves the unverified link key stored in temporary storage
     /// into the link key table. Otherwise, it discards the key.
     fn clear_temporary_data_maybe_store_link_key(
-        &self,
+        &mut self,
         store_link_key: bool,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
@@ -56,7 +56,7 @@ pub trait CertificateBasedKeyExchange {
     /// If storeLinKey is true it moves the unverified link key stored in temporary storage
     /// into the link key table. Otherwise, it discards the key.
     fn clear_temporary_data_maybe_store_link_key283k1(
-        &self,
+        &mut self,
         store_link_key: bool,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
@@ -82,12 +82,14 @@ pub trait CertificateBasedKeyExchange {
     /// When the signature operation is complete, this final byte will be replaced by the signature type indicator (0x01 for ECDSA signatures),
     /// and the actual signature will be appended to the original contents after this byte.
     #[deprecated]
-    fn dsa_sign(&self, message: ByteSizedVec<u8>)
-        -> impl Future<Output = Result<(), Error>> + Send;
+    fn dsa_sign(
+        &mut self,
+        message: ByteSizedVec<u8>,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Verify that signature of the associated message digest was signed by the private key of the associated certificate.
     fn dsa_verify(
-        &self,
+        &mut self,
         digest: MessageDigest,
         signer_certificate: CertificateData,
         received_sig: SignatureData,
@@ -95,7 +97,7 @@ pub trait CertificateBasedKeyExchange {
 
     /// Verify that signature of the associated message digest was signed by the private key of the associated certificate.
     fn dsa_verify283k1(
-        &self,
+        &mut self,
         digest: MessageDigest,
         signer_certificate: Certificate283k1Data,
         received_sig: Signature283k1Data,
@@ -105,30 +107,32 @@ pub trait CertificateBasedKeyExchange {
     ///
     /// When complete it stores the private key.
     /// The results are returned via [`generate_cbke_keys_handler::Result`](crate::frame::parameters::cbke::generate_cbke_keys_handler::Response).
-    fn generate_cbke_keys(&self) -> impl Future<Output = Result<(), Error>> + Send;
+    fn generate_cbke_keys(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This call starts the generation of the ECC 283k1 curve Ephemeral Public/Private key pair.
     ///
     /// When complete it stores the private key.
     /// The results are returned via [`generate_cbke_keys_handler283k1::Result`](crate::frame::parameters::cbke::generate_cbke_keys_handler283k1::Response).
-    fn generate_cbke_keys283k1(&self) -> impl Future<Output = Result<(), Error>> + Send;
+    fn generate_cbke_keys283k1(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Retrieves the certificate installed on the NCP.
-    fn get_certificate(&self) -> impl Future<Output = Result<CertificateData, Error>> + Send;
+    fn get_certificate(&mut self) -> impl Future<Output = Result<CertificateData, Error>> + Send;
 
     /// Retrieves the 283k certificate installed on the NCP.
     fn get_certificate283k1(
-        &self,
+        &mut self,
     ) -> impl Future<Output = Result<Certificate283k1Data, Error>> + Send;
 
     /// Sets the device's 283k1 curve CA public key, local certificate,
     /// and static private key on the NCP associated with this node.
-    fn save_preinstalled_cbke_data283k1(&self) -> impl Future<Output = Result<(), Error>> + Send;
+    fn save_preinstalled_cbke_data283k1(
+        &mut self,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Sets the device's CA public key, local certificate,
     /// and static private key on the NCP associated with this node.
     fn set_preinstalled_cbke_data(
-        &self,
+        &mut self,
         ca_public: PublicKeyData,
         my_cert: CertificateData,
         my_key: PrivateKeyData,
@@ -140,7 +144,7 @@ where
     T: Transport,
 {
     async fn calculate_smacs(
-        &self,
+        &mut self,
         am_initiator: bool,
         partner_certificate: CertificateData,
         partner_ephemeral_public_key: PublicKeyData,
@@ -155,7 +159,7 @@ where
     }
 
     async fn calculate_smacs283k1(
-        &self,
+        &mut self,
         am_initiator: bool,
         partner_certificate: Certificate283k1Data,
         partner_ephemeral_public_key: PublicKey283k1Data,
@@ -170,7 +174,7 @@ where
     }
 
     async fn clear_temporary_data_maybe_store_link_key(
-        &self,
+        &mut self,
         store_link_key: bool,
     ) -> Result<(), Error> {
         self.communicate::<_, clear_temporary_data_maybe_store_link_key::Response>(
@@ -181,7 +185,7 @@ where
     }
 
     async fn clear_temporary_data_maybe_store_link_key283k1(
-        &self,
+        &mut self,
         store_link_key: bool,
     ) -> Result<(), Error> {
         self.communicate::<_, clear_temporary_data_maybe_store_link_key283k1::Response>(
@@ -191,14 +195,14 @@ where
         .resolve()
     }
 
-    async fn dsa_sign(&self, message: ByteSizedVec<u8>) -> Result<(), Error> {
+    async fn dsa_sign(&mut self, message: ByteSizedVec<u8>) -> Result<(), Error> {
         self.communicate::<_, dsa_sign::Response>(dsa_sign::Command::new(message))
             .await
             .map(drop)
     }
 
     async fn dsa_verify(
-        &self,
+        &mut self,
         digest: MessageDigest,
         signer_certificate: CertificateData,
         received_sig: SignatureData,
@@ -213,7 +217,7 @@ where
     }
 
     async fn dsa_verify283k1(
-        &self,
+        &mut self,
         digest: MessageDigest,
         signer_certificate: Certificate283k1Data,
         received_sig: Signature283k1Data,
@@ -227,31 +231,31 @@ where
         .resolve()
     }
 
-    async fn generate_cbke_keys(&self) -> Result<(), Error> {
+    async fn generate_cbke_keys(&mut self) -> Result<(), Error> {
         self.communicate::<_, generate_cbke_keys::Response>(generate_cbke_keys::Command)
             .await?
             .resolve()
     }
 
-    async fn generate_cbke_keys283k1(&self) -> Result<(), Error> {
+    async fn generate_cbke_keys283k1(&mut self) -> Result<(), Error> {
         self.communicate::<_, generate_cbke_keys283k1::Response>(generate_cbke_keys283k1::Command)
             .await?
             .resolve()
     }
 
-    async fn get_certificate(&self) -> Result<CertificateData, Error> {
+    async fn get_certificate(&mut self) -> Result<CertificateData, Error> {
         self.communicate::<_, get_certificate::Response>(get_certificate::Command)
             .await?
             .resolve()
     }
 
-    async fn get_certificate283k1(&self) -> Result<Certificate283k1Data, Error> {
+    async fn get_certificate283k1(&mut self) -> Result<Certificate283k1Data, Error> {
         self.communicate::<_, get_certificate283k1::Response>(get_certificate283k1::Command)
             .await?
             .resolve()
     }
 
-    async fn save_preinstalled_cbke_data283k1(&self) -> Result<(), Error> {
+    async fn save_preinstalled_cbke_data283k1(&mut self) -> Result<(), Error> {
         self.communicate::<_, save_preinstalled_cbke_data283k1::Response>(
             save_preinstalled_cbke_data283k1::Command,
         )
@@ -260,7 +264,7 @@ where
     }
 
     async fn set_preinstalled_cbke_data(
-        &self,
+        &mut self,
         ca_public: PublicKeyData,
         my_cert: CertificateData,
         my_key: PrivateKeyData,

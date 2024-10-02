@@ -12,7 +12,7 @@ use crate::{Error, Transport};
 pub trait Bootloader {
     /// Perform AES encryption on `plaintext` using `key`.
     fn aes_encrypt(
-        &self,
+        &mut self,
         plaintext: [u8; 16],
         key: [u8; 16],
     ) -> impl Future<Output = Result<[u8; 16], Error>> + Send;
@@ -22,7 +22,7 @@ pub trait Bootloader {
     /// If not return `0xffff`. A returned version of `0x1234` would indicate version 1.2 build 34.
     /// Also return the node's version of `PLAT`, `MICRO` and `PHY`.
     fn get_standalone_bootloader_version_plat_micro_phy(
-        &self,
+        &mut self,
     ) -> impl Future<
         Output = Result<get_standalone_bootloader_version_plat_micro_phy::Response, Error>,
     > + Send;
@@ -31,7 +31,7 @@ pub trait Bootloader {
     ///
     /// The function returns an error if the standalone bootloader is not present.
     fn launch_standalone_bootloader(
-        &self,
+        &mut self,
         mode: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
@@ -43,7 +43,7 @@ pub trait Bootloader {
     /// NOTE: this API is not safe to call on multi-network devices and it will return failure when so.
     /// Use of the ember/ezspSetRadioChannel APIs are multi-network safe and are recommended instead.
     fn override_current_channel(
-        &self,
+        &mut self,
         channel: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
@@ -51,7 +51,7 @@ pub trait Bootloader {
     /// that allows the EmberZNet stack as well as the bootloader to recognize the message,
     /// but will not interfere with other ZigBee stacks.
     fn send_bootload_message(
-        &self,
+        &mut self,
         broadcast: bool,
         dest_eui64: Eui64,
         message: ByteSizedVec<u8>,
@@ -62,14 +62,14 @@ impl<T> Bootloader for T
 where
     T: Transport,
 {
-    async fn aes_encrypt(&self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
+    async fn aes_encrypt(&mut self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
         self.communicate::<_, aes_encrypt::Response>(aes_encrypt::Command::new(plaintext, key))
             .await
             .map(|response| response.ciphertext())
     }
 
     async fn get_standalone_bootloader_version_plat_micro_phy(
-        &self,
+        &mut self,
     ) -> Result<get_standalone_bootloader_version_plat_micro_phy::Response, Error> {
         self.communicate::<_, get_standalone_bootloader_version_plat_micro_phy::Response>(
             get_standalone_bootloader_version_plat_micro_phy::Command,
@@ -77,7 +77,7 @@ where
         .await
     }
 
-    async fn launch_standalone_bootloader(&self, mode: u8) -> Result<(), Error> {
+    async fn launch_standalone_bootloader(&mut self, mode: u8) -> Result<(), Error> {
         self.communicate::<_, launch_standalone_bootloader::Response>(
             launch_standalone_bootloader::Command::new(mode),
         )
@@ -85,7 +85,7 @@ where
         .resolve()
     }
 
-    async fn override_current_channel(&self, channel: u8) -> Result<(), Error> {
+    async fn override_current_channel(&mut self, channel: u8) -> Result<(), Error> {
         self.communicate::<_, override_current_channel::Response>(
             override_current_channel::Command::new(channel),
         )
@@ -94,7 +94,7 @@ where
     }
 
     async fn send_bootload_message(
-        &self,
+        &mut self,
         broadcast: bool,
         dest_eui64: Eui64,
         message: ByteSizedVec<u8>,

@@ -1,68 +1,65 @@
-use std::fmt::Debug;
-use std::sync::atomic::AtomicU8;
-use std::sync::atomic::Ordering::SeqCst;
-use std::sync::mpsc::Sender;
-
-use ashv2::{FrameBuffer, Host};
-use le_stream::{FromLeStream, ToLeStream};
-use log::debug;
-use serialport::TTYPort;
-
 use crate::frame::{Control, Header, Parameter};
-use crate::transport::ashv2::response_handler::ResponseHandler;
+use crate::transport::parse_response::parse_response;
 use crate::transport::Transport;
 use crate::Error;
-
-mod response_handler;
+use ashv2::AsyncAsh;
+use le_stream::{FromLeStream, ToLeStream};
+use log::debug;
+use std::fmt::Debug;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
-pub struct Ashv2 {
-    host: Host,
-    sequence: AtomicU8,
+pub struct Ashv2<T>
+where
+    T: AsyncAsh,
+{
+    host: T,
+    sequence: u8,
     control: Control,
+    buffer: Vec<u8>,
 }
 
-impl Ashv2 {
-    /// Spawns an ASHv2 host.
-    ///
-    /// # Errors
-    /// Returns an [`ashv2::Error`] if spawning fails.
-    pub fn spawn(
-        serial_port: TTYPort,
-        control: Control,
-        callback: Option<Sender<FrameBuffer>>,
-    ) -> Result<Self, ashv2::Error> {
-        Ok(Self {
-            host: Host::spawn(serial_port, callback)?,
-            sequence: AtomicU8::new(0),
+impl<T> Ashv2<T>
+where
+    T: AsyncAsh,
+{
+    /// Creates an ASHv2 host.
+    pub fn new(host: T, control: Control) -> Self {
+        Self {
+            host,
+            sequence: 0,
             control,
-        })
+            buffer: Vec::new(),
+        }
     }
 }
 
-impl Transport for Ashv2 {
-    fn next_header<R>(&self) -> Header<R::Id>
+impl<T> Transport for Ashv2<T>
+where
+    T: AsyncAsh + Send,
+{
+    fn next_header<P>(&mut self) -> Header<P::Id>
     where
-        R: Parameter,
+        P: Parameter,
     {
-        let sequence = self.sequence.load(SeqCst);
-        let header = Header::new(sequence, self.control.into(), R::ID);
+        let sequence = self.sequence;
+        let header = Header::new(sequence, self.control.into(), P::ID);
         debug!("Header: {header:?}");
-        self.sequence
-            .store(sequence.checked_add(1).unwrap_or(0), SeqCst);
+        self.sequence = sequence.wrapping_add(1);
         header
     }
 
-    async fn communicate<C, R>(&self, command: C) -> Result<R, Error>
+    async fn communicate<C, R>(&mut self, command: C) -> Result<R, Error>
     where
-        C: Parameter + ToLeStream,
-        R: Clone + Debug + Send + Sync + Parameter + FromLeStream + 'static,
+        C: Parameter + ToLeStream + Send,
+        R: Clone + Debug + Send + Parameter + FromLeStream,
     {
-        let mut payload = Vec::new();
-        payload.extend(self.next_header::<R>().to_le_stream());
-        payload.extend(command.to_le_stream());
-        debug!("Sending payload: {payload:?}");
-        self.host.communicate::<ResponseHandler<R>>(&payload).await
+        self.buffer.clear();
+        let header = self.next_header::<R>();
+        self.buffer.extend(header.to_le_stream());
+        self.buffer.extend(command.to_le_stream());
+        debug!("Sending payload: {:#04X?}", self.buffer);
+        let response = self.host.communicate(&self.buffer).await?;
+        parse_response::<R>(&response)
     }
 }

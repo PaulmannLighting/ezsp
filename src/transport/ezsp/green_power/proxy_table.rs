@@ -9,15 +9,18 @@ use crate::{Error, Transport};
 
 pub trait ProxyTable {
     /// Retrieves the proxy table entry stored at the passed index.
-    fn get_entry(&self, proxy_index: u8) -> impl Future<Output = Result<TableEntry, Error>> + Send;
+    fn get_entry(
+        &mut self,
+        proxy_index: u8,
+    ) -> impl Future<Output = Result<TableEntry, Error>> + Send;
 
     /// Finds the index of the passed address in the gp table.
-    fn lookup(&self, addr: Address) -> impl Future<Output = Result<u8, Error>> + Send;
+    fn lookup(&mut self, addr: Address) -> impl Future<Output = Result<u8, Error>> + Send;
 
     /// Update the GP Proxy table based on a GP pairing.
     #[allow(clippy::too_many_arguments)]
     fn process_gp_pairing(
-        &self,
+        &mut self,
         options: u32,
         addr: Address,
         comm_mode: u8,
@@ -35,20 +38,20 @@ impl<T> ProxyTable for T
 where
     T: Transport,
 {
-    async fn get_entry(&self, proxy_index: u8) -> Result<TableEntry, Error> {
+    async fn get_entry(&mut self, proxy_index: u8) -> Result<TableEntry, Error> {
         self.communicate::<_, get_entry::Response>(get_entry::Command::new(proxy_index))
             .await?
             .resolve()
     }
 
-    async fn lookup(&self, addr: Address) -> Result<u8, Error> {
+    async fn lookup(&mut self, addr: Address) -> Result<u8, Error> {
         self.communicate::<_, lookup::Response>(lookup::Command::new(addr))
             .await
             .map(|response| response.index())
     }
 
     async fn process_gp_pairing(
-        &self,
+        &mut self,
         options: u32,
         addr: Address,
         comm_mode: u8,

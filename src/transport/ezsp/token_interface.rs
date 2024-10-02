@@ -10,30 +10,31 @@ use std::future::Future;
 
 pub trait TokenInterface {
     /// Gets the total number of tokens.
-    fn get_token_count(&self) -> impl Future<Output = Result<u8, crate::Error>> + Send;
+    fn get_token_count(&mut self) -> impl Future<Output = Result<u8, crate::Error>> + Send;
 
     /// Gets the token data for a single token with provided key.
     fn get_token_data(
-        &self,
+        &mut self,
         token: u32,
         index: u32,
     ) -> impl Future<Output = Result<token::Data, crate::Error>> + Send;
 
     /// Gets the token information for a single token at provided index
     fn get_token_info(
-        &self,
+        &mut self,
         index: u8,
     ) -> impl Future<Output = Result<token::Info, crate::Error>> + Send;
 
     /// Run GP security test vectors.
-    fn gp_security_test_vectors(&self) -> impl Future<Output = Result<(), crate::Error>> + Send;
+    fn gp_security_test_vectors(&mut self)
+        -> impl Future<Output = Result<(), crate::Error>> + Send;
 
     /// Reset the node by calling `halReboot`.
-    fn reset_node(&self) -> impl Future<Output = Result<(), crate::Error>> + Send;
+    fn reset_node(&mut self) -> impl Future<Output = Result<(), crate::Error>> + Send;
 
     /// Sets the token data for a single token with provided key.
     fn set_token_data(
-        &self,
+        &mut self,
         token: u32,
         index: u32,
         token_data: Data,
@@ -41,7 +42,7 @@ pub trait TokenInterface {
 
     /// Factory reset all configured Zigbee tokens.
     fn token_factory_reset(
-        &self,
+        &mut self,
         exclude_outgoing_fc: bool,
         exclude_boot_counter: bool,
     ) -> impl Future<Output = Result<(), crate::Error>> + Send;
@@ -51,38 +52,42 @@ impl<T> TokenInterface for T
 where
     T: Transport,
 {
-    async fn get_token_count(&self) -> Result<u8, crate::Error> {
+    async fn get_token_count(&mut self) -> Result<u8, crate::Error> {
         self.communicate::<_, get_token_count::Response>(get_token_count::Command)
             .await?
             .resolve()
     }
 
-    async fn get_token_data(&self, token: u32, index: u32) -> Result<token::Data, crate::Error> {
+    async fn get_token_data(
+        &mut self,
+        token: u32,
+        index: u32,
+    ) -> Result<token::Data, crate::Error> {
         self.communicate::<_, get_token_data::Response>(get_token_data::Command::new(token, index))
             .await?
             .resolve()
     }
 
-    async fn get_token_info(&self, index: u8) -> Result<token::Info, crate::Error> {
+    async fn get_token_info(&mut self, index: u8) -> Result<token::Info, crate::Error> {
         self.communicate::<_, get_token_info::Response>(get_token_info::Command::new(index))
             .await?
             .resolve()
     }
 
-    async fn gp_security_test_vectors(&self) -> Result<(), crate::Error> {
+    async fn gp_security_test_vectors(&mut self) -> Result<(), crate::Error> {
         self.communicate::<_, gp_security_test_vectors::Response>(gp_security_test_vectors::Command)
             .await?
             .resolve()
     }
 
-    async fn reset_node(&self) -> Result<(), crate::Error> {
+    async fn reset_node(&mut self) -> Result<(), crate::Error> {
         self.communicate::<_, reset_node::Response>(reset_node::Command)
             .await?
             .resolve()
     }
 
     async fn set_token_data(
-        &self,
+        &mut self,
         token: u32,
         index: u32,
         token_data: Data,
@@ -95,7 +100,7 @@ where
     }
 
     async fn token_factory_reset(
-        &self,
+        &mut self,
         exclude_outgoing_fc: bool,
         exclude_boot_counter: bool,
     ) -> Result<(), crate::Error> {

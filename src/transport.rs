@@ -1,6 +1,7 @@
 #[cfg(feature = "ashv2")]
 mod ashv2;
 mod ezsp;
+mod parse_response;
 
 use crate::frame::Parameter;
 use crate::{Error, Header};
@@ -16,15 +17,15 @@ use std::fmt::Debug;
 use std::future::Future;
 
 /// A transport layer to communicate with an NCP that supports the `EZSP` protocol.
-pub trait Transport: Send + Sync {
+pub trait Transport: Send {
     /// Return the next header.
-    fn next_header<R>(&self) -> Header<R::Id>
+    fn next_header<R>(&mut self) -> Header<R::Id>
     where
         R: Parameter;
 
     /// Communicate with the NCP.
-    fn communicate<C, R>(&self, command: C) -> impl Future<Output = Result<R, Error>> + Send + Sync
+    fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
     where
         C: Parameter + ToLeStream,
-        R: Clone + Debug + Send + Sync + Parameter + FromLeStream + 'static;
+        R: Clone + Debug + Send + Parameter + FromLeStream;
 }

@@ -29,37 +29,37 @@ pub trait Messaging {
     /// The remote node ID will have the value `EMBER_TABLE_ENTRY_UNUSED_NODE_ID`
     /// when the address table entry is not in use.
     fn address_table_entry_is_active(
-        &self,
+        &mut self,
         address_table_index: u8,
     ) -> impl Future<Output = Result<bool, Error>> + Send;
 
     /// Gets the EUI64 of an address table entry.
     fn get_address_table_remote_eui64(
-        &self,
+        &mut self,
         address_table_index: u8,
     ) -> impl Future<Output = Result<Eui64, Error>> + Send;
 
     /// Gets the short ID of an address table entry.
     fn get_address_table_remote_node_id(
-        &self,
+        &mut self,
         address_table_index: u8,
     ) -> impl Future<Output = Result<NodeId, Error>> + Send;
 
     /// Gets the priority masks and related variables for choosing the best beacon.
     fn get_beacon_classification_params(
-        &self,
+        &mut self,
     ) -> impl Future<Output = Result<ClassificationParams, Error>> + Send;
 
     /// Indicates whether the stack will extend the normal interval between retransmissions
     /// of a retried unicast message by `EMBER_INDIRECT_TRANSMISSION_TIMEOUT`.
     fn get_extended_timeout(
-        &self,
+        &mut self,
         remote_eui64: Eui64,
     ) -> impl Future<Output = Result<bool, Error>> + Send;
 
     /// Gets an entry from the multicast table.
     fn get_multicast_table_entry(
-        &self,
+        &mut self,
         index: u8,
     ) -> impl Future<Output = Result<TableEntry, Error>> + Send;
 
@@ -67,7 +67,7 @@ pub trait Messaging {
     ///
     /// The EUI64 is found by searching through all stack tables for the specified node ID.
     fn lookup_eui64_by_node_id(
-        &self,
+        &mut self,
         node_id: NodeId,
     ) -> impl Future<Output = Result<Eui64, Error>> + Send;
 
@@ -75,18 +75,18 @@ pub trait Messaging {
     ///
     /// The node ID is found by searching through all stack tables for the specified EUI64.
     fn lookup_node_id_by_eui64(
-        &self,
+        &mut self,
         eui64: Eui64,
     ) -> impl Future<Output = Result<NodeId, Error>> + Send;
 
     /// Returns the maximum size of the payload. The size depends on the security level in use.
-    fn maximum_payload_length(&self) -> impl Future<Output = Result<u8, Error>> + Send;
+    fn maximum_payload_length(&mut self) -> impl Future<Output = Result<u8, Error>> + Send;
 
     /// Periodically request any pending data from our parent.
     ///
     /// Setting interval to 0 or units to `EMBER_EVENT_INACTIVE` will generate a single poll.
     fn poll_for_data(
-        &self,
+        &mut self,
         interval: u16,
         units: Units,
         failure_limit: u8,
@@ -95,7 +95,7 @@ pub trait Messaging {
     /// Sends a proxied broadcast message as per the ZigBee specification.
     #[allow(clippy::too_many_arguments)]
     fn proxy_broadcast(
-        &self,
+        &mut self,
         source: NodeId,
         destination: NodeId,
         nwk_sequence: u8,
@@ -106,7 +106,7 @@ pub trait Messaging {
     ) -> impl Future<Output = Result<u8, Error>> + Send;
 
     fn replace_address_table_entry(
-        &self,
+        &mut self,
         address_table_index: u8,
         new_eui64: Eui64,
         new_id: NodeId,
@@ -115,7 +115,7 @@ pub trait Messaging {
 
     /// Sends a broadcast message as per the ZigBee specification.
     fn send_broadcast(
-        &self,
+        &mut self,
         destination: NodeId,
         aps_frame: Frame,
         radius: u8,
@@ -156,7 +156,7 @@ pub trait Messaging {
     /// A common and recommended strategy is for the concentrator application to refresh the routes
     /// by calling this function periodically.
     fn send_many_to_one_route_request(
-        &self,
+        &mut self,
         concentrator_type: u16,
         radius: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
@@ -164,7 +164,7 @@ pub trait Messaging {
     /// Sends a multicast message to all endpoints that share a specific multicast ID and are
     /// within a specified number of hops of the sender.
     fn send_multicast(
-        &self,
+        &mut self,
         aps_frame: Frame,
         hops: u8,
         nonmember_radius: u8,
@@ -176,7 +176,7 @@ pub trait Messaging {
     /// within a specified number of hops of the sender.
     #[allow(clippy::too_many_arguments)]
     fn send_multicast_with_alias(
-        &self,
+        &mut self,
         aps_frame: Frame,
         hops: u8,
         nonmember_radius: u8,
@@ -190,7 +190,7 @@ pub trait Messaging {
     ///
     /// The MAC header is assumed to be configured in the message at the time this function is called.
     fn send_raw_message(
-        &self,
+        &mut self,
         message_contents: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
@@ -198,7 +198,7 @@ pub trait Messaging {
     ///
     /// The MAC header is assumed to be configured in the message at the time this function is called.
     fn send_raw_message_extended(
-        &self,
+        &mut self,
         message: ByteSizedVec<u8>,
         priority: u8,
         use_cca: bool,
@@ -209,7 +209,7 @@ pub trait Messaging {
     /// The incomingMessageHandler callback for the unicast being replied to
     /// supplies the values for all the parameters except the reply itself.
     fn send_reply(
-        &self,
+        &mut self,
         sender: NodeId,
         aps_frame: Frame,
         message: ByteSizedVec<u8>,
@@ -237,7 +237,7 @@ pub trait Messaging {
     /// For all subsequent fragments of the same message, the application must set the sequence
     /// number field in the APS frame to the sequence number assigned by the stack to the first fragment.
     fn send_unicast(
-        &self,
+        &mut self,
         typ: Outgoing,
         index_or_destination: NodeId,
         aps_frame: Frame,
@@ -252,7 +252,7 @@ pub trait Messaging {
     /// If known then this function will also set node ID. If not known it will set the node ID to
     /// `EMBER_UNKNOWN_NODE_ID`.
     fn set_address_table_remote_eui64(
-        &self,
+        &mut self,
         address_table_index: u8,
         eui64: Eui64,
     ) -> impl Future<Output = Result<(), Error>> + Send;
@@ -264,14 +264,14 @@ pub trait Messaging {
     /// However, in cases where the application does set the short ID, the application must set the
     /// remote EUI64 prior to setting the short ID.
     fn set_address_table_remote_node_id(
-        &self,
+        &mut self,
         address_table_index: u8,
         id: NodeId,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Sets the priority masks and related variables for choosing the best beacon.
     fn set_beacon_classification_params(
-        &self,
+        &mut self,
         param: ClassificationParams,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
@@ -286,7 +286,7 @@ pub trait Messaging {
     ///     * When an indirect transaction expiry route error is received.
     ///     * When an end device announcement is received from a sleepy node.
     fn set_extended_timeout(
-        &self,
+        &mut self,
         remote_eui64: Eui64,
         extended_timeout: bool,
     ) -> impl Future<Output = Result<(), Error>> + Send;
@@ -298,40 +298,43 @@ pub trait Messaging {
     ///
     /// This function is useful to sleepy end devices.
     fn set_mac_poll_failure_wait_time(
-        &self,
+        &mut self,
         wait_before_retry_interval_ms: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Sets an entry in the multicast table.
     fn set_multicast_table_entry(
-        &self,
+        &mut self,
         index: u8,
         value: TableEntry,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Sets source route discovery (`MTORR`) mode to on, off, reschedule.
     fn set_source_route_discovery_mode(
-        &self,
+        &mut self,
         mode: SourceRouteDiscoveryMode,
     ) -> impl Future<Output = Result<u32, Error>> + Send;
 
     /// Send the network key to a destination.
     fn unicast_current_network_key(
-        &self,
+        &mut self,
         target_short: NodeId,
         target_long: Eui64,
         parent_short_id: NodeId,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Write the current node ID, PAN ID, or Node type to the tokens.
-    fn write_node_data(&self, erase: bool) -> impl Future<Output = Result<(), Error>> + Send;
+    fn write_node_data(&mut self, erase: bool) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Messaging for T
 where
     T: Transport,
 {
-    async fn address_table_entry_is_active(&self, address_table_index: u8) -> Result<bool, Error> {
+    async fn address_table_entry_is_active(
+        &mut self,
+        address_table_index: u8,
+    ) -> Result<bool, Error> {
         self.communicate::<_, address_table_entry_is_active::Response>(
             address_table_entry_is_active::Command::new(address_table_index),
         )
@@ -340,7 +343,7 @@ where
     }
 
     async fn get_address_table_remote_eui64(
-        &self,
+        &mut self,
         address_table_index: u8,
     ) -> Result<Eui64, Error> {
         self.communicate::<_, get_address_table_remote_eui64::Response>(
@@ -351,7 +354,7 @@ where
     }
 
     async fn get_address_table_remote_node_id(
-        &self,
+        &mut self,
         address_table_index: u8,
     ) -> Result<NodeId, Error> {
         self.communicate::<_, get_address_table_remote_node_id::Response>(
@@ -361,7 +364,7 @@ where
         .map(|response| response.node_id())
     }
 
-    async fn get_beacon_classification_params(&self) -> Result<ClassificationParams, Error> {
+    async fn get_beacon_classification_params(&mut self) -> Result<ClassificationParams, Error> {
         self.communicate::<_, get_beacon_classification_params::Response>(
             get_beacon_classification_params::Command,
         )
@@ -369,7 +372,7 @@ where
         .resolve()
     }
 
-    async fn get_extended_timeout(&self, remote_eui64: Eui64) -> Result<bool, Error> {
+    async fn get_extended_timeout(&mut self, remote_eui64: Eui64) -> Result<bool, Error> {
         self.communicate::<_, get_extended_timeout::Response>(get_extended_timeout::Command::new(
             remote_eui64,
         ))
@@ -377,7 +380,7 @@ where
         .map(|response| response.extended_timeout())
     }
 
-    async fn get_multicast_table_entry(&self, index: u8) -> Result<TableEntry, Error> {
+    async fn get_multicast_table_entry(&mut self, index: u8) -> Result<TableEntry, Error> {
         self.communicate::<_, get_multicast_table_entry::Response>(
             get_multicast_table_entry::Command::new(index),
         )
@@ -385,7 +388,7 @@ where
         .resolve()
     }
 
-    async fn lookup_eui64_by_node_id(&self, node_id: NodeId) -> Result<Eui64, Error> {
+    async fn lookup_eui64_by_node_id(&mut self, node_id: NodeId) -> Result<Eui64, Error> {
         self.communicate::<_, lookup_eui64_by_node_id::Response>(
             lookup_eui64_by_node_id::Command::new(node_id),
         )
@@ -393,7 +396,7 @@ where
         .resolve()
     }
 
-    async fn lookup_node_id_by_eui64(&self, eui64: Eui64) -> Result<NodeId, Error> {
+    async fn lookup_node_id_by_eui64(&mut self, eui64: Eui64) -> Result<NodeId, Error> {
         self.communicate::<_, lookup_node_id_by_eui64::Response>(
             lookup_node_id_by_eui64::Command::new(eui64),
         )
@@ -401,14 +404,14 @@ where
         .map(|response| response.node_id())
     }
 
-    async fn maximum_payload_length(&self) -> Result<u8, Error> {
+    async fn maximum_payload_length(&mut self) -> Result<u8, Error> {
         self.communicate::<_, maximum_payload_length::Response>(maximum_payload_length::Command)
             .await
             .map(|response| response.aps_length())
     }
 
     async fn poll_for_data(
-        &self,
+        &mut self,
         interval: u16,
         units: Units,
         failure_limit: u8,
@@ -423,7 +426,7 @@ where
     }
 
     async fn proxy_broadcast(
-        &self,
+        &mut self,
         source: NodeId,
         destination: NodeId,
         nwk_sequence: u8,
@@ -446,7 +449,7 @@ where
     }
 
     async fn replace_address_table_entry(
-        &self,
+        &mut self,
         address_table_index: u8,
         new_eui64: Eui64,
         new_id: NodeId,
@@ -465,7 +468,7 @@ where
     }
 
     async fn send_broadcast(
-        &self,
+        &mut self,
         destination: NodeId,
         aps_frame: Frame,
         radius: u8,
@@ -484,7 +487,7 @@ where
     }
 
     async fn send_many_to_one_route_request(
-        &self,
+        &mut self,
         concentrator_type: u16,
         radius: u8,
     ) -> Result<(), Error> {
@@ -496,7 +499,7 @@ where
     }
 
     async fn send_multicast(
-        &self,
+        &mut self,
         aps_frame: Frame,
         hops: u8,
         nonmember_radius: u8,
@@ -515,7 +518,7 @@ where
     }
 
     async fn send_multicast_with_alias(
-        &self,
+        &mut self,
         aps_frame: Frame,
         hops: u8,
         nonmember_radius: u8,
@@ -539,7 +542,7 @@ where
         .resolve()
     }
 
-    async fn send_raw_message(&self, message_contents: ByteSizedVec<u8>) -> Result<(), Error> {
+    async fn send_raw_message(&mut self, message_contents: ByteSizedVec<u8>) -> Result<(), Error> {
         self.communicate::<_, send_raw_message::Response>(send_raw_message::Command::new(
             message_contents,
         ))
@@ -548,7 +551,7 @@ where
     }
 
     async fn send_raw_message_extended(
-        &self,
+        &mut self,
         message: ByteSizedVec<u8>,
         priority: u8,
         use_cca: bool,
@@ -561,7 +564,7 @@ where
     }
 
     async fn send_reply(
-        &self,
+        &mut self,
         sender: NodeId,
         aps_frame: Frame,
         message: ByteSizedVec<u8>,
@@ -574,7 +577,7 @@ where
     }
 
     async fn send_unicast(
-        &self,
+        &mut self,
         typ: Outgoing,
         index_or_destination: NodeId,
         aps_frame: Frame,
@@ -593,7 +596,7 @@ where
     }
 
     async fn set_address_table_remote_eui64(
-        &self,
+        &mut self,
         address_table_index: u8,
         eui64: Eui64,
     ) -> Result<(), Error> {
@@ -605,7 +608,7 @@ where
     }
 
     async fn set_address_table_remote_node_id(
-        &self,
+        &mut self,
         address_table_index: u8,
         id: NodeId,
     ) -> Result<(), Error> {
@@ -617,7 +620,7 @@ where
     }
 
     async fn set_beacon_classification_params(
-        &self,
+        &mut self,
         param: ClassificationParams,
     ) -> Result<(), Error> {
         self.communicate::<_, set_beacon_classification_params::Response>(
@@ -628,7 +631,7 @@ where
     }
 
     async fn set_extended_timeout(
-        &self,
+        &mut self,
         remote_eui64: Eui64,
         extended_timeout: bool,
     ) -> Result<(), Error> {
@@ -641,7 +644,7 @@ where
     }
 
     async fn set_mac_poll_failure_wait_time(
-        &self,
+        &mut self,
         wait_before_retry_interval_ms: u8,
     ) -> Result<(), Error> {
         self.communicate::<_, set_mac_poll_failure_wait_time::Response>(
@@ -651,7 +654,11 @@ where
         .map(drop)
     }
 
-    async fn set_multicast_table_entry(&self, index: u8, value: TableEntry) -> Result<(), Error> {
+    async fn set_multicast_table_entry(
+        &mut self,
+        index: u8,
+        value: TableEntry,
+    ) -> Result<(), Error> {
         self.communicate::<_, set_multicast_table_entry::Response>(
             set_multicast_table_entry::Command::new(index, value),
         )
@@ -660,7 +667,7 @@ where
     }
 
     async fn set_source_route_discovery_mode(
-        &self,
+        &mut self,
         mode: SourceRouteDiscoveryMode,
     ) -> Result<u32, Error> {
         self.communicate::<_, set_source_route_discovery_mode::Response>(
@@ -671,7 +678,7 @@ where
     }
 
     async fn unicast_current_network_key(
-        &self,
+        &mut self,
         target_short: NodeId,
         target_long: Eui64,
         parent_short_id: NodeId,
@@ -683,7 +690,7 @@ where
         .resolve()
     }
 
-    async fn write_node_data(&self, erase: bool) -> Result<(), Error> {
+    async fn write_node_data(&mut self, erase: bool) -> Result<(), Error> {
         self.communicate::<_, write_node_data::Response>(write_node_data::Command::new(erase))
             .await?
             .resolve()

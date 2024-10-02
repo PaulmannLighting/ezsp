@@ -17,84 +17,87 @@ use crate::{Error, Transport};
 pub trait Security {
     /// Check whether a key context can be used to load a valid key.
     fn check_key_context(
-        &self,
+        &mut self,
         context: ManContext,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This function clears the key table of the current network.
-    fn clear_key_table(&self) -> impl Future<Output = Result<(), Error>> + Send;
+    fn clear_key_table(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Clear all the transient link keys from RAM.
-    fn clear_transient_link_keys(&self) -> impl Future<Output = Result<(), Error>> + Send;
+    fn clear_transient_link_keys(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This function erases the data in the key table entry at the specified index.
     ///If the index is invalid, false is returned.
-    fn erase_key_table_entry(&self, index: u8) -> impl Future<Output = Result<(), Error>> + Send;
+    fn erase_key_table_entry(
+        &mut self,
+        index: u8,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Exports a key from security manager based on passed context.
     fn export_key(
-        &self,
+        &mut self,
         man_context: ManContext,
     ) -> impl Future<Output = Result<ManKey, Error>> + Send;
 
     /// Export the link key associated with the given EUI from the key table.
     fn export_link_key_by_eui(
-        &self,
+        &mut self,
         eui: Eui64,
     ) -> impl Future<Output = Result<export_link_key_by_eui::Response, Error>> + Send;
 
     /// Export the link key at given index from the key table.
     fn export_link_key_by_index(
-        &self,
+        &mut self,
         index: u8,
     ) -> impl Future<Output = Result<export_link_key_by_index::Response, Error>> + Send;
 
     /// Export a transient link key associated with a given EUI64.
     fn export_transient_key_by_eui(
-        &self,
+        &mut self,
         eui: Eui64,
     ) -> impl Future<Output = Result<export_transient_key::Payload, Error>> + Send;
 
     /// Export a transient link key from a given table index.
     fn export_transient_key_by_index(
-        &self,
+        &mut self,
         index: u8,
     ) -> impl Future<Output = Result<export_transient_key::Payload, Error>> + Send;
 
     /// This function searches through the Key Table and tries to find the entry
     /// that matches the passed search criteria.
     fn find_key_table_entry(
-        &self,
+        &mut self,
         address: Eui64,
         link_key: bool,
     ) -> impl Future<Output = Result<u8, Error>> + Send;
 
     /// Retrieve metadata about an APS link key. Does not retrieve contents.
     fn get_aps_key_info(
-        &self,
+        &mut self,
         context_in: ManContext,
     ) -> impl Future<Output = Result<get_aps_key_info::Payload, Error>> + Send;
 
     /// Gets the current security state that is being used by a device that is joined in the network.
     fn get_current_security_state(
-        &self,
+        &mut self,
     ) -> impl Future<Output = Result<security::current::State, Error>> + Send;
 
     /// Retrieve information about the current and alternate network key, excluding their contents.
     fn get_network_key_info(
-        &self,
+        &mut self,
     ) -> impl Future<Output = Result<siliconlabs::zigbee::security::ManNetworkKeyInfo, Error>> + Send;
 
     /// Imports a key into security manager based on passed context.
     fn import_key(
-        &self,
+        &mut self,
         context: ManContext,
         key: ManKey,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Import an application link key into the key table.
     fn import_link_key(
-        &self,
+        &mut self,
         index: u8,
         address: Eui64,
         plaintext_key: ManKey,
@@ -102,7 +105,7 @@ pub trait Security {
 
     /// Import a transient link key.
     fn import_transient_key(
-        &self,
+        &mut self,
         context: ManContext,
         eui64: Eui64,
         plaintext_key: ManKey,
@@ -124,13 +127,16 @@ pub trait Security {
     ///
     /// Sleepy devices should poll at a higher rate until a response is received or the request times out.
     /// The success or failure of the request is returned via `ezspZigbeeKeyEstablishmentHandler(...)`.
-    fn request_link_key(&self, partner: Eui64) -> impl Future<Output = Result<(), Error>> + Send;
+    fn request_link_key(
+        &mut self,
+        partner: Eui64,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This function sends an APS TransportKey command containing the current trust center link key.
     ///
     /// The node to which the command is sent is specified via the short and long address arguments.
     fn send_trust_center_link_key(
-        &self,
+        &mut self,
         destination_node_id: NodeId,
         destination_eui64: Eui64,
     ) -> impl Future<Output = Result<(), Error>> + Send;
@@ -141,7 +147,7 @@ pub trait Security {
     /// result in a loss of security data and will cause communication problems when the device
     /// re-enters the network.
     fn set_initial_security_state(
-        &self,
+        &mut self,
         state: security::initial::State,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
@@ -151,7 +157,7 @@ pub trait Security {
     /// R21+ stack version compliance. A Request Key message will then be sent, followed by a
     /// Verify Key Confirm message.
     fn update_tc_link_key(
-        &self,
+        &mut self,
         max_attempts: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
@@ -160,19 +166,19 @@ impl<T> Security for T
 where
     T: Transport,
 {
-    async fn check_key_context(&self, context: ManContext) -> Result<(), Error> {
+    async fn check_key_context(&mut self, context: ManContext) -> Result<(), Error> {
         self.communicate::<_, check_key_context::Response>(check_key_context::Command::new(context))
             .await?
             .resolve()
     }
 
-    async fn clear_key_table(&self) -> Result<(), Error> {
+    async fn clear_key_table(&mut self) -> Result<(), Error> {
         self.communicate::<_, clear_key_table::Response>(clear_key_table::Command)
             .await?
             .resolve()
     }
 
-    async fn clear_transient_link_keys(&self) -> Result<(), Error> {
+    async fn clear_transient_link_keys(&mut self) -> Result<(), Error> {
         self.communicate::<_, clear_transient_link_keys::Response>(
             clear_transient_link_keys::Command,
         )
@@ -180,7 +186,7 @@ where
         .resolve()
     }
 
-    async fn erase_key_table_entry(&self, index: u8) -> Result<(), Error> {
+    async fn erase_key_table_entry(&mut self, index: u8) -> Result<(), Error> {
         self.communicate::<_, erase_key_table_entry::Response>(erase_key_table_entry::Command::new(
             index,
         ))
@@ -188,14 +194,14 @@ where
         .resolve()
     }
 
-    async fn export_key(&self, man_context: ManContext) -> Result<ManKey, Error> {
+    async fn export_key(&mut self, man_context: ManContext) -> Result<ManKey, Error> {
         self.communicate::<_, export_key::Response>(export_key::Command::new(man_context))
             .await?
             .resolve()
     }
 
     async fn export_link_key_by_eui(
-        &self,
+        &mut self,
         eui: Eui64,
     ) -> Result<export_link_key_by_eui::Response, Error> {
         self.communicate::<_, export_link_key_by_eui::Response>(
@@ -206,7 +212,7 @@ where
     }
 
     async fn export_link_key_by_index(
-        &self,
+        &mut self,
         index: u8,
     ) -> Result<export_link_key_by_index::Response, Error> {
         self.communicate::<_, export_link_key_by_index::Response>(
@@ -217,7 +223,7 @@ where
     }
 
     async fn export_transient_key_by_eui(
-        &self,
+        &mut self,
         eui: Eui64,
     ) -> Result<export_transient_key::Payload, Error> {
         self.communicate::<_, export_transient_key::by_eui::Response>(
@@ -228,7 +234,7 @@ where
     }
 
     async fn export_transient_key_by_index(
-        &self,
+        &mut self,
         index: u8,
     ) -> Result<export_transient_key::Payload, Error> {
         self.communicate::<_, export_transient_key::by_index::Response>(
@@ -238,7 +244,7 @@ where
         .resolve()
     }
 
-    async fn find_key_table_entry(&self, address: Eui64, link_key: bool) -> Result<u8, Error> {
+    async fn find_key_table_entry(&mut self, address: Eui64, link_key: bool) -> Result<u8, Error> {
         self.communicate::<_, find_key_table_entry::Response>(find_key_table_entry::Command::new(
             address, link_key,
         ))
@@ -247,7 +253,7 @@ where
     }
 
     async fn get_aps_key_info(
-        &self,
+        &mut self,
         context_in: ManContext,
     ) -> Result<get_aps_key_info::Payload, Error> {
         self.communicate::<_, get_aps_key_info::Response>(get_aps_key_info::Command::new(
@@ -257,7 +263,7 @@ where
         .resolve()
     }
 
-    async fn get_current_security_state(&self) -> Result<security::current::State, Error> {
+    async fn get_current_security_state(&mut self) -> Result<security::current::State, Error> {
         self.communicate::<_, get_current_security_state::Response>(
             get_current_security_state::Command,
         )
@@ -266,21 +272,21 @@ where
     }
 
     async fn get_network_key_info(
-        &self,
+        &mut self,
     ) -> Result<siliconlabs::zigbee::security::ManNetworkKeyInfo, Error> {
         self.communicate::<_, get_network_key_info::Response>(get_network_key_info::Command)
             .await?
             .resolve()
     }
 
-    async fn import_key(&self, context: ManContext, key: ManKey) -> Result<(), Error> {
+    async fn import_key(&mut self, context: ManContext, key: ManKey) -> Result<(), Error> {
         self.communicate::<_, import_key::Response>(import_key::Command::new(context, key))
             .await?
             .resolve()
     }
 
     async fn import_link_key(
-        &self,
+        &mut self,
         index: u8,
         address: Eui64,
         plaintext_key: ManKey,
@@ -295,7 +301,7 @@ where
     }
 
     async fn import_transient_key(
-        &self,
+        &mut self,
         context: ManContext,
         eui64: Eui64,
         plaintext_key: ManKey,
@@ -311,14 +317,14 @@ where
         .resolve()
     }
 
-    async fn request_link_key(&self, partner: Eui64) -> Result<(), Error> {
+    async fn request_link_key(&mut self, partner: Eui64) -> Result<(), Error> {
         self.communicate::<_, request_link_key::Response>(request_link_key::Command::new(partner))
             .await?
             .resolve()
     }
 
     async fn send_trust_center_link_key(
-        &self,
+        &mut self,
         destination_node_id: NodeId,
         destination_eui64: Eui64,
     ) -> Result<(), Error> {
@@ -330,7 +336,7 @@ where
     }
 
     async fn set_initial_security_state(
-        &self,
+        &mut self,
         state: security::initial::State,
     ) -> Result<(), Error> {
         self.communicate::<_, set_initial_security_state::Response>(
@@ -340,7 +346,7 @@ where
         .resolve()
     }
 
-    async fn update_tc_link_key(&self, max_attempts: u8) -> Result<(), Error> {
+    async fn update_tc_link_key(&mut self, max_attempts: u8) -> Result<(), Error> {
         self.communicate::<_, update_tc_link_key::Response>(update_tc_link_key::Command::new(
             max_attempts,
         ))

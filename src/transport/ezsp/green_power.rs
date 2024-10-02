@@ -17,7 +17,7 @@ pub trait GreenPower: ProxyTable + SinkTable {
     /// Adds/removes an entry from the GP Tx Queue.
     #[allow(clippy::too_many_arguments)]
     fn send(
-        &self,
+        &mut self,
         action: bool,
         use_cca: bool,
         addr: Address,
@@ -29,7 +29,7 @@ pub trait GreenPower: ProxyTable + SinkTable {
 
     /// Puts the GPS in commissioning mode.
     fn sink_commission(
-        &self,
+        &mut self,
         options: u8,
         gpm_addr_for_security: u16,
         gpm_addr_for_pairing: u16,
@@ -37,7 +37,7 @@ pub trait GreenPower: ProxyTable + SinkTable {
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Clears all entries within the translation table.
-    fn translation_table_clear(&self) -> impl Future<Output = Result<(), Error>> + Send;
+    fn translation_table_clear(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> GreenPower for T
@@ -45,7 +45,7 @@ where
     T: ProxyTable + SinkTable + Transport,
 {
     async fn send(
-        &self,
+        &mut self,
         action: bool,
         use_cca: bool,
         addr: Address,
@@ -68,7 +68,7 @@ where
     }
 
     async fn sink_commission(
-        &self,
+        &mut self,
         options: u8,
         gpm_addr_for_security: u16,
         gpm_addr_for_pairing: u16,
@@ -84,7 +84,7 @@ where
         .resolve()
     }
 
-    async fn translation_table_clear(&self) -> Result<(), Error> {
+    async fn translation_table_clear(&mut self) -> Result<(), Error> {
         self.communicate::<_, translation_table_clear::Response>(translation_table_clear::Command)
             .await
             .map(drop)

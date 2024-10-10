@@ -2,8 +2,9 @@ use std::future::Future;
 
 use crate::ember::aes::MmoHashContext;
 use crate::ember::key::Data;
+use crate::ember::{Eui64, NodeId};
 use crate::frame::parameters::trust_center::{
-    aes_mmo_hash, broadcast_network_key_switch, broadcast_next_network_key,
+    aes_mmo_hash, broadcast_network_key_switch, broadcast_next_network_key, remove_device,
 };
 use crate::types::ByteSizedVec;
 use crate::Resolve;
@@ -33,6 +34,15 @@ pub trait TrustCenter {
     /// It is up to the application to determine how quickly
     /// to send the Switch Key after sending the alternate encryption key.
     fn broadcast_next_network_key(&mut self, key: Data) -> impl Future<Output = Result<(), Error>>;
+
+    /// This command sends an APS remove device using APS encryption to the destination indicating
+    /// either to remove itself from the network, or one of its children.
+    fn remove_device(
+        &mut self,
+        dest_short: NodeId,
+        dest_long: Eui64,
+        target_long: Eui64,
+    ) -> impl Future<Output = Result<(), Error>>;
 }
 
 impl<T> TrustCenter for T
@@ -67,6 +77,21 @@ where
         )
         .await?
         .status()
+        .resolve()
+    }
+
+    async fn remove_device(
+        &mut self,
+        dest_short: NodeId,
+        dest_long: Eui64,
+        target_long: Eui64,
+    ) -> Result<(), Error> {
+        self.communicate::<_, remove_device::Response>(remove_device::Command::new(
+            dest_short,
+            dest_long,
+            target_long,
+        ))
+        .await?
         .resolve()
     }
 }

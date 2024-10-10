@@ -5,6 +5,7 @@ use crate::ember::key::Data;
 use crate::ember::{Eui64, NodeId};
 use crate::frame::parameters::trust_center::{
     aes_mmo_hash, broadcast_network_key_switch, broadcast_next_network_key, remove_device,
+    unicast_nwk_key_update,
 };
 use crate::types::ByteSizedVec;
 use crate::Resolve;
@@ -42,6 +43,17 @@ pub trait TrustCenter {
         dest_short: NodeId,
         dest_long: Eui64,
         target_long: Eui64,
+    ) -> impl Future<Output = Result<(), Error>>;
+
+    /// This command will send a unicast transport key message with a new NWK key
+    /// to the specified device.
+    ///
+    /// APS encryption using the device's existing link key will be used.
+    fn unicast_nwk_key_update(
+        &mut self,
+        dest_short: NodeId,
+        dest_long: Eui64,
+        key: Data,
     ) -> impl Future<Output = Result<(), Error>>;
 }
 
@@ -91,6 +103,19 @@ where
             dest_long,
             target_long,
         ))
+        .await?
+        .resolve()
+    }
+
+    async fn unicast_nwk_key_update(
+        &mut self,
+        dest_short: NodeId,
+        dest_long: Eui64,
+        key: Data,
+    ) -> Result<(), Error> {
+        self.communicate::<_, unicast_nwk_key_update::Response>(
+            unicast_nwk_key_update::Command::new(dest_short, dest_long, key),
+        )
         .await?
         .resolve()
     }

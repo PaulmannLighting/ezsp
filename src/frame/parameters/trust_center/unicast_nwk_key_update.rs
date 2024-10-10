@@ -1,10 +1,13 @@
 use crate::ember::key::Data;
 use crate::ember::{Eui64, NodeId, Status};
+use crate::frame::Parameter;
+use crate::resolve::Resolve;
+use crate::Error;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x00A9;
 
-#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     dest_short: NodeId,
     dest_long: Eui64,
@@ -20,37 +23,27 @@ impl Command {
             key,
         }
     }
-
-    #[must_use]
-    pub const fn dest_short(&self) -> NodeId {
-        self.dest_short
-    }
-
-    #[must_use]
-    pub const fn dest_long(&self) -> Eui64 {
-        self.dest_long
-    }
-
-    #[must_use]
-    pub const fn key(&self) -> Data {
-        self.key
-    }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: u16 = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: u16 = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+impl Resolve for Response {
+    type Output = ();
+
+    fn resolve(self) -> Result<Self::Output, Error> {
+        Status::try_from(self.status).resolve()
     }
 }

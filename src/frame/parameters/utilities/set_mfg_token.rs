@@ -5,7 +5,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x000C;
 
-#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Command {
     token_id: u8,
     token_data: ByteSizedVec<u8>,
@@ -30,7 +30,7 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Response {
     status: u8,
 }

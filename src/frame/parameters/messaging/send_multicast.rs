@@ -9,7 +9,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x0038;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     aps_frame: Frame,
     hops: u8,

@@ -7,7 +7,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x0105;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     config: u8,
     min_acks_needed: u8,

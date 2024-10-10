@@ -7,7 +7,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x0041;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     concentrator_type: u16,
     radius: u8,

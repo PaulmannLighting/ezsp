@@ -7,7 +7,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x008C;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     tx_power_mode: u16,
     power: i8,

@@ -7,7 +7,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0003;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     value_id: u8,
     characteristics: u32,

@@ -6,7 +6,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x003E;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     eui64: Eui64,
 }

@@ -6,7 +6,7 @@ use siliconlabs::Status;
 
 const ID: u16 = 0x0112;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     index: u8,
 }

@@ -7,7 +7,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x00D3;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     channel_mask: u32,
     duration: u8,

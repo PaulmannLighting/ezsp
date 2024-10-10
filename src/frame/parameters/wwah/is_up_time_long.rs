@@ -2,7 +2,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x00E5;
 
-#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Command;
 
 impl Command {
@@ -12,7 +12,7 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Response {
     has_long_up_time: bool,
 }

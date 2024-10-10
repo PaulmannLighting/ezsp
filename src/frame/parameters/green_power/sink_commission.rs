@@ -7,7 +7,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x010A;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     options: u8,
     gpm_addr_for_security: u16,

@@ -4,7 +4,7 @@ use std::fmt::Debug;
 
 const ID: u8 = 0x00;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     desired_protocol_version: u8,
 }
@@ -57,7 +57,7 @@ impl Parameter for Response {
     const ID: Self::Id = ID as u16;
 }
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct LegacyCommand(Command);
 
 impl From<Command> for LegacyCommand {

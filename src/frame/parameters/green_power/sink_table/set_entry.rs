@@ -8,7 +8,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x00DF;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     sink_index: u8,
     entry: TableEntry,

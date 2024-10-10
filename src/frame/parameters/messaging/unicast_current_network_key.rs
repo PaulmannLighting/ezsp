@@ -7,7 +7,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x0050;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     target_short: NodeId,
     target_long: Eui64,

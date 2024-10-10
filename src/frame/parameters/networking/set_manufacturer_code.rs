@@ -4,7 +4,7 @@ use crate::frame::Parameter;
 
 const ID: u16 = 0x0015;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     code: u16,
 }

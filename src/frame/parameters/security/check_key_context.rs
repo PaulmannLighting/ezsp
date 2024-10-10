@@ -8,7 +8,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x0110;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     context: ManContext,
 }

@@ -7,7 +7,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x00FB;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     phy_index: u8,
     page: u8,

@@ -5,7 +5,7 @@ use crate::types::SourceRouteDiscoveryMode;
 
 const ID: u16 = 0x005A;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     mode: u8,
 }

@@ -7,7 +7,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x00AC;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     index: u8,
     child_data: child::Data,

@@ -4,7 +4,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x00CF;
 
-#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Command {
     security_state: InitialSecurityState,
 }
@@ -21,7 +21,7 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Response {
     status: u8,
 }

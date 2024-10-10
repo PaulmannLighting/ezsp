@@ -9,7 +9,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x003B;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     local_node_type: u8,
     beacon: Data,

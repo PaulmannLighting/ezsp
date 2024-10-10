@@ -7,7 +7,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x00A3;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     digest: MessageDigest,
     signer_certificate: CertificateData,

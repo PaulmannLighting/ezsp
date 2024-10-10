@@ -5,7 +5,7 @@ use crate::frame::Parameter;
 
 const ID: u16 = 0x007F;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     remote_eui64: Eui64,
 }

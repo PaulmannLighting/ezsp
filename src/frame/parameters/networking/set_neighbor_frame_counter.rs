@@ -7,7 +7,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x00AD;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     eui64: Eui64,
     frame_counter: u32,

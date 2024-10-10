@@ -7,7 +7,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x004C;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     max_devices: u8,
 }

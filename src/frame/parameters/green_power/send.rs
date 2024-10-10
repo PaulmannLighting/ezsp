@@ -11,7 +11,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x00C6;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     action: bool,
     use_cca: bool,

@@ -9,7 +9,7 @@ use crate::Resolve;
 
 const ID: u16 = 0x0039;
 
-#[derive(Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     sender: NodeId,
     aps_frame: Frame,

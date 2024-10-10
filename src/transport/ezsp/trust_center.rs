@@ -38,7 +38,10 @@ pub trait TrustCenter {
     ///
     /// It is up to the application to determine how quickly
     /// to send the Switch Key after sending the alternate encryption key.
-    fn broadcast_next_network_key(&mut self, key: Data) -> impl Future<Output = Result<(), Error>>;
+    fn broadcast_next_network_key(
+        &mut self,
+        key: Data,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This command sends an APS remove device using APS encryption to the destination indicating
     /// either to remove itself from the network, or one of its children.
@@ -47,7 +50,7 @@ pub trait TrustCenter {
         dest_short: NodeId,
         dest_long: Eui64,
         target_long: Eui64,
-    ) -> impl Future<Output = Result<(), Error>>;
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This command will send a unicast transport key message with a new NWK key
     /// to the specified device.
@@ -58,7 +61,7 @@ pub trait TrustCenter {
         dest_short: NodeId,
         dest_long: Eui64,
         key: Data,
-    ) -> impl Future<Output = Result<(), Error>>;
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> TrustCenter for T

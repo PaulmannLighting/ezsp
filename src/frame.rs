@@ -4,7 +4,8 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 
 pub use handler::Handler;
 pub use header::{
-    CallbackType, Control, Extended, FrameFormatVersion, Header, LowByte, SleepMode, ValidControl,
+    CallbackType, Command, Control, Extended, FrameFormatVersion, Header, Response, SleepMode,
+    ValidControl,
 };
 pub use parameters::Parameter;
 

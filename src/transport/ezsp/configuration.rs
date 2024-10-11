@@ -9,10 +9,10 @@ use crate::frame::parameters::configuration::{
     read_attribute, send_pan_id_update, set_configuration_value, set_passive_ack_config,
     set_policy, set_value, version, write_attribute,
 };
-use crate::frame::Extended;
+use crate::frame::{Command, Extended, Response};
 use crate::types::ByteSizedVec;
+use crate::Resolve;
 use crate::{Error, Transport};
-use crate::{LowByte, Resolve};
 
 pub trait Configuration {
     /// Configures endpoint information on the NCP.
@@ -193,9 +193,10 @@ where
         &mut self,
         desired_protocol_version: u8,
     ) -> Result<version::Response, Error> {
-        self.send::<LowByte, _>(version::Command::new(desired_protocol_version))
+        self.send::<Command, _>(version::Command::new(desired_protocol_version))
             .await?;
-        self.receive::<Extended, version::Response>().await
+        self.receive::<Extended<Response>, version::Response>()
+            .await
     }
 
     async fn read_attribute(

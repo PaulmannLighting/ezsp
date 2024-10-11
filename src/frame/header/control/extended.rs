@@ -1,9 +1,13 @@
 use super::ExtendedFrameControl;
+use crate::frame::ValidControl;
 use crate::LowByte;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
-pub struct Extended {
-    pub(crate) low_byte: LowByte,
+pub struct Extended<T>
+where
+    T: ValidControl,
+{
+    pub(crate) low_byte: T,
     pub(crate) high_byte: ExtendedFrameControl,
 }

@@ -4,9 +4,9 @@ mod low_byte;
 mod valid_control;
 
 pub use extended::Extended;
-pub use extended_frame_control::FrameFormatVersion;
+pub use extended_frame_control::{ExtendedFrameControl, FrameFormatVersion};
 use le_stream::derive::{FromLeStream, ToLeStream};
-pub use low_byte::{CallbackType, LowByte, SleepMode};
+pub use low_byte::{CallbackType, Command, Response, SleepMode};
 pub use valid_control::ValidControl;
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]

@@ -1,7 +1,9 @@
 mod control;
 
 pub use control::ValidControl;
-pub use control::{CallbackType, Control, Extended, FrameFormatVersion, LowByte, SleepMode};
+pub use control::{
+    CallbackType, Command, Control, Extended, FrameFormatVersion, Response, SleepMode,
+};
 use le_stream::derive::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
 

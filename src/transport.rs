@@ -3,7 +3,7 @@ mod ashv2;
 mod ezsp;
 mod parse_response;
 
-use crate::frame::{Extended, Parameter, ValidControl};
+use crate::frame::{Command, Extended, Parameter, Response, ValidControl};
 use crate::{Error, Header};
 #[cfg(feature = "ashv2")]
 pub use ashv2::Ashv2;
@@ -40,12 +40,12 @@ pub trait Transport: Send {
     where
         C: Parameter + ToLeStream,
         R: Clone + Debug + Send + Parameter + FromLeStream,
-        <C as Parameter>::Id: Into<<Extended as ValidControl>::Size>,
-        <R as Parameter>::Id: Into<<Extended as ValidControl>::Size>,
+        <C as Parameter>::Id: Into<<Extended<Command> as ValidControl>::Size>,
+        <R as Parameter>::Id: Into<<Extended<Response> as ValidControl>::Size>,
     {
         async {
-            self.send::<Extended, C>(command).await?;
-            self.receive::<Extended, R>().await
+            self.send::<Extended<Command>, C>(command).await?;
+            self.receive::<Extended<Response>, R>().await
         }
     }
 }

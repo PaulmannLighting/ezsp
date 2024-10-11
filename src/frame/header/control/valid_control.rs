@@ -1,5 +1,5 @@
 use super::extended::Extended;
-use crate::frame::header::control::low_byte::LowByte;
+use super::{Command, Response};
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::{Debug, Display, LowerHex, UpperHex};
 use std::hash::Hash;
@@ -18,10 +18,18 @@ pub trait ValidControl:
         + ToLeStream;
 }
 
-impl ValidControl for LowByte {
+impl ValidControl for Command {
     type Size = u8;
 }
 
-impl ValidControl for Extended {
+impl ValidControl for Response {
+    type Size = u8;
+}
+
+impl ValidControl for Extended<Command> {
+    type Size = u16;
+}
+
+impl ValidControl for Extended<Response> {
     type Size = u16;
 }

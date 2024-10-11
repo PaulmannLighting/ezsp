@@ -105,6 +105,9 @@ pub trait Messaging {
         message: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<u8, Error>> + Send;
 
+    /// Replaces the EUI64, short ID and extended timeout setting of an address table entry.
+    ///
+    /// The previous EUI64, short ID and extended timeout setting are returned.
     fn replace_address_table_entry(
         &mut self,
         address_table_index: u8,

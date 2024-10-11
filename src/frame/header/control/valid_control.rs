@@ -1,5 +1,4 @@
 use super::extended::Extended;
-use super::{Command, Response};
 use crate::frame::header::control::low_byte::LowByte;
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::{Debug, Display, LowerHex, UpperHex};
@@ -23,6 +22,6 @@ impl ValidControl for LowByte {
     type Size = u8;
 }
 
-impl ValidControl for Extended<LowByte> {
+impl ValidControl for Extended {
     type Size = u16;
 }

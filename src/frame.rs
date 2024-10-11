@@ -3,7 +3,9 @@ use std::fmt::Debug;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 pub use handler::Handler;
-pub use header::{CallbackType, Control, FrameFormatVersion, Header, SleepMode, ValidControl};
+pub use header::{
+    CallbackType, Control, Extended, FrameFormatVersion, Header, LowByte, SleepMode, ValidControl,
+};
 pub use parameters::Parameter;
 
 mod handler;

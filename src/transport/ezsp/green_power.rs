@@ -13,6 +13,7 @@ use crate::{Error, Transport};
 mod proxy_table;
 mod sink_table;
 
+/// The `GreenPower` trait provides an interface for the Green Power features.
 pub trait GreenPower: ProxyTable + SinkTable {
     /// Adds/removes an entry from the GP Tx Queue.
     #[allow(clippy::too_many_arguments)]

@@ -10,6 +10,7 @@ use crate::types::UintT;
 use crate::Resolve;
 use crate::{Error, Transport};
 
+/// The `SinkTable` trait provides an interface for the sink table.
 pub trait SinkTable {
     /// Clear the entire sink table.
     fn clear_all(&mut self) -> impl Future<Output = Result<(), Error>> + Send;

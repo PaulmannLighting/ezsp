@@ -7,6 +7,7 @@ use crate::frame::parameters::green_power::proxy_table::{get_entry, lookup, proc
 use crate::Resolve;
 use crate::{Error, Transport};
 
+/// The `ProxyTable` trait provides an interface for the proxy table.
 pub trait ProxyTable {
     /// Retrieves the proxy table entry stored at the passed index.
     fn get_entry(

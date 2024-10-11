@@ -192,7 +192,7 @@ where
         &mut self,
         desired_protocol_version: u8,
     ) -> Result<version::Response, Error> {
-        self.communicate::<_, version::LegacyResponse>(version::LegacyCommand::from(
+        self.communicate::<_, version::Response>(version::LegacyCommand::from(
             version::Command::new(desired_protocol_version),
         ))
         .await

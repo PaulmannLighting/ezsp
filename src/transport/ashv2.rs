@@ -1,33 +1,31 @@
-use crate::frame::{Control, Header, Parameter};
+use crate::frame::{Control, Frame, Header, Parameter};
 use crate::transport::parse_response::parse_response;
 use crate::transport::Transport;
 use crate::Error;
-use ashv2::AsyncAsh;
+use ashv2::AshFramed;
+use futures::SinkExt;
 use le_stream::{FromLeStream, ToLeStream};
 use log::debug;
 use std::fmt::Debug;
+use tokio::io::ReadBuf;
+use tokio_stream::StreamExt;
+use tokio_util::codec::Framed;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
-pub struct Ashv2<T>
-where
-    T: AsyncAsh,
-{
-    host: T,
+pub struct Ashv2<const BUF_SIZE: usize> {
+    framed: Framed<AshFramed<BUF_SIZE>, RawCodec>,
     sequence: u8,
     control: Control,
     buffer: Vec<u8>,
 }
 
-impl<T> Ashv2<T>
-where
-    T: AsyncAsh,
-{
+impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
     /// Creates an ASHv2 host.
     #[must_use]
-    pub const fn new(host: T, control: Control) -> Self {
+    pub fn new(ash: AshFramed<BUF_SIZE>, control: Control) -> Self {
         Self {
-            host,
+            framed: Framed::new(ash, RawCodec),
             sequence: 0,
             control,
             buffer: Vec::new(),
@@ -35,10 +33,7 @@ where
     }
 }
 
-impl<T> Transport for Ashv2<T>
-where
-    T: AsyncAsh + Send,
-{
+impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
     fn next_header<P>(&mut self) -> Header<P::Id>
     where
         P: Parameter,
@@ -60,7 +55,43 @@ where
         self.buffer.extend(header.to_le_stream());
         self.buffer.extend(command.to_le_stream());
         debug!("Sending payload: {:#04X?}", self.buffer);
-        let response = self.host.communicate(&self.buffer).await?;
-        parse_response::<R>(&response)
+        self.framed.send(self.buffer.as_slice().into()).await?;
+
+        if let Some(response) = self.framed.next().await {
+            let response = response?;
+            debug!("Received payload: {:#04X?}", response);
+            let frame = parse_response::<Frame<R>>(response.as_ref())?;
+            return Ok(frame.parameters());
+        }
+
+        Err(Error::Custom("foo".into()))
+    }
+}
+use tokio_util::bytes::BytesMut;
+use tokio_util::codec::{Decoder, Encoder};
+
+/// An example decoder.
+#[derive(Debug)]
+pub struct RawCodec;
+
+impl Decoder for RawCodec {
+    type Item = Box<[u8]>;
+    type Error = std::io::Error;
+
+    fn decode(&mut self, buffer: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+        if buffer.len() >= 4 {
+            Ok(Some(buffer.split().as_ref().into()))
+        } else {
+            Ok(None)
+        }
+    }
+}
+
+impl Encoder<Box<[u8]>> for RawCodec {
+    type Error = std::io::Error;
+
+    fn encode(&mut self, item: Box<[u8]>, dst: &mut BytesMut) -> Result<(), Self::Error> {
+        dst.extend_from_slice(&item);
+        Ok(())
     }
 }

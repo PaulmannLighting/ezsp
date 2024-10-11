@@ -1,14 +1,14 @@
-use std::future::Future;
-
 pub use binding::Binding;
 pub use bootloader::Bootloader;
 pub use cbke::CertificateBasedKeyExchange;
 pub use configuration::Configuration;
 pub use green_power::{GreenPower, ProxyTable, SinkTable};
+use log::debug;
 pub use messaging::Messaging;
 pub use mfglib::Mfglib;
 pub use networking::Networking;
 pub use security::Security;
+use std::future::Future;
 pub use token_interface::TokenInterface;
 pub use trust_center::TrustCenter;
 pub use utilities::Utilities;
@@ -81,9 +81,11 @@ where
         &mut self,
         desired_protocol_version: u8,
     ) -> Result<version::Response, Error> {
+        debug!("Negotiating legacy version");
         let response = self.legacy_version(desired_protocol_version).await?;
 
         if response.protocol_version() >= MIN_NON_LEGACY_VERSION {
+            debug!("Negotiating  version");
             return self.version(response.protocol_version()).await;
         }
 

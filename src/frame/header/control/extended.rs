@@ -1,6 +1,5 @@
 use super::ExtendedFrameControl;
 use crate::frame::ValidControl;
-use crate::LowByte;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]

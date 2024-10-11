@@ -35,7 +35,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
     let running = Arc::new(AtomicBool::new(true));
     let _transceiver_thread = spawn(|| transceiver.run(running));
 
-    let mut ezsp = Ashv2::new(AshFramed::<2>::new(sender), Control::default());
+    let mut ezsp = Ashv2::new(AshFramed::<2>::new(sender));
 
     match ezsp.negotiate_version(version).await {
         Ok(version) => {

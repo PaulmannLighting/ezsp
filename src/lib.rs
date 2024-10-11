@@ -14,7 +14,9 @@ pub mod transport;
 pub mod types;
 
 pub use error::{Error, ValueError};
-pub use frame::{CallbackType, Control, FrameFormatVersion, Header, HighByte, LowByte, SleepMode};
+pub use frame::{
+    CallbackType, Command, Control, Extended, FrameFormatVersion, Header, Response, SleepMode,
+};
 pub(crate) use resolve::Resolve;
 pub use result::Result;
 #[cfg(feature = "ashv2")]

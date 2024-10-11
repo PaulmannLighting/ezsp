@@ -23,12 +23,14 @@ pub trait Transport: Send {
     where
         T: ValidControl;
 
+    /// Send a command to the NCP.
     fn send<C, P>(&mut self, command: P) -> impl Future<Output = Result<(), Error>> + Send
     where
         C: ValidControl,
         P: Parameter + ToLeStream,
         <P as Parameter>::Id: Into<C::Size>;
 
+    /// Receive a response from the NCP.
     fn receive<C, P>(&mut self) -> impl Future<Output = Result<P, Error>> + Send
     where
         C: ValidControl,

@@ -269,10 +269,8 @@ where
     }
 
     async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
-        self.communicate::<Extended, _, version::Response>(version::Command::new(
-            desired_protocol_version,
-        ))
-        .await
+        self.communicate::<_, version::Response>(version::Command::new(desired_protocol_version))
+            .await
     }
 
     async fn write_attribute(

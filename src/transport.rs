@@ -3,7 +3,7 @@ mod ashv2;
 mod ezsp;
 mod parse_response;
 
-use crate::frame::{Parameter, ValidControl};
+use crate::frame::{Extended, Parameter, ValidControl};
 use crate::{Error, Header};
 #[cfg(feature = "ashv2")]
 pub use ashv2::Ashv2;
@@ -36,17 +36,16 @@ pub trait Transport: Send {
         <P as Parameter>::Id: Into<C::Size>;
 
     /// Communicate with the NCP.
-    fn communicate<T, C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
+    fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
     where
-        T: ValidControl,
         C: Parameter + ToLeStream,
         R: Clone + Debug + Send + Parameter + FromLeStream,
-        <C as Parameter>::Id: Into<T::Size>,
-        <R as Parameter>::Id: Into<T::Size>,
+        <C as Parameter>::Id: Into<<Extended as ValidControl>::Size>,
+        <R as Parameter>::Id: Into<<Extended as ValidControl>::Size>,
     {
         async {
-            self.send::<T, C>(command).await?;
-            self.receive::<T, R>().await
+            self.send::<Extended, C>(command).await?;
+            self.receive::<Extended, R>().await
         }
     }
 }

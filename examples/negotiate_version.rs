@@ -2,7 +2,7 @@
 
 use ashv2::{open, AshFramed, BaudRate, Transceiver};
 use clap::Parser;
-use ezsp::{Ashv2, Control, Ezsp};
+use ezsp::{Ashv2, Ezsp};
 use log::error;
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;

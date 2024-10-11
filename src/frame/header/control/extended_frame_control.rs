@@ -4,7 +4,7 @@ use bitflags::bitflags;
 pub use frame_format_version::FrameFormatVersion;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
 pub struct ExtendedFrameControl(u8);
 
 bitflags! {
@@ -38,5 +38,11 @@ impl ExtendedFrameControl {
             (false, true) => FrameFormatVersion::One,
             (false, false) => FrameFormatVersion::Zero,
         }
+    }
+}
+
+impl Default for ExtendedFrameControl {
+    fn default() -> Self {
+        Self::FRAME_FORMAT_VERSION_0
     }
 }

@@ -40,6 +40,10 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
     {
         let header = Header::new(self.sequence, Control::<T>::default(), id);
         debug!("Header: {header:?}");
+        debug!(
+            "Header: {:#04X?}",
+            header.to_le_stream().collect::<Vec<u8>>()
+        );
         self.sequence = self.sequence.wrapping_add(1);
         header
     }

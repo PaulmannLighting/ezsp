@@ -9,7 +9,7 @@ use crate::frame::parameters::configuration::{
     read_attribute, send_pan_id_update, set_configuration_value, set_passive_ack_config,
     set_policy, set_value, version, write_attribute,
 };
-use crate::frame::{Command, Extended, Response};
+use crate::frame::{Command, Response};
 use crate::types::ByteSizedVec;
 use crate::Resolve;
 use crate::{Error, Transport};
@@ -196,8 +196,7 @@ where
     ) -> Result<version::Response, Error> {
         self.send::<Command, _>(version::Command::new(desired_protocol_version))
             .await?;
-        self.receive::<Extended<Response>, version::Response>()
-            .await
+        self.receive::<Response, version::Response>().await
     }
 
     async fn read_attribute(

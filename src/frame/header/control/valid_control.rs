@@ -1,10 +1,13 @@
 use super::extended::Extended;
 use super::{Command, Response};
+use crate::frame::header::control::low_byte::LowByte;
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::{Debug, Display, LowerHex, UpperHex};
 use std::hash::Hash;
 
-pub trait ValidControl: Copy + Clone + Debug + Eq + Hash + FromLeStream + ToLeStream {
+pub trait ValidControl:
+    Copy + Clone + Debug + Default + Eq + Hash + FromLeStream + ToLeStream
+{
     type Size: Copy
         + Debug
         + Display
@@ -16,17 +19,10 @@ pub trait ValidControl: Copy + Clone + Debug + Eq + Hash + FromLeStream + ToLeSt
         + ToLeStream;
 }
 
-impl ValidControl for Command {
-    type Size = u8;
-}
-impl ValidControl for Response {
+impl ValidControl for LowByte {
     type Size = u8;
 }
 
-impl ValidControl for Extended<Command> {
-    type Size = u16;
-}
-
-impl ValidControl for Extended<Response> {
+impl ValidControl for Extended<LowByte> {
     type Size = u16;
 }

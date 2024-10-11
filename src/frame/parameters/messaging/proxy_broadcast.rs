@@ -43,7 +43,8 @@ impl Command {
     }
 }
 
-impl Parameter<u16> for Command {
+impl Parameter for Command {
+    type Id = u16;
     const ID: u16 = ID;
 }
 
@@ -53,7 +54,8 @@ pub struct Response {
     aps_sequence: u8,
 }
 
-impl Parameter<u16> for Response {
+impl Parameter for Response {
+    type Id = u16;
     const ID: u16 = ID;
 }
 

@@ -16,7 +16,8 @@ impl Command {
     }
 }
 
-impl Parameter<u16> for Command {
+impl Parameter for Command {
+    type Id = u16;
     const ID: u16 = ID;
 }
 
@@ -32,6 +33,7 @@ impl Response {
     }
 }
 
-impl Parameter<u16> for Response {
+impl Parameter for Response {
+    type Id = u16;
     const ID: u16 = ID;
 }

@@ -23,12 +23,9 @@ impl Command {
     }
 }
 
-impl Parameter<u8> for Command {
-    const ID: u8 = ID;
-}
-
-impl Parameter<u16> for Command {
-    const ID: u16 = ID as u16;
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID as u16;
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
@@ -55,10 +52,41 @@ impl Response {
     }
 }
 
-impl Parameter<u8> for Response {
-    const ID: u8 = ID;
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID as u16;
 }
 
-impl Parameter<u16> for Response {
-    const ID: u16 = ID as u16;
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
+pub struct LegacyCommand(Command);
+
+impl From<Command> for LegacyCommand {
+    fn from(command: Command) -> Self {
+        Self(command)
+    }
+}
+
+impl Parameter for LegacyCommand {
+    type Id = u8;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+pub struct LegacyResponse(Response);
+
+impl From<Response> for LegacyResponse {
+    fn from(response: Response) -> Self {
+        Self(response)
+    }
+}
+
+impl From<LegacyResponse> for Response {
+    fn from(legacy_response: LegacyResponse) -> Self {
+        legacy_response.0
+    }
+}
+
+impl Parameter for LegacyResponse {
+    type Id = u8;
+    const ID: Self::Id = ID;
 }

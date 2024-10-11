@@ -15,7 +15,8 @@ pub mod parameters;
 pub struct Frame<C, P>
 where
     C: ValidControl,
-    P: Parameter<C::Size>,
+    P: Parameter,
+    <P as Parameter>::Id: Into<C::Size>,
 {
     header: Header<C>,
     parameters: P,
@@ -24,7 +25,8 @@ where
 impl<C, P> Frame<C, P>
 where
     C: ValidControl,
-    P: Parameter<C::Size>,
+    P: Parameter,
+    <P as Parameter>::Id: Into<C::Size>,
 {
     /// Create a new frame.
     #[must_use]

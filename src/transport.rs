@@ -3,7 +3,7 @@ mod ashv2;
 mod ezsp;
 mod parse_response;
 
-use crate::frame::Parameter;
+use crate::frame::{Parameter, ValidControl};
 use crate::{Error, Header};
 #[cfg(feature = "ashv2")]
 pub use ashv2::Ashv2;
@@ -19,13 +19,34 @@ use std::future::Future;
 /// A transport layer to communicate with an NCP that supports the `EZSP` protocol.
 pub trait Transport: Send {
     /// Return the next header.
-    fn next_header<R>(&mut self) -> Header<R::Id>
+    fn next_header<T>(&mut self, id: T::Size) -> Header<T>
     where
-        R: Parameter;
+        T: ValidControl;
+
+    fn send<C, P>(&mut self, command: P) -> impl Future<Output = Result<(), Error>> + Send
+    where
+        C: ValidControl,
+        P: Parameter + ToLeStream,
+        <P as Parameter>::Id: Into<C::Size>;
+
+    fn receive<C, P>(&mut self) -> impl Future<Output = Result<P, Error>> + Send
+    where
+        C: ValidControl,
+        P: Clone + Debug + Send + Parameter + FromLeStream,
+        <P as Parameter>::Id: Into<C::Size>;
 
     /// Communicate with the NCP.
-    fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
+    fn communicate<T, C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
     where
+        T: ValidControl,
         C: Parameter + ToLeStream,
-        R: Clone + Debug + Send + Parameter + FromLeStream;
+        R: Clone + Debug + Send + Parameter + FromLeStream,
+        <C as Parameter>::Id: Into<T::Size>,
+        <R as Parameter>::Id: Into<T::Size>,
+    {
+        async {
+            self.send::<T, C>(command).await?;
+            self.receive::<T, R>().await
+        }
+    }
 }

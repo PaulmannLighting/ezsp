@@ -15,6 +15,7 @@ impl Response {
     }
 }
 
-impl Parameter<u16> for Response {
-    const ID: u16 = ID;
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

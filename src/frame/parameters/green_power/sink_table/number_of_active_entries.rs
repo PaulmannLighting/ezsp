@@ -1,3 +1,4 @@
+use crate::frame;
 use crate::frame::Parameter;
 use crate::types::UintT;
 use le_stream::derive::{FromLeStream, ToLeStream};
@@ -7,7 +8,7 @@ const ID: u16 = 0x0118;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Parameter<crate::frame::Extended<crate::frame::Command>> for Command {
+impl Parameter<frame::Extended<frame::Command>> for Command {
     const ID: u16 = ID;
 }
 
@@ -23,6 +24,6 @@ impl Response {
     }
 }
 
-impl Parameter<crate::frame::Extended<crate::frame::Response>> for Response {
+impl Parameter<frame::Extended<frame::Response>> for Response {
     const ID: u16 = ID;
 }

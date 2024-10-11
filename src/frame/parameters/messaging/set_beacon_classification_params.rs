@@ -3,8 +3,8 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use crate::ember::beacon::ClassificationParams;
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::Error;
 use crate::Resolve;
+use crate::{frame, Error};
 
 const ID: u16 = 0x00EF;
 
@@ -20,7 +20,7 @@ impl Command {
     }
 }
 
-impl Parameter<crate::frame::Extended<crate::frame::Command>> for Command {
+impl Parameter<frame::Extended<frame::Command>> for Command {
     const ID: u16 = ID;
 }
 
@@ -29,7 +29,7 @@ pub struct Response {
     status: u8,
 }
 
-impl Parameter<crate::frame::Extended<crate::frame::Response>> for Response {
+impl Parameter<frame::Extended<frame::Response>> for Response {
     const ID: u16 = ID;
 }
 

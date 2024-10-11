@@ -1,7 +1,7 @@
 use crate::ember::Eui64;
 use crate::frame::Parameter;
-use crate::Error;
 use crate::Resolve;
+use crate::{frame, Error};
 use le_stream::derive::{FromLeStream, ToLeStream};
 use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManContext};
 use siliconlabs::Status;
@@ -20,7 +20,7 @@ impl Command {
     }
 }
 
-impl Parameter<crate::frame::Extended<crate::frame::Command>> for Command {
+impl Parameter<frame::Extended<frame::Command>> for Command {
     const ID: u16 = ID;
 }
 
@@ -48,7 +48,7 @@ pub struct Response {
     status: u32,
 }
 
-impl Parameter<crate::frame::Extended<crate::frame::Response>> for Response {
+impl Parameter<frame::Extended<frame::Response>> for Response {
     const ID: u16 = ID;
 }
 

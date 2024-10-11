@@ -24,7 +24,8 @@ where
     T: AsyncAsh,
 {
     /// Creates an ASHv2 host.
-    pub fn new(host: T, control: Control) -> Self {
+    #[must_use]
+    pub const fn new(host: T, control: Control) -> Self {
         Self {
             host,
             sequence: 0,

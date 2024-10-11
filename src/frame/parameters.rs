@@ -1,8 +1,5 @@
-use std::fmt::{Debug, Display};
-
 use le_stream::{FromLeStream, ToLeStream};
-
-use crate::Control;
+use std::fmt::{Debug, Display, LowerHex, UpperHex};
 
 pub mod binding;
 pub mod bootloader;
@@ -19,17 +16,9 @@ pub mod utilities;
 pub mod wwah;
 pub mod zll;
 
-pub trait Parameter: Send + Sync {
-    type Id: Copy
-        + Debug
-        + Display
-        + Eq
-        + Send
-        + Sync
-        + From<Control>
-        + Into<Control>
-        + Into<u16>
-        + FromLeStream
-        + ToLeStream;
-    const ID: Self::Id;
+pub trait Parameter<T>: Debug + Send + Sync
+where
+    T: Copy + Debug + Display + Eq + Into<u16> + LowerHex + UpperHex + FromLeStream + ToLeStream,
+{
+    const ID: T;
 }

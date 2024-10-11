@@ -1,26 +1,30 @@
 mod control;
 
-pub use control::{CallbackType, Control, FrameFormatVersion, HighByte, LowByte, SleepMode};
+pub use control::ValidControl;
+pub use control::{
+    CallbackType, Command, Control, Extended, ExtendedFrameControl, FrameFormatVersion, Response,
+    SleepMode,
+};
+use le_stream::derive::{FromLeStream, ToLeStream};
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
-use std::iter::Chain;
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Header<T>
 where
-    T: Copy + Debug + Eq,
+    T: ValidControl,
 {
     sequence: u8,
-    control: T,
-    id: T,
+    control: Control<T>,
+    id: T::Size,
 }
 
 impl<T> Header<T>
 where
-    T: Copy + Debug + Eq + From<Control> + Into<Control> + Into<u16>,
+    T: ValidControl,
 {
     #[must_use]
-    pub const fn new(sequence: u8, control: T, id: T) -> Self {
+    pub const fn new(sequence: u8, control: Control<T>, id: T::Size) -> Self {
         Self {
             sequence,
             control,
@@ -29,40 +33,12 @@ where
     }
 
     #[must_use]
-    pub fn control(&self) -> Control {
-        self.control.into()
+    pub fn control(&self) -> Control<T> {
+        self.control
     }
 
     #[must_use]
-    pub const fn id(&self) -> T {
+    pub const fn id(&self) -> T::Size {
         self.id
-    }
-}
-
-impl<T> FromLeStream for Header<T>
-where
-    T: Copy + Debug + Eq + From<Control> + Into<Control> + Into<u16> + FromLeStream,
-{
-    fn from_le_stream<I>(mut bytes: I) -> Option<Self>
-    where
-        I: Iterator<Item = u8>,
-    {
-        let sequence = <u8 as FromLeStream>::from_le_stream(&mut bytes)?;
-        let control = T::from_le_stream(&mut bytes)?;
-        let id = T::from_le_stream(bytes)?;
-        Some(Self::new(sequence, control, id))
-    }
-}
-
-impl<T> ToLeStream for Header<T>
-where
-    T: Copy + Debug + Eq + ToLeStream,
-{
-    type Iter =
-        Chain<<u8 as ToLeStream>::Iter, Chain<<T as ToLeStream>::Iter, <T as ToLeStream>::Iter>>;
-
-    fn to_le_stream(self) -> Self::Iter {
-        ToLeStream::to_le_stream(self.sequence)
-            .chain(self.control.to_le_stream().chain(self.id.to_le_stream()))
     }
 }

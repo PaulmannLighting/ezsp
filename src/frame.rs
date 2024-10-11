@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 pub use handler::Handler;
-pub use header::{CallbackType, Control, FrameFormatVersion, Header, HighByte, LowByte, SleepMode};
+pub use header::{CallbackType, Control, FrameFormatVersion, Header, SleepMode, ValidControl};
 pub use parameters::Parameter;
 
 mod handler;
@@ -12,28 +12,30 @@ pub mod parameters;
 
 /// A frame that contains a header and parameters.
 #[derive(Debug, FromLeStream, ToLeStream)]
-pub struct Frame<P>
+pub struct Frame<C, P>
 where
-    P: Parameter,
+    C: ValidControl,
+    P: Parameter<C::Size>,
 {
-    header: Header<P::Id>,
+    header: Header<C>,
     parameters: P,
 }
 
-impl<P> Frame<P>
+impl<C, P> Frame<C, P>
 where
-    P: Parameter,
+    C: ValidControl,
+    P: Parameter<C::Size>,
 {
     /// Create a new frame.
     #[must_use]
-    pub const fn new(header: Header<P::Id>, parameters: P) -> Self {
+    pub const fn new(header: Header<C>, parameters: P) -> Self {
         Self { header, parameters }
     }
 
     /// Return the header.
     #[must_use]
-    pub const fn header(&self) -> &Header<P::Id> {
-        &self.header
+    pub const fn header(&self) -> Header<C> {
+        self.header
     }
 
     /// Return the parameters.

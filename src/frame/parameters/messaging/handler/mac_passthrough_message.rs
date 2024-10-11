@@ -35,6 +35,6 @@ impl Handler {
     }
 }
 
-impl Parameter<u16> for Handler {
+impl Parameter<crate::frame::Extended<crate::frame::Response>> for Handler {
     const ID: u16 = ID;
 }

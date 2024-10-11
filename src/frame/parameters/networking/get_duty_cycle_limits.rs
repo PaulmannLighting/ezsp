@@ -11,7 +11,7 @@ const ID: u16 = 0x004B;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Parameter<u16> for Command {
+impl Parameter<crate::frame::Extended<crate::frame::Command>> for Command {
     const ID: u16 = ID;
 }
 
@@ -21,7 +21,7 @@ pub struct Response {
     returned_limits: Limits,
 }
 
-impl Parameter<u16> for Response {
+impl Parameter<crate::frame::Extended<crate::frame::Response>> for Response {
     const ID: u16 = ID;
 }
 

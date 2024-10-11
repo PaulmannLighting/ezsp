@@ -7,7 +7,7 @@ const ID: u16 = 0x00C3;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Parameter<u16> for Command {
+impl Parameter<crate::frame::Extended<crate::frame::Command>> for Command {
     const ID: u16 = ID;
 }
 
@@ -23,6 +23,6 @@ impl Response {
     }
 }
 
-impl Parameter<u16> for Response {
+impl Parameter<crate::frame::Extended<crate::frame::Response>> for Response {
     const ID: u16 = ID;
 }

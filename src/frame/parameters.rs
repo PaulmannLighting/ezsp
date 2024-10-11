@@ -1,5 +1,5 @@
-use le_stream::{FromLeStream, ToLeStream};
-use std::fmt::{Debug, Display, LowerHex, UpperHex};
+use crate::frame::ValidControl;
+use std::fmt::Debug;
 
 pub mod binding;
 pub mod bootloader;
@@ -18,7 +18,7 @@ pub mod zll;
 
 pub trait Parameter<T>: Debug + Send + Sync
 where
-    T: Copy + Debug + Display + Eq + Into<u16> + LowerHex + UpperHex + FromLeStream + ToLeStream,
+    T: ValidControl,
 {
-    const ID: T;
+    const ID: T::Size;
 }

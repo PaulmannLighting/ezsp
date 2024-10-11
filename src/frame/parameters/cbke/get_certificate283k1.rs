@@ -10,7 +10,7 @@ const ID: u16 = 0x00EC;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Parameter<u16> for Command {
+impl Parameter<crate::frame::Extended<crate::frame::Command>> for Command {
     const ID: u16 = ID;
 }
 
@@ -20,7 +20,7 @@ pub struct Response {
     local_cert: Certificate283k1Data,
 }
 
-impl Parameter<u16> for Response {
+impl Parameter<crate::frame::Extended<crate::frame::Response>> for Response {
     const ID: u16 = ID;
 }
 

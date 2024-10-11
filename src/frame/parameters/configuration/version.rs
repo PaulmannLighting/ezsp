@@ -1,3 +1,4 @@
+use crate::frame;
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
@@ -23,11 +24,11 @@ impl Command {
     }
 }
 
-impl Parameter<u8> for Command {
+impl Parameter<frame::Command> for Command {
     const ID: u8 = ID;
 }
 
-impl Parameter<u16> for Command {
+impl Parameter<frame::Extended<frame::Command>> for Command {
     const ID: u16 = ID as u16;
 }
 
@@ -55,10 +56,10 @@ impl Response {
     }
 }
 
-impl Parameter<u8> for Response {
+impl Parameter<frame::Response> for Response {
     const ID: u8 = ID;
 }
 
-impl Parameter<u16> for Response {
+impl Parameter<frame::Extended<frame::Response>> for Response {
     const ID: u16 = ID as u16;
 }

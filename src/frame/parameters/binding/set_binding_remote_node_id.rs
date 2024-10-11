@@ -11,7 +11,7 @@ pub struct Command {
     node_id: NodeId,
 }
 
-impl Parameter<u16> for Command {
+impl Parameter<crate::frame::Extended<crate::frame::Command>> for Command {
     const ID: u16 = ID;
 }
 
@@ -25,6 +25,6 @@ impl Command {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response;
 
-impl Parameter<u16> for Response {
+impl Parameter<crate::frame::Extended<crate::frame::Response>> for Response {
     const ID: u16 = ID;
 }

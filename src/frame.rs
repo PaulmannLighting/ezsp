@@ -3,7 +3,9 @@ use std::fmt::Debug;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 pub use handler::Handler;
-pub use header::{CallbackType, Control, FrameFormatVersion, Header, SleepMode, ValidControl};
+pub use header::{
+    CallbackType, Command, Extended, FrameFormatVersion, Header, Response, SleepMode, ValidControl,
+};
 pub use parameters::Parameter;
 
 mod handler;
@@ -15,7 +17,7 @@ pub mod parameters;
 pub struct Frame<C, P>
 where
     C: ValidControl,
-    P: Parameter<C::Size>,
+    P: Parameter<C>,
 {
     header: Header<C>,
     parameters: P,
@@ -24,7 +26,7 @@ where
 impl<C, P> Frame<C, P>
 where
     C: ValidControl,
-    P: Parameter<C::Size>,
+    P: Parameter<C>,
 {
     /// Create a new frame.
     #[must_use]

@@ -23,7 +23,7 @@ impl Command {
     }
 }
 
-impl Parameter<u16> for Command {
+impl Parameter<crate::frame::Extended<crate::frame::Command>> for Command {
     const ID: u16 = ID;
 }
 
@@ -33,7 +33,7 @@ pub struct Response {
     value: ByteSizedVec<u8>,
 }
 
-impl Parameter<u16> for Response {
+impl Parameter<crate::frame::Extended<crate::frame::Response>> for Response {
     const ID: u16 = ID;
 }
 

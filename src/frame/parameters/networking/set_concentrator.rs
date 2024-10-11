@@ -3,8 +3,8 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use crate::ember::concentrator::Parameters;
 use crate::ember::Status;
 use crate::frame::Parameter;
+use crate::Error;
 use crate::Resolve;
-use crate::{frame, Error};
 
 const ID: u16 = 0x0010;
 
@@ -23,7 +23,7 @@ impl From<Option<Parameters>> for Command {
     }
 }
 
-impl Parameter<frame::Extended<frame::Command>> for Command {
+impl Parameter<u16> for Command {
     const ID: u16 = ID;
 }
 
@@ -32,7 +32,7 @@ pub struct Response {
     status: u8,
 }
 
-impl Parameter<frame::Extended<frame::Response>> for Response {
+impl Parameter<u16> for Response {
     const ID: u16 = ID;
 }
 

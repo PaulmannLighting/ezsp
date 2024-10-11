@@ -3,15 +3,15 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use crate::ember::duty_cycle::State;
 use crate::ember::Status;
 use crate::frame::Parameter;
+use crate::Error;
 use crate::Resolve;
-use crate::{frame, Error};
 
 const ID: u16 = 0x0035;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Parameter<frame::Extended<frame::Command>> for Command {
+impl Parameter<u16> for Command {
     const ID: u16 = ID;
 }
 
@@ -21,7 +21,7 @@ pub struct Response {
     returned_state: u8,
 }
 
-impl Parameter<frame::Extended<frame::Response>> for Response {
+impl Parameter<u16> for Response {
     const ID: u16 = ID;
 }
 

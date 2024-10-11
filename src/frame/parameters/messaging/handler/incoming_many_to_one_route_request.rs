@@ -1,7 +1,6 @@
 use le_stream::derive::FromLeStream;
 
 use crate::ember::{Eui64, NodeId};
-use crate::frame;
 use crate::frame::Parameter;
 
 const ID: u16 = 0x007D;
@@ -30,6 +29,6 @@ impl Handler {
     }
 }
 
-impl Parameter<frame::Extended<frame::Response>> for Handler {
+impl Parameter<u16> for Handler {
     const ID: u16 = ID;
 }

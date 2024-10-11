@@ -1,4 +1,4 @@
-use crate::{frame, Resolve};
+use crate::Resolve;
 use le_stream::derive::FromLeStream;
 use le_stream::ToLeStream;
 use std::array::IntoIter;
@@ -82,7 +82,7 @@ impl ToLeStream for Command {
     }
 }
 
-impl Parameter<frame::Extended<frame::Command>> for Command {
+impl Parameter<u16> for Command {
     const ID: u16 = ID;
 }
 
@@ -91,7 +91,7 @@ pub struct Response {
     status: u8,
 }
 
-impl Parameter<frame::Extended<frame::Response>> for Response {
+impl Parameter<u16> for Response {
     const ID: u16 = ID;
 }
 

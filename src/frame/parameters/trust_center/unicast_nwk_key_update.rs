@@ -2,7 +2,7 @@ use crate::ember::key::Data;
 use crate::ember::{Eui64, NodeId, Status};
 use crate::frame::Parameter;
 use crate::resolve::Resolve;
-use crate::{frame, Error};
+use crate::Error;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x00A9;
@@ -25,7 +25,7 @@ impl Command {
     }
 }
 
-impl Parameter<frame::Extended<frame::Command>> for Command {
+impl Parameter<u16> for Command {
     const ID: u16 = ID;
 }
 
@@ -34,7 +34,7 @@ pub struct Response {
     status: u8,
 }
 
-impl Parameter<frame::Extended<frame::Response>> for Response {
+impl Parameter<u16> for Response {
     const ID: u16 = ID;
 }
 

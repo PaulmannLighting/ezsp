@@ -1,7 +1,7 @@
 use crate::ezsp::Status;
 use crate::ezsp::{decision, policy};
 use crate::frame::Parameter;
-use crate::{frame, Resolve};
+use crate::Resolve;
 use crate::{Error, ValueError};
 use le_stream::derive::{FromLeStream, ToLeStream};
 
@@ -21,7 +21,7 @@ impl Command {
     }
 }
 
-impl Parameter<frame::Extended<frame::Command>> for Command {
+impl Parameter<u16> for Command {
     const ID: u16 = ID;
 }
 
@@ -31,7 +31,7 @@ pub struct Response {
     decision_id: u8,
 }
 
-impl Parameter<frame::Extended<frame::Response>> for Response {
+impl Parameter<u16> for Response {
     const ID: u16 = ID;
 }
 

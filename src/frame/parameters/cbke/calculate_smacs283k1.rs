@@ -2,8 +2,8 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::{Certificate283k1Data, PublicKey283k1Data, Status};
 use crate::frame::Parameter;
+use crate::Error;
 use crate::Resolve;
-use crate::{frame, Error};
 
 const ID: u16 = 0x00EA;
 
@@ -29,7 +29,7 @@ impl Command {
     }
 }
 
-impl Parameter<frame::Extended<frame::Command>> for Command {
+impl Parameter<u16> for Command {
     const ID: u16 = ID;
 }
 
@@ -38,7 +38,7 @@ pub struct Response {
     status: u8,
 }
 
-impl Parameter<frame::Extended<frame::Response>> for Response {
+impl Parameter<u16> for Response {
     const ID: u16 = ID;
 }
 

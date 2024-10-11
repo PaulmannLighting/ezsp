@@ -1,7 +1,6 @@
 use le_stream::derive::FromLeStream;
 
 use crate::ember::mac::PassThroughType;
-use crate::frame;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 
@@ -42,6 +41,6 @@ impl Handler {
     }
 }
 
-impl Parameter<frame::Extended<frame::Response>> for Handler {
+impl Parameter<u16> for Handler {
     const ID: u16 = ID;
 }

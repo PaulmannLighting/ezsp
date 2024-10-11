@@ -1,5 +1,4 @@
 use crate::ezsp::Status;
-use crate::frame;
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
@@ -16,6 +15,6 @@ impl Response {
     }
 }
 
-impl Parameter<frame::Extended<frame::Response>> for Response {
+impl Parameter<u16> for Response {
     const ID: u16 = ID;
 }

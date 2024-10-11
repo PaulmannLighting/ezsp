@@ -35,6 +35,7 @@ mod zll;
 
 const MIN_NON_LEGACY_VERSION: u8 = 8;
 
+/// A trait to represent implementors of the full `EZSP` protocol.
 pub trait Ezsp:
     Binding
     + Bootloader
@@ -51,6 +52,7 @@ pub trait Ezsp:
     + Wwah
     + Zll
 {
+    /// Negotiate the protocol version with the NCP.
     fn negotiate_version(
         &mut self,
         desired_protocol_version: u8,

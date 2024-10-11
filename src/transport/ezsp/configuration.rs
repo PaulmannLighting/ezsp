@@ -14,6 +14,7 @@ use crate::types::ByteSizedVec;
 use crate::Resolve;
 use crate::{Error, Transport};
 
+/// The `Configuration` trait provides an interface for the configuration commands.
 pub trait Configuration {
     /// Configures endpoint information on the NCP.
     /// The NCP does not remember these settings after a reset.

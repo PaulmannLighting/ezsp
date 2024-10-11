@@ -9,6 +9,7 @@ use crate::types::ByteSizedVec;
 use crate::Resolve;
 use crate::{Error, Transport};
 
+/// The `Bootloader` trait provides an interface for the bootloader features.
 pub trait Bootloader {
     /// Perform AES encryption on `plaintext` using `key`.
     fn aes_encrypt(

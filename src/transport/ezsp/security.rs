@@ -14,6 +14,7 @@ use crate::frame::parameters::security::{
 use crate::Resolve;
 use crate::{Error, Transport};
 
+/// The `Security` trait provides an interface for the security features.
 pub trait Security {
     /// Check whether a key context can be used to load a valid key.
     fn check_key_context(

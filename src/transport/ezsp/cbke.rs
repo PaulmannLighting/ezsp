@@ -14,6 +14,7 @@ use crate::types::ByteSizedVec;
 use crate::Resolve;
 use crate::{Error, Transport};
 
+/// The `CertificateBasedKeyExchange` trait provides an interface for the Certificate Based Key Exchange features.
 pub trait CertificateBasedKeyExchange {
     /// Calculates the SMAC verification keys for both the initiator and responder roles of
     /// CBKE using the passed parameters and the stored public/private key pair previously

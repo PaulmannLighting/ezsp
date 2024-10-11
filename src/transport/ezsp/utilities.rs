@@ -6,6 +6,7 @@ use crate::types::ByteSizedVec;
 use crate::Resolve;
 use crate::{Error, Transport};
 
+/// The `Utilities` trait provides an interface for the utilities.
 pub trait Utilities {
     /// Provides the customer a custom EZSP frame.
     /// On the NCP, these frames are only handled if the XNCP library is included.

@@ -9,6 +9,7 @@ use crate::frame::parameters::binding::{
 use crate::Resolve;
 use crate::{Error, Transport};
 
+/// The `Binding` trait provides an interface for the binding table.
 pub trait Binding {
     /// Indicates whether any messages are currently being sent using this binding table entry.
     /// Note that this command does not indicate whether a binding is clear.

@@ -8,6 +8,7 @@ use crate::Resolve;
 use crate::Transport;
 use std::future::Future;
 
+/// The `TokenInterface` trait provides an interface for the token interface.
 pub trait TokenInterface {
     /// Gets the total number of tokens.
     fn get_token_count(&mut self) -> impl Future<Output = Result<u8, crate::Error>> + Send;

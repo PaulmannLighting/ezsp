@@ -22,7 +22,7 @@ use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 use crate::Resolve;
 use crate::{Error, Transport};
 
-/// The messaging layer of the EmberZNet stack.
+/// The `Messaging` trait provides an interface for the messaging features.
 pub trait Messaging {
     /// Indicates whether any messages are currently being sent using this address table entry.
     /// Note that this function does not indicate whether the address table entry is unused.

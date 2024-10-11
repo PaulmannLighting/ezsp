@@ -11,6 +11,7 @@ use crate::types::ByteSizedVec;
 use crate::Resolve;
 use crate::{Error, Transport};
 
+/// The `TrustCenter` trait provides an interface for the Trust Center features.
 pub trait TrustCenter {
     /// This routine processes the passed chunk of data and updates the hash context based on it.
     ///

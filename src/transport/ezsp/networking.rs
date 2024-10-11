@@ -25,7 +25,7 @@ use crate::frame::parameters::networking::{
 use crate::Resolve;
 use crate::{Error, Transport};
 
-/// Networking frames.
+/// The `Networking` trait provides an interface for the networking features.
 pub trait Networking {
     /// Convert a child index to a node ID.
     fn child_id(&mut self, child_index: u8) -> impl Future<Output = Result<NodeId, Error>> + Send;

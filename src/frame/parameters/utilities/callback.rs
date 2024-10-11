@@ -7,7 +7,6 @@ const ID: u16 = 0x0006;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Parameter for Command {
-    type Id = u16;
-    const ID: Self::Id = ID;
+impl Parameter<u16> for Command {
+    const ID: u16 = ID;
 }

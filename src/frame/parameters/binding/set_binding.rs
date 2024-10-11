@@ -21,8 +21,7 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
-    type Id = u16;
+impl Parameter<u16> for Command {
     const ID: u16 = ID;
 }
 
@@ -31,8 +30,7 @@ pub struct Response {
     status: u8,
 }
 
-impl Parameter for Response {
-    type Id = u16;
+impl Parameter<u16> for Response {
     const ID: u16 = ID;
 }
 

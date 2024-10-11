@@ -17,7 +17,6 @@ impl Handler {
     }
 }
 
-impl Parameter for Handler {
-    type Id = u16;
-    const ID: Self::Id = ID;
+impl Parameter<u16> for Handler {
+    const ID: u16 = ID;
 }

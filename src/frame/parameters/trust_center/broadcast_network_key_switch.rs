@@ -7,8 +7,7 @@ const ID: u16 = 0x0074;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Parameter for Command {
-    type Id = u16;
+impl Parameter<u16> for Command {
     const ID: u16 = ID;
 }
 
@@ -23,7 +22,6 @@ impl Response {
     }
 }
 
-impl Parameter for Response {
-    type Id = u16;
+impl Parameter<u16> for Response {
     const ID: u16 = ID;
 }

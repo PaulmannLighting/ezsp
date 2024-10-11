@@ -9,9 +9,8 @@ const ID: u16 = 0x002A;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Parameter for Command {
-    type Id = u16;
-    const ID: Self::Id = ID;
+impl Parameter<u16> for Command {
+    const ID: u16 = ID;
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
@@ -19,9 +18,8 @@ pub struct Response {
     status: u8,
 }
 
-impl Parameter for Response {
-    type Id = u16;
-    const ID: Self::Id = ID;
+impl Parameter<u16> for Response {
+    const ID: u16 = ID;
 }
 
 impl Resolve for Response {

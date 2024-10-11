@@ -18,17 +18,17 @@ bitflags! {
 
 impl ExtendedFrameControl {
     /// Returns `true` if security is enabled else `false`.
-    pub fn is_security_enabled(&self) -> bool {
+    pub const fn is_security_enabled(self) -> bool {
         self.contains(Self::SECURITY_ENABLED)
     }
 
     /// Returns `true` if padding is enabled else `false`.
-    pub fn is_padding_enabled(&self) -> bool {
+    pub const fn is_padding_enabled(self) -> bool {
         self.contains(Self::PADDING_ENABLED)
     }
 
     /// Returns the frame format version.
-    pub fn frame_format_version(&self) -> FrameFormatVersion {
+    pub const fn frame_format_version(self) -> FrameFormatVersion {
         match (
             self.contains(Self::FRAME_FORMAT_VERSION_1),
             self.contains(Self::FRAME_FORMAT_VERSION_0),

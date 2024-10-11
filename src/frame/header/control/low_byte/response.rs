@@ -22,19 +22,19 @@ bitflags! {
 
 impl Response {
     /// Returns `true` if the response is a response else `false`.
-    pub fn is_response(&self) -> bool {
+    pub const fn is_response(self) -> bool {
         self.contains(Self::IS_RESPONSE)
     }
 
     /// Returns the network index.
-    pub fn network_index(&self) -> u8 {
+    pub fn network_index(self) -> u8 {
         (self.bits() & (Self::NETWORK_INDEX_1 | Self::NETWORK_INDEX_0).bits()) >> 5
     }
 
     /// Returns the callback type.
     ///
     /// Returns `None` if this is not a callback.
-    pub fn callback_type(&self) -> Option<CallbackType> {
+    pub const fn callback_type(self) -> Option<CallbackType> {
         match (
             self.contains(Self::CALLBACK_TYPE_1),
             self.contains(Self::CALLBACK_TYPE_0),
@@ -49,12 +49,12 @@ impl Response {
     /// Returns `true` if a callback is pending on the NCP.
     ///
     /// If this response is a callback, at least one more callback is available.
-    pub fn is_callback_pending(&self) -> bool {
+    pub const fn is_callback_pending(self) -> bool {
         self.contains(Self::CALLBACK_PENDING)
     }
 
     /// Returns `true` if the response is truncated else `false`.
-    pub fn is_truncated(&self) -> bool {
+    pub const fn is_truncated(self) -> bool {
         self.contains(Self::TRUNCATED)
     }
 
@@ -62,7 +62,7 @@ impl Response {
     ///
     /// This is used to indicate that the NCP truncated the current response
     /// to avoid exceeding the maximum EZSP frame length.
-    pub fn has_overflowed(&self) -> bool {
+    pub const fn has_overflowed(self) -> bool {
         self.contains(Self::OVERFLOW)
     }
 }

@@ -19,17 +19,17 @@ bitflags! {
 
 impl Command {
     /// Returns `true` if the command is a response else `false`.
-    pub fn is_response(&self) -> bool {
+    pub const fn is_response(self) -> bool {
         self.contains(Self::IS_RESPONSE)
     }
 
     /// Returns the network index.
-    pub fn network_index(&self) -> u8 {
+    pub fn network_index(self) -> u8 {
         (self.bits() & (Self::NETWORK_INDEX_1 | Self::NETWORK_INDEX_0).bits()) >> 5
     }
 
     /// Returns the sleep mode.
-    pub fn sleep_mode(&self) -> SleepMode {
+    pub const fn sleep_mode(self) -> SleepMode {
         match (
             self.contains(Self::SLEEP_MODE_1),
             self.contains(Self::SLEEP_MODE_0),

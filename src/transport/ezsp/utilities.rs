@@ -3,8 +3,9 @@ use crate::ember::{event, library, Eui64, NodeId};
 use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
     callback, custom_frame, debug_write, delay_test, echo, get_eui64, get_library_status,
-    get_mfg_token, get_node_id, get_random_number, get_timer, get_token, get_xncp_info, nop,
-    read_and_clear_counters, read_counters, set_mfg_token, set_timer, set_token,
+    get_mfg_token, get_node_id, get_phy_interface_count, get_random_number, get_timer, get_token,
+    get_xncp_info, nop, read_and_clear_counters, read_counters, set_mfg_token, set_timer,
+    set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
@@ -63,6 +64,9 @@ pub trait Utilities {
 
     /// Returns the 16-bit node ID of the local node.
     fn get_node_id(&mut self) -> impl Future<Output = Result<NodeId, Error>> + Send;
+
+    /// Returns number of phy interfaces present.
+    fn get_phy_interface_count(&mut self) -> impl Future<Output = Result<u8, Error>> + Send;
 
     /// Returns a pseudorandom number.
     fn get_random_number(&mut self) -> impl Future<Output = Result<u16, Error>> + Send;
@@ -201,6 +205,12 @@ where
 
     async fn get_node_id(&mut self) -> Result<NodeId, Error> {
         self.communicate::<_, get_node_id::Response>(get_node_id::Command)
+            .await
+            .map(Into::into)
+    }
+
+    async fn get_phy_interface_count(&mut self) -> Result<u8, Error> {
+        self.communicate::<_, get_phy_interface_count::Response>(get_phy_interface_count::Command)
             .await
             .map(Into::into)
     }

@@ -99,4 +99,14 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
             error!("{error}");
         }
     }
+
+    // Test getting node ID
+    match ezsp.get_node_id().await {
+        Ok(node_id) => {
+            info!("Node ID: {node_id:#06X}");
+        }
+        Err(error) => {
+            error!("{error}");
+        }
+    }
 }

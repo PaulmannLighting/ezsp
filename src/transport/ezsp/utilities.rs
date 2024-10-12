@@ -131,7 +131,7 @@ where
     }
 
     async fn get_mfg_token(&mut self, token_id: Id) -> Result<ByteSizedVec<u8>, Error> {
-        self.communicate::<_, get_mfg_token::Response>(get_mfg_token::Command::new(token_id.into()))
+        self.communicate::<_, get_mfg_token::Response>(get_mfg_token::Command::new(token_id))
             .await
             .map(Into::into)
     }

@@ -7,7 +7,7 @@ use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
 use tokio_util::codec::Framed;
 
-/// ASHv2 transport layer implementation.
+/// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
 pub struct Ashv2<const BUF_SIZE: usize> {
     ash: AshFramed<BUF_SIZE>,

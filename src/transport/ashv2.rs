@@ -6,18 +6,16 @@ use crate::transport::Transport;
 use crate::Error;
 use ashv2::AshFramed;
 use codec::RawCodec;
-use futures::SinkExt;
+use futures::{SinkExt, StreamExt};
 use le_stream::{FromLeStream, ToLeStream};
 use log::debug;
 use std::fmt::Debug;
-use std::future::Future;
-use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
 
 /// ASHv2 transport layer implementation.
 #[derive(Debug)]
 pub struct Ashv2<const BUF_SIZE: usize> {
-    framed: Framed<AshFramed<BUF_SIZE>, RawCodec>,
+    ash: AshFramed<BUF_SIZE>,
     sequence: u8,
     buffer: Vec<u8>,
 }
@@ -27,7 +25,7 @@ impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
     #[must_use]
     pub fn new(ash: AshFramed<BUF_SIZE>) -> Self {
         Self {
-            framed: Framed::new(ash, RawCodec),
+            ash,
             sequence: 0,
             buffer: Vec::new(),
         }
@@ -60,7 +58,9 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         self.buffer.extend(header.to_le_stream());
         self.buffer.extend(command.to_le_stream());
         debug!("Sending payload: {:#04X?}", self.buffer);
-        self.framed.send(self.buffer.as_slice().into()).await?;
+        Framed::new(&self.ash, RawCodec)
+            .send(self.buffer.as_slice().into())
+            .await?;
         Ok(())
     }
 
@@ -69,7 +69,7 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         C: ValidControl,
         R: Clone + Debug + Send + FromLeStream,
     {
-        if let Some(response) = self.framed.next().await {
+        if let Some(response) = Framed::new(&self.ash, RawCodec).next().await {
             let response = response?;
             debug!("Received payload: {:#04X?}", response);
             let frame = R::from_le_stream_exact(response.iter().copied())?;
@@ -85,13 +85,13 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         P: Clone + Debug + Send + Parameter + FromLeStream,
         <P as Parameter>::Id: Into<C::Size>,
     {
-        if let Some(response) = self.framed.next().await {
+        if let Some(response) = Framed::new(&self.ash, RawCodec).next().await {
             let response = response?;
             debug!("Received payload: {:#04X?}", response);
             let frame = parse_response::<Frame<C, P>>(response.as_ref())?;
             return Ok(frame.parameters());
         }
 
-        Err(Error::Custom("foo".into()))
+        Err(Error::Custom("no more data".into()))
     }
 }

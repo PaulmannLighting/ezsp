@@ -63,4 +63,14 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
             error!("{error}");
         }
     }
+
+    // Test PRNG
+    match ezsp.get_random_number().await {
+        Ok(number) => {
+            info!("Got random number: {number}");
+        }
+        Err(error) => {
+            error!("{error}");
+        }
+    }
 }

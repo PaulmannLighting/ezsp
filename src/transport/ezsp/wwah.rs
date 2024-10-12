@@ -1,5 +1,5 @@
 use crate::frame::parameters::wwah::{
-    get_parent_classification_enabled, set_parent_classification_enabled,
+    get_parent_classification_enabled, set_long_uptime, set_parent_classification_enabled,
 };
 use crate::{Error, Transport};
 use std::future::Future;
@@ -11,6 +11,10 @@ pub trait Wwah {
     /// Parent classification considers whether a received beacon indicates trust center
     /// connectivity and long uptime on the network.
     fn get_parent_classification_enabled(&mut self) -> impl Future<Output = Result<bool, Error>>;
+
+    /// Sets the device uptime to be long or short.
+    fn set_long_uptime(&mut self, has_long_uptime: bool)
+        -> impl Future<Output = Result<(), Error>>;
 
     /// Sets whether to use parent classification when processing beacons during a join or rejoin.
     ///
@@ -32,6 +36,14 @@ where
         )
         .await
         .map(Into::into)
+    }
+
+    async fn set_long_uptime(&mut self, has_long_uptime: bool) -> Result<(), Error> {
+        self.communicate::<_, set_long_uptime::Response>(set_long_uptime::Command::new(
+            has_long_uptime,
+        ))
+        .await
+        .map(drop)
     }
 
     async fn set_parent_classification_enabled(&mut self, enabled: bool) -> Result<(), Error> {

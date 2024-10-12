@@ -1,5 +1,4 @@
-use crate::ember::token;
-use crate::ember::token::Data;
+use crate::ember::token::{Data, Info};
 use crate::frame::parameters::token_interface::{
     get_token_count, get_token_data, get_token_info, gp_security_test_vectors, reset_node,
     set_token_data, token_factory_reset,
@@ -18,13 +17,13 @@ pub trait TokenInterface {
         &mut self,
         token: u32,
         index: u32,
-    ) -> impl Future<Output = Result<token::Data, crate::Error>> + Send;
+    ) -> impl Future<Output = Result<Data, crate::Error>> + Send;
 
     /// Gets the token information for a single token at provided index
     fn get_token_info(
         &mut self,
         index: u8,
-    ) -> impl Future<Output = Result<token::Info, crate::Error>> + Send;
+    ) -> impl Future<Output = Result<Info, crate::Error>> + Send;
 
     /// Run GP security test vectors.
     fn gp_security_test_vectors(&mut self)
@@ -59,17 +58,13 @@ where
             .resolve()
     }
 
-    async fn get_token_data(
-        &mut self,
-        token: u32,
-        index: u32,
-    ) -> Result<token::Data, crate::Error> {
+    async fn get_token_data(&mut self, token: u32, index: u32) -> Result<Data, crate::Error> {
         self.communicate::<_, get_token_data::Response>(get_token_data::Command::new(token, index))
             .await?
             .resolve()
     }
 
-    async fn get_token_info(&mut self, index: u8) -> Result<token::Info, crate::Error> {
+    async fn get_token_info(&mut self, index: u8) -> Result<Info, crate::Error> {
         self.communicate::<_, get_token_info::Response>(get_token_info::Command::new(index))
             .await?
             .resolve()

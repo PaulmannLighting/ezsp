@@ -10,6 +10,7 @@ use futures::SinkExt;
 use le_stream::{FromLeStream, ToLeStream};
 use log::debug;
 use std::fmt::Debug;
+use std::future::Future;
 use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
 
@@ -61,6 +62,21 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         debug!("Sending payload: {:#04X?}", self.buffer);
         self.framed.send(self.buffer.as_slice().into()).await?;
         Ok(())
+    }
+
+    async fn receive_raw<C, R>(&mut self) -> Result<R, Error>
+    where
+        C: ValidControl,
+        R: Clone + Debug + Send + FromLeStream,
+    {
+        if let Some(response) = self.framed.next().await {
+            let response = response?;
+            debug!("Received payload: {:#04X?}", response);
+            let frame = R::from_le_stream_exact(response.iter().copied())?;
+            return Ok(frame);
+        }
+
+        Err(Error::Custom("no more data".into()))
     }
 
     async fn receive<C, P>(&mut self) -> Result<P, Error>

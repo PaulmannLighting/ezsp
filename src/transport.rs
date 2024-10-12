@@ -30,6 +30,12 @@ pub trait Transport: Send {
         P: Parameter + ToLeStream,
         <P as Parameter>::Id: Into<C::Size>;
 
+    /// Receive a raw response from the NCP.
+    fn receive_raw<C, R>(&mut self) -> impl Future<Output = Result<R, Error>> + Send
+    where
+        C: ValidControl,
+        R: Clone + Debug + Send + FromLeStream;
+
     /// Receive a response from the NCP.
     fn receive<C, P>(&mut self) -> impl Future<Output = Result<P, Error>> + Send
     where

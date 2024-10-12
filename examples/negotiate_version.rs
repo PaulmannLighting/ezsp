@@ -52,10 +52,14 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
     let text = "Hello, world!";
 
     match ezsp.echo(text.bytes().collect()).await {
-        Ok(echo) => {
-            // Should print above text.
-            println!("Got echo: {}", String::from_utf8_lossy(&echo));
-        }
+        Ok(echo) => match String::from_utf8(echo.to_vec()) {
+            Ok(echo) => {
+                println!("Got echo: {echo}");
+            }
+            Err(error) => {
+                error!("{error}");
+            }
+        },
         Err(error) => {
             error!("{error}");
         }

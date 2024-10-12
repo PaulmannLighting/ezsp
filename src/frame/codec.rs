@@ -4,7 +4,9 @@ use le_stream::{FromLeStream, ToLeStream};
 use tokio_util::bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
 
-/// A frame codec.
+/// Codec to encode frames to bytes and decode bytes into frames.
+///
+/// This can be used with `tokio::codec::Framed` to encode and decode frames.
 #[derive(Debug)]
 pub struct Codec<C, P> {
     _control: std::marker::PhantomData<C>,

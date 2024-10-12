@@ -4,6 +4,7 @@ use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::{Debug, Display, LowerHex, UpperHex};
 use std::hash::Hash;
 
+/// A trait to represent valid control fields.
 pub trait ValidControl:
     Copy + Clone + Debug + Default + Eq + Hash + FromLeStream + ToLeStream + Send
 {

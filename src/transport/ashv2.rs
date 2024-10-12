@@ -7,7 +7,6 @@ use ashv2::AshFramed;
 use codec::RawCodec;
 use futures::{SinkExt, StreamExt};
 use le_stream::{FromLeStream, ToLeStream};
-use log::debug;
 use std::fmt::Debug;
 use tokio_util::codec::Framed;
 
@@ -32,11 +31,6 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         T: ValidControl,
     {
         let header = Header::new(self.sequence, Control::<T>::default(), id);
-        debug!("Header: {header:?}");
-        debug!(
-            "Header: {:#04X?}",
-            header.to_le_stream().collect::<Vec<u8>>()
-        );
         self.sequence = self.sequence.wrapping_add(1);
         header
     }
@@ -59,14 +53,11 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         C: ValidControl,
         R: Clone + Debug + FromLeStream,
     {
-        if let Some(response) = Framed::new(&self.ash, RawCodec).next().await {
-            let response = response?;
-            debug!("Received payload: {:#04X?}", response);
-            let frame = R::from_le_stream_exact(response.iter().copied())?;
-            return Ok(frame);
-        }
+        let Some(response) = Framed::new(&self.ash, RawCodec).next().await else {
+            return Err(Error::Custom("no more data".into()));
+        };
 
-        Err(Error::Custom("no more data".into()))
+        Ok(R::from_le_stream_exact(response?.iter().copied())?)
     }
 
     async fn receive<C, P>(&mut self) -> Result<P, Error>
@@ -75,15 +66,13 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         P: Clone + Debug + Parameter + FromLeStream,
         <P as Parameter>::Id: Into<C::Size>,
     {
-        if let Some(response) = Framed::new(&self.ash, Frame::<C, P>::codec()).next().await {
-            let frame = response?;
-            debug!("Received payload: {frame:#04X?}");
-            return Ok(frame.parameters());
-        }
+        let Some(response) = Framed::new(&self.ash, Frame::<C, P>::codec()).next().await else {
+            return Err(Error::Io(std::io::Error::new(
+                std::io::ErrorKind::UnexpectedEof,
+                "No more data to construct frame.",
+            )));
+        };
 
-        Err(Error::Io(std::io::Error::new(
-            std::io::ErrorKind::UnexpectedEof,
-            "No more data to construct frame.",
-        )))
+        Ok(response?.parameters())
     }
 }

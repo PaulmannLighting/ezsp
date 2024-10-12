@@ -15,7 +15,6 @@ pub mod get_true_random_entropy_source;
 pub mod get_xncp_info;
 pub mod handler;
 pub mod invalid_command;
-pub mod no_callbacks;
 pub mod nop;
 pub mod read_and_clear_counters;
 pub mod read_counters;

@@ -1,6 +1,5 @@
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::{Debug, Display, LowerHex, UpperHex};
-use std::hash::Hash;
 
 pub mod binding;
 pub mod bootloader;

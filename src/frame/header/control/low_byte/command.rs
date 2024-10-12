@@ -4,16 +4,22 @@ use bitflags::bitflags;
 use le_stream::derive::{FromLeStream, ToLeStream};
 pub use sleep_mode::SleepMode;
 
+/// Low byte control field of the frame header when it represents a command.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
 pub struct Command(u8);
 
 bitflags! {
     impl Command: u8 {
+        /// The response flag. Should be set.
         const IS_RESPONSE = 0b1000_0000;
+        /// Network index bit no. 1.
         const NETWORK_INDEX_1 = 0b0100_0000;
+        /// Network index bit no. 2.
         const NETWORK_INDEX_0 = 0b0010_0000;
-        const SLEEP_MODE_0 = 0b0000_0010;
-        const SLEEP_MODE_1 = 0b0000_0001;
+        /// Sleep mode bit no. 1.
+        const SLEEP_MODE_1 = 0b0000_0010;
+        /// Sleep mode bit no. 2.
+        const SLEEP_MODE_0 = 0b0000_0001;
     }
 }
 

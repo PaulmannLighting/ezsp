@@ -4,18 +4,27 @@ use bitflags::bitflags;
 pub use callback_type::CallbackType;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
+/// Low byte control field of the frame header when it represents a response.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
 pub struct Response(u8);
 
 bitflags! {
     impl Response: u8 {
+        /// Response flag. Should not be set.
         const IS_RESPONSE = 0b1000_0000;
+        /// Network index bit no. 1.
         const NETWORK_INDEX_1 = 0b0100_0000;
+        /// Network index bit no. 2.
         const NETWORK_INDEX_0 = 0b0010_0000;
+        /// Callback type bit no. 1.
         const CALLBACK_TYPE_1 = 0b0001_0000;
+        /// Callback type bit no. 2.
         const CALLBACK_TYPE_0 = 0b0000_1000;
+        /// Callback pending flag.
         const CALLBACK_PENDING = 0b0000_0100;
+        /// Truncated flag.
         const TRUNCATED = 0b0000_0010;
+        /// Overflow flag.
         const OVERFLOW = 0b0000_0001;
     }
 }

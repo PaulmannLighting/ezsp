@@ -49,7 +49,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
     }
 
     // Test echo reply. Should be same as sent text.
-    let text = "Hello, world!";
+    let text = "Hello, world! 💖";
 
     match ezsp.echo(text.bytes().collect()).await {
         Ok(echo) => match String::from_utf8(echo.to_vec()) {

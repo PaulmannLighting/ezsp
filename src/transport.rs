@@ -12,7 +12,6 @@ pub use ezsp::{
     Wwah, Zll,
 };
 use le_stream::{FromLeStream, ToLeStream};
-use log::warn;
 use std::fmt::Debug;
 use std::future::Future;
 
@@ -56,13 +55,16 @@ pub trait Transport: Send {
         <Extended<Command> as ValidControl>::Size: From<<C as Parameter>::Id>,
         <Extended<Response> as ValidControl>::Size: From<<R as Parameter>::Id>,
     {
-        if <Extended<Command> as ValidControl>::Size::from(C::ID)
-            != <Extended<Response> as ValidControl>::Size::from(R::ID)
-        {
-            warn!("Command and response IDs do not match.");
-        }
+        let command_id = <Extended<Command> as ValidControl>::Size::from(C::ID);
+        let response_id = <Extended<Response> as ValidControl>::Size::from(R::ID);
 
-        async {
+        async move {
+            if command_id != response_id {
+                return Err(Error::Custom(format!(
+                    "Command and response have different control IDs: {command_id} != {response_id}"
+                )));
+            }
+
             self.send::<Extended<Command>, C>(command).await?;
             self.receive::<Extended<Response>, R>().await
         }

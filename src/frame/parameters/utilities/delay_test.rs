@@ -1,6 +1,6 @@
-use crate::error::ValueError;
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeStream, ToLeStream};
+use log::warn;
 use std::time::Duration;
 
 const ID: u16 = 0x009D;
@@ -11,12 +11,13 @@ pub struct Command {
 }
 
 impl Command {
-    pub fn new(delay: Duration) -> Result<Self, ValueError> {
-        delay
-            .as_millis()
-            .try_into()
-            .map_err(|_| ValueError::DurationTooLarge(delay))
-            .map(|delay| Self { delay })
+    pub fn new(delay: Duration) -> Self {
+        Self {
+            delay: delay.as_millis().try_into().unwrap_or_else(|error| {
+                warn!("Delay {delay:?} is too large, using u16::MAX instead: {error}",);
+                u16::MAX
+            }),
+        }
     }
 }
 

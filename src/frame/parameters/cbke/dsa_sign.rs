@@ -2,7 +2,9 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::Status;
 use crate::frame::Parameter;
+use crate::resolve::Resolve;
 use crate::types::ByteSizedVec;
+use crate::Error;
 
 const ID: u16 = 0x00A6;
 
@@ -28,13 +30,15 @@ pub struct Response {
     status: u8,
 }
 
-impl Response {
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
-}
-
 impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl Resolve for Response {
+    type Output = ();
+
+    fn resolve(self) -> Result<Self::Output, Error> {
+        Status::try_from(self.status).resolve()
+    }
 }

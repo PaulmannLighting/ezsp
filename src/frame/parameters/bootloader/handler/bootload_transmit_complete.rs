@@ -2,7 +2,9 @@ use le_stream::derive::FromLeStream;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
+use crate::resolve::Resolve;
 use crate::types::ByteSizedVec;
+use crate::Error;
 
 const ID: u16 = 0x0093;
 
@@ -12,18 +14,17 @@ pub struct Handler {
     message: ByteSizedVec<u8>,
 }
 
-impl Handler {
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub fn message(self) -> ByteSizedVec<u8> {
-        self.message
-    }
-}
-
 impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl Resolve for Handler {
+    type Output = ByteSizedVec<u8>;
+
+    fn resolve(self) -> Result<Self::Output, Error> {
+        Status::try_from(self.status)
+            .resolve()
+            .map(|_| self.message)
+    }
 }

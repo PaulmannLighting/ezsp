@@ -3,8 +3,8 @@ use crate::ember::{event, library};
 use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
     callback, custom_frame, debug_write, delay_test, echo, get_library_status, get_mfg_token,
-    get_random_number, get_timer, get_token, nop, read_and_clear_counters, read_counters,
-    set_mfg_token, set_timer, set_token,
+    get_random_number, get_timer, get_token, get_xncp_info, nop, read_and_clear_counters,
+    read_counters, set_mfg_token, set_timer, set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
@@ -72,6 +72,14 @@ pub trait Utilities {
 
     /// Retrieves a token (8 bytes of non-volatile storage) from the Simulated EEPROM of the NCP.
     fn get_token(&mut self, token_id: u8) -> impl Future<Output = Result<[u8; 8], Error>> + Send;
+
+    /// Allows the HOST to know whether the NCP is running the XNCP library.
+    ///
+    /// If so, the response contains also the manufacturer ID and the version number of the
+    /// XNCP application that is running on the NCP.
+    fn get_xncp_info(
+        &mut self,
+    ) -> impl Future<Output = Result<get_xncp_info::Payload, Error>> + Send;
 
     /// A command which does nothing.
     ///
@@ -192,6 +200,12 @@ where
 
     async fn get_token(&mut self, token_id: u8) -> Result<[u8; 8], Error> {
         self.communicate::<_, get_token::Response>(get_token::Command::new(token_id))
+            .await?
+            .resolve()
+    }
+
+    async fn get_xncp_info(&mut self) -> Result<get_xncp_info::Payload, Error> {
+        self.communicate::<_, get_xncp_info::Response>(get_xncp_info::Command)
             .await?
             .resolve()
     }

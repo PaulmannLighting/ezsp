@@ -1,46 +1,53 @@
 use crate::ember::Status;
+use crate::frame::Parameter;
+use crate::resolve::Resolve;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0013;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+pub struct Response {
+    status: u8,
+    payload: Payload,
+}
+
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+impl Resolve for Response {
+    type Output = Payload;
+
+    fn resolve(self) -> crate::Result<Self::Output> {
+        Status::try_from(self.status)
+            .resolve()
+            .map(|_| self.payload)
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
-pub struct Response {
-    status: u8,
+#[derive(Clone, Copy, Debug, Eq, PartialEq, FromLeStream)]
+pub struct Payload {
     manufacturer_id: u16,
     version_number: u16,
 }
 
-impl Response {
+impl Payload {
     #[must_use]
-    pub fn new(status: Status, manufacturer_id: u16, version_number: u16) -> Self {
-        Self {
-            status: status.into(),
-            manufacturer_id,
-            version_number,
-        }
-    }
-
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub const fn manufacturer_id(&self) -> u16 {
+    pub const fn manufacturer_id(self) -> u16 {
         self.manufacturer_id
     }
 
     #[must_use]
-    pub const fn version_number(&self) -> u16 {
+    pub const fn version_number(self) -> u16 {
         self.version_number
     }
 }

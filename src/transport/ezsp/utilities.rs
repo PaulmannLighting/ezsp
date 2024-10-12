@@ -2,7 +2,7 @@ use std::future::Future;
 use std::time::Duration;
 
 use crate::frame::parameters::utilities::{
-    callback, custom_frame, debug_write, delay_test, echo, nop,
+    callback, custom_frame, debug_write, delay_test, echo, nop, set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
@@ -45,6 +45,13 @@ pub trait Utilities {
     ///
     /// The Host can use this to set the sleep mode or to check the status of the NCP.
     fn nop(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets a token (8 bytes of non-volatile storage) in the Simulated EEPROM of the NCP.
+    fn set_token(
+        &mut self,
+        token_id: u8,
+        token: [u8; 8],
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Utilities for T
@@ -92,5 +99,11 @@ where
         self.communicate::<_, nop::Response>(nop::Command)
             .await
             .map(drop)
+    }
+
+    async fn set_token(&mut self, token_id: u8, token: [u8; 8]) -> Result<(), Error> {
+        self.communicate::<_, set_token::Response>(set_token::Command::new(token_id, token))
+            .await?
+            .resolve()
     }
 }

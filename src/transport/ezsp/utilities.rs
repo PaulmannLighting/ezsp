@@ -1,8 +1,9 @@
 use std::future::Future;
 use std::time::Duration;
 
+use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
-    callback, custom_frame, debug_write, delay_test, echo, get_token, nop, set_token,
+    callback, custom_frame, debug_write, delay_test, echo, get_mfg_token, get_token, nop, set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
@@ -39,6 +40,13 @@ pub trait Utilities {
     fn echo(
         &mut self,
         data: ByteSizedVec<u8>,
+    ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
+
+    /// Retrieves a manufacturing token from the Flash Information Area of the NCP
+    /// (except for `EZSP_STACK_CAL_DATA` which is managed by the stack).
+    fn get_mfg_token(
+        &mut self,
+        token_id: Id,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
 
     /// Retrieves a token (8 bytes of non-volatile storage) from the Simulated EEPROM of the NCP.
@@ -96,6 +104,12 @@ where
         self.communicate::<_, echo::Response>(echo::Command::new(data))
             .await
             .map(echo::Response::echo)
+    }
+
+    async fn get_mfg_token(&mut self, token_id: Id) -> Result<ByteSizedVec<u8>, Error> {
+        self.communicate::<_, get_mfg_token::Response>(get_mfg_token::Command::new(token_id.into()))
+            .await
+            .map(Into::into)
     }
 
     async fn get_token(&mut self, token_id: u8) -> Result<[u8; 8], Error> {

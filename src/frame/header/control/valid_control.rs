@@ -7,6 +7,7 @@ use std::hash::Hash;
 pub trait ValidControl:
     Copy + Clone + Debug + Default + Eq + Hash + FromLeStream + ToLeStream + Send
 {
+    /// The size of the control field in bytes.
     type Size: Copy
         + Debug
         + Display

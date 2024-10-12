@@ -24,7 +24,7 @@ impl Control<Command> {
     }
 
     /// Returns `true` if the command is a response else `false`.
-    pub fn is_response(&self) -> bool {
+    pub const fn is_response(&self) -> bool {
         self.inner.is_response()
     }
 
@@ -34,7 +34,7 @@ impl Control<Command> {
     }
 
     /// Returns the sleep mode.
-    pub fn sleep_mode(&self) -> SleepMode {
+    pub const fn sleep_mode(&self) -> SleepMode {
         self.inner.sleep_mode()
     }
 }
@@ -51,7 +51,7 @@ impl Control<Extended<Command>> {
     }
 
     /// Returns `true` if the command is a response else `false`.
-    pub fn is_response(&self) -> bool {
+    pub const fn is_response(&self) -> bool {
         self.inner.low_byte.is_response()
     }
 
@@ -61,22 +61,22 @@ impl Control<Extended<Command>> {
     }
 
     /// Returns the sleep mode.
-    pub fn sleep_mode(&self) -> SleepMode {
+    pub const fn sleep_mode(&self) -> SleepMode {
         self.inner.low_byte.sleep_mode()
     }
 
     /// Returns `true` if security is enabled else `false`.
-    pub fn is_security_enabled(&self) -> bool {
+    pub const fn is_security_enabled(&self) -> bool {
         self.inner.high_byte.is_security_enabled()
     }
 
     /// Returns `true` if padding is enabled else `false`.
-    pub fn is_padding_enabled(&self) -> bool {
+    pub const fn is_padding_enabled(&self) -> bool {
         self.inner.high_byte.is_padding_enabled()
     }
 
     /// Returns the frame format version.
-    pub fn frame_format_version(&self) -> FrameFormatVersion {
+    pub const fn frame_format_version(&self) -> FrameFormatVersion {
         self.inner.high_byte.frame_format_version()
     }
 }
@@ -88,7 +88,7 @@ impl Control<Response> {
     }
 
     /// Returns `true` if the response is a response else `false`.
-    pub fn is_response(&self) -> bool {
+    pub const fn is_response(&self) -> bool {
         self.inner.is_response()
     }
 
@@ -100,24 +100,24 @@ impl Control<Response> {
     /// Returns the callback type.
     ///
     /// Returns `None` if this is not a callback.
-    pub fn callback_type(&self) -> Option<CallbackType> {
+    pub const fn callback_type(&self) -> Option<CallbackType> {
         self.inner.callback_type()
     }
 
     /// Returns `true` if a callback is pending on the NCP.
     ///
     /// If this response is a callback, at least one more callback is available.
-    pub fn is_callback_pending(&self) -> bool {
+    pub const fn is_callback_pending(&self) -> bool {
         self.inner.is_callback_pending()
     }
 
     /// Returns `true` if the response is truncated else `false`.
-    pub fn is_truncated(&self) -> bool {
+    pub const fn is_truncated(&self) -> bool {
         self.inner.is_truncated()
     }
 
     /// Returns `true` if the response has overflowed else `false`.
-    pub fn has_overflowed(&self) -> bool {
+    pub const fn has_overflowed(&self) -> bool {
         self.inner.contains(Response::OVERFLOW)
     }
 }
@@ -134,7 +134,7 @@ impl Control<Extended<Response>> {
     }
 
     /// Returns `true` if the response is a response else `false`.
-    pub fn is_response(&self) -> bool {
+    pub const fn is_response(&self) -> bool {
         self.inner.low_byte.is_response()
     }
 
@@ -146,39 +146,39 @@ impl Control<Extended<Response>> {
     /// Returns the callback type.
     ///
     /// Returns `None` if this is not a callback.
-    pub fn callback_type(&self) -> Option<CallbackType> {
+    pub const fn callback_type(&self) -> Option<CallbackType> {
         self.inner.low_byte.callback_type()
     }
 
     /// Returns `true` if a callback is pending on the NCP.
     ///
     /// If this response is a callback, at least one more callback is available.
-    pub fn is_callback_pending(&self) -> bool {
+    pub const fn is_callback_pending(&self) -> bool {
         self.inner.low_byte.is_callback_pending()
     }
 
     /// Returns `true` if the response is truncated else `false`.
-    pub fn is_truncated(&self) -> bool {
+    pub const fn is_truncated(&self) -> bool {
         self.inner.low_byte.is_truncated()
     }
 
     /// Returns `true` if the response has overflowed else `false`.
-    pub fn has_overflowed(&self) -> bool {
+    pub const fn has_overflowed(&self) -> bool {
         self.inner.low_byte.has_overflowed()
     }
 
     /// Returns `true` if security is enabled else `false`.
-    pub fn is_security_enabled(&self) -> bool {
+    pub const fn is_security_enabled(&self) -> bool {
         self.inner.high_byte.is_security_enabled()
     }
 
     /// Returns `true` if padding is enabled else `false`.
-    pub fn is_padding_enabled(&self) -> bool {
+    pub const fn is_padding_enabled(&self) -> bool {
         self.inner.high_byte.is_padding_enabled()
     }
 
     /// Returns the frame format version.
-    pub fn frame_format_version(&self) -> FrameFormatVersion {
+    pub const fn frame_format_version(&self) -> FrameFormatVersion {
         self.inner.high_byte.frame_format_version()
     }
 }

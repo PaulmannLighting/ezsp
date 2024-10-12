@@ -22,13 +22,13 @@ impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
         Self { ash, sequence: 0 }
     }
 
-    fn framed<C, P>(&self) -> Framed<&AshFramed<BUF_SIZE>, Codec<C, P>>
+    fn framed<C, P>(&mut self) -> Framed<&mut AshFramed<BUF_SIZE>, Codec<C, P>>
     where
         C: ValidControl,
         P: Parameter,
         <C as ValidControl>::Size: From<<P as Parameter>::Id>,
     {
-        Framed::new(&self.ash, Frame::<C, P>::codec())
+        Framed::new(&mut self.ash, Frame::<C, P>::codec())
     }
 }
 

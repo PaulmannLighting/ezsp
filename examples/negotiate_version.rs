@@ -30,12 +30,14 @@ async fn main() {
 }
 
 async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
-    let (sender, receiver) = sync_channel(32);
-    let transceiver = Transceiver::new(serial_port, receiver, None);
+    let (sender, receiver) = sync_channel(16);
+    let (waker_tx, waker_rx) = sync_channel(16);
+    let transceiver = Transceiver::new(serial_port, receiver, waker_rx, None);
     let running = Arc::new(AtomicBool::new(true));
     let _transceiver_thread = spawn(|| transceiver.run(running));
 
-    let mut ezsp = Ashv2::new(AshFramed::<2>::new(sender));
+    let ash = AshFramed::<16>::new(sender, waker_tx);
+    let mut ezsp = Ashv2::<16>::new(ash);
 
     // Test version negotiation.
     match ezsp.negotiate_version(version).await {

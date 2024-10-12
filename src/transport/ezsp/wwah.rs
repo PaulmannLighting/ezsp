@@ -26,19 +26,19 @@ impl<T> Wwah for T
 where
     T: Transport,
 {
-    async fn set_parent_classification_enabled(&mut self, enabled: bool) -> Result<(), Error> {
-        self.communicate::<_, set_parent_classification_enabled::Response>(
-            set_parent_classification_enabled::Command::new(enabled),
-        )
-        .await
-        .map(drop)
-    }
-
     async fn get_parent_classification_enabled(&mut self) -> Result<bool, Error> {
         self.communicate::<_, get_parent_classification_enabled::Response>(
             get_parent_classification_enabled::Command,
         )
         .await
         .map(Into::into)
+    }
+
+    async fn set_parent_classification_enabled(&mut self, enabled: bool) -> Result<(), Error> {
+        self.communicate::<_, set_parent_classification_enabled::Response>(
+            set_parent_classification_enabled::Command::new(enabled),
+        )
+        .await
+        .map(drop)
     }
 }

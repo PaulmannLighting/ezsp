@@ -1,10 +1,7 @@
-use std::time::Duration;
-
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::gp::Address;
 use crate::ember::Status;
-use crate::error::ValueError;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 use crate::Resolve;
@@ -30,20 +27,17 @@ impl Command {
         gpd_command_id: u8,
         gpd_asdu: ByteSizedVec<u8>,
         gpep_handle: u8,
-        gp_tx_queue_entry_lifetime: Duration,
-    ) -> Result<Self, ValueError> {
-        Ok(Self {
+        gp_tx_queue_entry_lifetime_ms: u16,
+    ) -> Self {
+        Self {
             action,
             use_cca,
             addr,
             gpd_command_id,
             gpd_asdu,
             gpep_handle,
-            gp_tx_queue_entry_lifetime_ms: gp_tx_queue_entry_lifetime
-                .as_millis()
-                .try_into()
-                .map_err(|_| ValueError::DurationTooLarge(gp_tx_queue_entry_lifetime))?,
-        })
+            gp_tx_queue_entry_lifetime_ms,
+        }
     }
 }
 

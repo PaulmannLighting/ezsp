@@ -14,6 +14,8 @@ pub enum InvalidStatus {
     EmberNodeType(u8),
     /// An invalid [`siliconlabs::Status`] status was received.
     Siliconlabs(u32),
+    /// The decision ID is invalid.
+    DecisionId(u8),
 }
 
 impl Display for InvalidStatus {
@@ -27,6 +29,7 @@ impl Display for InvalidStatus {
             Self::EmberNetworkStatus(status) => write!(f, "Invalid Ember network status: {status}"),
             Self::EmberNodeType(node_type) => write!(f, "InvalidEmber node type: {node_type}"),
             Self::Siliconlabs(status) => write!(f, "Invalid Siliconlabs status: {status}"),
+            Self::DecisionId(id) => write!(f, "Invalid decision ID: {id}"),
         }
     }
 }

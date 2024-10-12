@@ -1,8 +1,9 @@
+use crate::error::InvalidStatus;
 use crate::ezsp::Status;
 use crate::ezsp::{decision, policy};
 use crate::frame::Parameter;
+use crate::Error;
 use crate::Resolve;
-use crate::{Error, ValueError};
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0056;
@@ -43,7 +44,7 @@ impl Resolve for Response {
     fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(self.status).resolve().and_then(|_| {
             decision::Id::try_from(self.decision_id)
-                .map_err(|id| Error::ValueError(ValueError::InvalidDecisionId(id)))
+                .map_err(|id| Error::InvalidStatus(InvalidStatus::DecisionId(id)))
         })
     }
 }

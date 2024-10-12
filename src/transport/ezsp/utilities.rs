@@ -3,7 +3,8 @@ use crate::ember::event;
 use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
     callback, custom_frame, debug_write, delay_test, echo, get_mfg_token, get_random_number,
-    get_timer, get_token, nop, read_and_clear_counters, set_mfg_token, set_timer, set_token,
+    get_timer, get_token, nop, read_and_clear_counters, read_counters, set_mfg_token, set_timer,
+    set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
@@ -74,6 +75,13 @@ pub trait Utilities {
     ///
     /// See the EmberCounterType enumeration for the counter types.
     fn read_and_clear_counters(
+        &mut self,
+    ) -> impl Future<Output = Result<[u16; COUNTER_TYPE_COUNT], Error>> + Send;
+
+    /// Retrieves Ember counters.
+    ///
+    /// See the [`crate::ember::counter::Type`] enumeration for the counter types.
+    fn read_counters(
         &mut self,
     ) -> impl Future<Output = Result<[u16; COUNTER_TYPE_COUNT], Error>> + Send;
 
@@ -178,6 +186,12 @@ where
 
     async fn read_and_clear_counters(&mut self) -> Result<[u16; COUNTER_TYPE_COUNT], Error> {
         self.communicate::<_, read_and_clear_counters::Response>(read_and_clear_counters::Command)
+            .await
+            .map(Into::into)
+    }
+
+    async fn read_counters(&mut self) -> Result<[u16; COUNTER_TYPE_COUNT], Error> {
+        self.communicate::<_, read_counters::Response>(read_counters::Command)
             .await
             .map(Into::into)
     }

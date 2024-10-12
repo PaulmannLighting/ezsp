@@ -1,6 +1,5 @@
 use crate::frame::{Frame, Header, Parameter, ValidControl};
 use le_stream::{FromLeStream, ToLeStream};
-use log::debug;
 use tokio_util::bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
 
@@ -35,7 +34,6 @@ where
     type Error = std::io::Error;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        debug!("Decoding frame from buffer: {:#04X?}", src);
         let mut stream = src.iter().copied();
 
         let Some(header) = Header::<C>::from_le_stream(&mut stream) else {
@@ -52,7 +50,10 @@ where
                     std::io::ErrorKind::InvalidData,
                     format!("Too many bytes for frame. Next excess byte: {next:#04X}"),
                 )),
-                le_stream::Error::UnexpectedEndOfStream => Ok(None),
+                le_stream::Error::UnexpectedEndOfStream => Err(std::io::Error::new(
+                    std::io::ErrorKind::UnexpectedEof,
+                    format!("Not enough bytes for frame: {:#04X?}", src.as_ref()),
+                )),
             },
         }
     }

@@ -48,25 +48,22 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
 
     async fn send<C, P>(&mut self, command: P) -> Result<(), Error>
     where
-        C: ValidControl + Send,
-        P: Parameter + ToLeStream + Send,
+        C: ValidControl,
+        P: Parameter + ToLeStream,
         <P as Parameter>::Id: Into<C::Size>,
     {
-        self.buffer.clear();
         let header = self.next_header::<C>(P::ID.into());
-        self.buffer.extend(header.to_le_stream());
-        self.buffer.extend(command.to_le_stream());
         debug!("Sending payload: {:#04X?}", self.buffer);
-        Framed::new(&self.ash, RawCodec)
-            .send(self.buffer.as_slice().into())
+        Framed::new(&self.ash, Frame::<C, P>::codec())
+            .send(Frame::new(header, command))
             .await?;
         Ok(())
     }
 
     async fn receive_raw<C, R>(&mut self) -> Result<R, Error>
     where
-        C: ValidControl + Send,
-        R: Clone + Debug + Send + FromLeStream,
+        C: ValidControl,
+        R: Clone + Debug + FromLeStream,
     {
         if let Some(response) = Framed::new(&self.ash, RawCodec).next().await {
             let response = response?;
@@ -80,8 +77,8 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
 
     async fn receive<C, P>(&mut self) -> Result<P, Error>
     where
-        C: ValidControl + Send,
-        P: Clone + Debug + Send + Parameter + FromLeStream,
+        C: ValidControl,
+        P: Clone + Debug + Parameter + FromLeStream,
         <P as Parameter>::Id: Into<C::Size>,
     {
         if let Some(response) = Framed::new(&self.ash, Frame::<C, P>::codec()).next().await {

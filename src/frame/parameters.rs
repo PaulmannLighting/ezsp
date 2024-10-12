@@ -17,7 +17,7 @@ pub mod utilities;
 pub mod wwah;
 pub mod zll;
 
-pub trait Parameter: Debug + Send + Sync {
+pub trait Parameter: Debug + Send {
     type Id: Copy
         + Debug
         + Display

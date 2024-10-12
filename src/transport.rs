@@ -25,28 +25,28 @@ pub trait Transport: Send {
     /// Send a command to the NCP.
     fn send<C, P>(&mut self, command: P) -> impl Future<Output = Result<(), Error>> + Send
     where
-        C: ValidControl + Send,
+        C: ValidControl,
         P: Parameter + ToLeStream,
         <P as Parameter>::Id: Into<C::Size>;
 
     /// Receive a raw response from the NCP.
     fn receive_raw<C, R>(&mut self) -> impl Future<Output = Result<R, Error>> + Send
     where
-        C: ValidControl + Send,
-        R: Clone + Debug + Send + FromLeStream;
+        C: ValidControl,
+        R: Clone + Debug + FromLeStream;
 
     /// Receive a response from the NCP.
     fn receive<C, P>(&mut self) -> impl Future<Output = Result<P, Error>> + Send
     where
-        C: ValidControl + Send,
-        P: Clone + Debug + Send + Parameter + FromLeStream,
+        C: ValidControl,
+        P: Clone + Debug + Parameter + FromLeStream,
         <P as Parameter>::Id: Into<C::Size>;
 
     /// Communicate with the NCP.
     fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
     where
-        C: Parameter + ToLeStream + Send,
-        R: Clone + Debug + Parameter + FromLeStream + Send,
+        C: Parameter + ToLeStream,
+        R: Clone + Debug + Parameter + FromLeStream,
         <C as Parameter>::Id: Into<<Extended<Command> as ValidControl>::Size>,
         <R as Parameter>::Id: Into<<Extended<Response> as ValidControl>::Size>,
     {

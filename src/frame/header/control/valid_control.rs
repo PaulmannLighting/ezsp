@@ -5,7 +5,7 @@ use std::fmt::{Debug, Display, LowerHex, UpperHex};
 use std::hash::Hash;
 
 pub trait ValidControl:
-    Copy + Clone + Debug + Default + Eq + Hash + FromLeStream + ToLeStream
+    Copy + Clone + Debug + Default + Eq + Hash + FromLeStream + ToLeStream + Send
 {
     type Size: Copy
         + Debug
@@ -15,7 +15,8 @@ pub trait ValidControl:
         + LowerHex
         + UpperHex
         + FromLeStream
-        + ToLeStream;
+        + ToLeStream
+        + Send;
 }
 
 impl ValidControl for Command {

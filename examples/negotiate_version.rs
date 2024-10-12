@@ -78,4 +78,15 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
             error!("{error}");
         }
     }
+
+    // Test PRNG
+    match ezsp.get_xncp_info().await {
+        Ok(info) => {
+            info!("XNPC manufacturer ID: {}", info.manufacturer_id());
+            info!("XNPC version number: {}", info.version_number());
+        }
+        Err(error) => {
+            error!("{error}");
+        }
+    }
 }

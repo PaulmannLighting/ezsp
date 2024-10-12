@@ -36,22 +36,22 @@ where
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
         let mut stream = src.iter().copied();
 
-        if let Some(header) = Header::<C>::from_le_stream(&mut stream) {
-            match P::from_le_stream_exact(stream) {
-                Ok(parameters) => {
-                    src.clear();
-                    Ok(Some(Self::Item::new(header, parameters)))
-                }
-                Err(error) => match error {
-                    le_stream::Error::StreamNotExhausted(next) => Err(std::io::Error::new(
-                        std::io::ErrorKind::InvalidData,
-                        format!("Too many bytes for frame. Next excess byte: {next:#04X}"),
-                    )),
-                    le_stream::Error::UnexpectedEndOfStream => Ok(None),
-                },
+        let Some(header) = Header::<C>::from_le_stream(&mut stream) else {
+            return Ok(None);
+        };
+
+        match P::from_le_stream_exact(stream) {
+            Ok(parameters) => {
+                src.clear();
+                Ok(Some(Self::Item::new(header, parameters)))
             }
-        } else {
-            Ok(None)
+            Err(error) => match error {
+                le_stream::Error::StreamNotExhausted(next) => Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    format!("Too many bytes for frame. Next excess byte: {next:#04X}"),
+                )),
+                le_stream::Error::UnexpectedEndOfStream => Ok(None),
+            },
         }
     }
 }

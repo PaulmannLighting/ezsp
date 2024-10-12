@@ -1,9 +1,10 @@
 use crate::ember::library::{Id, Status};
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0001;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     library_id: Id,
 }
@@ -13,26 +14,25 @@ impl Command {
     pub const fn new(library_id: Id) -> Self {
         Self { library_id }
     }
-
-    #[must_use]
-    pub const fn library_id(&self) -> Id {
-        self.library_id
-    }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: Status,
 }
 
-impl Response {
-    #[must_use]
-    pub const fn new(status: Status) -> Self {
-        Self { status }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    #[must_use]
-    pub const fn status(&self) -> Status {
-        self.status
+impl From<Response> for Status {
+    fn from(response: Response) -> Self {
+        response.status
     }
 }

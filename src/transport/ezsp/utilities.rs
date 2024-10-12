@@ -1,10 +1,10 @@
 use crate::ember::constants::COUNTER_TYPE_COUNT;
-use crate::ember::event;
+use crate::ember::{event, library};
 use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
-    callback, custom_frame, debug_write, delay_test, echo, get_mfg_token, get_random_number,
-    get_timer, get_token, nop, read_and_clear_counters, read_counters, set_mfg_token, set_timer,
-    set_token,
+    callback, custom_frame, debug_write, delay_test, echo, get_library_status, get_mfg_token,
+    get_random_number, get_timer, get_token, nop, read_and_clear_counters, read_counters,
+    set_mfg_token, set_timer, set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
@@ -43,6 +43,13 @@ pub trait Utilities {
         &mut self,
         data: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
+
+    /// This retrieves the status of the passed library ID to determine
+    /// if it is compiled into the stack.
+    fn get_library_status(
+        &mut self,
+        library_id: library::Id,
+    ) -> impl Future<Output = Result<library::Status, Error>> + Send;
 
     /// Retrieves a manufacturing token from the Flash Information Area of the NCP
     /// (except for `EZSP_STACK_CAL_DATA` which is managed by the stack).
@@ -153,6 +160,17 @@ where
         self.communicate::<_, echo::Response>(echo::Command::new(data))
             .await
             .map(echo::Response::echo)
+    }
+
+    async fn get_library_status(
+        &mut self,
+        library_id: library::Id,
+    ) -> Result<library::Status, Error> {
+        self.communicate::<_, get_library_status::Response>(get_library_status::Command::new(
+            library_id,
+        ))
+        .await
+        .map(Into::into)
     }
 
     async fn get_mfg_token(&mut self, token_id: Id) -> Result<ByteSizedVec<u8>, Error> {

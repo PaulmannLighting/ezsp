@@ -1,37 +1,29 @@
-use crate::ember::{Eui64, NodeId};
+use crate::ember::NodeId;
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0027;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
-    eui64: Eui64,
     node_id: NodeId,
 }
 
-impl Response {
-    #[must_use]
-    pub const fn new(eui64: Eui64, node_id: NodeId) -> Self {
-        Self { eui64, node_id }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    #[must_use]
-    pub const fn eui64(&self) -> Eui64 {
-        self.eui64
-    }
-
-    #[must_use]
-    pub const fn node_id(&self) -> NodeId {
-        self.node_id
+impl From<Response> for NodeId {
+    fn from(response: Response) -> Self {
+        response.node_id
     }
 }

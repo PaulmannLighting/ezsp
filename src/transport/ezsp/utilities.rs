@@ -1,9 +1,9 @@
 use crate::ember::constants::COUNTER_TYPE_COUNT;
-use crate::ember::{event, library, Eui64};
+use crate::ember::{event, library, Eui64, NodeId};
 use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
     callback, custom_frame, debug_write, delay_test, echo, get_eui64, get_library_status,
-    get_mfg_token, get_random_number, get_timer, get_token, get_xncp_info, nop,
+    get_mfg_token, get_node_id, get_random_number, get_timer, get_token, get_xncp_info, nop,
     read_and_clear_counters, read_counters, set_mfg_token, set_timer, set_token,
 };
 use crate::frame::Handler;
@@ -60,6 +60,8 @@ pub trait Utilities {
         &mut self,
         token_id: Id,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
+
+    fn get_node_id(&mut self) -> impl Future<Output = Result<NodeId, Error>> + Send;
 
     /// Returns a pseudorandom number.
     fn get_random_number(&mut self) -> impl Future<Output = Result<u16, Error>> + Send;
@@ -192,6 +194,12 @@ where
 
     async fn get_mfg_token(&mut self, token_id: Id) -> Result<ByteSizedVec<u8>, Error> {
         self.communicate::<_, get_mfg_token::Response>(get_mfg_token::Command::new(token_id))
+            .await
+            .map(Into::into)
+    }
+
+    async fn get_node_id(&mut self) -> Result<NodeId, Error> {
+        self.communicate::<_, get_node_id::Response>(get_node_id::Command)
             .await
             .map(Into::into)
     }

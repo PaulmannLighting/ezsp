@@ -6,7 +6,7 @@ use crate::frame::parameters::utilities::{
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
-use crate::{Command, Extended, Resolve, Response};
+use crate::{Command, Extended, Resolve};
 use crate::{Error, Transport};
 
 /// The `Utilities` trait provides an interface for the utilities.

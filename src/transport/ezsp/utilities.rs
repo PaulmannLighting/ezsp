@@ -61,6 +61,7 @@ pub trait Utilities {
         token_id: Id,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
 
+    /// Returns the 16-bit node ID of the local node.
     fn get_node_id(&mut self) -> impl Future<Output = Result<NodeId, Error>> + Send;
 
     /// Returns a pseudorandom number.

@@ -1,39 +1,33 @@
 use crate::ember::Status;
+use crate::frame::Parameter;
+use crate::resolve::Resolve;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0049;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
     value: u16,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status, value: u16) -> Self {
-        Self {
-            status: status.into(),
-            value,
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
+impl Resolve for Response {
+    type Output = u16;
 
-    #[must_use]
-    pub const fn value(&self) -> u16 {
-        self.value
+    fn resolve(self) -> crate::Result<Self::Output> {
+        Status::try_from(self.status).resolve().map(|_| self.value)
     }
 }

@@ -3,8 +3,8 @@ use std::time::Duration;
 
 use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
-    callback, custom_frame, debug_write, delay_test, echo, get_mfg_token, get_token, nop,
-    set_mfg_token, set_token,
+    callback, custom_frame, debug_write, delay_test, echo, get_mfg_token, get_random_number,
+    get_token, nop, set_mfg_token, set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
@@ -49,6 +49,9 @@ pub trait Utilities {
         &mut self,
         token_id: Id,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
+
+    /// Returns a pseudorandom number.
+    fn get_random_number(&mut self) -> impl Future<Output = Result<u16, Error>> + Send;
 
     /// Retrieves a token (8 bytes of non-volatile storage) from the Simulated EEPROM of the NCP.
     fn get_token(&mut self, token_id: u8) -> impl Future<Output = Result<[u8; 8], Error>> + Send;
@@ -122,6 +125,12 @@ where
         self.communicate::<_, get_mfg_token::Response>(get_mfg_token::Command::new(token_id.into()))
             .await
             .map(Into::into)
+    }
+
+    async fn get_random_number(&mut self) -> Result<u16, Error> {
+        self.communicate::<_, get_random_number::Response>(get_random_number::Command)
+            .await?
+            .resolve()
     }
 
     async fn get_token(&mut self, token_id: u8) -> Result<[u8; 8], Error> {

@@ -109,4 +109,14 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
             error!("{error}");
         }
     }
+
+    // Test getting phy interface count
+    match ezsp.get_phy_interface_count().await {
+        Ok(phy_interfaces) => {
+            info!("Phy interfaces: {phy_interfaces}");
+        }
+        Err(error) => {
+            error!("{error}");
+        }
+    }
 }

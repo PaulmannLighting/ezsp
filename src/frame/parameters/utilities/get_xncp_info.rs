@@ -16,7 +16,7 @@ impl Parameter for Command {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
-    payload: Payload,
+    payload: Option<Payload>,
 }
 
 impl Parameter for Response {
@@ -28,12 +28,14 @@ impl Resolve for Response {
     type Output = Payload;
 
     fn resolve(self) -> crate::Result<Self::Output> {
-        Status::try_from(self.status)
-            .resolve()
-            .map(|_| self.payload)
+        Status::try_from(self.status).resolve().and_then(|_| {
+            self.payload
+                .ok_or(crate::Error::Custom("No payload.".into()))
+        })
     }
 }
 
+/// Payload according to EZSP revision 5.1.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Payload {
     manufacturer_id: u16,

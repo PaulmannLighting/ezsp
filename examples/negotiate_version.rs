@@ -9,7 +9,7 @@ use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use std::thread::spawn;
 
-const TEST_TEXT: &str = "כשרוחות קרות יסערו בחוץ
+const TEST_TEXT: &str = "וכשרוחות קרות יסערו בחוץ
 אשלח בך אש חמה
 יום אחד אולי תפסיק לרוץ
 בין הצללים בנשמה";

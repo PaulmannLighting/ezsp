@@ -41,6 +41,12 @@ required-features = ["ashv2"]
 [features]
 ashv2 = ["dep:ashv2"]
 
+[profile.release]
+opt-level = "s"
+strip = "symbols"
+lto = "fat"
+panic = "abort"
+
 [lints.rust]
 absolute_paths_not_starting_with_crate = "warn"
 elided_lifetimes_in_paths = "warn"

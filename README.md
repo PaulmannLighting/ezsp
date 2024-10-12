@@ -2,6 +2,12 @@
 
 The EmberZNet Serial Protocol
 
+## Work in Progress
+
+This is a work in progress.
+
+The goal is to provide a Rust implementation of the `EZSP` library as documented below.
+
 ## Documentation
 
 The official documentation can be found

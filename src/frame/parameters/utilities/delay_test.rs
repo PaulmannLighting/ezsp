@@ -14,7 +14,7 @@ impl Command {
     pub fn new(delay: Duration) -> Self {
         Self {
             delay: delay.as_millis().try_into().unwrap_or_else(|error| {
-                warn!("Delay {delay:?} is too large, using u16::MAX instead: {error}",);
+                warn!("Delay {delay:?} is too large, using `u16::MAX` instead: {error}",);
                 u16::MAX
             }),
         }

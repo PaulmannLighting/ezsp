@@ -1,10 +1,7 @@
-mod codec;
-
 use crate::frame::{Control, Frame, Header, Parameter, ValidControl};
 use crate::transport::Transport;
 use crate::Error;
 use ashv2::AshFramed;
-use codec::RawCodec;
 use futures::{SinkExt, StreamExt};
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
@@ -46,21 +43,6 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
             .send(Frame::new(header, command))
             .await?;
         Ok(())
-    }
-
-    async fn receive_raw<C, R>(&mut self) -> Result<R, Error>
-    where
-        C: ValidControl,
-        R: Clone + Debug + FromLeStream,
-    {
-        let Some(response) = Framed::new(&self.ash, RawCodec).next().await else {
-            return Err(Error::Io(std::io::Error::new(
-                std::io::ErrorKind::UnexpectedEof,
-                "No more data to construct frame.",
-            )));
-        };
-
-        Ok(R::from_le_stream_exact(response?.iter().copied())?)
     }
 
     async fn receive<C, P>(&mut self) -> Result<P, Error>

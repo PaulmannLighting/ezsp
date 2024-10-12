@@ -1,13 +1,21 @@
 use std::future::Future;
 use std::time::Duration;
 
-use crate::frame::parameters::utilities::{custom_frame, debug_write, delay_test, echo, nop};
+use crate::frame::parameters::utilities::{
+    callback, custom_frame, debug_write, delay_test, echo, nop,
+};
+use crate::frame::Handler;
 use crate::types::ByteSizedVec;
-use crate::Resolve;
+use crate::{Command, Extended, Resolve, Response};
 use crate::{Error, Transport};
 
 /// The `Utilities` trait provides an interface for the utilities.
 pub trait Utilities {
+    /// Allows the NCP to respond with a pending callback.
+    ///
+    /// The response to this command can be any of the callback responses.
+    fn callback(&mut self) -> impl Future<Output = Result<Handler, Error>> + Send;
+
     /// Provides the customer a custom EZSP frame.
     /// On the NCP, these frames are only handled if the XNCP library is included.
     /// On the NCP side these frames are handled in the `emberXNcpIncomingCustomEzspMessageCallback()` callback function.
@@ -43,6 +51,11 @@ impl<T> Utilities for T
 where
     T: Transport,
 {
+    async fn callback(&mut self) -> Result<Handler, Error> {
+        self.send::<Extended<Command>, _>(callback::Command).await?;
+        todo!("Implement decoder for callback responses");
+    }
+
     async fn custom_frame(&mut self, payload: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
         self.communicate::<_, custom_frame::Response>(custom_frame::Command::new(payload))
             .await?

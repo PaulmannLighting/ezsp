@@ -54,7 +54,10 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         R: Clone + Debug + FromLeStream,
     {
         let Some(response) = Framed::new(&self.ash, RawCodec).next().await else {
-            return Err(Error::Custom("no more data".into()));
+            return Err(Error::Io(std::io::Error::new(
+                std::io::ErrorKind::UnexpectedEof,
+                "No more data to construct frame.",
+            )));
         };
 
         Ok(R::from_le_stream_exact(response?.iter().copied())?)

@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+pub use codec::Codec;
 pub use handler::Handler;
 pub use header::{
     CallbackType, Command, Control, Extended, FrameFormatVersion, Header, Response, SleepMode,
@@ -49,7 +50,7 @@ where
     }
 
     /// Return the frame's codec.
-    pub fn codec() -> codec::Codec<C, P> {
-        codec::Codec::default()
+    pub fn codec() -> Codec<C, P> {
+        Codec::default()
     }
 }

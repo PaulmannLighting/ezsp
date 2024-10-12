@@ -1,4 +1,4 @@
-use crate::frame::{Control, Frame, Header, Parameter, ValidControl};
+use crate::frame::{Codec, Control, Frame, Header, Parameter, ValidControl};
 use crate::transport::Transport;
 use crate::Error;
 use ashv2::AshFramed;
@@ -20,6 +20,15 @@ impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
     pub const fn new(ash: AshFramed<BUF_SIZE>) -> Self {
         Self { ash, sequence: 0 }
     }
+
+    fn framed<C, P>(&self) -> Framed<&AshFramed<BUF_SIZE>, Codec<C, P>>
+    where
+        C: ValidControl,
+        P: Parameter,
+        <P as Parameter>::Id: Into<C::Size>,
+    {
+        Framed::new(&self.ash, Frame::<C, P>::codec())
+    }
 }
 
 impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
@@ -39,9 +48,7 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         <P as Parameter>::Id: Into<C::Size>,
     {
         let header = self.next_header::<C>(P::ID.into());
-        Framed::new(&self.ash, Frame::<C, P>::codec())
-            .send(Frame::new(header, command))
-            .await?;
+        self.framed().send(Frame::new(header, command)).await?;
         Ok(())
     }
 
@@ -51,7 +58,7 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         P: Clone + Debug + Parameter + FromLeStream,
         <P as Parameter>::Id: Into<C::Size>,
     {
-        let Some(response) = Framed::new(&self.ash, Frame::<C, P>::codec()).next().await else {
+        let Some(response) = self.framed::<C, P>().next().await else {
             return Err(Error::Io(std::io::Error::new(
                 std::io::ErrorKind::UnexpectedEof,
                 "No more data to construct frame.",

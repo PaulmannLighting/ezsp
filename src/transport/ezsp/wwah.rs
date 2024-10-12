@@ -1,6 +1,6 @@
 use crate::frame::parameters::wwah::{
-    get_parent_classification_enabled, is_uptime_long, set_hub_connectivity, set_long_uptime,
-    set_parent_classification_enabled,
+    get_parent_classification_enabled, is_hub_connected, is_uptime_long, set_hub_connectivity,
+    set_long_uptime, set_parent_classification_enabled,
 };
 use crate::{Error, Transport};
 use std::future::Future;
@@ -12,6 +12,10 @@ pub trait Wwah {
     /// Parent classification considers whether a received beacon indicates trust center
     /// connectivity and long uptime on the network.
     fn get_parent_classification_enabled(&mut self) -> impl Future<Output = Result<bool, Error>>;
+
+    /// Checks if the hub is connected or not.
+    #[allow(clippy::wrong_self_convention)]
+    fn is_hub_connected(&mut self) -> impl Future<Output = Result<bool, Error>>;
 
     /// Checks if the device uptime is long or short.
     #[allow(clippy::wrong_self_convention)]
@@ -44,6 +48,12 @@ where
         )
         .await
         .map(Into::into)
+    }
+
+    async fn is_hub_connected(&mut self) -> Result<bool, Error> {
+        self.communicate::<_, is_hub_connected::Response>(is_hub_connected::Command)
+            .await
+            .map(Into::into)
     }
 
     async fn is_uptime_long(&mut self) -> Result<bool, Error> {

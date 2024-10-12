@@ -3,7 +3,8 @@ use std::time::Duration;
 
 use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
-    callback, custom_frame, debug_write, delay_test, echo, get_mfg_token, get_token, nop, set_token,
+    callback, custom_frame, debug_write, delay_test, echo, get_mfg_token, get_token, nop,
+    set_mfg_token, set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
@@ -56,6 +57,17 @@ pub trait Utilities {
     ///
     /// The Host can use this to set the sleep mode or to check the status of the NCP.
     fn nop(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets a manufacturing token in the Customer Information Block (CIB) area of the NCP
+    /// if that token currently unset (fully erased).
+    ///
+    /// Cannot be used with `EZSP_STACK_CAL_DATA`, `EZSP_STACK_CAL_FILTER`, `EZSP_MFG_ASH_CONFIG`,
+    /// or `EZSP_MFG_CBKE_DATA` token.
+    fn set_mfg_token(
+        &mut self,
+        token_id: Id,
+        token: ByteSizedVec<u8>,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Sets a token (8 bytes of non-volatile storage) in the Simulated EEPROM of the NCP.
     fn set_token(
@@ -122,6 +134,12 @@ where
         self.communicate::<_, nop::Response>(nop::Command)
             .await
             .map(drop)
+    }
+
+    async fn set_mfg_token(&mut self, token_id: Id, token: ByteSizedVec<u8>) -> Result<(), Error> {
+        self.communicate::<_, set_mfg_token::Response>(set_mfg_token::Command::new(token_id, token))
+            .await?
+            .resolve()
     }
 
     async fn set_token(&mut self, token_id: u8, token: [u8; 8]) -> Result<(), Error> {

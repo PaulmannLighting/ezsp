@@ -13,7 +13,7 @@ mod result;
 pub mod transport;
 pub mod types;
 
-pub use error::{Error, ValueError};
+pub use error::{Error, Invalid};
 pub use frame::{
     CallbackType, Command, Control, Extended, FrameFormatVersion, Header, Response, SleepMode,
 };

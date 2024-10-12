@@ -10,13 +10,13 @@ pub struct Codec<C, P> {
     _parameter: std::marker::PhantomData<P>,
 }
 
-impl<C, P> From<&Frame<C, P>> for Codec<C, P>
+impl<C, P> Default for Codec<C, P>
 where
     C: ValidControl,
-    P: Parameter + FromLeStream,
+    P: Parameter,
     <P as Parameter>::Id: Into<C::Size>,
 {
-    fn from(_: &Frame<C, P>) -> Self {
+    fn default() -> Self {
         Self {
             _control: std::marker::PhantomData,
             _parameter: std::marker::PhantomData,

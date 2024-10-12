@@ -47,4 +47,9 @@ where
     pub fn parameters(self) -> P {
         self.parameters
     }
+
+    /// Return the frame's codec.
+    pub fn codec() -> codec::Codec<C, P> {
+        codec::Codec::default()
+    }
 }

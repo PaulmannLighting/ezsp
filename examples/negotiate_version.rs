@@ -89,4 +89,14 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
             error!("{error}");
         }
     }
+
+    // Test getting EUI64
+    match ezsp.get_eui64().await {
+        Ok(eui64) => {
+            info!("EUI64: {eui64:#010X}");
+        }
+        Err(error) => {
+            error!("{error}");
+        }
+    }
 }

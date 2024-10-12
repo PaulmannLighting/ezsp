@@ -12,6 +12,7 @@ pub use ezsp::{
     Wwah, Zll,
 };
 use le_stream::{FromLeStream, ToLeStream};
+use log::warn;
 use std::fmt::Debug;
 use std::future::Future;
 
@@ -52,9 +53,15 @@ pub trait Transport: Send {
     where
         C: Parameter + ToLeStream,
         R: Clone + Debug + Parameter + FromLeStream,
-        <C as Parameter>::Id: Into<<Extended<Command> as ValidControl>::Size>,
-        <R as Parameter>::Id: Into<<Extended<Response> as ValidControl>::Size>,
+        <Extended<Command> as ValidControl>::Size: From<<C as Parameter>::Id>,
+        <Extended<Response> as ValidControl>::Size: From<<R as Parameter>::Id>,
     {
+        if <Extended<Command> as ValidControl>::Size::from(C::ID)
+            != <Extended<Response> as ValidControl>::Size::from(R::ID)
+        {
+            warn!("Command and response IDs do not match.");
+        }
+
         async {
             self.send::<Extended<Command>, C>(command).await?;
             self.receive::<Extended<Response>, R>().await

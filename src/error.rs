@@ -1,6 +1,8 @@
+mod decode;
 mod invalid;
 
 use crate::{ember, ezsp};
+pub use decode::Decode;
 pub use invalid::Invalid;
 use std::fmt::{Debug, Display, Formatter};
 
@@ -9,6 +11,8 @@ use std::fmt::{Debug, Display, Formatter};
 pub enum Error {
     /// An I/O error occurred.
     Io(std::io::Error),
+    /// Decoding error.
+    Decode(Decode),
     /// The received [`ezsp::Status`] indicates an error.
     Ezsp(ezsp::Status),
     /// The received [`ember::Status`] indicates an error.
@@ -25,6 +29,7 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Io(error) => Display::fmt(error, f),
+            Self::Decode(decode) => Display::fmt(decode, f),
             Self::Ezsp(status) => write!(f, "Ezsp: {status:?} ({:#04X})", u8::from(*status)),
             Self::Ember(status) => write!(f, "Ember: {status:?} ({:#04X})", u8::from(*status)),
             Self::Siliconlabs(status) => {
@@ -40,6 +45,7 @@ impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Io(error) => Some(error),
+            Self::Decode(decode) => Some(decode),
             Self::Invalid(status) => Some(status),
             _ => None,
         }
@@ -52,6 +58,12 @@ impl From<std::io::Error> for Error {
     }
 }
 
+impl From<Decode> for Error {
+    fn from(decode: Decode) -> Self {
+        Self::Decode(decode)
+    }
+}
+
 impl From<ezsp::Status> for Error {
     fn from(status: ezsp::Status) -> Self {
         Self::Ezsp(status)
@@ -61,6 +73,18 @@ impl From<ezsp::Status> for Error {
 impl From<ember::Status> for Error {
     fn from(status: ember::Status) -> Self {
         Self::Ember(status)
+    }
+}
+
+impl From<siliconlabs::Status> for Error {
+    fn from(status: siliconlabs::Status) -> Self {
+        Self::Siliconlabs(status)
+    }
+}
+
+impl From<Invalid> for Error {
+    fn from(status: Invalid) -> Self {
+        Self::Invalid(status)
     }
 }
 

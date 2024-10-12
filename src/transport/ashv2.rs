@@ -1,3 +1,4 @@
+use crate::error::Decode;
 use crate::frame::{Codec, Control, Frame, Header, Parameter, ValidControl};
 use crate::transport::Transport;
 use crate::Error;
@@ -25,7 +26,7 @@ impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
     where
         C: ValidControl,
         P: Parameter,
-        <P as Parameter>::Id: Into<C::Size>,
+        <C as ValidControl>::Size: From<<P as Parameter>::Id>,
     {
         Framed::new(&self.ash, Frame::<C, P>::codec())
     }
@@ -45,9 +46,9 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
     where
         C: ValidControl,
         P: Parameter + ToLeStream,
-        <P as Parameter>::Id: Into<C::Size>,
+        <C as ValidControl>::Size: From<<P as Parameter>::Id>,
     {
-        let header = self.next_header::<C>(P::ID.into());
+        let header = self.next_header::<C>(<C as ValidControl>::Size::from(P::ID));
         self.framed().send(Frame::new(header, command)).await?;
         Ok(())
     }
@@ -55,14 +56,11 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
     async fn receive<C, P>(&mut self) -> Result<P, Error>
     where
         C: ValidControl,
-        P: Clone + Debug + Parameter + FromLeStream,
-        <P as Parameter>::Id: Into<C::Size>,
+        P: Parameter + FromLeStream,
+        <C as ValidControl>::Size: From<<P as Parameter>::Id>,
     {
         let Some(response) = self.framed::<C, P>().next().await else {
-            return Err(Error::Io(std::io::Error::new(
-                std::io::ErrorKind::UnexpectedEof,
-                "No more data to construct frame.",
-            )));
+            return Err(Decode::TooFewBytes.into());
         };
 
         Ok(response?.parameters())

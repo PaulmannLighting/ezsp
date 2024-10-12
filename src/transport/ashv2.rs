@@ -1,7 +1,6 @@
 mod codec;
 
 use crate::frame::{Control, Frame, Header, Parameter, ValidControl};
-use crate::transport::parse_response::parse_response;
 use crate::transport::Transport;
 use crate::Error;
 use ashv2::AshFramed;
@@ -23,7 +22,7 @@ pub struct Ashv2<const BUF_SIZE: usize> {
 impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
     /// Creates an ASHv2 host.
     #[must_use]
-    pub fn new(ash: AshFramed<BUF_SIZE>) -> Self {
+    pub const fn new(ash: AshFramed<BUF_SIZE>) -> Self {
         Self {
             ash,
             sequence: 0,

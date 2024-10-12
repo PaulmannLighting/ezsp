@@ -1,7 +1,6 @@
 #[cfg(feature = "ashv2")]
 mod ashv2;
 mod ezsp;
-mod parse_response;
 
 use crate::frame::{Command, Extended, Parameter, Response, ValidControl};
 use crate::{Error, Header};

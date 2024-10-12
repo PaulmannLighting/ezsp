@@ -42,7 +42,7 @@ required-features = ["ashv2"]
 ashv2 = ["dep:ashv2"]
 
 [profile.release]
-opt-level = "s"
+opt-level = 3
 strip = "symbols"
 lto = "fat"
 panic = "abort"

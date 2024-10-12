@@ -73,7 +73,7 @@ pub trait Utilities {
 
     /// Retrieves and clears Ember counters.
     ///
-    /// See the EmberCounterType enumeration for the counter types.
+    /// See the [`crate::ember::counter::Type`] enumeration for the counter types.
     fn read_and_clear_counters(
         &mut self,
     ) -> impl Future<Output = Result<[u16; COUNTER_TYPE_COUNT], Error>> + Send;

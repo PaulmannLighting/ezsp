@@ -2,7 +2,7 @@ use crate::ember::event;
 use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
     callback, custom_frame, debug_write, delay_test, echo, get_mfg_token, get_random_number,
-    get_token, nop, set_mfg_token, set_timer, set_token,
+    get_timer, get_token, nop, set_mfg_token, set_timer, set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
@@ -51,6 +51,15 @@ pub trait Utilities {
 
     /// Returns a pseudorandom number.
     fn get_random_number(&mut self) -> impl Future<Output = Result<u16, Error>> + Send;
+
+    /// Gets information about a timer.
+    ///
+    /// The Host can use this command to find out how much longer it will be before a previously
+    /// set timer will generate a callback.
+    fn get_timer(
+        &mut self,
+        timer_id: u8,
+    ) -> impl Future<Output = Result<get_timer::Response, Error>> + Send;
 
     /// Retrieves a token (8 bytes of non-volatile storage) from the Simulated EEPROM of the NCP.
     fn get_token(&mut self, token_id: u8) -> impl Future<Output = Result<[u8; 8], Error>> + Send;
@@ -140,6 +149,11 @@ where
         self.communicate::<_, get_random_number::Response>(get_random_number::Command)
             .await?
             .resolve()
+    }
+
+    async fn get_timer(&mut self, timer_id: u8) -> Result<get_timer::Response, Error> {
+        self.communicate::<_, get_timer::Response>(get_timer::Command::new(timer_id))
+            .await
     }
 
     async fn get_token(&mut self, token_id: u8) -> Result<[u8; 8], Error> {

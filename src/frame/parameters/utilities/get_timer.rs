@@ -1,9 +1,10 @@
-use crate::ember::event::Units;
+use crate::ember::event::{Duration, Units};
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x004E;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     timer_id: u8,
 }
@@ -13,14 +14,14 @@ impl Command {
     pub const fn new(timer_id: u8) -> Self {
         Self { timer_id }
     }
-
-    #[must_use]
-    pub const fn timer_id(&self) -> u8 {
-        self.timer_id
-    }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     time: u16,
     units: u8,
@@ -46,7 +47,19 @@ impl Response {
     }
 
     #[must_use]
+    pub fn duration(&self) -> Option<Duration> {
+        self.units()
+            .ok()
+            .and_then(|units| Duration::try_new(self.time, units).ok())
+    }
+
+    #[must_use]
     pub const fn repeat(&self) -> bool {
         self.repeat
     }
+}
+
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

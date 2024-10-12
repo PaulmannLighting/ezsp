@@ -1,15 +1,15 @@
-use std::future::Future;
-use std::time::Duration;
-
+use crate::ember::event;
 use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
     callback, custom_frame, debug_write, delay_test, echo, get_mfg_token, get_random_number,
-    get_token, nop, set_mfg_token, set_token,
+    get_token, nop, set_mfg_token, set_timer, set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
 use crate::{Command, Extended, Resolve};
 use crate::{Error, Transport};
+use std::future::Future;
+use std::time::Duration;
 
 /// The `Utilities` trait provides an interface for the utilities.
 pub trait Utilities {
@@ -70,6 +70,16 @@ pub trait Utilities {
         &mut self,
         token_id: Id,
         token: ByteSizedVec<u8>,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Sets a timer on the NCP. There are 2 independent timers available for use by the Host.
+    ///
+    /// A timer can be cancelled by setting time to 0 or units to `EMBER_EVENT_INACTIVE`.
+    fn set_timer(
+        &mut self,
+        timer_id: u8,
+        duration: event::Duration,
+        repeat: bool,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Sets a token (8 bytes of non-volatile storage) in the Simulated EEPROM of the NCP.
@@ -149,6 +159,22 @@ where
         self.communicate::<_, set_mfg_token::Response>(set_mfg_token::Command::new(token_id, token))
             .await?
             .resolve()
+    }
+
+    async fn set_timer(
+        &mut self,
+        timer_id: u8,
+        duration: event::Duration,
+        repeat: bool,
+    ) -> Result<(), Error> {
+        self.communicate::<_, set_timer::Response>(set_timer::Command::new(
+            timer_id,
+            duration.time(),
+            duration.units(),
+            repeat,
+        ))
+        .await?
+        .resolve()
     }
 
     async fn set_token(&mut self, token_id: u8, token: [u8; 8]) -> Result<(), Error> {

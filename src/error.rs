@@ -1,7 +1,7 @@
-mod invalid_status;
+mod invalid;
 
 use crate::{ember, ezsp};
-pub use invalid_status::InvalidStatus;
+pub use invalid::Invalid;
 use std::fmt::{Debug, Display, Formatter};
 
 /// An error that can occur when communicating with an NCP.
@@ -16,7 +16,7 @@ pub enum Error {
     /// The received [`siliconlabs::Status`] indicates an error.
     Siliconlabs(siliconlabs::Status),
     /// Invalid status
-    InvalidStatus(InvalidStatus),
+    Invalid(Invalid),
     /// A custom error message.
     Custom(String),
 }
@@ -28,7 +28,7 @@ impl Display for Error {
             Self::Ezsp(status) => write!(f, "Ezsp: {}", u8::from(*status)),
             Self::Ember(status) => write!(f, "Ember: {}", u8::from(*status)),
             Self::Siliconlabs(status) => write!(f, "Siliconlabs: {}", u32::from(*status)),
-            Self::InvalidStatus(status) => Display::fmt(status, f),
+            Self::Invalid(status) => Display::fmt(status, f),
             Self::Custom(msg) => Display::fmt(msg, f),
         }
     }
@@ -38,7 +38,7 @@ impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Io(error) => Some(error),
-            Self::InvalidStatus(status) => Some(status),
+            Self::Invalid(status) => Some(status),
             _ => None,
         }
     }

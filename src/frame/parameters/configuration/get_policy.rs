@@ -1,4 +1,4 @@
-use crate::error::InvalidStatus;
+use crate::error::Invalid;
 use crate::ezsp::Status;
 use crate::ezsp::{decision, policy};
 use crate::frame::Parameter;
@@ -44,7 +44,7 @@ impl Resolve for Response {
     fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(self.status).resolve().and_then(|_| {
             decision::Id::try_from(self.decision_id)
-                .map_err(|id| Error::InvalidStatus(InvalidStatus::DecisionId(id)))
+                .map_err(|id| Error::Invalid(Invalid::DecisionId(id)))
         })
     }
 }

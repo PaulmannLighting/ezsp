@@ -43,6 +43,8 @@ pub trait Transport: Send {
         <P as Parameter>::Id: Into<C::Size>;
 
     /// Communicate with the NCP.
+    ///
+    /// This assumes that `C::ID` and `R::ID` are the same.
     fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
     where
         C: Parameter + ToLeStream,

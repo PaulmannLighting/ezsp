@@ -4,14 +4,19 @@ use bitflags::bitflags;
 pub use frame_format_version::FrameFormatVersion;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
+/// The extended frame control field of the frame header.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
 pub struct ExtendedFrameControl(u8);
 
 bitflags! {
     impl ExtendedFrameControl: u8 {
+        /// Security enabled flag.
         const SECURITY_ENABLED = 0b1000_0000;
+        /// Padding enabled flag.
         const PADDING_ENABLED = 0b0100_0000;
+        /// Frame format version bit no. 1.
         const FRAME_FORMAT_VERSION_1 = 0b0000_0010;
+        /// Frame format version bit no. 2.
         const FRAME_FORMAT_VERSION_0 = 0b0000_0001;
     }
 }

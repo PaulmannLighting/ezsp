@@ -2,6 +2,9 @@ use super::ExtendedFrameControl;
 use crate::frame::ValidControl;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
+/// The extended control field of the frame header.
+///
+/// This contains either a command or a response plus an extended frame control field.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
 pub struct Extended<T>
 where

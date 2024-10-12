@@ -9,6 +9,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 pub use low_byte::{CallbackType, Command, Response, SleepMode};
 pub use valid_control::ValidControl;
 
+/// The control field of the frame header.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
 pub struct Control<T>
 where
@@ -18,6 +19,7 @@ where
 }
 
 impl Control<Command> {
+    /// Creates a new control field from a command.
     #[must_use]
     pub const fn new(command: Command) -> Self {
         Self { inner: command }
@@ -40,6 +42,7 @@ impl Control<Command> {
 }
 
 impl Control<Extended<Command>> {
+    /// Creates a new control field from a command and an extended frame control field.
     #[must_use]
     pub const fn new(command: Command, extended_frame_control: ExtendedFrameControl) -> Self {
         Self {
@@ -82,6 +85,7 @@ impl Control<Extended<Command>> {
 }
 
 impl Control<Response> {
+    /// Creates a new control field from a response.
     #[must_use]
     pub const fn new(response: Response) -> Self {
         Self { inner: response }
@@ -123,6 +127,7 @@ impl Control<Response> {
 }
 
 impl Control<Extended<Response>> {
+    /// Creates a new control field from a response and an extended frame control field.
     #[must_use]
     pub const fn new(response: Response, extended_frame_control: ExtendedFrameControl) -> Self {
         Self {

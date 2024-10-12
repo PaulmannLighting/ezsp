@@ -17,6 +17,8 @@ pub enum Invalid {
     Siliconlabs(u32),
     /// The decision ID is invalid.
     DecisionId(u8),
+    /// The decision ID is invalid.
+    EntropySource(u8),
 }
 
 impl Display for Invalid {
@@ -31,6 +33,7 @@ impl Display for Invalid {
             Self::EmberNodeType(node_type) => write!(f, "InvalidEmber node type: {node_type}"),
             Self::Siliconlabs(status) => write!(f, "Invalid Siliconlabs status: {status}"),
             Self::DecisionId(id) => write!(f, "Invalid decision ID: {id}"),
+            Self::EntropySource(source) => write!(f, "Invalid entropy source: {source}"),
         }
     }
 }

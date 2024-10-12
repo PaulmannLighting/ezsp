@@ -1,11 +1,12 @@
 use crate::ember::constants::COUNTER_TYPE_COUNT;
+use crate::ember::entropy::Source;
 use crate::ember::{event, library, Eui64, NodeId};
 use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
     callback, custom_frame, debug_write, delay_test, echo, get_eui64, get_library_status,
     get_mfg_token, get_node_id, get_phy_interface_count, get_random_number, get_timer, get_token,
-    get_xncp_info, nop, read_and_clear_counters, read_counters, set_mfg_token, set_timer,
-    set_token,
+    get_true_random_entropy_source, get_xncp_info, nop, read_and_clear_counters, read_counters,
+    set_mfg_token, set_timer, set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
@@ -82,6 +83,11 @@ pub trait Utilities {
 
     /// Retrieves a token (8 bytes of non-volatile storage) from the Simulated EEPROM of the NCP.
     fn get_token(&mut self, token_id: u8) -> impl Future<Output = Result<[u8; 8], Error>> + Send;
+
+    /// Returns the entropy source used for true random number generation.
+    fn get_true_random_entropy_source(
+        &mut self,
+    ) -> impl Future<Output = Result<Source, Error>> + Send;
 
     /// Allows the HOST to know whether the NCP is running the XNCP library.
     ///
@@ -230,6 +236,14 @@ where
         self.communicate::<_, get_token::Response>(get_token::Command::new(token_id))
             .await?
             .resolve()
+    }
+
+    async fn get_true_random_entropy_source(&mut self) -> Result<Source, Error> {
+        self.communicate::<_, get_true_random_entropy_source::Response>(
+            get_true_random_entropy_source::Command,
+        )
+        .await?
+        .resolve()
     }
 
     async fn get_xncp_info(&mut self) -> Result<get_xncp_info::Payload, Error> {

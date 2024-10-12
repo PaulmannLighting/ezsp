@@ -1,32 +1,32 @@
 use crate::ember::entropy::Source;
+use crate::frame::Parameter;
+use crate::resolve::Resolve;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x004F;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     entropy_source: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(entropy_source: Source) -> Self {
-        Self {
-            entropy_source: entropy_source.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn entropy_source(&self) -> Result<Source, u8> {
-        Source::try_from(self.entropy_source)
+impl Resolve for Response {
+    type Output = Source;
+
+    fn resolve(self) -> crate::Result<Self::Output> {
+        Source::try_from(self.entropy_source).resolve()
     }
 }

@@ -9,6 +9,11 @@ use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use std::thread::spawn;
 
+const TEST_TEXT: &str = "כשרוחות קרות יסערו בחוץ
+אשלח בך אש חמה
+יום אחד אולי תפסיק לרוץ
+בין הצללים בנשמה";
+
 #[derive(Debug, Parser)]
 struct Args {
     #[arg(index = 1, help = "Path to the serial port")]
@@ -50,9 +55,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
     }
 
     // Test echo reply. Should be same as sent text.
-    let text = "Hello, world! 💖";
-
-    match ezsp.echo(text.bytes().collect()).await {
+    match ezsp.echo(TEST_TEXT.bytes().collect()).await {
         Ok(echo) => match String::from_utf8(echo.to_vec()) {
             Ok(echo) => {
                 info!("Got echo: {echo}");

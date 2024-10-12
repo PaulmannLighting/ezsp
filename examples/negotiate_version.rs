@@ -119,4 +119,14 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
             error!("{error}");
         }
     }
+
+    // Test getting true random entropy source
+    match ezsp.get_true_random_entropy_source().await {
+        Ok(entropy_source) => {
+            info!("Entropy source: {entropy_source:?}");
+        }
+        Err(error) => {
+            error!("{error}");
+        }
+    }
 }

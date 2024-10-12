@@ -16,18 +16,13 @@ use tokio_util::codec::Framed;
 pub struct Ashv2<const BUF_SIZE: usize> {
     ash: AshFramed<BUF_SIZE>,
     sequence: u8,
-    buffer: Vec<u8>,
 }
 
 impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
     /// Creates an ASHv2 host.
     #[must_use]
     pub const fn new(ash: AshFramed<BUF_SIZE>) -> Self {
-        Self {
-            ash,
-            sequence: 0,
-            buffer: Vec::new(),
-        }
+        Self { ash, sequence: 0 }
     }
 }
 

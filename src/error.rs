@@ -25,9 +25,11 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Io(error) => Display::fmt(error, f),
-            Self::Ezsp(status) => write!(f, "Ezsp: {:#04X}", u8::from(*status)),
-            Self::Ember(status) => write!(f, "Ember: {:#04X}", u8::from(*status)),
-            Self::Siliconlabs(status) => write!(f, "Siliconlabs: {:#10X}", u32::from(*status)),
+            Self::Ezsp(status) => write!(f, "Ezsp: {status:?} ({:#04X})", u8::from(*status)),
+            Self::Ember(status) => write!(f, "Ember: {status:?} ({:#04X})", u8::from(*status)),
+            Self::Siliconlabs(status) => {
+                write!(f, "Siliconlabs: {status:?} ({:#10X})", u32::from(*status))
+            }
             Self::Invalid(status) => Display::fmt(status, f),
             Self::Custom(msg) => Display::fmt(msg, f),
         }

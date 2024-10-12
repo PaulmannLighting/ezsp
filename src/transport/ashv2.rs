@@ -91,6 +91,9 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
             return Ok(frame.parameters());
         }
 
-        Err(Error::Custom("no more data".into()))
+        Err(Error::Io(std::io::Error::new(
+            std::io::ErrorKind::UnexpectedEof,
+            "No more data to construct frame.",
+        )))
     }
 }

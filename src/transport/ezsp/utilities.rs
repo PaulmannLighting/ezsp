@@ -2,7 +2,7 @@ use std::future::Future;
 use std::time::Duration;
 
 use crate::frame::parameters::utilities::{
-    callback, custom_frame, debug_write, delay_test, echo, nop, set_token,
+    callback, custom_frame, debug_write, delay_test, echo, get_token, nop, set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
@@ -40,6 +40,9 @@ pub trait Utilities {
         &mut self,
         data: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
+
+    /// Retrieves a token (8 bytes of non-volatile storage) from the Simulated EEPROM of the NCP.
+    fn get_token(&mut self, token_id: u8) -> impl Future<Output = Result<[u8; 8], Error>> + Send;
 
     /// A command which does nothing.
     ///
@@ -93,6 +96,12 @@ where
         self.communicate::<_, echo::Response>(echo::Command::new(data))
             .await
             .map(echo::Response::echo)
+    }
+
+    async fn get_token(&mut self, token_id: u8) -> Result<[u8; 8], Error> {
+        self.communicate::<_, get_token::Response>(get_token::Command::new(token_id))
+            .await?
+            .resolve()
     }
 
     async fn nop(&mut self) -> Result<(), Error> {

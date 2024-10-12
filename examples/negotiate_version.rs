@@ -2,9 +2,10 @@
 
 use ashv2::{open, AshFramed, BaudRate, Transceiver};
 use clap::Parser;
-use ezsp::{Ashv2, Ezsp};
+use ezsp::{Ashv2, Ezsp, Utilities};
 use log::error;
 use serialport::{FlowControl, SerialPort};
+use std::io::Read;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::sync_channel;
 use std::sync::Arc;
@@ -37,9 +38,23 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
 
     let mut ezsp = Ashv2::new(AshFramed::<2>::new(sender));
 
+    // Test version negotiation.
     match ezsp.negotiate_version(version).await {
         Ok(version) => {
             println!("Negotiated version: {version:#06X?}");
+        }
+        Err(error) => {
+            error!("{error}");
+        }
+    }
+
+    // Test echo reply. Should be same as sent text.
+    let text = "Hello, world!";
+
+    match ezsp.echo(text.bytes().collect()).await {
+        Ok(echo) => {
+            // Should print above text.
+            println!("Got echo: {}", String::from_utf8_lossy(&echo));
         }
         Err(error) => {
             error!("{error}");

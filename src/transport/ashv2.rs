@@ -53,7 +53,6 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         <P as Parameter>::Id: Into<C::Size>,
     {
         let header = self.next_header::<C>(P::ID.into());
-        debug!("Sending payload: {:#04X?}", self.buffer);
         Framed::new(&self.ash, Frame::<C, P>::codec())
             .send(Frame::new(header, command))
             .await?;

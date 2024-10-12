@@ -36,12 +36,12 @@ pub struct Payload {
 
 impl Payload {
     #[must_use]
-    pub const fn initiator_smac(&self) -> &SmacData {
-        &self.initiator_smac
+    pub const fn initiator_smac(&self) -> SmacData {
+        self.initiator_smac
     }
 
     #[must_use]
-    pub const fn responder_smac(&self) -> &SmacData {
-        &self.responder_smac
+    pub const fn responder_smac(&self) -> SmacData {
+        self.responder_smac
     }
 }

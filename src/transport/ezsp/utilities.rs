@@ -1,7 +1,7 @@
 use std::future::Future;
 use std::time::Duration;
 
-use crate::frame::parameters::utilities::{custom_frame, debug_write, delay_test, echo};
+use crate::frame::parameters::utilities::{custom_frame, debug_write, delay_test, echo, nop};
 use crate::types::ByteSizedVec;
 use crate::Resolve;
 use crate::{Error, Transport};
@@ -32,6 +32,11 @@ pub trait Utilities {
         &mut self,
         data: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
+
+    /// A command which does nothing.
+    ///
+    /// The Host can use this to set the sleep mode or to check the status of the NCP.
+    fn nop(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
 impl<T> Utilities for T
@@ -68,5 +73,11 @@ where
         self.communicate::<_, echo::Response>(echo::Command::new(data))
             .await
             .map(echo::Response::echo)
+    }
+
+    async fn nop(&mut self) -> Result<(), Error> {
+        self.communicate::<_, nop::Response>(nop::Command)
+            .await
+            .map(drop)
     }
 }

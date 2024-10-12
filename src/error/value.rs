@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use std::num::TryFromIntError;
 use std::time::Duration;
 
 /// A general value error.
@@ -8,6 +9,8 @@ pub enum Error {
     DurationTooLarge(Duration),
     /// The decision ID is invalid.
     InvalidDecisionId(u8),
+    /// The integer could not be converted.
+    TryFromIntError(TryFromIntError),
 }
 
 impl Display for Error {
@@ -17,6 +20,7 @@ impl Display for Error {
                 write!(f, "Duration too large: {}ms", duration.as_millis())
             }
             Self::InvalidDecisionId(id) => write!(f, "Invalid decision ID: {id}"),
+            Self::TryFromIntError(error) => Display::fmt(error, f),
         }
     }
 }

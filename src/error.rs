@@ -1,9 +1,9 @@
 mod value;
 
-use std::fmt::{Debug, Display, Formatter};
-
 use crate::frame::parameters::utilities::invalid_command;
 use crate::{ember, ezsp};
+use std::fmt::{Debug, Display, Formatter};
+use std::num::{ParseIntError, TryFromIntError};
 pub use value::Error as ValueError;
 
 /// An error that can occur when communicating with an NCP.
@@ -128,5 +128,11 @@ impl From<invalid_command::Response> for Error {
 impl From<String> for Error {
     fn from(msg: String) -> Self {
         Self::Custom(msg)
+    }
+}
+
+impl From<TryFromIntError> for Error {
+    fn from(error: TryFromIntError) -> Self {
+        Self::ValueError(value::Error::TryFromIntError(error))
     }
 }

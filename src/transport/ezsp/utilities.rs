@@ -9,7 +9,6 @@ use crate::types::ByteSizedVec;
 use crate::{Command, Extended, Resolve};
 use crate::{Error, Transport};
 use std::future::Future;
-use std::time::Duration;
 
 /// The `Utilities` trait provides an interface for the utilities.
 pub trait Utilities {
@@ -34,7 +33,7 @@ pub trait Utilities {
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Used to test that UART flow control is working correctly.
-    fn delay_test(&mut self, delay: Duration) -> impl Future<Output = Result<(), Error>> + Send;
+    fn delay_test(&mut self, delay_millis: u16) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Variable length data from the Host is echoed back by the NCP.
     /// This command has no other effects and is designed for testing the link between the Host and NCP.
@@ -119,8 +118,8 @@ where
         .resolve()
     }
 
-    async fn delay_test(&mut self, delay: Duration) -> Result<(), Error> {
-        self.communicate::<_, delay_test::Response>(delay_test::Command::new(delay)?)
+    async fn delay_test(&mut self, delay_millis: u16) -> Result<(), Error> {
+        self.communicate::<_, delay_test::Response>(delay_test::Command::new(delay_millis))
             .await
             .map(drop)
     }

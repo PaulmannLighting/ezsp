@@ -28,3 +28,9 @@ impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }
+
+impl From<Response> for Eui64 {
+    fn from(response: Response) -> Self {
+        response.eui64
+    }
+}

@@ -1,11 +1,13 @@
 use crate::ember::zll::Network;
 use crate::ember::Status;
-use crate::ezsp::NetworkOperation;
+use crate::ezsp::zll::NetworkOperation;
+use crate::frame::Parameter;
+use crate::resolve::Resolve;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x00B2;
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
     network_info: Network,
     op: u8,
@@ -21,36 +23,27 @@ impl Command {
             radio_tx_power,
         }
     }
-
-    #[must_use]
-    pub const fn network_info(&self) -> &Network {
-        &self.network_info
-    }
-
-    pub fn op(&self) -> Result<NetworkOperation, u8> {
-        NetworkOperation::try_from(self.op)
-    }
-
-    #[must_use]
-    pub const fn radio_tx_power(&self) -> i8 {
-        self.radio_tx_power
-    }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+impl Parameter for Command {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
+impl Parameter for Response {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
 
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+impl Resolve for Response {
+    type Output = ();
+
+    fn resolve(self) -> crate::Result<Self::Output> {
+        Status::try_from(self.status).resolve()
     }
 }

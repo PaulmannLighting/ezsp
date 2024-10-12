@@ -16,6 +16,11 @@ use std::fmt::Debug;
 use std::future::Future;
 
 /// A transport layer to communicate with an NCP that supports the `EZSP` protocol.
+///
+/// This trait is intended to facilitate the implementation of the `EZSP` protocol,
+/// since all `EZSP` traits have a blanket implementation for it.
+///
+/// Unless you know what you are doing, you should not use the methods of this trait directly.
 pub trait Transport: Send {
     /// Return the next header.
     fn next_header<T>(&mut self, id: T::Size) -> Header<T>

@@ -36,6 +36,8 @@ mod zll;
 const MIN_NON_LEGACY_VERSION: u8 = 8;
 
 /// A trait to represent implementors of the full `EZSP` protocol.
+///
+/// This trait is a convenience trait that combines all the other EZSP traits.
 pub trait Ezsp:
     Binding
     + Bootloader

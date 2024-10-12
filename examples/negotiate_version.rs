@@ -5,7 +5,6 @@ use clap::Parser;
 use ezsp::{Ashv2, Ezsp, Utilities};
 use log::error;
 use serialport::{FlowControl, SerialPort};
-use std::io::Read;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::sync_channel;
 use std::sync::Arc;

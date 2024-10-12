@@ -1,4 +1,4 @@
-/// A heap-allocated vector with a maximum size of 255 elements.
+/// A stack-allocated vector with a maximum size of 255 elements.
 pub type ByteSizedVec<T> = heapless::Vec<T, { u8::MAX as usize }>;
 
 /// A type alias for a 16-bit unsigned integer.

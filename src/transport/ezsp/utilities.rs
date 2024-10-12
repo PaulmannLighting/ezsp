@@ -1,8 +1,9 @@
+use crate::ember::constants::COUNTER_TYPE_COUNT;
 use crate::ember::event;
 use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
     callback, custom_frame, debug_write, delay_test, echo, get_mfg_token, get_random_number,
-    get_timer, get_token, nop, set_mfg_token, set_timer, set_token,
+    get_timer, get_token, nop, read_and_clear_counters, set_mfg_token, set_timer, set_token,
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
@@ -68,6 +69,13 @@ pub trait Utilities {
     ///
     /// The Host can use this to set the sleep mode or to check the status of the NCP.
     fn nop(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Retrieves and clears Ember counters.
+    ///
+    /// See the EmberCounterType enumeration for the counter types.
+    fn read_and_clear_counters(
+        &mut self,
+    ) -> impl Future<Output = Result<[u16; COUNTER_TYPE_COUNT], Error>> + Send;
 
     /// Sets a manufacturing token in the Customer Information Block (CIB) area of the NCP
     /// if that token currently unset (fully erased).
@@ -166,6 +174,12 @@ where
         self.communicate::<_, nop::Response>(nop::Command)
             .await
             .map(drop)
+    }
+
+    async fn read_and_clear_counters(&mut self) -> Result<[u16; COUNTER_TYPE_COUNT], Error> {
+        self.communicate::<_, read_and_clear_counters::Response>(read_and_clear_counters::Command)
+            .await
+            .map(Into::into)
     }
 
     async fn set_mfg_token(&mut self, token_id: Id, token: ByteSizedVec<u8>) -> Result<(), Error> {

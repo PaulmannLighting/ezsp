@@ -79,7 +79,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
         }
     }
 
-    // Test PRNG
+    // Test XNCP
     match ezsp.get_xncp_info().await {
         Ok(info) => {
             info!("XNPC manufacturer ID: {}", info.manufacturer_id());

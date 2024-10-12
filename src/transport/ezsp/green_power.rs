@@ -1,5 +1,4 @@
 use std::future::Future;
-use std::time::Duration;
 
 pub use proxy_table::ProxyTable;
 pub use sink_table::SinkTable;
@@ -25,7 +24,7 @@ pub trait GreenPower: ProxyTable + SinkTable {
         gpd_command_id: u8,
         gpd_asdu: ByteSizedVec<u8>,
         gpep_handle: u8,
-        gp_tx_queue_entry_lifetime: Duration,
+        gp_tx_queue_entry_lifetime_millis: u16,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Puts the GPS in commissioning mode.
@@ -53,7 +52,7 @@ where
         gpd_command_id: u8,
         gpd_asdu: ByteSizedVec<u8>,
         gpep_handle: u8,
-        gp_tx_queue_entry_lifetime: Duration,
+        gp_tx_queue_entry_lifetime_millis: u16,
     ) -> Result<(), Error> {
         self.communicate::<_, send::Response>(send::Command::new(
             action,
@@ -62,8 +61,8 @@ where
             gpd_command_id,
             gpd_asdu,
             gpep_handle,
-            gp_tx_queue_entry_lifetime,
-        )?)
+            gp_tx_queue_entry_lifetime_millis,
+        ))
         .await?
         .resolve()
     }

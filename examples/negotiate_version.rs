@@ -1,12 +1,11 @@
 //! Test version negotiation.
 
-use ashv2::{open, AshFramed, BaudRate, Transceiver};
+use ashv2::{make_pair, open, BaudRate};
 use clap::Parser;
 use ezsp::{Ashv2, Ezsp, Utilities};
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;
-use std::sync::mpsc::sync_channel;
 use std::sync::Arc;
 use std::thread::spawn;
 
@@ -30,14 +29,10 @@ async fn main() {
 }
 
 async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
-    let (sender, receiver) = sync_channel(16);
-    let (waker_tx, waker_rx) = sync_channel(16);
-    let transceiver = Transceiver::new(serial_port, receiver, waker_rx, None);
+    let (ash, transceiver) = make_pair::<8, _>(serial_port, None);
     let running = Arc::new(AtomicBool::new(true));
     let _transceiver_thread = spawn(|| transceiver.run(running));
-
-    let ash = AshFramed::<16>::new(sender, waker_tx);
-    let mut ezsp = Ashv2::<16>::new(ash);
+    let mut ezsp = Ashv2::new(ash);
 
     // Test version negotiation.
     match ezsp.negotiate_version(version).await {

@@ -2,6 +2,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use num_traits::FromPrimitive;
 
+use crate::error::InvalidStatus;
 use crate::Error;
 use crate::Resolve;
 pub use adc::Adc;
@@ -511,7 +512,7 @@ impl Resolve for Result<Status, u8> {
     fn resolve(self) -> Result<Self::Output, Error> {
         match self {
             Ok(status) => status.ok().map_err(Error::Ember),
-            Err(status) => Err(Error::InvalidEmberStatus(status)),
+            Err(status) => Err(Error::InvalidStatus(InvalidStatus::Ember(status))),
         }
     }
 }

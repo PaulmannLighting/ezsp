@@ -1,7 +1,9 @@
+mod invalid_status;
 mod value;
 
 use crate::frame::parameters::utilities::invalid_command;
 use crate::{ember, ezsp};
+pub use invalid_status::InvalidStatus;
 use std::fmt::{Debug, Display, Formatter};
 pub use value::Error as ValueError;
 
@@ -10,18 +12,6 @@ pub use value::Error as ValueError;
 pub enum Error {
     /// An I/O error occurred.
     Io(std::io::Error),
-    /// An invalid [`ezsp::Status`] was received.
-    InvalidEzspStatus(u8),
-    /// An invalid [`ember::Status`] was received.
-    InvalidEmberStatus(u8),
-    /// An invalid [`ember::duty_cycle::State`] was received.
-    InvalidEmberDutyCycleState(u8),
-    /// An invalid [`ember::network::Status`] was received.
-    InvalidEmberNetworkStatus(u8),
-    /// An invalid [`ember::node::Type`] was received.
-    InvalidEmberNodeType(u8),
-    /// An invalid [`siliconlabs::Status`] status was received.
-    InvalidSiliconlabsStatus(u32),
     /// The received [`ezsp::Status`] indicates an error.
     Ezsp(ezsp::Status),
     /// The received [`ember::Status`] indicates an error.
@@ -30,6 +20,8 @@ pub enum Error {
     Siliconlabs(siliconlabs::Status),
     /// The read data was incomplete.
     IncompleteData(le_stream::Error),
+    /// Invalid status
+    InvalidStatus(InvalidStatus),
     /// A value-related error occurred.
     ValueError(value::Error),
     /// The header is invalid.
@@ -49,24 +41,11 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Io(error) => Display::fmt(error, f),
-            Self::InvalidEzspStatus(status) => write!(f, "Invalid EZSP status: {status}"),
-            Self::InvalidEmberStatus(status) => write!(f, "Invalid Ember status: {status}"),
-            Self::InvalidEmberDutyCycleState(state) => {
-                write!(f, "Invalid Ember duty cycle state: {state}")
-            }
-            Self::InvalidEmberNetworkStatus(status) => {
-                write!(f, "Invalid Ember network status: {status}")
-            }
-            Self::InvalidEmberNodeType(node_type) => {
-                write!(f, "Invalid Ember node type: {node_type}")
-            }
-            Self::InvalidSiliconlabsStatus(status) => {
-                write!(f, "Invalid Siliconlabs status: {status}")
-            }
             Self::Ezsp(status) => write!(f, "Ezsp: {}", u8::from(*status)),
             Self::Ember(status) => write!(f, "Ember: {}", u8::from(*status)),
             Self::Siliconlabs(status) => write!(f, "Siliconlabs: {}", u32::from(*status)),
             Self::IncompleteData(error) => Display::fmt(error, f),
+            Self::InvalidStatus(status) => Display::fmt(status, f),
             Self::ValueError(error) => Display::fmt(error, f),
             Self::InvalidHeader { expected, found } => {
                 write!(f, "Invalid header: expected {expected}, found {found}")
@@ -82,6 +61,7 @@ impl std::error::Error for Error {
         match self {
             Self::Io(error) => Some(error),
             Self::IncompleteData(error) => Some(error),
+            Self::InvalidStatus(status) => Some(status),
             Self::ValueError(error) => Some(error),
             _ => None,
         }

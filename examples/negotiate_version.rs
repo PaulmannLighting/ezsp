@@ -3,7 +3,7 @@
 use ashv2::{open, AshFramed, BaudRate, Transceiver};
 use clap::Parser;
 use ezsp::{Ashv2, Ezsp, Utilities};
-use log::error;
+use log::{error, info};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::sync_channel;
@@ -40,7 +40,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
     // Test version negotiation.
     match ezsp.negotiate_version(version).await {
         Ok(version) => {
-            println!("Negotiated version: {version:#06X?}");
+            info!("Negotiated version: {version:#06X?}");
         }
         Err(error) => {
             error!("{error}");
@@ -53,7 +53,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
     match ezsp.echo(text.bytes().collect()).await {
         Ok(echo) => match String::from_utf8(echo.to_vec()) {
             Ok(echo) => {
-                println!("Got echo: {echo}");
+                info!("Got echo: {echo}");
             }
             Err(error) => {
                 error!("{error}");

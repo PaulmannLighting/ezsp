@@ -61,7 +61,7 @@ pub trait Transport: Send {
         async move {
             if command_id != response_id {
                 return Err(Error::Custom(format!(
-                    "Command and response have different control IDs: {command_id} != {response_id}"
+                    "Command and response have different frame IDs: {command_id} != {response_id}"
                 )));
             }
 

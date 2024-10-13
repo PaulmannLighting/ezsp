@@ -48,12 +48,12 @@ where
                 src.clear();
                 let item = Self::Item::new(header, parameters);
 
-                if item.header.id() == <C as ValidControl>::Size::from(<P as Parameter>::ID) {
+                if item.header().id() == <C as ValidControl>::Size::from(<P as Parameter>::ID) {
                     Ok(Some(item))
                 } else {
                     Err(Decode::FrameIdMismatch {
                         expected: <P as Parameter>::ID.into(),
-                        found: item.header.id().into(),
+                        found: item.header().id().into(),
                     }
                     .into())
                 }
@@ -77,8 +77,8 @@ where
     type Error = crate::Error;
 
     fn encode(&mut self, item: Frame<C, P>, dst: &mut BytesMut) -> Result<(), Self::Error> {
-        dst.extend(item.header.to_le_stream());
-        dst.extend(item.parameters.to_le_stream());
+        dst.extend(item.header().to_le_stream());
+        dst.extend(item.parameters().to_le_stream());
         Ok(())
     }
 }

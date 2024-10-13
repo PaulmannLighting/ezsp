@@ -1,12 +1,15 @@
 use crate::error::Decode;
-use crate::frame::{Codec, Control, Frame, Header, Parameter, ValidControl};
+use crate::frame::{Control, Frame, Header, Parameter, ValidControl};
 use crate::transport::Transport;
 use crate::Error;
 use ashv2::AshFramed;
+use codec::Codec;
 use futures::{SinkExt, StreamExt};
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
 use tokio_util::codec::Framed;
+
+pub mod codec;
 
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
@@ -28,7 +31,7 @@ impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
         P: Parameter,
         <C as ValidControl>::Size: From<<P as Parameter>::Id>,
     {
-        Framed::new(&mut self.ash, Frame::<C, P>::codec())
+        Framed::new(&mut self.ash, Codec::default())
     }
 }
 

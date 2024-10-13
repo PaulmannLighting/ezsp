@@ -7,7 +7,7 @@ pub use control::{
 use le_stream::derive::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
 pub struct Header<T>
 where
     T: ValidControl,
@@ -28,6 +28,11 @@ where
             control,
             id,
         }
+    }
+
+    #[must_use]
+    pub const fn sequence(&self) -> u8 {
+        self.sequence
     }
 
     #[must_use]

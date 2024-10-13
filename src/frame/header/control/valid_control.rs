@@ -13,6 +13,7 @@ pub trait ValidControl:
         + Debug
         + Display
         + Eq
+        + Hash
         + Into<u16>
         + LowerHex
         + UpperHex

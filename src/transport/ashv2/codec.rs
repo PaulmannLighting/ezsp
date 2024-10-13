@@ -1,7 +1,8 @@
 use crate::error::Decode;
 use crate::frame::{Frame, Header, Parameter, ValidControl};
+use ashv2::MAX_PAYLOAD_SIZE;
 use le_stream::{FromLeStream, ToLeStream};
-use tokio_util::bytes::BytesMut;
+use tokio_util::bytes::{BufMut, BytesMut};
 use tokio_util::codec::{Decoder, Encoder};
 
 /// Codec to encode frames to bytes and decode bytes into frames.
@@ -37,13 +38,36 @@ where
     type Error = crate::Error;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        let mut stream = src.iter().copied();
+        let mut header: Option<Header<C>> = None;
+        let mut parameters = Vec::new();
 
-        let Some(header) = Header::<C>::from_le_stream(&mut stream) else {
+        for chunk in src.chunks(MAX_PAYLOAD_SIZE) {
+            let mut stream = chunk.iter().copied();
+
+            let Some(next_header) = Header::<C>::from_le_stream(&mut stream) else {
+                return Ok(None);
+            };
+
+            if let Some(last_header) = header {
+                if last_header.id() != next_header.id() {
+                    return Err(Decode::FrameIdMismatch {
+                        expected: last_header.id().into(),
+                        found: next_header.id().into(),
+                    }
+                    .into());
+                }
+            } else {
+                header.replace(next_header);
+            }
+
+            parameters.extend(stream);
+        }
+
+        let Some(header) = header else {
             return Ok(None);
         };
 
-        match P::from_le_stream_exact(stream) {
+        match P::from_le_stream_exact(parameters.into_iter()) {
             Ok(parameters) => {
                 src.clear();
                 let item = Self::Item::new(header, parameters);
@@ -77,8 +101,16 @@ where
     type Error = crate::Error;
 
     fn encode(&mut self, item: Frame<C, P>, dst: &mut BytesMut) -> Result<(), Self::Error> {
-        dst.extend(item.header().to_le_stream());
-        dst.extend(item.parameters().to_le_stream());
+        let header = item.header();
+        let parameters: Vec<u8> = item.parameters().to_le_stream().collect();
+
+        for chunk in
+            parameters.chunks(MAX_PAYLOAD_SIZE.saturating_sub(header.to_le_stream().count()))
+        {
+            dst.extend(header.to_le_stream());
+            dst.put_slice(chunk);
+        }
+
         Ok(())
     }
 }

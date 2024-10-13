@@ -1,4 +1,3 @@
-use crate::error::Decode;
 use crate::frame::{Control, Frame, Header, Parameter, ValidControl};
 use crate::transport::Transport;
 use crate::Error;
@@ -7,6 +6,7 @@ use codec::Codec;
 use futures::{SinkExt, StreamExt};
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
+use std::io::ErrorKind;
 use tokio_util::codec::Framed;
 
 pub mod codec;
@@ -63,7 +63,9 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         <C as ValidControl>::Size: From<<P as Parameter>::Id>,
     {
         let Some(response) = self.framed::<C, P>().next().await else {
-            return Err(Decode::TooFewBytes.into());
+            return Err(
+                std::io::Error::new(ErrorKind::UnexpectedEof, "Empty response from NCP.").into(),
+            );
         };
 
         Ok(response?.parameters())

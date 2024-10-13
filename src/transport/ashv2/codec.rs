@@ -3,7 +3,7 @@ use crate::frame::{Frame, Header, Parameter, ValidControl};
 use ashv2::{HexSlice, MAX_PAYLOAD_SIZE};
 use le_stream::{FromLeStream, ToLeStream};
 use log::error;
-use tokio_util::bytes::{BufMut, BytesMut};
+use tokio_util::bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
 
 /// Codec to encode frames to bytes and decode bytes into frames.
@@ -108,16 +108,8 @@ where
     type Error = crate::Error;
 
     fn encode(&mut self, item: Frame<C, P>, dst: &mut BytesMut) -> Result<(), Self::Error> {
-        let header = item.header();
-        let parameters: Vec<u8> = item.parameters().to_le_stream().collect();
-
-        for chunk in
-            parameters.chunks(MAX_PAYLOAD_SIZE.saturating_sub(header.to_le_stream().count()))
-        {
-            dst.extend(header.to_le_stream());
-            dst.put_slice(chunk);
-        }
-
+        dst.extend(item.header().to_le_stream());
+        dst.extend(item.parameters().to_le_stream());
         Ok(())
     }
 }

@@ -9,10 +9,7 @@ use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use std::thread::spawn;
 
-const TEST_TEXT: &str = "
-וכשרוחות קרות יסערו בחוץ
-אשלח בך אש חמה
-";
+const TEST_TEXT: &str = "Rust rules! 🦀";
 
 #[derive(Debug, Parser)]
 struct Args {

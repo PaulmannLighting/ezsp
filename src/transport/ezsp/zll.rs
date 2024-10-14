@@ -3,7 +3,8 @@ use crate::ember::node::Type;
 use crate::ember::zll::{InitialSecurityState, Network};
 use crate::ezsp::zll::NetworkOperation;
 use crate::frame::parameters::zll::{
-    network_ops, set_initial_security_state, set_security_state_without_key, start_scan,
+    network_ops, set_initial_security_state, set_rx_on_when_idle, set_security_state_without_key,
+    start_scan,
 };
 use crate::resolve::Resolve;
 use crate::{Error, Transport};
@@ -27,6 +28,13 @@ pub trait Zll {
         &mut self,
         network_key: Data,
         security_state: InitialSecurityState,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This call will change the mode of the radio so that the receiver is on for a specified
+    /// amount of time when the device is idle.
+    fn set_rx_on_when_idle(
+        &mut self,
+        duration_millis: u32,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This call will update ZLL security token information.
@@ -74,6 +82,14 @@ where
         self.communicate::<_, set_initial_security_state::Response>(
             set_initial_security_state::Command::new(network_key, security_state),
         )
+        .await?
+        .resolve()
+    }
+
+    async fn set_rx_on_when_idle(&mut self, duration_millis: u32) -> Result<(), Error> {
+        self.communicate::<_, set_rx_on_when_idle::Response>(set_rx_on_when_idle::Command::new(
+            duration_millis,
+        ))
         .await?
         .resolve()
     }

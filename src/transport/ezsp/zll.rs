@@ -1,8 +1,9 @@
 use crate::ember::key::Data;
+use crate::ember::node::Type;
 use crate::ember::zll::{InitialSecurityState, Network};
 use crate::ezsp::zll::NetworkOperation;
 use crate::frame::parameters::zll::{
-    network_ops, set_initial_security_state, set_security_state_without_key,
+    network_ops, set_initial_security_state, set_security_state_without_key, start_scan,
 };
 use crate::resolve::Resolve;
 use crate::{Error, Transport};
@@ -35,6 +36,14 @@ pub trait Zll {
     fn set_security_state_without_key(
         &mut self,
         security_state: InitialSecurityState,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This call will initiate a ZLL network scan on all the specified channels.
+    fn start_scan(
+        &mut self,
+        channel_mask: u32,
+        radio_power_for_scan: i8,
+        node_type: Type,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -76,6 +85,21 @@ where
         self.communicate::<_, set_security_state_without_key::Response>(
             set_security_state_without_key::Command::new(security_state),
         )
+        .await?
+        .resolve()
+    }
+
+    async fn start_scan(
+        &mut self,
+        channel_mask: u32,
+        radio_power_for_scan: i8,
+        node_type: Type,
+    ) -> Result<(), Error> {
+        self.communicate::<_, start_scan::Response>(start_scan::Command::new(
+            channel_mask,
+            radio_power_for_scan,
+            node_type,
+        ))
         .await?
         .resolve()
     }

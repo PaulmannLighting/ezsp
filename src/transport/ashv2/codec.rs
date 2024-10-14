@@ -1,8 +1,7 @@
 use crate::error::Decode;
 use crate::frame::{Frame, Header, Parameter, ValidControl};
-use ashv2::{HexSlice, MAX_PAYLOAD_SIZE};
+use ashv2::MAX_PAYLOAD_SIZE;
 use le_stream::{FromLeStream, ToLeStream};
-use log::error;
 use tokio_util::bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
 
@@ -63,14 +62,14 @@ where
                 self.header.replace(header);
             }
 
-            parameters.extend(stream);
+            parameters.push(stream);
         }
 
         let Some(header) = self.header else {
             return Ok(None);
         };
 
-        match P::from_le_stream_exact(parameters.iter().copied()) {
+        match P::from_le_stream_exact(parameters.into_iter().flatten()) {
             Ok(parameters) => {
                 src.clear();
                 let item = Self::Item::new(header, parameters);
@@ -89,13 +88,7 @@ where
                 le_stream::Error::StreamNotExhausted(next) => {
                     Err(Decode::TooManyBytes { next }.into())
                 }
-                le_stream::Error::UnexpectedEndOfStream => {
-                    error!(
-                        "Too few bytes for frame: {:#04X}",
-                        HexSlice::new(&parameters)
-                    );
-                    Err(Decode::TooFewBytes.into())
-                }
+                le_stream::Error::UnexpectedEndOfStream => Err(Decode::TooFewBytes.into()),
             },
         }
     }

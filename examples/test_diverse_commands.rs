@@ -2,7 +2,7 @@
 
 use ashv2::{make_pair, open, BaudRate};
 use clap::Parser;
-use ezsp::{Ashv2, Ezsp, Utilities};
+use ezsp::{Ashv2, Ezsp, SinkTable, Utilities};
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;
@@ -121,6 +121,16 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
     match ezsp.get_true_random_entropy_source().await {
         Ok(entropy_source) => {
             info!("Entropy source: {entropy_source:?}");
+        }
+        Err(error) => {
+            error!("{error}");
+        }
+    }
+
+    // Test getting number of sink table entries.
+    match ezsp.number_of_active_entries().await {
+        Ok(active_entries) => {
+            info!("Sink table active entries: {active_entries:?}");
         }
         Err(error) => {
             error!("{error}");

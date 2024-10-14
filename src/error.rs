@@ -2,7 +2,6 @@ mod decode;
 mod invalid;
 
 use crate::frame::parameters::utilities::invalid_command;
-use crate::frame::ValidControl;
 use crate::{ember, ezsp};
 pub use decode::Decode;
 pub use invalid::Invalid;

@@ -10,8 +10,12 @@ use tokio_util::codec::{Decoder, Encoder};
 ///
 /// This can be used with `tokio::codec::Framed` to encode and decode frames.
 #[derive(Debug)]
-pub struct Codec<C, P> {
-    _control: std::marker::PhantomData<C>,
+pub struct Codec<C, P>
+where
+    C: ValidControl,
+    P: Parameter,
+{
+    header: Option<Header<C>>,
     _parameter: std::marker::PhantomData<P>,
 }
 
@@ -19,11 +23,10 @@ impl<C, P> Default for Codec<C, P>
 where
     C: ValidControl,
     P: Parameter,
-    <P as Parameter>::Id: Into<C::Size>,
 {
     fn default() -> Self {
         Self {
-            _control: std::marker::PhantomData,
+            header: None,
             _parameter: std::marker::PhantomData,
         }
     }
@@ -39,32 +42,31 @@ where
     type Error = crate::Error;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        let mut header: Option<Header<C>> = None;
         let mut parameters = Vec::new();
 
         for chunk in src.chunks(MAX_PAYLOAD_SIZE) {
             let mut stream = chunk.iter().copied();
 
-            let Some(next_header) = Header::<C>::from_le_stream(&mut stream) else {
+            let Some(header) = Header::<C>::from_le_stream(&mut stream) else {
                 return Ok(None);
             };
 
-            if let Some(last_header) = header {
-                if last_header.id() != next_header.id() {
+            if let Some(current_header) = self.header {
+                if current_header.id() != header.id() {
                     return Err(Decode::FrameIdMismatch {
-                        expected: last_header.id().into(),
-                        found: next_header.id().into(),
+                        expected: current_header.id().into(),
+                        found: header.id().into(),
                     }
                     .into());
                 }
             } else {
-                header.replace(next_header);
+                self.header.replace(header);
             }
 
             parameters.extend(stream);
         }
 
-        let Some(header) = header else {
+        let Some(header) = self.header else {
             return Ok(None);
         };
 

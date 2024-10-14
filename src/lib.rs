@@ -7,7 +7,7 @@
 pub mod ember;
 pub mod error;
 pub mod ezsp;
-pub mod frame;
+mod frame;
 mod resolve;
 mod result;
 pub mod transport;

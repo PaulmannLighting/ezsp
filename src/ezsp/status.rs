@@ -1,4 +1,5 @@
 use num_traits::FromPrimitive;
+use std::fmt::Display;
 
 use crate::error::Invalid;
 use crate::Resolve;
@@ -62,6 +63,29 @@ impl Status {
     /// Returns `Err(self)` if the `Status` is not [`Status::Success`],
     pub fn ok(self) -> Result<(), Self> {
         self.map(())
+    }
+}
+
+impl Display for Status {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Success => write!(f, "Success"),
+            Self::SpiErr(spi_err) => write!(f, "SPI error: {spi_err}"),
+            Self::HostFatalError => write!(f, "Host fatal error"),
+            Self::DataFrameTooLong => write!(f, "Data frame too long"),
+            Self::DataFrameTooShort => write!(f, "Data frame too short"),
+            Self::NoTxSpace => write!(f, "No space for tx'ed data frame"),
+            Self::NoRxSpace => write!(f, "No space for rec'd data frame"),
+            Self::NoRxData => write!(f, "No receive data available"),
+            Self::NotConnected => write!(f, "Not in connected state"),
+            Self::Error(error) => Display::fmt(error, f),
+            Self::Ash(ash) => write!(f, "ASH: {ash}"),
+            Self::CpcErrorInit => write!(
+                f,
+                "Failed to connect to CPC daemon or failed to open CPC endpoint"
+            ),
+            Self::NoError => write!(f, "No reset or error"),
+        }
     }
 }
 

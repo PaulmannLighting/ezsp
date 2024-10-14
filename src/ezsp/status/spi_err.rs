@@ -1,5 +1,6 @@
 use super::values::Values;
 use num_traits::FromPrimitive;
+use std::fmt::Display;
 
 /// SPI-related errors.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -41,6 +42,27 @@ pub enum SpiErr {
     /// The Host has sent a command with a SPI Byte that is
     /// unsupported by the current mode the NCP is operating in.
     UnsupportedSpiCommand,
+}
+
+impl Display for SpiErr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Fatal => write!(f, "Fatal error"),
+            Self::NcpReset => write!(f, "NCP reset"),
+            Self::OversizedEzspFrame => write!(f, "Oversized EZSP frame"),
+            Self::AbortedTransaction => write!(f, "Aborted transaction"),
+            Self::MissingFrameTerminator => write!(f, "Missing frame terminator"),
+            Self::WaitSectionTimeout => write!(f, "Wait section timeout"),
+            Self::NoFrameTerminator => write!(f, "No frame terminator"),
+            Self::EzspCommandOversized => write!(f, "EZSP command oversized"),
+            Self::EzspResponseOversized => write!(f, "EZSP response oversized"),
+            Self::WaitingForResponse => write!(f, "Waiting for response"),
+            Self::HandshakeTimeout => write!(f, "Handshake timeout"),
+            Self::StartupTimeout => write!(f, "Startup timeout"),
+            Self::StartupFail => write!(f, "Startup fail"),
+            Self::UnsupportedSpiCommand => write!(f, "Unsupported SPI command"),
+        }
+    }
 }
 
 impl From<SpiErr> for Values {

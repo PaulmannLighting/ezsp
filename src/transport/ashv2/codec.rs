@@ -1,5 +1,7 @@
 use crate::error::Decode;
+use crate::frame::parameters::utilities::invalid_command;
 use crate::frame::{Frame, Header, Parameter, ValidControl};
+use crate::Error;
 use ashv2::MAX_PAYLOAD_SIZE;
 use le_stream::{FromLeStream, ToLeStream};
 use tokio_util::bytes::BytesMut;
@@ -50,6 +52,12 @@ where
                 return Ok(None);
             };
 
+            if header.id().into() == invalid_command::Response::ID {
+                return Err(Error::InvalidCommand(
+                    invalid_command::Response::from_le_stream_exact(stream)?,
+                ));
+            }
+
             if let Some(current_header) = self.header {
                 if current_header.id() != header.id() {
                     return Err(Decode::FrameIdMismatch {
@@ -69,27 +77,18 @@ where
             return Ok(None);
         };
 
-        match P::from_le_stream_exact(parameters.into_iter().flatten()) {
-            Ok(parameters) => {
-                src.clear();
-                let item = Self::Item::new(header, parameters);
+        let parameters = P::from_le_stream_exact(parameters.into_iter().flatten())?;
+        src.clear();
+        let item = Self::Item::new(header, parameters);
 
-                if item.header().id() == <C as ValidControl>::Size::from(<P as Parameter>::ID) {
-                    Ok(Some(item))
-                } else {
-                    Err(Decode::FrameIdMismatch {
-                        expected: <P as Parameter>::ID.into(),
-                        found: item.header().id().into(),
-                    }
-                    .into())
-                }
+        if item.header().id() == <C as ValidControl>::Size::from(<P as Parameter>::ID) {
+            Ok(Some(item))
+        } else {
+            Err(Decode::FrameIdMismatch {
+                expected: <P as Parameter>::ID.into(),
+                found: item.header().id().into(),
             }
-            Err(error) => match error {
-                le_stream::Error::StreamNotExhausted(next) => {
-                    Err(Decode::TooManyBytes { next }.into())
-                }
-                le_stream::Error::UnexpectedEndOfStream => Err(Decode::TooFewBytes.into()),
-            },
+            .into())
         }
     }
 }

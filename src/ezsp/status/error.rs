@@ -1,5 +1,6 @@
 use super::values::Values;
 use num_traits::FromPrimitive;
+use std::fmt::Display;
 
 /// EZSP errors.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -52,6 +53,35 @@ pub enum Error {
     UnsecureFrame,
     /// Serial port initialization failed.
     SerialInit,
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::VersionNotSet => write!(f, "Version not set"),
+            Self::InvalidFrameId => write!(f, "Invalid frame ID"),
+            Self::WrongDirection => write!(f, "Wrong direction"),
+            Self::Truncated => write!(f, "Truncated"),
+            Self::Overflow => write!(f, "Overflow"),
+            Self::OutOfMemory => write!(f, "Out of memory"),
+            Self::InvalidValue => write!(f, "Invalid value"),
+            Self::InvalidId => write!(f, "Invalid ID"),
+            Self::InvalidCall => write!(f, "Invalid call"),
+            Self::NoResponse => write!(f, "No response"),
+            Self::CommandTooLong => write!(f, "Command too long"),
+            Self::QueueFull => write!(f, "Queue full"),
+            Self::CommandFiltered => write!(f, "Command filtered"),
+            Self::SecurityKeyAlreadySet => write!(f, "Security key already set"),
+            Self::SecurityTypeInvalid => write!(f, "Security type invalid"),
+            Self::SecurityParametersInvalid => write!(f, "Security parameters invalid"),
+            Self::SecurityParametersAlreadySet => write!(f, "Security parameters already set"),
+            Self::SecurityKeyNotSet => write!(f, "Security key not set"),
+            Self::SecurityParametersNotSet => write!(f, "Security parameters not set"),
+            Self::UnsupportedControl => write!(f, "Unsupported control"),
+            Self::UnsecureFrame => write!(f, "Unsecure frame"),
+            Self::SerialInit => write!(f, "Serial init"),
+        }
+    }
 }
 
 impl From<Error> for Values {

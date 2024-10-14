@@ -1,4 +1,5 @@
 use num_traits::FromPrimitive;
+use std::fmt::Display;
 
 use super::values::Values;
 pub use error::Error;
@@ -14,6 +15,15 @@ pub enum Ash {
     Error(Error),
     /// Miscellaneous status.
     Misc(Misc),
+}
+
+impl Display for Ash {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Error(error) => Display::fmt(error, f),
+            Self::Misc(misc) => Display::fmt(misc, f),
+        }
+    }
 }
 
 impl From<Ash> for Values {

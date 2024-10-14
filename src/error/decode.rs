@@ -23,3 +23,12 @@ impl Display for Decode {
 }
 
 impl std::error::Error for Decode {}
+
+impl From<le_stream::Error> for Decode {
+    fn from(error: le_stream::Error) -> Self {
+        match error {
+            le_stream::Error::StreamNotExhausted(next) => Self::TooManyBytes { next },
+            le_stream::Error::UnexpectedEndOfStream => Self::TooFewBytes,
+        }
+    }
+}

@@ -1,5 +1,6 @@
 use super::super::values::Values;
 use num_traits::FromPrimitive;
+use std::fmt::Display;
 
 /// ASH-related status.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -50,6 +51,36 @@ pub enum Misc {
     Tx,
     /// ASH RX.
     Rx,
+}
+
+impl Display for Misc {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InProgress => write!(f, "Operation not yet complete."),
+            Self::Started => write!(f, "ASH protocol started."),
+            Self::Connected => write!(f, "ASH protocol connected."),
+            Self::Disconnected => write!(f, "ASH protocol disconnected."),
+            Self::AckTimeout => write!(f, "Timer expired waiting for ack."),
+            Self::Cancelled => write!(f, "Frame in progress cancelled."),
+            Self::OutOfSequence => write!(f, "Received frame out of sequence."),
+            Self::BadCrc => write!(f, "Received frame with CRC error."),
+            Self::CommError => write!(f, "Received frame with comm error."),
+            Self::BadAckNum => write!(f, "Received frame with bad ackNum."),
+            Self::TooShort => write!(f, "Received frame shorter than minimum."),
+            Self::TooLong => write!(f, "Received frame longer than maximum."),
+            Self::BadControl => write!(f, "Received frame with illegal control byte."),
+            Self::BadLength => write!(f, "Received frame with illegal length for its type."),
+            Self::AckReceived => write!(f, "Received ASH Ack."),
+            Self::AckSent => write!(f, "Sent ASH Ack."),
+            Self::NakReceived => write!(f, "Received ASH Nak."),
+            Self::NakSent => write!(f, "Sent ASH Nak."),
+            Self::RstReceived => write!(f, "Received ASH RST."),
+            Self::RstSent => write!(f, "Sent ASH RST."),
+            Self::Status => write!(f, "ASH Status."),
+            Self::Tx => write!(f, "ASH TX."),
+            Self::Rx => write!(f, "ASH RX."),
+        }
+    }
 }
 
 impl From<Misc> for Values {

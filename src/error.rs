@@ -1,6 +1,8 @@
 mod decode;
 mod invalid;
 
+use crate::frame::parameters::utilities::invalid_command;
+use crate::frame::ValidControl;
 use crate::{ember, ezsp};
 pub use decode::Decode;
 pub use invalid::Invalid;
@@ -21,6 +23,8 @@ pub enum Error {
     Siliconlabs(siliconlabs::Status),
     /// Invalid status
     Invalid(Invalid),
+    /// The NCP responded with `invalidCommand` (0x0058).
+    InvalidCommand(invalid_command::Response),
     /// A custom error message.
     Custom(String),
 }
@@ -35,6 +39,10 @@ impl Display for Error {
             Self::Siliconlabs(status) => {
                 write!(f, "Siliconlabs: {status:?} ({:#10X})", u32::from(*status))
             }
+            Self::InvalidCommand(response) => match response.reason() {
+                Ok(reason) => write!(f, "Invalid command: {reason}"),
+                Err(code) => write!(f, "Invalid command: {code:#04X}"),
+            },
             Self::Invalid(status) => Display::fmt(status, f),
             Self::Custom(msg) => Display::fmt(msg, f),
         }
@@ -64,6 +72,12 @@ impl From<Decode> for Error {
     }
 }
 
+impl From<le_stream::Error> for Error {
+    fn from(error: le_stream::Error) -> Self {
+        Self::Decode(error.into())
+    }
+}
+
 impl From<ezsp::Status> for Error {
     fn from(status: ezsp::Status) -> Self {
         Self::Ezsp(status)
@@ -85,6 +99,12 @@ impl From<siliconlabs::Status> for Error {
 impl From<Invalid> for Error {
     fn from(status: Invalid) -> Self {
         Self::Invalid(status)
+    }
+}
+
+impl From<invalid_command::Response> for Error {
+    fn from(response: invalid_command::Response) -> Self {
+        Self::InvalidCommand(response)
     }
 }
 

@@ -1,5 +1,6 @@
 use super::super::values::Values;
 use num_traits::FromPrimitive;
+use std::fmt::Display;
 
 /// ASH-related errors.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -20,6 +21,21 @@ pub enum Error {
     ResetMethod,
     /// XON/XOFF not supported by host driver.
     XOnXOff,
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::NcpFatal => write!(f, "Fatal error detected by NCP."),
+            Self::Version => write!(f, "Incompatible ASH version."),
+            Self::Timeouts => write!(f, "Exceeded max ACK timeouts."),
+            Self::ResetFail => write!(f, "Timed out waiting for RSTACK."),
+            Self::NcpReset => write!(f, "Unexpected ncp reset."),
+            Self::NcpType => write!(f, "Invalid ncp processor type."),
+            Self::ResetMethod => write!(f, "Invalid ncp reset method."),
+            Self::XOnXOff => write!(f, "XON/XOFF not supported by host driver."),
+        }
+    }
 }
 
 impl From<Error> for Values {

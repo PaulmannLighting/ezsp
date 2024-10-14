@@ -1,6 +1,7 @@
 [package]
 name = "ezsp"
 description = "Ember ZNet Serial Protocol"
+authors = ["Richard Neumann <neumann@paulmann.de>"]
 license = "MIT"
 repository = "https://github.com/PaulmannLighting/ezsp"
 keywords = ["Ember", "ZNet", "Serial"]
@@ -8,6 +9,8 @@ categories = ["hardware-support", "network-programming"]
 documentation = "https://www.silabs.com/documents/public/user-guides/ug100-ezsp-reference-guide.pdf"
 version = "0.1.0"
 edition = "2021"
+exclude = [".gitignore"]
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

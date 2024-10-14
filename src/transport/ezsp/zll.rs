@@ -1,7 +1,9 @@
 use crate::ember::key::Data;
 use crate::ember::zll::{InitialSecurityState, Network};
 use crate::ezsp::zll::NetworkOperation;
-use crate::frame::parameters::zll::{network_ops, set_initial_security_state};
+use crate::frame::parameters::zll::{
+    network_ops, set_initial_security_state, set_security_state_without_key,
+};
 use crate::resolve::Resolve;
 use crate::{Error, Transport};
 use std::future::Future;
@@ -23,6 +25,15 @@ pub trait Zll {
     fn set_initial_security_state(
         &mut self,
         network_key: Data,
+        security_state: InitialSecurityState,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This call will update ZLL security token information.
+    ///
+    /// Unlike emberZllSetInitialSecurityState, this can be called while a network
+    /// is already established.
+    fn set_security_state_without_key(
+        &mut self,
         security_state: InitialSecurityState,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
@@ -53,6 +64,17 @@ where
     ) -> Result<(), Error> {
         self.communicate::<_, set_initial_security_state::Response>(
             set_initial_security_state::Command::new(network_key, security_state),
+        )
+        .await?
+        .resolve()
+    }
+
+    async fn set_security_state_without_key(
+        &mut self,
+        security_state: InitialSecurityState,
+    ) -> Result<(), Error> {
+        self.communicate::<_, set_security_state_without_key::Response>(
+            set_security_state_without_key::Command::new(security_state),
         )
         .await?
         .resolve()

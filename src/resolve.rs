@@ -1,4 +1,4 @@
-use crate::error::Invalid;
+use crate::error::ValueError;
 use crate::Error;
 
 /// Resolve types into a result of a certain output type.
@@ -27,7 +27,7 @@ impl Resolve for Result<siliconlabs::Status, u32> {
                     Err(Error::Siliconlabs(status))
                 }
             }
-            Err(error) => Err(Error::Invalid(Invalid::Siliconlabs(error))),
+            Err(error) => Err(Error::ValueError(ValueError::Siliconlabs(error))),
         }
     }
 }

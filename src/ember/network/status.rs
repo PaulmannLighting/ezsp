@@ -1,7 +1,7 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use crate::error::Invalid;
+use crate::error::ValueError;
 use crate::Error;
 use crate::Resolve;
 
@@ -39,6 +39,6 @@ impl Resolve for Result<Status, u8> {
     type Output = Status;
 
     fn resolve(self) -> Result<Self::Output, Error> {
-        self.map_err(|status| Error::Invalid(Invalid::EmberNetworkStatus(status)))
+        self.map_err(|status| Error::ValueError(ValueError::EmberNetworkStatus(status)))
     }
 }

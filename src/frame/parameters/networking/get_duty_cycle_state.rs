@@ -2,7 +2,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::duty_cycle::State;
 use crate::ember::Status;
-use crate::error::Invalid;
+use crate::error::ValueError;
 use crate::frame::Parameter;
 use crate::Error;
 use crate::Resolve;
@@ -34,7 +34,7 @@ impl Resolve for Response {
     fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(self.status).resolve().and_then(|()| {
             State::try_from(self.returned_state).map_err(|duty_cycle_state| {
-                Error::Invalid(Invalid::EmberDutyCycleState(duty_cycle_state))
+                Error::ValueError(ValueError::EmberDutyCycleState(duty_cycle_state))
             })
         })
     }

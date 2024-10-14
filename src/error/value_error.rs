@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 /// Invalid values.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub enum Invalid {
+pub enum ValueError {
     /// An invalid [`crate::ezsp::Status`] was received.
     Ezsp(u8),
     /// An invalid [`crate::ember::Status`] was received.
@@ -21,7 +21,7 @@ pub enum Invalid {
     EntropySource(u8),
 }
 
-impl Display for Invalid {
+impl Display for ValueError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Ezsp(status) => write!(f, "Invalid EZSP status: {status}"),
@@ -38,4 +38,4 @@ impl Display for Invalid {
     }
 }
 
-impl std::error::Error for Invalid {}
+impl std::error::Error for ValueError {}

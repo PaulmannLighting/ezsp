@@ -1,5 +1,5 @@
 use crate::resolve::Resolve;
-use crate::Invalid;
+use crate::ValueError;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -37,7 +37,7 @@ impl Resolve for Result<Source, u8> {
     fn resolve(self) -> crate::Result<Self::Output> {
         match self {
             Ok(source) => Ok(source),
-            Err(value) => Err(crate::Error::Invalid(Invalid::EntropySource(value))),
+            Err(value) => Err(crate::Error::ValueError(ValueError::EntropySource(value))),
         }
     }
 }

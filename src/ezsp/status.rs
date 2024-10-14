@@ -1,7 +1,7 @@
 use num_traits::FromPrimitive;
 use std::fmt::Display;
 
-use crate::error::Invalid;
+use crate::error::ValueError;
 use crate::Resolve;
 pub use ash::Ash;
 pub use error::Error;
@@ -295,7 +295,7 @@ impl Resolve for Result<Status, u8> {
     fn resolve(self) -> Result<Self::Output, crate::Error> {
         match self {
             Ok(status) => status.ok().map_err(crate::Error::Ezsp),
-            Err(status) => Err(crate::Error::Invalid(Invalid::Ezsp(status))),
+            Err(status) => Err(crate::Error::ValueError(ValueError::Ezsp(status))),
         }
     }
 }

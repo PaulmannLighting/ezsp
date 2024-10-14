@@ -3,7 +3,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use crate::ember::network::Parameters;
 use crate::ember::node::Type;
 use crate::ember::Status;
-use crate::error::Invalid;
+use crate::error::ValueError;
 use crate::frame::Parameter;
 use crate::Resolve;
 
@@ -35,7 +35,7 @@ impl Resolve for Response {
     fn resolve(self) -> Result<Self::Output, crate::Error> {
         Status::try_from(self.status).resolve().and_then(|()| {
             Type::try_from(self.node_type)
-                .map_err(|node_type| crate::Error::Invalid(Invalid::EmberNodeType(node_type)))
+                .map_err(|node_type| crate::Error::ValueError(ValueError::EmberNodeType(node_type)))
                 .map(|node_type| (node_type, self.parameters))
         })
     }

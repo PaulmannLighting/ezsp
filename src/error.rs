@@ -1,11 +1,11 @@
 mod decode;
-mod invalid;
+mod value_error;
 
 use crate::frame::parameters::utilities::invalid_command;
 use crate::{ember, ezsp};
 pub use decode::Decode;
-pub use invalid::Invalid;
 use std::fmt::{Debug, Display, Formatter};
+pub use value_error::ValueError;
 
 /// An error that can occur when communicating with an NCP.
 #[derive(Debug)]
@@ -21,7 +21,7 @@ pub enum Error {
     /// The received [`siliconlabs::Status`] indicates an error.
     Siliconlabs(siliconlabs::Status),
     /// Invalid status
-    Invalid(Invalid),
+    ValueError(ValueError),
     /// The NCP responded with `invalidCommand` (0x0058).
     InvalidCommand(invalid_command::Response),
     /// A custom error message.
@@ -42,7 +42,7 @@ impl Display for Error {
                 Ok(reason) => write!(f, "Invalid command: {reason}"),
                 Err(code) => write!(f, "Invalid command: {code:#04X}"),
             },
-            Self::Invalid(status) => Display::fmt(status, f),
+            Self::ValueError(status) => Display::fmt(status, f),
             Self::Custom(msg) => Display::fmt(msg, f),
         }
     }
@@ -53,7 +53,7 @@ impl std::error::Error for Error {
         match self {
             Self::Io(error) => Some(error),
             Self::Decode(decode) => Some(decode),
-            Self::Invalid(status) => Some(status),
+            Self::ValueError(status) => Some(status),
             _ => None,
         }
     }
@@ -95,9 +95,9 @@ impl From<siliconlabs::Status> for Error {
     }
 }
 
-impl From<Invalid> for Error {
-    fn from(status: Invalid) -> Self {
-        Self::Invalid(status)
+impl From<ValueError> for Error {
+    fn from(status: ValueError) -> Self {
+        Self::ValueError(status)
     }
 }
 

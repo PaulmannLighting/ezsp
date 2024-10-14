@@ -8,7 +8,7 @@ pub type PanId = u16;
 pub type MulticastId = u16;
 
 /// EUI 64-bit ID (an IEEE address).
-pub type Eui64 = u64;
+pub type Eui64 = macaddr::MacAddr8;
 
 /// The implicit certificate used in CBKE.
 pub type CertificateData = [u8; 48];

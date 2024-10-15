@@ -1,11 +1,12 @@
 use le_stream::{FromLeStream, ToLeStream};
+use std::fmt::Debug;
 use tokio_util::bytes::BytesMut;
 use tokio_util::codec::Decoder;
 
 use crate::constants::EZSP_MAX_FRAME_SIZE;
 use crate::frame::parameters::utilities::invalid_command;
-use crate::frame::{Header, Parameter, ValidControl};
-use crate::Error;
+use crate::frame::{Header, Parameter};
+use crate::{Error, Extended};
 
 use crate::frame::parameters::networking::handler::{network_found, scan_complete};
 use ashv2::{HexSlice, MAX_PAYLOAD_SIZE};
@@ -15,22 +16,14 @@ use log::info;
 ///
 /// This can be used with `tokio::codec::Framed` to encode and decode frames.
 #[derive(Debug)]
-pub struct Codec<C>
-where
-    C: ValidControl,
-    u16: From<C::Size>,
-{
-    header: Option<Header<C>>,
+pub struct Codec {
+    id: Option<u16>,
     buffer: heapless::Vec<u8, EZSP_MAX_FRAME_SIZE>,
 }
 
-impl<C> Codec<C>
-where
-    C: ValidControl,
-    u16: From<C::Size>,
-{
+impl Codec {
     fn parse(&mut self) -> Result<Option<Callback>, Error> {
-        let Some(header) = self.header.take() else {
+        let Some(id) = self.id.take() else {
             return Ok(None);
         };
 
@@ -38,30 +31,23 @@ where
             "Parsing parameters from: {:#04X}",
             HexSlice::new(&self.buffer)
         );
-        let result = Callback::parse(header.id().into(), &self.buffer);
+
+        let result = Callback::parse(id, &self.buffer);
         self.buffer.clear();
         result.map(Some)
     }
 }
 
-impl<C> Default for Codec<C>
-where
-    C: ValidControl,
-    u16: From<C::Size>,
-{
+impl Default for Codec {
     fn default() -> Self {
         Self {
-            header: None,
+            id: None,
             buffer: heapless::Vec::new(),
         }
     }
 }
 
-impl<C> Decoder for Codec<C>
-where
-    C: ValidControl,
-    u16: From<C::Size>,
-{
+impl Decoder for Codec {
     type Item = Callback;
     type Error = Error;
 
@@ -71,23 +57,17 @@ where
         for (index, chunk) in src.chunks(MAX_PAYLOAD_SIZE).enumerate() {
             let mut stream = chunk.iter().copied();
 
-            let Some(header) = Header::<C>::from_le_stream(&mut stream) else {
+            let Some(header) = Extended::from_le_stream(&mut stream) else {
                 return Ok(None);
             };
 
-            if let Some(current_header) = self.header {
-                if current_header.id() != header.id() {
-                    info!("Found new frame.");
-                    info!("Current input buffer: {:#04X}", HexSlice::new(src));
-                    info!(
-                        "Splitting buffer at index: {}",
-                        index * header.to_le_stream().count()
-                    );
+            if let Some(id) = self.id {
+                if <Extended as Header<u16>>::id(header) != id {
                     let _ = src.split_at(index * header.to_le_stream().count());
                     return self.parse();
                 }
             } else {
-                self.header.replace(header);
+                self.id.replace(header.id());
             }
 
             self.buffer.extend(stream);

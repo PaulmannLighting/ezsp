@@ -1,5 +1,6 @@
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::{Debug, Display, LowerHex, UpperHex};
+use std::hash::Hash;
 
 pub mod binding;
 pub mod bootloader;
@@ -16,15 +17,12 @@ pub mod utilities;
 pub mod wwah;
 pub mod zll;
 
-pub trait Parameter: Debug + Send {
-    type Id: Copy
-        + Debug
-        + Display
-        + Eq
-        + Into<u16>
-        + LowerHex
-        + UpperHex
-        + FromLeStream
-        + ToLeStream;
+pub trait Parameter: Debug + Send
+where
+    <Self as Parameter>::Id:
+        Copy + Debug + Display + Eq + Hash + LowerHex + UpperHex + Send + FromLeStream + ToLeStream,
+    u16: From<<Self as Parameter>::Id>,
+{
+    type Id;
     const ID: Self::Id;
 }

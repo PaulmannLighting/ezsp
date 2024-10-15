@@ -9,10 +9,10 @@ use crate::frame::parameters::configuration::{
     read_attribute, send_pan_id_update, set_configuration_value, set_passive_ack_config,
     set_policy, set_value, version, write_attribute,
 };
-use crate::frame::{Command, Response};
+use crate::frame::Legacy;
 use crate::types::ByteSizedVec;
+use crate::Resolve;
 use crate::{Error, Transport};
-use crate::{Extended, Resolve};
 
 /// The `Configuration` trait provides an interface for the configuration commands.
 pub trait Configuration {
@@ -194,9 +194,9 @@ where
         &mut self,
         desired_protocol_version: u8,
     ) -> Result<version::Response, Error> {
-        self.send::<Command, _>(version::Command::new(desired_protocol_version))
+        self.send::<Legacy, _>(version::Command::new(desired_protocol_version))
             .await?;
-        self.receive::<Response, version::Response>().await
+        self.receive::<Legacy, version::Response>().await
     }
 
     async fn read_attribute(
@@ -270,9 +270,7 @@ where
     }
 
     async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
-        self.send::<Extended<Command>, _>(version::Command::new(desired_protocol_version))
-            .await?;
-        self.receive::<Extended<Response>, version::Response>()
+        self.communicate::<_, version::Response>(version::Command::new(desired_protocol_version))
             .await
     }
 

@@ -10,8 +10,8 @@ use crate::frame::parameters::utilities::{
 };
 use crate::frame::Handler;
 use crate::types::ByteSizedVec;
-use crate::{Command, Extended, Resolve};
 use crate::{Error, Transport};
+use crate::{Extended, Resolve};
 use std::future::Future;
 
 /// The `Utilities` trait provides an interface for the utilities.
@@ -150,7 +150,7 @@ where
     T: Transport,
 {
     async fn callback(&mut self) -> Result<Handler, Error> {
-        self.send::<Extended<Command>, _>(callback::Command).await?;
+        self.send::<Extended, _>(callback::Command).await?;
         todo!("Implement decoder for callback responses");
     }
 

@@ -1,47 +1,25 @@
-mod control;
+mod extended;
+mod high_byte;
+mod legacy;
+mod low_byte;
 
-pub use control::ValidControl;
-pub use control::{
-    CallbackType, Command, Control, Extended, FrameFormatVersion, Response, SleepMode,
-};
-use le_stream::derive::{FromLeStream, ToLeStream};
+pub use extended::Extended;
+pub use high_byte::{FrameFormatVersion, HighByte};
+use le_stream::{FromLeStream, ToLeStream};
+pub use legacy::Legacy;
+pub use low_byte::{CallbackType, Command, LowByte, Response, SleepMode};
 use std::fmt::Debug;
+use std::hash::Hash;
 
-#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
-pub struct Header<T>
+pub trait Header<T>:
+    Clone + Copy + Debug + Eq + Hash + PartialEq + FromLeStream + ToLeStream + Send
 where
-    T: ValidControl,
+    T: Copy + Clone + Debug + Eq + Hash + PartialEq + Send,
+    u16: From<T>,
 {
-    sequence: u8,
-    control: Control<T>,
-    id: T::Size,
-}
-
-impl<T> Header<T>
-where
-    T: ValidControl,
-{
-    #[must_use]
-    pub const fn new(sequence: u8, control: Control<T>, id: T::Size) -> Self {
-        Self {
-            sequence,
-            control,
-            id,
-        }
-    }
-
-    #[must_use]
-    pub const fn sequence(&self) -> u8 {
-        self.sequence
-    }
-
-    #[must_use]
-    pub fn control(&self) -> Control<T> {
-        self.control
-    }
-
-    #[must_use]
-    pub const fn id(&self) -> T::Size {
-        self.id
-    }
+    fn new(sequence: u8, low_byte: LowByte, id: T) -> Self;
+    fn sequence(self) -> u8;
+    fn low_byte(self) -> LowByte;
+    fn high_byte(self) -> Option<HighByte>;
+    fn id(self) -> T;
 }

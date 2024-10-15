@@ -2,8 +2,8 @@
 pub(crate) mod ashv2;
 mod ezsp;
 
-use crate::frame::{Command, Extended, Parameter, Response, ValidControl};
-use crate::{Error, Header};
+use crate::frame::{Extended, Header, Parameter};
+use crate::Error;
 #[cfg(feature = "ashv2")]
 pub use ashv2::Ashv2;
 pub use ezsp::{
@@ -14,6 +14,7 @@ pub use ezsp::{
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
 use std::future::Future;
+use std::hash::Hash;
 
 /// A transport layer to communicate with an NCP that supports the `EZSP` protocol.
 ///
@@ -23,23 +24,25 @@ use std::future::Future;
 /// Unless you know what you are doing, you should not use the methods of this trait directly.
 pub trait Transport: Send {
     /// Return the next header.
-    fn next_header<T>(&mut self, id: T::Size) -> Header<T>
+    fn next_header<H, T>(&mut self, id: T) -> H
     where
-        T: ValidControl;
+        H: Header<T>,
+        T: Copy + Clone + Debug + Eq + Hash + PartialEq + Send,
+        u16: From<T>;
 
     /// Send a command to the NCP.
-    fn send<C, P>(&mut self, command: P) -> impl Future<Output = Result<(), Error>> + Send
+    fn send<H, P>(&mut self, command: P) -> impl Future<Output = Result<(), Error>> + Send
     where
-        C: ValidControl,
+        H: Header<P::Id>,
         P: Parameter + ToLeStream,
-        <C as ValidControl>::Size: From<<P as Parameter>::Id>;
+        u16: From<P::Id>;
 
     /// Receive a response from the NCP.
-    fn receive<C, P>(&mut self) -> impl Future<Output = Result<P, Error>> + Send
+    fn receive<H, P>(&mut self) -> impl Future<Output = Result<P, Error>> + Send
     where
-        C: ValidControl,
+        H: Header<P::Id>,
         P: Parameter + FromLeStream,
-        <C as ValidControl>::Size: From<<P as Parameter>::Id>;
+        u16: From<P::Id>;
 
     /// Communicate with the NCP.
     ///
@@ -48,12 +51,12 @@ pub trait Transport: Send {
     where
         C: Parameter + ToLeStream,
         R: Clone + Debug + Parameter + FromLeStream,
-        <Extended<Command> as ValidControl>::Size: From<<C as Parameter>::Id>,
-        <Extended<Response> as ValidControl>::Size: From<<R as Parameter>::Id>,
+        u16: From<C::Id> + From<R::Id>,
+        Extended: Header<C::Id> + Header<R::Id>,
     {
         async {
-            self.send::<Extended<Command>, C>(command).await?;
-            self.receive::<Extended<Response>, R>().await
+            self.send::<Extended, C>(command).await?;
+            self.receive::<Extended, R>().await
         }
     }
 }

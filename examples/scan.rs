@@ -3,7 +3,7 @@
 use ashv2::{make_pair, open, BaudRate, CallbacksFramed, Payload};
 use clap::Parser;
 use ezsp::ezsp::network::scan::Type;
-use ezsp::{Ashv2, Codec, Extended, Ezsp, Networking, Response, EZSP_MAX_FRAME_SIZE};
+use ezsp::{Ashv2, Codec, Ezsp, Networking, EZSP_MAX_FRAME_SIZE};
 use futures::StreamExt;
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
@@ -93,10 +93,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
 }
 
 async fn handle_callbacks(waker: SyncSender<Waker>, callbacks: Receiver<Payload>) {
-    let mut callbacks = Framed::new(
-        CallbacksFramed::new(waker, callbacks),
-        Codec::<Extended<Response>>::default(),
-    );
+    let mut callbacks = Framed::new(CallbacksFramed::new(waker, callbacks), Codec::default());
 
     loop {
         if let Some(result) = callbacks.next().await {

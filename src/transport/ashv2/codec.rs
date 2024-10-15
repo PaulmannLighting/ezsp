@@ -5,7 +5,7 @@ use tokio_util::codec::{Decoder, Encoder};
 use crate::constants::{EZSP_MAX_FRAME_SIZE, EZSP_MAX_HEADER_SIZE};
 use crate::error::Decode;
 use crate::frame::parameters::utilities::invalid_command;
-use crate::frame::{Frame, Header, Parameter, ValidControl};
+use crate::frame::{Frame, Header, Parameter};
 use crate::Error;
 
 use ashv2::MAX_PAYLOAD_SIZE;
@@ -14,20 +14,22 @@ use ashv2::MAX_PAYLOAD_SIZE;
 ///
 /// This can be used with `tokio::codec::Framed` to encode and decode frames.
 #[derive(Debug)]
-pub struct Codec<C, P>
+pub struct Codec<H, P>
 where
-    C: ValidControl,
+    H: Header<P::Id>,
     P: Parameter,
+    u16: From<P::Id>,
 {
-    header: Option<Header<C>>,
+    header: Option<H>,
     _parameter: std::marker::PhantomData<P>,
     buffers: Buffers,
 }
 
-impl<C, P> Default for Codec<C, P>
+impl<H, P> Default for Codec<H, P>
 where
-    C: ValidControl,
+    H: Header<P::Id>,
     P: Parameter,
+    u16: From<P::Id>,
 {
     fn default() -> Self {
         Self {
@@ -38,13 +40,13 @@ where
     }
 }
 
-impl<C, P> Decoder for Codec<C, P>
+impl<H, P> Decoder for Codec<H, P>
 where
-    C: ValidControl,
+    H: Header<P::Id>,
     P: Parameter + FromLeStream,
-    <C as ValidControl>::Size: From<<P as Parameter>::Id>,
+    u16: From<P::Id>,
 {
-    type Item = Frame<C, P>;
+    type Item = Frame<H, P>;
     type Error = Error;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
@@ -53,11 +55,11 @@ where
         for chunk in src.chunks(MAX_PAYLOAD_SIZE) {
             let mut stream = chunk.iter().copied();
 
-            let Some(header) = Header::<C>::from_le_stream(&mut stream) else {
+            let Some(header) = H::from_le_stream(&mut stream) else {
                 return Ok(None);
             };
 
-            if header.id().into() == invalid_command::Response::ID {
+            if u16::from(header.id()) == invalid_command::Response::ID {
                 return Err(Error::InvalidCommand(
                     invalid_command::Response::from_le_stream_exact(stream)?,
                 ));
@@ -86,7 +88,7 @@ where
         src.clear();
         let item = Self::Item::new(header, parameters);
 
-        if item.header().id() == <C as ValidControl>::Size::from(<P as Parameter>::ID) {
+        if item.header().id() == P::ID {
             Ok(Some(item))
         } else {
             Err(Decode::FrameIdMismatch {
@@ -98,15 +100,15 @@ where
     }
 }
 
-impl<C, P> Encoder<Frame<C, P>> for Codec<C, P>
+impl<H, P> Encoder<Frame<H, P>> for Codec<H, P>
 where
-    C: ValidControl,
+    H: Header<P::Id>,
     P: Parameter + ToLeStream,
-    <C as ValidControl>::Size: From<<P as Parameter>::Id>,
+    u16: From<P::Id>,
 {
     type Error = Error;
 
-    fn encode(&mut self, item: Frame<C, P>, dst: &mut BytesMut) -> Result<(), Self::Error> {
+    fn encode(&mut self, item: Frame<H, P>, dst: &mut BytesMut) -> Result<(), Self::Error> {
         self.buffers.clear();
         self.buffers.header.extend(item.header().to_le_stream());
         self.buffers

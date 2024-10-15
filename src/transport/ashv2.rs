@@ -1,12 +1,13 @@
 use futures::{SinkExt, StreamExt};
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
+use std::hash::Hash;
 use std::io::ErrorKind;
 use tokio_util::codec::Framed;
 
-use crate::frame::{Control, Frame, Header, Parameter, ValidControl};
+use crate::frame::{Frame, Header, Parameter};
 use crate::transport::Transport;
-use crate::Error;
+use crate::{Command, Error};
 use codec::Codec;
 
 use ashv2::AshFramed;
@@ -28,43 +29,45 @@ impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
         Self { ash, sequence: 0 }
     }
 
-    fn framed<C, P>(&mut self) -> Framed<&mut AshFramed<BUF_SIZE>, Codec<C, P>>
+    fn framed<H, P>(&mut self) -> Framed<&mut AshFramed<BUF_SIZE>, Codec<H, P>>
     where
-        C: ValidControl,
+        H: Header<P::Id>,
         P: Parameter,
-        <C as ValidControl>::Size: From<<P as Parameter>::Id>,
+        u16: From<P::Id>,
     {
         Framed::new(&mut self.ash, Codec::default())
     }
 }
 
 impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
-    fn next_header<T>(&mut self, id: T::Size) -> Header<T>
+    fn next_header<H, T>(&mut self, id: T) -> H
     where
-        T: ValidControl,
+        H: Header<T>,
+        T: Copy + Clone + Debug + Eq + Hash + PartialEq + Send,
+        u16: From<T>,
     {
-        let header = Header::new(self.sequence, Control::<T>::default(), id);
+        let header = H::new(self.sequence, Command::default().into(), id);
         self.sequence = self.sequence.wrapping_add(1);
         header
     }
 
-    async fn send<C, P>(&mut self, command: P) -> Result<(), Error>
+    async fn send<H, P>(&mut self, command: P) -> Result<(), Error>
     where
-        C: ValidControl,
+        H: Header<P::Id>,
         P: Parameter + ToLeStream,
-        <C as ValidControl>::Size: From<<P as Parameter>::Id>,
+        u16: From<P::Id>,
     {
-        let header = self.next_header::<C>(<C as ValidControl>::Size::from(P::ID));
+        let header = self.next_header::<H, P::Id>(P::ID);
         self.framed().send(Frame::new(header, command)).await
     }
 
-    async fn receive<C, P>(&mut self) -> Result<P, Error>
+    async fn receive<H, P>(&mut self) -> Result<P, Error>
     where
-        C: ValidControl,
+        H: Header<P::Id> + Send,
         P: Parameter + FromLeStream,
-        <C as ValidControl>::Size: From<<P as Parameter>::Id>,
+        u16: From<P::Id>,
     {
-        let Some(response) = self.framed::<C, P>().next().await else {
+        let Some(response) = self.framed::<H, P>().next().await else {
             return Err(
                 std::io::Error::new(ErrorKind::UnexpectedEof, "Empty response from NCP.").into(),
             );

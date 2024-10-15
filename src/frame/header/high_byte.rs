@@ -6,10 +6,10 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// The extended frame control field of the frame header.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
-pub struct ExtendedFrameControl(u8);
+pub struct HighByte(u8);
 
 bitflags! {
-    impl ExtendedFrameControl: u8 {
+    impl HighByte: u8 {
         /// Security enabled flag.
         const SECURITY_ENABLED = 0b1000_0000;
         /// Padding enabled flag.
@@ -21,7 +21,7 @@ bitflags! {
     }
 }
 
-impl ExtendedFrameControl {
+impl HighByte {
     /// Returns `true` if security is enabled else `false`.
     pub const fn is_security_enabled(self) -> bool {
         self.contains(Self::SECURITY_ENABLED)
@@ -46,7 +46,7 @@ impl ExtendedFrameControl {
     }
 }
 
-impl Default for ExtendedFrameControl {
+impl Default for HighByte {
     fn default() -> Self {
         Self::FRAME_FORMAT_VERSION_0
     }

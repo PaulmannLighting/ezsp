@@ -17,6 +17,8 @@ struct Args {
     tty: String,
     #[arg(short, long, help = "EZSP version to negotiate")]
     version: u8,
+    #[arg(short, long, help = "Keep listening for incoming messages")]
+    keep_listening: bool,
 }
 
 #[tokio::main]
@@ -24,20 +26,20 @@ async fn main() {
     env_logger::init();
     let args = Args::parse();
 
-    match open(args.tty, BaudRate::RstCts, FlowControl::Software) {
-        Ok(serial_port) => run(serial_port, args.version).await,
+    match open(args.tty.clone(), BaudRate::RstCts, FlowControl::Software) {
+        Ok(serial_port) => run(serial_port, args).await,
         Err(error) => error!("{error}"),
     }
 }
 
-async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
+async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     let (ash, transceiver) = make_pair::<8, _>(serial_port, None);
     let running = Arc::new(AtomicBool::new(true));
-    let _transceiver_thread = spawn(|| transceiver.run(running));
+    let transceiver_thread = spawn(|| transceiver.run(running));
     let mut ezsp = Ashv2::new(ash);
 
     // Test version negotiation.
-    match ezsp.negotiate_version(version).await {
+    match ezsp.negotiate_version(args.version).await {
         Ok(version) => {
             info!(
                 "Negotiated protocol version: {:#04X}",
@@ -135,5 +137,11 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, version: u8) {
         Err(error) => {
             error!("{error}");
         }
+    }
+
+    if args.keep_listening {
+        transceiver_thread
+            .join()
+            .expect("Transceiver thread panicked");
     }
 }

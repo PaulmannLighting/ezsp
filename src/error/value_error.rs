@@ -24,16 +24,18 @@ pub enum ValueError {
 impl Display for ValueError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Ezsp(status) => write!(f, "Invalid EZSP status: {status}"),
-            Self::Ember(status) => write!(f, "Invalid Ember status: {status}"),
+            Self::Ezsp(status) => write!(f, "Invalid EZSP status: {status:#04X}"),
+            Self::Ember(status) => write!(f, "Invalid Ember status: {status:#04X}"),
             Self::EmberDutyCycleState(state) => {
-                write!(f, "Invalid Ember duty cycle state: {state}")
+                write!(f, "Invalid Ember duty cycle state: {state:#04X}")
             }
-            Self::EmberNetworkStatus(status) => write!(f, "Invalid Ember network status: {status}"),
-            Self::EmberNodeType(node_type) => write!(f, "InvalidEmber node type: {node_type}"),
-            Self::Siliconlabs(status) => write!(f, "Invalid Siliconlabs status: {status}"),
-            Self::DecisionId(id) => write!(f, "Invalid decision ID: {id}"),
-            Self::EntropySource(source) => write!(f, "Invalid entropy source: {source}"),
+            Self::EmberNetworkStatus(status) => {
+                write!(f, "Invalid Ember network status: {status:#04X}")
+            }
+            Self::EmberNodeType(node_type) => write!(f, "InvalidEmber node type: {node_type:#04X}"),
+            Self::Siliconlabs(status) => write!(f, "Invalid Siliconlabs status: {status:#010X}"),
+            Self::DecisionId(id) => write!(f, "Invalid decision ID: {id:#04X}"),
+            Self::EntropySource(source) => write!(f, "Invalid entropy source: {source:#04X}"),
         }
     }
 }

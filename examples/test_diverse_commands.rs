@@ -13,6 +13,7 @@ use le_stream::ToLeStream;
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;
+use std::sync::mpsc::sync_channel;
 use std::sync::Arc;
 use std::thread::spawn;
 
@@ -55,9 +56,10 @@ async fn main() {
 
 #[allow(clippy::too_many_lines)]
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
-    let (ash, transceiver) = make_pair::<EZSP_MAX_FRAME_SIZE, _>(serial_port, 4, None);
+    let (cb_tx, cb_rx) = sync_channel(32);
+    let (ash, transceiver) = make_pair::<EZSP_MAX_FRAME_SIZE, _>(serial_port, 4, Some(cb_tx));
     let running = Arc::new(AtomicBool::new(true));
-    let transceiver_thread = spawn(|| transceiver.run(running));
+    let _transceiver_thread = spawn(|| transceiver.run(running));
     let mut ezsp = Ashv2::new(ash);
 
     // Test version negotiation.
@@ -268,9 +270,10 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     }
 
     if args.keep_listening {
-        transceiver_thread
-            .join()
-            .expect("Transceiver thread panicked");
+        loop {
+            let callback = cb_rx.recv().expect("Callback receiver disconnected.");
+            info!("Received callback: {:#04X}", HexSlice::new(&callback));
+        }
     }
 }
 

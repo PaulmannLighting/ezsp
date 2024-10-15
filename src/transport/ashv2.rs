@@ -11,6 +11,7 @@ use codec::Codec;
 
 use ashv2::AshFramed;
 
+pub(crate) mod callbacks;
 mod codec;
 
 /// An `EZSP` host using `ASHv2` on the transport layer.

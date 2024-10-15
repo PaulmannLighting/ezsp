@@ -1,5 +1,5 @@
 #[cfg(feature = "ashv2")]
-mod ashv2;
+pub(crate) mod ashv2;
 mod ezsp;
 
 use crate::frame::{Command, Extended, Parameter, Response, ValidControl};

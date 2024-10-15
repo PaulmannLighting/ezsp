@@ -1,14 +1,15 @@
 //! Test version negotiation.
 
-use ashv2::{make_pair, open, BaudRate, HexSlice};
+use ashv2::{make_pair, open, BaudRate, CallbacksFramed, HexSlice};
 use clap::Parser;
 use ezsp::ember::{CertificateData, PublicKeyData};
 use ezsp::ezsp::network::scan::Type;
 use ezsp::ezsp::value::Id;
 use ezsp::{
-    Ashv2, CertificateBasedKeyExchange, Configuration, Ezsp, Networking, ProxyTable, Security,
-    SinkTable, Utilities, EZSP_MAX_FRAME_SIZE,
+    Ashv2, CertificateBasedKeyExchange, Codec, Configuration, Extended, Ezsp, Networking,
+    ProxyTable, Response, Security, SinkTable, Utilities, EZSP_MAX_FRAME_SIZE,
 };
+use futures::StreamExt;
 use le_stream::ToLeStream;
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
@@ -16,6 +17,7 @@ use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::sync_channel;
 use std::sync::Arc;
 use std::thread::spawn;
+use tokio_util::codec::Framed;
 
 const TEST_TEXT: &str = "Rust rules! 🦀";
 
@@ -57,7 +59,9 @@ async fn main() {
 #[allow(clippy::too_many_lines)]
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     let (cb_tx, cb_rx) = sync_channel(32);
-    let (ash, transceiver) = make_pair::<EZSP_MAX_FRAME_SIZE, _>(serial_port, 4, Some(cb_tx));
+    let (cb_waker_tx, cb_waker_rx) = sync_channel(32);
+    let (ash, transceiver) =
+        make_pair::<EZSP_MAX_FRAME_SIZE, _>(serial_port, 4, Some((cb_tx, cb_waker_rx)));
     let running = Arc::new(AtomicBool::new(true));
     let _transceiver_thread = spawn(|| transceiver.run(running));
     let mut ezsp = Ashv2::new(ash);
@@ -270,9 +274,23 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     }
 
     if args.keep_listening {
+        let mut callbacks = Framed::new(
+            CallbacksFramed::new(cb_waker_tx, cb_rx),
+            Codec::<Extended<Response>>::default(),
+        );
+
         loop {
-            let callback = cb_rx.recv().expect("Callback receiver disconnected.");
-            info!("Received callback: {:#04X}", HexSlice::new(&callback));
+            if let Some(result) = callbacks.next().await {
+                match result {
+                    Ok(callback) => {
+                        info!("Received callback: {:?}", callback);
+                    }
+                    Err(error) => {
+                        error!("Error receiving callback: {error}");
+                        continue;
+                    }
+                }
+            };
         }
     }
 }

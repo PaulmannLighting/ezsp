@@ -22,6 +22,8 @@ pub use frame::{
 pub(crate) use resolve::Resolve;
 pub use result::Result;
 #[cfg(feature = "ashv2")]
+pub use transport::ashv2::callbacks::Codec;
+#[cfg(feature = "ashv2")]
 pub use transport::Ashv2;
 pub use transport::{
     Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, GreenPower, Messaging,

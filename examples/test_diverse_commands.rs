@@ -24,6 +24,20 @@ struct Args {
     tty: String,
     #[arg(short, long, help = "EZSP version to negotiate")]
     version: u8,
+    #[arg(
+        short,
+        long,
+        default_value_t = 0x0000_0000,
+        help = "Channel mask for scan command"
+    )]
+    channel_mask: u32,
+    #[arg(
+        short,
+        long,
+        default_value_t = 0x00,
+        help = "Duration for scan command"
+    )]
+    scan_duration: u8,
     #[arg(short, long, help = "Keep listening for incoming messages")]
     keep_listening: bool,
 }
@@ -241,7 +255,10 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     }
 
     // Test start of scan.
-    match ezsp.start_scan(Type::ActiveScan, 0x0000_0000, 32).await {
+    match ezsp
+        .start_scan(Type::ActiveScan, args.channel_mask, args.scan_duration)
+        .await
+    {
         Ok(()) => {
             info!("Started a scan");
         }

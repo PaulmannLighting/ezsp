@@ -3,6 +3,7 @@
 use ashv2::{make_pair, open, BaudRate, HexSlice};
 use clap::Parser;
 use ezsp::ember::{CertificateData, PublicKeyData};
+use ezsp::ezsp::network::scan::Type;
 use ezsp::ezsp::value::Id;
 use ezsp::{
     Ashv2, CertificateBasedKeyExchange, Configuration, Ezsp, Networking, ProxyTable, Security,
@@ -236,6 +237,16 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
         Err(error) => {
             error!("Error calculating SMACS: {error}");
+        }
+    }
+
+    // Test start of scan.
+    match ezsp.start_scan(Type::ActiveScan, 0x0000_0000, 32).await {
+        Ok(()) => {
+            info!("Started a scan");
+        }
+        Err(error) => {
+            error!("Error starting scan: {error}");
         }
     }
 

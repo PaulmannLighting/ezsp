@@ -14,8 +14,7 @@ use std::hash::Hash;
 pub trait Header<T>:
     Clone + Copy + Debug + Eq + Hash + PartialEq + FromLeStream + ToLeStream + Send
 where
-    T: Copy + Clone + Debug + Eq + Hash + PartialEq + Send,
-    u16: From<T>,
+    T: Copy + Clone + Debug + Eq + Hash + Into<u16> + PartialEq + Send,
 {
     fn new(sequence: u8, low_byte: LowByte, id: T) -> Self;
     fn sequence(self) -> u8;

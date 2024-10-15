@@ -33,7 +33,6 @@ impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
     where
         H: Header<P::Id>,
         P: Parameter,
-        u16: From<P::Id>,
     {
         Framed::new(&mut self.ash, Codec::default())
     }
@@ -43,8 +42,7 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
     fn next_header<H, T>(&mut self, id: T) -> H
     where
         H: Header<T>,
-        T: Copy + Clone + Debug + Eq + Hash + PartialEq + Send,
-        u16: From<T>,
+        T: Copy + Clone + Debug + Eq + Hash + Into<u16> + PartialEq + Send,
     {
         let header = H::new(self.sequence, Command::default().into(), id);
         self.sequence = self.sequence.wrapping_add(1);
@@ -55,7 +53,6 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
     where
         H: Header<P::Id>,
         P: Parameter + ToLeStream,
-        u16: From<P::Id>,
     {
         let header = self.next_header::<H, P::Id>(P::ID);
         self.framed().send(Frame::new(header, command)).await
@@ -65,7 +62,6 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
     where
         H: Header<P::Id> + Send,
         P: Parameter + FromLeStream,
-        u16: From<P::Id>,
     {
         let Some(response) = self.framed::<H, P>().next().await else {
             return Err(

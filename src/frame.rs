@@ -17,7 +17,6 @@ pub struct Frame<H, P>
 where
     H: Header<P::Id>,
     P: Parameter,
-    u16: From<P::Id>,
 {
     header: H,
     parameters: P,
@@ -27,7 +26,6 @@ impl<H, P> Frame<H, P>
 where
     H: Header<P::Id>,
     P: Parameter,
-    u16: From<P::Id>,
 {
     /// Create a new frame.
     #[must_use]

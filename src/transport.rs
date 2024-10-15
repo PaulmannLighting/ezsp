@@ -27,22 +27,19 @@ pub trait Transport: Send {
     fn next_header<H, T>(&mut self, id: T) -> H
     where
         H: Header<T>,
-        T: Copy + Clone + Debug + Eq + Hash + PartialEq + Send,
-        u16: From<T>;
+        T: Copy + Clone + Debug + Eq + Hash + Into<u16> + PartialEq + Send;
 
     /// Send a command to the NCP.
     fn send<H, P>(&mut self, command: P) -> impl Future<Output = Result<(), Error>> + Send
     where
         H: Header<P::Id>,
-        P: Parameter + ToLeStream,
-        u16: From<P::Id>;
+        P: Parameter + ToLeStream;
 
     /// Receive a response from the NCP.
     fn receive<H, P>(&mut self) -> impl Future<Output = Result<P, Error>> + Send
     where
         H: Header<P::Id>,
-        P: Parameter + FromLeStream,
-        u16: From<P::Id>;
+        P: Parameter + FromLeStream;
 
     /// Communicate with the NCP.
     ///
@@ -51,7 +48,6 @@ pub trait Transport: Send {
     where
         C: Parameter + ToLeStream,
         R: Clone + Debug + Parameter + FromLeStream,
-        u16: From<C::Id> + From<R::Id>,
         Extended: Header<C::Id> + Header<R::Id>,
     {
         async {

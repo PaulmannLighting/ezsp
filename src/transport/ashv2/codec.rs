@@ -18,7 +18,6 @@ pub struct Codec<H, P>
 where
     H: Header<P::Id>,
     P: Parameter,
-    u16: From<P::Id>,
 {
     header: Option<H>,
     _parameter: std::marker::PhantomData<P>,
@@ -29,7 +28,6 @@ impl<H, P> Default for Codec<H, P>
 where
     H: Header<P::Id>,
     P: Parameter,
-    u16: From<P::Id>,
 {
     fn default() -> Self {
         Self {
@@ -44,7 +42,6 @@ impl<H, P> Decoder for Codec<H, P>
 where
     H: Header<P::Id>,
     P: Parameter + FromLeStream,
-    u16: From<P::Id>,
 {
     type Item = Frame<H, P>;
     type Error = Error;
@@ -59,7 +56,7 @@ where
                 return Ok(None);
             };
 
-            if u16::from(header.id()) == invalid_command::Response::ID {
+            if header.id().into() == invalid_command::Response::ID {
                 return Err(Error::InvalidCommand(
                     invalid_command::Response::from_le_stream_exact(stream)?,
                 ));
@@ -104,7 +101,6 @@ impl<H, P> Encoder<Frame<H, P>> for Codec<H, P>
 where
     H: Header<P::Id>,
     P: Parameter + ToLeStream,
-    u16: From<P::Id>,
 {
     type Error = Error;
 

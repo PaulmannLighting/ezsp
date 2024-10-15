@@ -19,9 +19,17 @@ pub mod zll;
 
 pub trait Parameter: Debug + Send
 where
-    <Self as Parameter>::Id:
-        Copy + Debug + Display + Eq + Hash + LowerHex + UpperHex + Send + FromLeStream + ToLeStream,
-    u16: From<<Self as Parameter>::Id>,
+    <Self as Parameter>::Id: Copy
+        + Debug
+        + Display
+        + Eq
+        + Hash
+        + Into<u16>
+        + LowerHex
+        + UpperHex
+        + Send
+        + FromLeStream
+        + ToLeStream,
 {
     type Id;
     const ID: Self::Id;

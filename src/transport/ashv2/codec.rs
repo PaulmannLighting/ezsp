@@ -9,6 +9,11 @@ use crate::Error;
 
 use ashv2::MAX_PAYLOAD_SIZE;
 
+/// TODO: This is just an estimate. Check all frames and calculate actual maximum frame size.
+const EZSP_MAX_FRAME_SIZE: usize = 256;
+/// And `EZSP` header has a maximum size of 5 bytes.
+const EZSP_MAX_HEADER_SIZE: usize = 5;
+
 /// Codec to encode frames to bytes and decode bytes into frames.
 ///
 /// This can be used with `tokio::codec::Framed` to encode and decode frames.
@@ -20,6 +25,7 @@ where
 {
     header: Option<Header<C>>,
     _parameter: std::marker::PhantomData<P>,
+    buffers: Buffers,
 }
 
 impl<C, P> Default for Codec<C, P>
@@ -31,6 +37,7 @@ where
         Self {
             header: None,
             _parameter: std::marker::PhantomData,
+            buffers: Buffers::default(),
         }
     }
 }
@@ -45,7 +52,7 @@ where
     type Error = Error;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        let mut parameters = Vec::new();
+        self.buffers.clear();
 
         for chunk in src.chunks(MAX_PAYLOAD_SIZE) {
             let mut stream = chunk.iter().copied();
@@ -72,14 +79,14 @@ where
                 self.header.replace(header);
             }
 
-            parameters.push(stream);
+            self.buffers.parameters.extend(stream);
         }
 
         let Some(header) = self.header else {
             return Ok(None);
         };
 
-        let parameters = P::from_le_stream_exact(parameters.into_iter().flatten())?;
+        let parameters = P::from_le_stream_exact(self.buffers.parameters.iter().copied())?;
         src.clear();
         let item = Self::Item::new(header, parameters);
 
@@ -104,18 +111,39 @@ where
     type Error = Error;
 
     fn encode(&mut self, item: Frame<C, P>, dst: &mut BytesMut) -> Result<(), Self::Error> {
-        let header: Vec<u8> = item.header().to_le_stream().collect();
-        let parameters: Vec<u8> = item.parameters().to_le_stream().collect();
+        self.buffers.clear();
+        self.buffers.header.extend(item.header().to_le_stream());
+        self.buffers
+            .parameters
+            .extend(item.parameters().to_le_stream());
 
-        if parameters.is_empty() {
-            dst.extend_from_slice(&header);
+        if self.buffers.parameters.is_empty() {
+            dst.extend_from_slice(&self.buffers.header);
         } else {
-            for chunk in parameters.chunks(MAX_PAYLOAD_SIZE.saturating_sub(header.len())) {
-                dst.extend_from_slice(&header);
+            for chunk in self
+                .buffers
+                .parameters
+                .chunks(MAX_PAYLOAD_SIZE.saturating_sub(self.buffers.header.len()))
+            {
+                dst.extend_from_slice(&self.buffers.header);
                 dst.extend_from_slice(chunk);
             }
         }
 
         Ok(())
+    }
+}
+
+#[derive(Debug, Default)]
+struct Buffers {
+    pub header: heapless::Vec<u8, EZSP_MAX_HEADER_SIZE>,
+    pub parameters: heapless::Vec<u8, EZSP_MAX_FRAME_SIZE>,
+}
+
+impl Buffers {
+    /// Clears the buffers.
+    pub fn clear(&mut self) {
+        self.header.clear();
+        self.parameters.clear();
     }
 }

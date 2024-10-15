@@ -33,7 +33,7 @@ async fn main() {
 }
 
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
-    let (ash, transceiver) = make_pair::<8, _>(serial_port, None);
+    let (ash, transceiver) = make_pair::<4, _>(serial_port, None);
     let running = Arc::new(AtomicBool::new(true));
     let transceiver_thread = spawn(|| transceiver.run(running));
     let mut ezsp = Ashv2::new(ash);
@@ -49,7 +49,8 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             info!("Negotiated stack version: {:#06X}", version.stack_version());
         }
         Err(error) => {
-            error!("{error}");
+            error!("Error negotiating version: {error}");
+            return;
         }
     }
 
@@ -64,7 +65,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             }
         },
         Err(error) => {
-            error!("{error}");
+            error!("Error getting echo reply: {error}");
         }
     }
 
@@ -74,18 +75,18 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             info!("Got random number: {number}");
         }
         Err(error) => {
-            error!("{error}");
+            error!("Error getting random number: {error}");
         }
     }
 
     // Test XNCP
     match ezsp.get_xncp_info().await {
         Ok(info) => {
-            info!("XNPC manufacturer ID: {}", info.manufacturer_id());
-            info!("XNPC version number: {}", info.version_number());
+            info!("XNCP manufacturer ID: {}", info.manufacturer_id());
+            info!("XNCP version number: {}", info.version_number());
         }
         Err(error) => {
-            error!("{error}");
+            error!("Error getting XNCP info: {error}");
         }
     }
 
@@ -95,7 +96,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             info!("EUI64: {eui64}");
         }
         Err(error) => {
-            error!("{error}");
+            error!("Error getting EUI64: {error}");
         }
     }
 
@@ -105,7 +106,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             info!("Node ID: {node_id:#06X}");
         }
         Err(error) => {
-            error!("{error}");
+            error!("Error getting node ID: {error}");
         }
     }
 
@@ -115,7 +116,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             info!("Phy interfaces: {phy_interfaces}");
         }
         Err(error) => {
-            error!("{error}");
+            error!("Error getting phy interfaces: {error}");
         }
     }
 
@@ -125,7 +126,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             info!("Entropy source: {entropy_source:?}");
         }
         Err(error) => {
-            error!("{error}");
+            error!("Error getting entropy source: {error}");
         }
     }
 
@@ -135,7 +136,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             info!("Sink table active entries: {active_entries:?}");
         }
         Err(error) => {
-            error!("{error}");
+            error!("Error getting sink table active entries: {error}");
         }
     }
 

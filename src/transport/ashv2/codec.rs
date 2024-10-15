@@ -106,16 +106,14 @@ where
     fn encode(&mut self, item: Frame<C, P>, dst: &mut BytesMut) -> Result<(), Self::Error> {
         let header: Vec<u8> = item.header().to_le_stream().collect();
         let parameters: Vec<u8> = item.parameters().to_le_stream().collect();
-        let chunk_size = MAX_PAYLOAD_SIZE.saturating_sub(header.len());
 
-        if parameters.len() > chunk_size {
-            for chunk in parameters.chunks(chunk_size) {
+        if parameters.is_empty() {
+            dst.extend_from_slice(&header);
+        } else {
+            for chunk in parameters.chunks(MAX_PAYLOAD_SIZE.saturating_sub(header.len())) {
                 dst.extend_from_slice(&header);
                 dst.extend_from_slice(chunk);
             }
-        } else {
-            dst.extend_from_slice(&header);
-            dst.extend_from_slice(&parameters);
         }
 
         Ok(())

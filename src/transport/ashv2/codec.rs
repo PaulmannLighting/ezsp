@@ -2,17 +2,13 @@ use le_stream::{FromLeStream, ToLeStream};
 use tokio_util::bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
 
+use crate::constants::{EZSP_MAX_FRAME_SIZE, EZSP_MAX_HEADER_SIZE};
 use crate::error::Decode;
 use crate::frame::parameters::utilities::invalid_command;
 use crate::frame::{Frame, Header, Parameter, ValidControl};
 use crate::Error;
 
 use ashv2::MAX_PAYLOAD_SIZE;
-
-/// TODO: This is just an estimate. Check all frames and calculate actual maximum frame size.
-const EZSP_MAX_FRAME_SIZE: usize = 256;
-/// And `EZSP` header has a maximum size of 5 bytes.
-const EZSP_MAX_HEADER_SIZE: usize = 5;
 
 /// Codec to encode frames to bytes and decode bytes into frames.
 ///

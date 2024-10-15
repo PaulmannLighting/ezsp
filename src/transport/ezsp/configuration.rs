@@ -9,10 +9,10 @@ use crate::frame::parameters::configuration::{
     read_attribute, send_pan_id_update, set_configuration_value, set_passive_ack_config,
     set_policy, set_value, version, write_attribute,
 };
-use crate::frame::Legacy;
+use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use crate::Resolve;
 use crate::{Error, Transport};
+use crate::{Header, Resolve};
 
 /// The `Configuration` trait provides an interface for the configuration commands.
 pub trait Configuration {
@@ -55,12 +55,6 @@ pub trait Configuration {
         &mut self,
         value_id: value::Id,
     ) -> impl Future<Output = Result<ByteSizedVec<u8>, Error>> + Send;
-
-    /// Legacy implementation of [`version()`](Self::version) using a shortened header.
-    fn legacy_version(
-        &mut self,
-        desired_protocol_version: u8,
-    ) -> impl Future<Output = Result<version::Response, Error>> + Send;
 
     /// Read attribute data on NCP endpoints.
     fn read_attribute(
@@ -112,10 +106,12 @@ pub trait Configuration {
     /// The command allows the Host to specify the desired EZSP version and must be sent
     /// before any other command.
     /// The response provides information about the firmware running on the NCP.
-    fn version(
+    fn version<H>(
         &mut self,
         desired_protocol_version: u8,
-    ) -> impl Future<Output = Result<version::Response, Error>> + Send;
+    ) -> impl Future<Output = Result<version::Response, Error>> + Send
+    where
+        H: Header<<version::Command as Parameter>::Id>;
 
     /// Write attribute data on NCP endpoints.
     #[allow(clippy::too_many_arguments)]
@@ -190,15 +186,6 @@ where
             .resolve()
     }
 
-    async fn legacy_version(
-        &mut self,
-        desired_protocol_version: u8,
-    ) -> Result<version::Response, Error> {
-        self.send::<Legacy, _>(version::Command::new(desired_protocol_version))
-            .await?;
-        self.receive::<Legacy, version::Response>().await
-    }
-
     async fn read_attribute(
         &mut self,
         endpoint: u8,
@@ -269,9 +256,13 @@ where
             .resolve()
     }
 
-    async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
-        self.communicate::<_, version::Response>(version::Command::new(desired_protocol_version))
-            .await
+    async fn version<H>(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error>
+    where
+        H: Header<<version::Command as Parameter>::Id>,
+    {
+        self.send::<H, _>(version::Command::new(desired_protocol_version))
+            .await?;
+        self.receive::<H, version::Response>().await
     }
 
     async fn write_attribute(

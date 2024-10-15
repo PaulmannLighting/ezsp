@@ -46,9 +46,8 @@ pub trait Transport: Send {
     /// This assumes that `C::ID` and `R::ID` are the same.
     fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
     where
-        C: Parameter + ToLeStream,
-        R: Clone + Debug + Parameter + FromLeStream,
-        Extended: Header<C::Id> + Header<R::Id>,
+        C: Parameter<Id = u16> + ToLeStream,
+        R: Clone + Debug + Parameter<Id = u16> + FromLeStream,
     {
         async {
             self.send::<Extended, C>(command).await?;

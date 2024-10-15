@@ -16,7 +16,8 @@ pub use wwah::Wwah;
 pub use zll::Zll;
 
 use crate::frame::parameters::configuration::version;
-use crate::Error;
+use crate::frame::Legacy;
+use crate::{Error, Extended};
 
 mod binding;
 mod bootloader;
@@ -84,11 +85,13 @@ where
         desired_protocol_version: u8,
     ) -> Result<version::Response, Error> {
         debug!("Negotiating legacy version");
-        let mut response = self.legacy_version(desired_protocol_version).await?;
+        let mut response = self.version::<Legacy>(desired_protocol_version).await?;
 
         if response.protocol_version() >= MIN_NON_LEGACY_VERSION {
             debug!("Negotiating  version");
-            response = self.version(response.protocol_version()).await?;
+            response = self
+                .version::<Extended>(response.protocol_version())
+                .await?;
         }
 
         if response.protocol_version() == desired_protocol_version {

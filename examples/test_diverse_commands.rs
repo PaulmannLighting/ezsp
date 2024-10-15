@@ -2,8 +2,13 @@
 
 use ashv2::{make_pair, open, BaudRate, HexSlice};
 use clap::Parser;
+use ezsp::ember::{CertificateData, PublicKeyData};
 use ezsp::ezsp::value::Id;
-use ezsp::{Ashv2, Configuration, Ezsp, SinkTable, Utilities, EZSP_MAX_FRAME_SIZE};
+use ezsp::{
+    Ashv2, CertificateBasedKeyExchange, Configuration, Ezsp, Networking, ProxyTable, Security,
+    SinkTable, Utilities, EZSP_MAX_FRAME_SIZE,
+};
+use le_stream::ToLeStream;
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;
@@ -33,6 +38,7 @@ async fn main() {
     }
 }
 
+#[allow(clippy::too_many_lines)]
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     let (ash, transceiver) = make_pair::<EZSP_MAX_FRAME_SIZE, _>(serial_port, 4, None);
     let running = Arc::new(AtomicBool::new(true));
@@ -142,6 +148,96 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     }
 
     get_value_ids(&mut ezsp).await;
+
+    // Test exporting the transient key by index.
+    match ezsp.export_transient_key_by_index(0).await {
+        Ok(payload) => {
+            info!("Transient key by index: {payload:?}");
+        }
+        Err(error) => {
+            error!("Error getting transient key by index: {error}");
+        }
+    }
+
+    // Test getting GP proxy table entry.
+    match ProxyTable::get_entry(&mut ezsp, 0).await {
+        Ok(entry) => {
+            info!("GP proxy table entry: {entry:#04X?}");
+            info!(
+                "GP proxy table entry size: {}",
+                entry.to_le_stream().count()
+            );
+        }
+        Err(error) => {
+            error!("Error getting GP proxy table entry: {error}");
+        }
+    }
+
+    // Test getting Certificate 283k1 data.
+    match ezsp.get_certificate283k1().await {
+        Ok(certificate) => {
+            info!("Certificate 283k1 data: {certificate:#04X?}");
+            info!(
+                "Certificate 283k1 data size: {}",
+                certificate.to_le_stream().count()
+            );
+        }
+        Err(error) => {
+            error!("Error getting certificate 283k1 data: {error}");
+        }
+    }
+
+    // Test getting Certificate data.
+    match ezsp.get_certificate().await {
+        Ok(certificate) => {
+            info!("Certificate data: {certificate:#04X?}");
+            info!(
+                "Certificate data size: {}",
+                certificate.to_le_stream().count()
+            );
+        }
+        Err(error) => {
+            error!("Error getting certificate data: {error}");
+        }
+    }
+
+    // Test getting duty cycle limits.
+    match ezsp.get_duty_cycle_limits().await {
+        Ok(limits) => {
+            info!("Duty cycle limits: {limits:#04X?}");
+            info!("Duty cycle limits size: {}", limits.to_le_stream().count());
+        }
+        Err(error) => {
+            error!("Error getting duty cycle limits: {error}");
+        }
+    }
+
+    // Test getting duty cycle state.
+    match ezsp.get_duty_cycle_state().await {
+        Ok(state) => {
+            info!("Duty cycle state: {state:#04X?}");
+        }
+        Err(error) => {
+            error!("Error getting duty cycle state: {error}");
+        }
+    }
+
+    // Test calculate SMACS.
+    match ezsp
+        .calculate_smacs(
+            true,
+            CertificateData::from([0; 48]),
+            PublicKeyData::from([0; 22]),
+        )
+        .await
+    {
+        Ok(()) => {
+            info!("Calculated SMACS");
+        }
+        Err(error) => {
+            error!("Error calculating SMACS: {error}");
+        }
+    }
 
     if args.keep_listening {
         transceiver_thread

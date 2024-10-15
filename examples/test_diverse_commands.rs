@@ -1,23 +1,19 @@
 //! Test version negotiation.
 
-use ashv2::{make_pair, open, BaudRate, CallbacksFramed, HexSlice};
+use ashv2::{make_pair, open, BaudRate, HexSlice};
 use clap::Parser;
 use ezsp::ember::{CertificateData, PublicKeyData};
-use ezsp::ezsp::network::scan::Type;
 use ezsp::ezsp::value::Id;
 use ezsp::{
-    Ashv2, CertificateBasedKeyExchange, Codec, Configuration, Extended, Ezsp, Networking,
-    ProxyTable, Response, Security, SinkTable, Utilities, EZSP_MAX_FRAME_SIZE,
+    Ashv2, CertificateBasedKeyExchange, Configuration, Ezsp, Networking, ProxyTable, Security,
+    SinkTable, Utilities, EZSP_MAX_FRAME_SIZE,
 };
-use futures::StreamExt;
 use le_stream::ToLeStream;
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;
-use std::sync::mpsc::sync_channel;
 use std::sync::Arc;
 use std::thread::spawn;
-use tokio_util::codec::Framed;
 
 const TEST_TEXT: &str = "Rust rules! 🦀";
 
@@ -27,20 +23,6 @@ struct Args {
     tty: String,
     #[arg(short, long, help = "EZSP version to negotiate")]
     version: u8,
-    #[arg(
-        short,
-        long,
-        default_value_t = 0x0000_0000,
-        help = "Channel mask for scan command"
-    )]
-    channel_mask: u32,
-    #[arg(
-        short,
-        long,
-        default_value_t = 0x00,
-        help = "Duration for scan command"
-    )]
-    scan_duration: u8,
     #[arg(short, long, help = "Keep listening for incoming messages")]
     keep_listening: bool,
 }
@@ -58,12 +40,9 @@ async fn main() {
 
 #[allow(clippy::too_many_lines)]
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
-    let (cb_tx, cb_rx) = sync_channel(32);
-    let (cb_waker_tx, cb_waker_rx) = sync_channel(32);
-    let (ash, transceiver) =
-        make_pair::<EZSP_MAX_FRAME_SIZE, _>(serial_port, 4, Some((cb_tx, cb_waker_rx)));
+    let (ash, transceiver) = make_pair::<EZSP_MAX_FRAME_SIZE, _>(serial_port, 4, None);
     let running = Arc::new(AtomicBool::new(true));
-    let _transceiver_thread = spawn(|| transceiver.run(running));
+    let transceiver_thread = spawn(|| transceiver.run(running));
     let mut ezsp = Ashv2::new(ash);
 
     // Test version negotiation.
@@ -260,38 +239,10 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
     }
 
-    // Test start of scan.
-    match ezsp
-        .start_scan(Type::ActiveScan, args.channel_mask, args.scan_duration)
-        .await
-    {
-        Ok(()) => {
-            info!("Started a scan");
-        }
-        Err(error) => {
-            error!("Error starting scan: {error}");
-        }
-    }
-
     if args.keep_listening {
-        let mut callbacks = Framed::new(
-            CallbacksFramed::new(cb_waker_tx, cb_rx),
-            Codec::<Extended<Response>>::default(),
-        );
-
-        loop {
-            if let Some(result) = callbacks.next().await {
-                match result {
-                    Ok(callback) => {
-                        info!("Received callback: {:?}", callback);
-                    }
-                    Err(error) => {
-                        error!("Error receiving callback: {error}");
-                        continue;
-                    }
-                }
-            };
-        }
+        transceiver_thread
+            .join()
+            .expect("Transceiver thread panicked.");
     }
 }
 

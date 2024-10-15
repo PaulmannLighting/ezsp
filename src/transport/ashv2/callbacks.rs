@@ -1,7 +1,6 @@
 use le_stream::{FromLeStream, ToLeStream};
-use std::io::ErrorKind;
 use tokio_util::bytes::BytesMut;
-use tokio_util::codec::{Decoder, Encoder};
+use tokio_util::codec::Decoder;
 
 use crate::constants::EZSP_MAX_FRAME_SIZE;
 use crate::frame::parameters::utilities::invalid_command;
@@ -99,18 +98,6 @@ where
     }
 }
 
-impl<C> Encoder<()> for Codec<C>
-where
-    C: ValidControl,
-    u16: From<C::Size>,
-{
-    type Error = Error;
-
-    fn encode(&mut self, _item: (), _dst: &mut BytesMut) -> Result<(), Self::Error> {
-        Err(std::io::Error::from(ErrorKind::Unsupported).into())
-    }
-}
-
 #[derive(Debug)]
 pub enum Callback {
     NetworkFound(network_found::Handler),
@@ -128,15 +115,15 @@ impl Callback {
             }
             network_found::Handler::ID => {
                 info!("Found network found callback");
-                Ok(Callback::NetworkFound(
-                    network_found::Handler::from_le_slice(buffer)?,
-                ))
+                Ok(Self::NetworkFound(network_found::Handler::from_le_slice(
+                    buffer,
+                )?))
             }
             scan_complete::Handler::ID => {
                 info!("Found scan complete callback");
-                Ok(Callback::ScanComplete(
-                    scan_complete::Handler::from_le_slice(buffer)?,
-                ))
+                Ok(Self::ScanComplete(scan_complete::Handler::from_le_slice(
+                    buffer,
+                )?))
             }
             id => Err(Error::Custom(format!("Invalid callback ID: {id}"))),
         }

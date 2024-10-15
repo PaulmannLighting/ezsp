@@ -84,13 +84,20 @@ where
         desired_protocol_version: u8,
     ) -> Result<version::Response, Error> {
         debug!("Negotiating legacy version");
-        let response = self.legacy_version(desired_protocol_version).await?;
+        let mut response = self.legacy_version(desired_protocol_version).await?;
 
         if response.protocol_version() >= MIN_NON_LEGACY_VERSION {
             debug!("Negotiating  version");
-            return self.version(response.protocol_version()).await;
+            response = self.version(response.protocol_version()).await?;
         }
 
-        Ok(response)
+        if response.protocol_version() == desired_protocol_version {
+            Ok(response)
+        } else {
+            Err(Error::ProtocolVersionMismatch {
+                desired: desired_protocol_version,
+                negotiated: response,
+            })
+        }
     }
 }

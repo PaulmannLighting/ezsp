@@ -1,15 +1,17 @@
-use crate::frame::{Control, Frame, Header, Parameter, ValidControl};
-use crate::transport::Transport;
-use crate::Error;
-use ashv2::AshFramed;
-use codec::Codec;
 use futures::{SinkExt, StreamExt};
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
 use std::io::ErrorKind;
 use tokio_util::codec::Framed;
 
-pub mod codec;
+use crate::frame::{Control, Frame, Header, Parameter, ValidControl};
+use crate::transport::Transport;
+use crate::Error;
+use codec::Codec;
+
+use ashv2::AshFramed;
+
+mod codec;
 
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
@@ -52,8 +54,7 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         <C as ValidControl>::Size: From<<P as Parameter>::Id>,
     {
         let header = self.next_header::<C>(<C as ValidControl>::Size::from(P::ID));
-        self.framed().send(Frame::new(header, command)).await?;
-        Ok(())
+        self.framed().send(Frame::new(header, command)).await
     }
 
     async fn receive<C, P>(&mut self) -> Result<P, Error>

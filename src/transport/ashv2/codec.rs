@@ -1,11 +1,13 @@
+use le_stream::{FromLeStream, ToLeStream};
+use tokio_util::bytes::BytesMut;
+use tokio_util::codec::{Decoder, Encoder};
+
 use crate::error::Decode;
 use crate::frame::parameters::utilities::invalid_command;
 use crate::frame::{Frame, Header, Parameter, ValidControl};
 use crate::Error;
+
 use ashv2::MAX_PAYLOAD_SIZE;
-use le_stream::{FromLeStream, ToLeStream};
-use tokio_util::bytes::BytesMut;
-use tokio_util::codec::{Decoder, Encoder};
 
 /// Codec to encode frames to bytes and decode bytes into frames.
 ///
@@ -40,7 +42,7 @@ where
     <C as ValidControl>::Size: From<<P as Parameter>::Id>,
 {
     type Item = Frame<C, P>;
-    type Error = crate::Error;
+    type Error = Error;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
         let mut parameters = Vec::new();
@@ -99,11 +101,17 @@ where
     P: Parameter + ToLeStream,
     <C as ValidControl>::Size: From<<P as Parameter>::Id>,
 {
-    type Error = crate::Error;
+    type Error = Error;
 
     fn encode(&mut self, item: Frame<C, P>, dst: &mut BytesMut) -> Result<(), Self::Error> {
-        dst.extend(item.header().to_le_stream());
-        dst.extend(item.parameters().to_le_stream());
+        let header: Vec<u8> = item.header().to_le_stream().collect();
+        let parameters: Vec<u8> = item.parameters().to_le_stream().collect();
+
+        for chunk in parameters.chunks(MAX_PAYLOAD_SIZE.saturating_sub(header.len())) {
+            dst.extend_from_slice(&header);
+            dst.extend_from_slice(chunk);
+        }
+
         Ok(())
     }
 }

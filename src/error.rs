@@ -1,6 +1,7 @@
 mod decode;
 mod value_error;
 
+use crate::frame::parameters::configuration::version;
 use crate::frame::parameters::utilities::invalid_command;
 use crate::{ember, ezsp};
 pub use decode::Decode;
@@ -20,10 +21,17 @@ pub enum Error {
     Ember(ember::Status),
     /// The received [`siliconlabs::Status`] indicates an error.
     Siliconlabs(siliconlabs::Status),
-    /// Invalid status
-    ValueError(ValueError),
     /// The NCP responded with `invalidCommand` (0x0058).
     InvalidCommand(invalid_command::Response),
+    /// The protocol negotiation failed.
+    ProtocolVersionMismatch {
+        /// The version that was desired.
+        desired: u8,
+        /// The version that was received.
+        negotiated: version::Response,
+    },
+    /// Invalid status
+    ValueError(ValueError),
     /// A custom error message.
     Custom(String),
 }
@@ -42,6 +50,17 @@ impl Display for Error {
                 Ok(reason) => write!(f, "Invalid command: {reason}"),
                 Err(code) => write!(f, "Invalid command: {code:#04X}"),
             },
+            Error::ProtocolVersionMismatch {
+                desired,
+                negotiated,
+            } => {
+                write!(
+                    f,
+                    "Protocol negotiation failed: {:#04X} (desired) != {:#04X} (negotiated)",
+                    desired,
+                    negotiated.protocol_version()
+                )
+            }
             Self::ValueError(status) => Display::fmt(status, f),
             Self::Custom(msg) => Display::fmt(msg, f),
         }

@@ -11,8 +11,8 @@ use crate::frame::parameters::configuration::{
 };
 use crate::frame::{Command, Response};
 use crate::types::ByteSizedVec;
-use crate::Resolve;
 use crate::{Error, Transport};
+use crate::{Extended, Resolve};
 
 /// The `Configuration` trait provides an interface for the configuration commands.
 pub trait Configuration {
@@ -270,7 +270,9 @@ where
     }
 
     async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
-        self.communicate::<_, version::Response>(version::Command::new(desired_protocol_version))
+        self.send::<Extended<Command>, _>(version::Command::new(desired_protocol_version))
+            .await?;
+        self.receive::<Extended<Response>, version::Response>()
             .await
     }
 

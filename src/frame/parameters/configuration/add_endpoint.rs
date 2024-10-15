@@ -11,7 +11,7 @@ use crate::types::ByteSizedVec;
 const ID: u16 = 0x0002;
 const SIZE: usize = 1 + 2 + 2 + 1 + 2 * (2 * u8::MAX as usize);
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Command {
     endpoint: u8,
     profile_id: u16,

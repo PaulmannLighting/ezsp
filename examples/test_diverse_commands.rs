@@ -1,8 +1,9 @@
 //! Test version negotiation.
 
-use ashv2::{make_pair, open, BaudRate};
+use ashv2::{make_pair, open, BaudRate, HexSlice};
 use clap::Parser;
-use ezsp::{Ashv2, Ezsp, SinkTable, Utilities, EZSP_MAX_FRAME_SIZE};
+use ezsp::ezsp::value::Id;
+use ezsp::{Ashv2, Configuration, Ezsp, SinkTable, Utilities, EZSP_MAX_FRAME_SIZE};
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;
@@ -140,9 +141,43 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
     }
 
+    get_value_ids(&mut ezsp).await;
+
     if args.keep_listening {
         transceiver_thread
             .join()
             .expect("Transceiver thread panicked");
+    }
+}
+
+/// Test getting values.
+async fn get_value_ids<const BUF_SIZE: usize>(ezsp: &mut Ashv2<BUF_SIZE>) {
+    for id in [
+        Id::ActiveRadioConfig,
+        Id::AntennaMode,
+        Id::AntennaRxMode,
+        Id::ApsFrameCounter,
+        Id::Certificate283K1,
+        Id::CcaThreshold,
+        Id::CoulombCounterUsage,
+        Id::DelayedJoinActivation,
+        Id::DescriptorCapability,
+        Id::EmbernetPassthroughSourceAddress,
+        Id::EndpointFlags,
+        Id::FreeBuffers,
+        Id::MacFilterList,
+        Id::MfglibOptions,
+        Id::MfgSecurityConfig,
+        Id::NwkFrameCounter,
+        Id::VersionInfo,
+    ] {
+        match ezsp.get_value(id).await {
+            Ok(data) => {
+                info!("{id:?}: {:#04X}", HexSlice::new(&data));
+            }
+            Err(error) => {
+                error!("Error getting {id:?}: {error}");
+            }
+        }
     }
 }

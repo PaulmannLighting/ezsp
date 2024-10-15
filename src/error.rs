@@ -44,7 +44,7 @@ impl Display for Error {
             Self::Ezsp(status) => write!(f, "Ezsp: {status:?} ({:#04X})", u8::from(*status)),
             Self::Ember(status) => write!(f, "Ember: {status:?} ({:#04X})", u8::from(*status)),
             Self::Siliconlabs(status) => {
-                write!(f, "Siliconlabs: {status:?} ({:#10X})", u32::from(*status))
+                write!(f, "Siliconlabs: {status:?} ({:#010X})", u32::from(*status))
             }
             Self::InvalidCommand(response) => match response.reason() {
                 Ok(reason) => write!(f, "Invalid command: {reason}"),

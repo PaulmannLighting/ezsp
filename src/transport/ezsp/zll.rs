@@ -3,8 +3,8 @@ use crate::ember::node::Type;
 use crate::ember::zll::{DataToken, InitialSecurityState, Network};
 use crate::ezsp::zll::NetworkOperation;
 use crate::frame::parameters::zll::{
-    get_tokens, network_ops, set_data_token, set_initial_security_state, set_non_zll_network,
-    set_rx_on_when_idle, set_security_state_without_key, start_scan,
+    get_tokens, is_zll_network, network_ops, set_data_token, set_initial_security_state,
+    set_non_zll_network, set_rx_on_when_idle, set_security_state_without_key, start_scan,
 };
 use crate::resolve::Resolve;
 use crate::{Error, Transport};
@@ -14,6 +14,10 @@ use std::future::Future;
 pub trait Zll {
     /// Get the ZLL tokens.
     fn get_tokens(&mut self) -> impl Future<Output = Result<get_tokens::Response, Error>> + Send;
+
+    /// Is this a ZLL network?
+    #[allow(clippy::wrong_self_convention)]
+    fn is_zll_network(&mut self) -> impl Future<Output = Result<bool, Error>> + Send;
 
     /// A consolidation of ZLL network operations with similar signatures;
     /// specifically, forming and joining networks or touch-linking.
@@ -72,6 +76,12 @@ where
     async fn get_tokens(&mut self) -> Result<get_tokens::Response, Error> {
         self.communicate::<_, get_tokens::Response>(get_tokens::Command)
             .await
+    }
+
+    async fn is_zll_network(&mut self) -> Result<bool, Error> {
+        self.communicate::<_, is_zll_network::Response>(is_zll_network::Command)
+            .await
+            .map(|response| response.is_zll_network())
     }
 
     async fn network_ops(

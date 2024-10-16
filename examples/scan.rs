@@ -1,19 +1,16 @@
 //! Test version negotiation.
 
-use ashv2::{make_pair, open, BaudRate, CallbacksFramed, Payload};
+use ashv2::{make_pair, open, BaudRate, Payload};
 use clap::Parser;
 use ezsp::ezsp::network::scan::Type;
-use ezsp::{AshV2CallbackCodec, Ashv2, Ezsp, Networking, EZSP_MAX_FRAME_SIZE};
-use futures::StreamExt;
+use ezsp::{Ashv2, Callbacks, Ezsp, Networking, EZSP_MAX_FRAME_SIZE};
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;
+use std::sync::mpsc::sync_channel;
 use std::sync::mpsc::Receiver;
-use std::sync::mpsc::{sync_channel, SyncSender};
 use std::sync::Arc;
-use std::task::Waker;
 use std::thread::spawn;
-use tokio_util::codec::Framed;
 
 #[derive(Debug, Parser)]
 struct Args {
@@ -50,14 +47,12 @@ async fn main() {
 
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     let (cb_tx, cb_rx) = sync_channel(32);
-    let (cb_waker_tx, cb_waker_rx) = sync_channel(32);
-    let (ash, transceiver) =
-        make_pair::<EZSP_MAX_FRAME_SIZE, _>(serial_port, 4, Some((cb_tx, cb_waker_rx)));
+    let (ash, transceiver) = make_pair::<EZSP_MAX_FRAME_SIZE, _>(serial_port, 4, Some(cb_tx));
     let running = Arc::new(AtomicBool::new(true));
     let transceiver_thread = spawn(|| transceiver.run(running));
     let mut ezsp = Ashv2::new(ash);
 
-    tokio::task::spawn(handle_callbacks(cb_waker_tx, cb_rx));
+    spawn(move || handle_callbacks(&cb_rx));
 
     // Test version negotiation.
     match ezsp.negotiate_version(args.version).await {
@@ -92,23 +87,15 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         .expect("Transceiver thread panicked.");
 }
 
-async fn handle_callbacks(waker: SyncSender<Waker>, callbacks: Receiver<Payload>) {
-    let mut callbacks = Framed::new(
-        CallbacksFramed::new(waker, callbacks),
-        AshV2CallbackCodec::default(),
-    );
-
-    loop {
-        if let Some(result) = callbacks.next().await {
-            match result {
-                Ok(callback) => {
-                    info!("Received callback: {:?}", callback);
-                }
-                Err(error) => {
-                    error!("Error receiving callback: {error}");
-                    continue;
-                }
+fn handle_callbacks(frames: &Receiver<Payload>) {
+    for result in frames.iter().callbacks() {
+        match result {
+            Ok(handler) => {
+                info!("Received handler: {handler:?}");
             }
-        };
+            Err(error) => {
+                error!("Error parsing handler: {error}");
+            }
+        }
     }
 }

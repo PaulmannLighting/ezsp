@@ -19,9 +19,7 @@ pub use error::{Error, ValueError};
 use resolve::Resolve;
 pub use result::Result;
 #[cfg(feature = "ashv2")]
-pub use transport::AshV2CallbackCodec;
-#[cfg(feature = "ashv2")]
-pub use transport::Ashv2;
+pub use transport::{Ashv2, Callbacks};
 pub use transport::{
     Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, GreenPower, Messaging,
     Mfglib, Networking, ProxyTable, Security, SinkTable, TokenInterface, Transport, TrustCenter,

@@ -11,7 +11,7 @@ use crate::frame::{Command, Frame, Header, Parameter};
 use crate::transport::Transport;
 
 use ashv2::AshFramed;
-pub use callbacks::Codec as CallbackCodec;
+pub use callbacks::Callbacks;
 use codec::Codec;
 
 mod callbacks;

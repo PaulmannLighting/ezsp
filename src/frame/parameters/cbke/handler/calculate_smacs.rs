@@ -29,7 +29,7 @@ impl Handler {
     /// # Errors
     ///
     /// Returns an [`Error`] if the status is not [`Status::Success`].
-    fn result(&self) -> Result<Payload, Error> {
+    pub fn result(&self) -> Result<Payload, Error> {
         Status::try_from(self.status)
             .resolve()
             .map(|()| self.payload)

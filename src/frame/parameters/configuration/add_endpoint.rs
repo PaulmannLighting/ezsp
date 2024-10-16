@@ -42,6 +42,7 @@ impl Command {
     }
 }
 
+/// Helper struct to deal with special serialization of the cluster lists.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Clusters {
     input_clusters: ByteSizedVec<u16>,

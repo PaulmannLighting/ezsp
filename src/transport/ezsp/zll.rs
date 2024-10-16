@@ -4,9 +4,9 @@ use crate::ember::radio::PowerMode;
 use crate::ember::zll::{DataToken, InitialSecurityState, Network};
 use crate::ezsp::zll::NetworkOperation;
 use crate::frame::parameters::zll::{
-    get_tokens, is_zll_network, network_ops, set_data_token, set_initial_security_state,
-    set_node_type, set_non_zll_network, set_radio_idle_mode, set_rx_on_when_idle,
-    set_security_state_without_key, start_scan,
+    get_tokens, is_zll_network, network_ops, set_additional_state, set_data_token,
+    set_initial_security_state, set_node_type, set_non_zll_network, set_radio_idle_mode,
+    set_rx_on_when_idle, set_security_state_without_key, start_scan,
 };
 use crate::resolve::Resolve;
 use crate::{Error, Transport};
@@ -28,6 +28,12 @@ pub trait Zll {
         network_info: Network,
         op: NetworkOperation,
         radio_tx_power: i8,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This call sets additional capability bits in the ZLL state.
+    fn set_additional_state(
+        &mut self,
+        state: u16,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Set the ZLL data token.
@@ -108,6 +114,14 @@ where
         ))
         .await?
         .resolve()
+    }
+
+    async fn set_additional_state(&mut self, state: u16) -> Result<(), Error> {
+        self.communicate::<_, set_additional_state::Response>(set_additional_state::Command::new(
+            state,
+        ))
+        .await
+        .map(drop)
     }
 
     async fn set_data_token(&mut self, data: DataToken) -> Result<(), Error> {

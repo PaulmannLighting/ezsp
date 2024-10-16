@@ -3,8 +3,8 @@
 use ashv2::{make_pair, open, BaudRate, Payload};
 use clap::Parser;
 use ezsp::ezsp::network::scan::Type;
-use ezsp::{Ashv2, Callbacks, Ezsp, Networking, EZSP_MAX_FRAME_SIZE};
-use log::{error, info};
+use ezsp::{parameters, Ashv2, Callbacks, Ezsp, Handler, Networking, EZSP_MAX_FRAME_SIZE};
+use log::{error, info, warn};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::sync_channel;
@@ -90,9 +90,21 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
 fn handle_callbacks(frames: &Receiver<Payload>) {
     for result in frames.iter().callbacks() {
         match result {
-            Ok(handler) => {
-                info!("Received handler: {handler:?}");
-            }
+            Ok(handler) => match handler {
+                Handler::Networking(parameters::networking::handler::Handler::NetworkFound(
+                    network_found,
+                )) => {
+                    info!("Network found: {network_found:?}");
+                }
+                Handler::Networking(parameters::networking::handler::Handler::ScanComplete(
+                    scan_complete,
+                )) => {
+                    info!("Scan completed: {scan_complete:?}");
+                }
+                other => {
+                    warn!("Received unexpected handler: {other:?}");
+                }
+            },
             Err(error) => {
                 error!("Error parsing handler: {error}");
             }

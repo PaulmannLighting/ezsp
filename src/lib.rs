@@ -16,7 +16,7 @@ mod types;
 
 pub use constants::{EZSP_MAX_FRAME_SIZE, EZSP_MAX_HEADER_SIZE};
 pub use error::{Error, ValueError};
-pub use frame::parameters;
+pub use frame::{parameters, Handler};
 use resolve::Resolve;
 pub use result::Result;
 #[cfg(feature = "ashv2")]

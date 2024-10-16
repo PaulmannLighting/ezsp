@@ -1,3 +1,5 @@
+//! Returns information about the children of the local node and the parent of the local node.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::{Eui64, NodeId};

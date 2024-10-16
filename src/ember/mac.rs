@@ -9,11 +9,11 @@ use num_traits::FromPrimitive;
 pub enum PassThroughType {
     /// No MAC pass-through messages.
     None = 0x00,
-    /// SE InterPAN messages.
+    /// SE `InterPAN` messages.
     SeInterPan = 0x01,
-    /// Legacy EmberNet messages.
+    /// Legacy `EmberNet` messages.
     EmberNet = 0x02,
-    /// Legacy EmberNet messages filtered by their source address.
+    /// Legacy `EmberNet` messages filtered by their source address.
     EmberNetSource = 0x04,
 }
 

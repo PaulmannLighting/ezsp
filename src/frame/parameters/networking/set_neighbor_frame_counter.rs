@@ -8,7 +8,7 @@ use crate::Resolve;
 const ID: u16 = 0x00AD;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     eui64: Eui64,
     frame_counter: u32,
 }
@@ -29,7 +29,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
 }
 

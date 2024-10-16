@@ -9,7 +9,7 @@ use crate::Resolve;
 const ID: u16 = 0x0042;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     interval: u16,
     units: u8,
     failure_limit: u8,
@@ -32,7 +32,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
 }
 

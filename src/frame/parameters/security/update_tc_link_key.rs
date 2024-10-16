@@ -7,7 +7,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x006C;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     max_attempts: u8,
 }
 
@@ -24,7 +24,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
 }
 

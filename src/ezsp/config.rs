@@ -95,10 +95,10 @@ pub enum Id {
     /// the network manager within one minute to trigger a PAN id change.
     PanIdReportConflictThreshold = 0x22,
     /// The timeout value in minutes for how long the Trust Center or a normal node waits for
-    /// the ZigBee Request Key to complete.
+    /// the `ZigBee` Request Key to complete.
     ///
     /// On the Trust Center this controls whether the device buffers the request,
-    /// waiting for a matching pair of ZigBee Request Key.
+    /// waiting for a matching pair of `ZigBee` Request Key.
     /// If the value is non-zero, the Trust Center buffers and waits for that amount of time.
     /// If the value is zero, the Trust Center does not buffer the request and
     /// immediately responds to the request.
@@ -114,10 +114,11 @@ pub enum Id {
     /// This is a bitmask that controls which incoming ZDO request messages are passed to
     /// the application.
     ///
-    /// The bits are defined in the EmberZdoConfigurationFlags enumeration.
+    /// The bits are defined in the [`Flags`](crate::ember::zdo::configuration::Flags) enumeration.
     /// To see if the application is required to send a ZDO response in reply to an incoming message,
     /// the application must check the APS options bitfield within the `incomingMessageHandler`
-    /// callback to see if the `EMBER_APS_OPTION_ZDO_RESPONSE_REQUIRED` flag is set.
+    /// callback to see if the [`ZdoResponseRequired`](crate::ember::aps::Option::ZdoResponseRequired)
+    /// flag is set.
     ApplicationZdoFlags = 0x2A,
     /// The maximum number of broadcasts during a single broadcast timeout period.
     BroadcastTableSize = 0x2B,
@@ -128,7 +129,7 @@ pub enum Id {
     /// Whether multicasts are sent to the RxOnWhenIdle=true address (`0xFFFD`)
     /// or the sleepy broadcast address (`0xFFFF`).
     ///
-    /// The RxOnWhenIdle=true address is the ZigBee compliant destination for multicasts.
+    /// The RxOnWhenIdle=true address is the `ZigBee` compliant destination for multicasts.
     SendMulticastsToSleepyAddress = 0x2E,
     /// ZLL group address initial configuration.
     ZllGroupAddresses = 0x2F,

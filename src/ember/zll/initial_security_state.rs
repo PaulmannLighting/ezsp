@@ -51,7 +51,7 @@ impl InitialSecurityState {
         &self.encryption_key
     }
 
-    /// Return the pre-configured link key used during classical ZigBee commissioning.
+    /// Return the pre-configured link key used during classical `ZigBee` commissioning.
     #[must_use]
     pub const fn preconfigured_key(&self) -> &Data {
         &self.preconfigured_key

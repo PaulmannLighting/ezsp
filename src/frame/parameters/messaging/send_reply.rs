@@ -10,7 +10,7 @@ use crate::Resolve;
 const ID: u16 = 0x0039;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     sender: NodeId,
     aps_frame: Frame,
     message: ByteSizedVec<u8>,
@@ -33,7 +33,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
 }
 

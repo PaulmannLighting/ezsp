@@ -40,7 +40,7 @@ impl Parameter for Handler {
 
 /// The payload of the GPDF receive.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-struct Payload {
+pub struct Payload {
     gpd_link: u8,
     sequence_number: u8,
     addr: Address,

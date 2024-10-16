@@ -5,7 +5,7 @@ use crate::frame::Parameter;
 const ID: u16 = 0x005B;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     address_table_index: u8,
 }
 
@@ -24,7 +24,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     active: bool,
 }
 

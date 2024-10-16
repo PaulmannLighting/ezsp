@@ -32,7 +32,7 @@ impl Handler {
     fn result(&self) -> Result<Payload, Error> {
         Status::try_from(self.status)
             .resolve()
-            .map(|_| self.payload)
+            .map(|()| self.payload)
     }
 }
 

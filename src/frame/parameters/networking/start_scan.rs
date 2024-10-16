@@ -3,13 +3,14 @@ use siliconlabs::Status;
 
 use crate::ezsp::network::scan::Type;
 use crate::frame::Parameter;
+use crate::types::VariableLengthU32;
 use crate::Error;
 use crate::Resolve;
 
 const ID: u16 = 0x001A;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     scan_type: u8,
     channel_mask: u32,
     duration: u8,
@@ -32,7 +33,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: VariableLengthU32,
 }
 
@@ -46,32 +47,5 @@ impl Resolve for Response {
 
     fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(u32::from(self.status)).resolve()
-    }
-}
-
-#[allow(clippy::struct_field_names)]
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-struct VariableLengthU32 {
-    byte_1: u8,
-    byte_2: Option<u8>,
-    byte_3: Option<u8>,
-    byte_4: Option<u8>,
-}
-
-impl From<VariableLengthU32> for u32 {
-    fn from(status: VariableLengthU32) -> Self {
-        let mut result = Self::from(status.byte_1);
-
-        if let Some(byte) = status.byte_2 {
-            result |= Self::from(byte) << 8;
-        }
-        if let Some(byte) = status.byte_3 {
-            result |= Self::from(byte) << 16;
-        }
-        if let Some(byte) = status.byte_4 {
-            result |= Self::from(byte) << 24;
-        }
-
-        result
     }
 }

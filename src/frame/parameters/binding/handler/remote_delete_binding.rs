@@ -19,7 +19,7 @@ pub struct Handler {
 }
 
 impl Handler {
-    ///
+    /// The index of the binding whose deletion was requested.
     #[must_use]
     pub const fn index(&self) -> u8 {
         self.index

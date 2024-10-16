@@ -6,7 +6,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x0077;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     exclude_outgoing_fc: bool,
     exclude_boot_counter: bool,
 }
@@ -27,7 +27,7 @@ impl Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response;
+pub struct Response;
 
 impl Parameter for Response {
     type Id = u16;

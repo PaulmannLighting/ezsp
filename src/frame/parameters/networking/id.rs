@@ -6,7 +6,7 @@ use crate::frame::Parameter;
 const ID: u16 = 0x0107;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     child_id: NodeId,
 }
 
@@ -23,7 +23,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     child_index: u8,
 }
 

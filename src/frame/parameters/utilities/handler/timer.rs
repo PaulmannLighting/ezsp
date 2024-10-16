@@ -1,3 +1,5 @@
+//! Timer handler parameter.
+
 use le_stream::derive::FromLeStream;
 
 use crate::frame::Parameter;

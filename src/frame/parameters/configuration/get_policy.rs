@@ -9,7 +9,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x0056;
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     policy_id: u8,
 }
 
@@ -28,7 +28,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
     decision_id: u8,
 }
@@ -42,7 +42,7 @@ impl Resolve for Response {
     type Output = decision::Id;
 
     fn resolve(self) -> Result<Self::Output, Error> {
-        Status::try_from(self.status).resolve().and_then(|_| {
+        Status::try_from(self.status).resolve().and_then(|()| {
             decision::Id::try_from(self.decision_id)
                 .map_err(|id| Error::ValueError(ValueError::DecisionId(id)))
         })

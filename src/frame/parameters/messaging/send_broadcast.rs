@@ -10,7 +10,7 @@ use crate::Resolve;
 const ID: u16 = 0x0036;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     destination: NodeId,
     aps_frame: Frame,
     radius: u8,
@@ -43,7 +43,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
     sequence: u8,
 }

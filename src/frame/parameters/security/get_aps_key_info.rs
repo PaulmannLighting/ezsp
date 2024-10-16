@@ -1,3 +1,5 @@
+//! Retrieve metadata about an APS link key. Does not retrieve contents.
+
 use crate::ember::Eui64;
 use crate::frame::Parameter;
 use crate::Error;

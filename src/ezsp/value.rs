@@ -12,7 +12,8 @@ pub enum Id {
     /// The types of MAC passthrough messages that the host wishes to receive.
     MacPassthroughFlags = 0x01,
     /// The source address used to filter legacy EmberNet messages when the
-    /// `EMBER_MAC_PASSTHROUGH_EMBERNET_SOURCE` flag is set in `EZSP_VALUE_MAC_PASSTHROUGH_FLAGS`.
+    /// [`PassThroughType`](crate::ember::mac::PassThroughType) flag is set in
+    /// [`Self::MacPassthroughFlags`].
     EmbernetPassthroughSourceAddress = 0x02,
     /// The number of available internal RAM general purpose buffers. Read only.
     FreeBuffers = 0x03,
@@ -36,7 +37,8 @@ pub enum Id {
     StackTokenWriting = 0x07,
     /// A read-only value indicating whether the stack is currently performing a rejoin.
     StackIsPerformingRejoin = 0x08,
-    /// A list of EmberMacFilterMatchData values.
+    // TODO: where is `EmberMacFilterMatchData` defined?
+    /// A list of `EmberMacFilterMatchData` values.
     MacFilterList = 0x09,
     /// The Ember Extended Security Bitmask.
     ExtendedSecurityBitmask = 0x0A,
@@ -54,26 +56,28 @@ pub enum Id {
     MfgSecurityConfig = 0x10,
     /// Retrieves the version information from the stack on the NCP.
     VersionInfo = 0x11,
+    // TODO: Where is `EMBER_REJOIN_REASON_NONE` defined?
     /// This will get/set the rejoin reason noted by the host for a subsequent call to
-    /// `emberFindAndRejoinNetwork()`.
+    /// [`Networking::find_and_rejoin_network`](crate::Networking::find_and_rejoin_network).
     ///
-    /// After a call to `emberFindAndRejoinNetwork()` the host's rejoin reason will be set to
-    /// EMBER_REJOIN_REASON_NONE.
-    /// The NCP will store the rejoin reason used by the call to `emberFindAndRejoinNetwork()`.
+    /// After a call to `Networking::find_and_rejoin_network`
+    /// the host's rejoin reason will be set to `EMBER_REJOIN_REASON_NONE`.
+    /// The NCP will store the rejoin reason used by the call to `Networking::find_and_rejoin_network`.
     /// Application is not required to do anything with this value.
     ///
-    /// The App Framework sets this for cases of `emberFindAndRejoinNetwork` that it initiates,
+    /// The App Framework sets this for cases of `Networking::find_and_rejoin_network` that it initiates,
     /// but if the app is invoking a rejoin directly, it should/can set this value to aid in
     /// debugging of any rejoin state machine issues over EZSP logs after the fact.
     ///
     /// The NCP doesn't do anything with this value other than  cache it so you can read it later.
     NextHostRejoinReason = 0x12,
+    // TODO: Where are `EMBER_REJOIN_DUE_TO_APP_EVENT_1`, `EMBER_REJOIN_DUE_TO_APP_EVENT_X`, etc defined?
     /// This is the reason that the last rejoin took place.
     ///
     /// This value may only be retrieved, not set.
     /// The rejoin may have been initiated by the stack (NCP) or the application (host).
-    /// If a host initiated a rejoin the reason will be set by default to `
-    /// EMBER_REJOIN_DUE_TO_APP_EVENT_1`.
+    /// If a host initiated a rejoin the reason will be set by default to
+    /// `EMBER_REJOIN_DUE_TO_APP_EVENT_1`.
     ///
     /// If the application wishes to denote its own rejoin reasons it can do so by calling
     /// `ezspSetValue(EMBER_VALUE_HOST_REJOIN_REASON,  EMBER_REJOIN_DUE_TO_APP_EVENT_X)`.
@@ -82,7 +86,7 @@ pub enum Id {
     /// If the NCP initiated a rejoin it will record this value internally for retrieval by
     /// `ezspGetValue(EZSP_VALUE_REAL_REJOIN_REASON)`.
     LastRejoinReason = 0x13,
-    /// The next ZigBee sequence number.
+    /// The next `ZigBee` sequence number.
     NextZigbeeSequenceNumber = 0x14,
     /// CCA energy detect threshold for radio.
     CcaThreshold = 0x15,

@@ -9,7 +9,7 @@ use crate::Resolve;
 const ID: u16 = 0x00DF;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     sink_index: u8,
     entry: TableEntry,
 }
@@ -27,7 +27,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
 }
 

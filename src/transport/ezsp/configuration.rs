@@ -10,7 +10,8 @@ use crate::frame::parameters::configuration::{
     read_attribute, send_pan_id_update, set_configuration_value, set_passive_ack_config,
     set_policy, set_value, version, write_attribute,
 };
-use crate::frame::{Header, Parameter};
+use crate::frame::Header;
+use crate::parameters::configuration::write_attribute::Attribute;
 use crate::resolve::Resolve;
 use crate::transport::Transport;
 use crate::types::ByteSizedVec;
@@ -112,7 +113,7 @@ pub trait Configuration {
         desired_protocol_version: u8,
     ) -> impl Future<Output = Result<version::Response, Error>> + Send
     where
-        H: Header<<version::Command as Parameter>::Id>;
+        H: Header<u8>;
 
     /// Write attribute data on NCP endpoints.
     #[allow(clippy::too_many_arguments)]
@@ -120,12 +121,8 @@ pub trait Configuration {
         &mut self,
         endpoint: u8,
         cluster: u16,
-        attribute_id: u16,
-        mask: u8,
-        manufacturer_code: u16,
+        attribute: &Attribute,
         just_test: bool,
-        data_type: u8,
-        data: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
@@ -259,7 +256,7 @@ where
 
     async fn version<H>(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error>
     where
-        H: Header<<version::Command as Parameter>::Id>,
+        H: Header<u8>,
     {
         self.send::<H, _>(version::Command::new(desired_protocol_version))
             .await?;
@@ -270,22 +267,11 @@ where
         &mut self,
         endpoint: u8,
         cluster: u16,
-        attribute_id: u16,
-        mask: u8,
-        manufacturer_code: u16,
+        attribute: &Attribute,
         just_test: bool,
-        data_type: u8,
-        data: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
         self.communicate::<_, write_attribute::Response>(write_attribute::Command::new(
-            endpoint,
-            cluster,
-            attribute_id,
-            mask,
-            manufacturer_code,
-            just_test,
-            data_type,
-            data,
+            endpoint, cluster, attribute, just_test,
         ))
         .await?
         .resolve()

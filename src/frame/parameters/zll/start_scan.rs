@@ -8,7 +8,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x00B4;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     channel_mask: u32,
     radio_power_for_scan: i8,
     node_type: u8,
@@ -32,7 +32,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
 }
 

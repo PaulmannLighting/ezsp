@@ -9,7 +9,7 @@ use crate::Resolve;
 const ID: u16 = 0x0051;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     message: ByteSizedVec<u8>,
     priority: u8,
     use_cca: bool,
@@ -32,7 +32,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
 }
 

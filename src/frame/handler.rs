@@ -10,20 +10,36 @@ use le_stream::FromLeStream;
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
+    /// Binding handlers.
     Binding(binding::handler::Handler),
+    /// Bootloader handlers.
     Bootloader(bootloader::handler::Handler),
+    /// Certificate-based key exchange handlers.
     CertificateBasedKeyExchange(cbke::handler::Handler),
+    /// Green Power handlers.
     GreenPower(green_power::handler::Handler),
+    /// Messaging handlers.
     Messaging(messaging::handler::Handler),
+    /// `Mfglib` handlers.
     MfgLib(mfglib::handler::Handler),
+    /// Networking handlers.
     Networking(networking::handler::Handler),
+    /// Security handlers.
     Security(security::handler::Handler),
+    /// Trust Center handlers.
     TrustCenter(trust_center::handler::Handler),
+    /// Utilities handlers.
     Utilities(utilities::handler::Handler),
+    /// ZLL handlers.
     Zll(zll::handler::Handler),
 }
 
 impl Handler {
+    /// Parse a handler from a little-endian stream.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the frame ID is not recognized.
     #[allow(clippy::too_many_lines)]
     pub fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, Decode>
     where
@@ -31,430 +47,405 @@ impl Handler {
     {
         match id {
             // Binding callbacks.
-            binding::handler::remote_delete_binding::Handler::ID => Ok(
-                binding::handler::remote_delete_binding::Handler::from_le_stream_exact(stream)?
-                    .into(),
-            ),
-            binding::handler::remote_set_binding::Handler::ID => Ok(
-                binding::handler::remote_set_binding::Handler::from_le_stream_exact(stream)?.into(),
-            ),
+            binding::handler::RemoteDeleteBinding::ID => {
+                Ok(binding::handler::RemoteDeleteBinding::from_le_stream_exact(stream)?.into())
+            }
+            binding::handler::RemoteSetBinding::ID => {
+                Ok(binding::handler::RemoteSetBinding::from_le_stream_exact(stream)?.into())
+            }
             // Bootloader callbacks.
-            bootloader::handler::bootload_transmit_complete::Handler::ID => Ok(
-                bootloader::handler::bootload_transmit_complete::Handler::from_le_stream_exact(
-                    stream,
-                )?
-                .into(),
+            bootloader::handler::BootloadTransmitComplete::ID => Ok(
+                bootloader::handler::BootloadTransmitComplete::from_le_stream_exact(stream)?.into(),
             ),
-            bootloader::handler::incoming_bootload_message::Handler::ID => Ok(
-                bootloader::handler::incoming_bootload_message::Handler::from_le_stream_exact(
-                    stream,
-                )?
-                .into(),
+            bootloader::handler::IncomingBootloadMessage::ID => Ok(
+                bootloader::handler::IncomingBootloadMessage::from_le_stream_exact(stream)?.into(),
             ),
             // Certificate-based key exchange callbacks.
-            cbke::handler::calculate_smacs::Handler::ID => {
-                Ok(cbke::handler::calculate_smacs::Handler::from_le_stream_exact(stream)?.into())
+            cbke::handler::CalculateSmacs::ID => {
+                Ok(cbke::handler::CalculateSmacs::from_le_stream_exact(stream)?.into())
             }
-            cbke::handler::calculate_smacs283k1::Handler::ID => Ok(
-                cbke::handler::calculate_smacs283k1::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            cbke::handler::dsa_sign::Handler::ID => {
-                Ok(cbke::handler::dsa_sign::Handler::from_le_stream_exact(stream)?.into())
+            cbke::handler::CalculateSmacs283k1::ID => {
+                Ok(cbke::handler::CalculateSmacs283k1::from_le_stream_exact(stream)?.into())
             }
-            cbke::handler::dsa_verify::Handler::ID => {
-                Ok(cbke::handler::dsa_verify::Handler::from_le_stream_exact(stream)?.into())
+            cbke::handler::DsaSign::ID => {
+                Ok(cbke::handler::DsaSign::from_le_stream_exact(stream)?.into())
             }
-            cbke::handler::generate_cbke_keys::Handler::ID => Ok(
-                cbke::handler::generate_cbke_keys::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            cbke::handler::generate_cbke_keys283k1::Handler::ID => Ok(
-                cbke::handler::generate_cbke_keys283k1::Handler::from_le_stream_exact(stream)?
-                    .into(),
-            ),
+            cbke::handler::DsaVerify::ID => {
+                Ok(cbke::handler::DsaVerify::from_le_stream_exact(stream)?.into())
+            }
+            cbke::handler::GenerateCbkeKeys::ID => {
+                Ok(cbke::handler::GenerateCbkeKeys::from_le_stream_exact(stream)?.into())
+            }
+            cbke::handler::GenerateCbkeKeys283k1::ID => {
+                Ok(cbke::handler::GenerateCbkeKeys283k1::from_le_stream_exact(stream)?.into())
+            }
             // Green Power callbacks.
-            green_power::handler::incoming_message::Handler::ID => Ok(
-                green_power::handler::incoming_message::Handler::from_le_stream_exact(stream)?
-                    .into(),
-            ),
-            green_power::handler::sent::Handler::ID => {
-                Ok(green_power::handler::sent::Handler::from_le_stream_exact(stream)?.into())
+            green_power::handler::IncomingMessage::ID => {
+                Ok(green_power::handler::IncomingMessage::from_le_stream_exact(stream)?.into())
+            }
+            green_power::handler::Sent::ID => {
+                Ok(green_power::handler::Sent::from_le_stream_exact(stream)?.into())
             }
             // Messaging callbacks.
-            messaging::handler::id_conflict::Handler::ID => {
-                Ok(messaging::handler::id_conflict::Handler::from_le_stream_exact(stream)?.into())
+            messaging::handler::IdConflict::ID => {
+                Ok(messaging::handler::IdConflict::from_le_stream_exact(stream)?.into())
             }
-            messaging::handler::incoming_many_to_one_route_request::Handler::ID => Ok(
-                messaging::handler::incoming_many_to_one_route_request::Handler::from_le_stream_exact(
-                    stream,
-                )?
-                .into(),
-            ),
-            messaging::handler::incoming_message::Handler::ID => Ok(
-                messaging::handler::incoming_message::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            messaging::handler::incoming_network_status::Handler::ID => Ok(
-                messaging::handler::incoming_network_status::Handler::from_le_stream_exact(stream)?
+            messaging::handler::IncomingManyToOneRouteRequest::ID => Ok(
+                messaging::handler::IncomingManyToOneRouteRequest::from_le_stream_exact(stream)?
                     .into(),
             ),
-            messaging::handler::incoming_route_error::Handler::ID => Ok(
-                messaging::handler::incoming_route_error::Handler::from_le_stream_exact(stream)?
-                    .into(),
-            ),
-            messaging::handler::incoming_sender_eui64::Handler::ID => Ok(
-                messaging::handler::incoming_sender_eui64::Handler::from_le_stream_exact(stream)?
-                    .into(),
-            ),
-            messaging::handler::mac_filter_match_message::Handler::ID => Ok(
-                messaging::handler::mac_filter_match_message::Handler::from_le_stream_exact(stream)?
-                    .into(),
-            ),
-            messaging::handler::mac_passthrough_message::Handler::ID => Ok(
-                messaging::handler::mac_passthrough_message::Handler::from_le_stream_exact(stream)?
-                    .into(),
-            ),
-            messaging::handler::message_sent::Handler::ID => Ok(
-                messaging::handler::message_sent::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            messaging::handler::poll::Handler::ID => {
-                Ok(messaging::handler::poll::Handler::from_le_stream_exact(stream)?.into())
+            messaging::handler::IncomingMessage::ID => {
+                Ok(messaging::handler::IncomingMessage::from_le_stream_exact(stream)?.into())
             }
-            messaging::handler::poll_complete::Handler::ID => Ok(
-                messaging::handler::poll_complete::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            messaging::handler::raw_transmit_complete::Handler::ID => Ok(
-                messaging::handler::raw_transmit_complete::Handler::from_le_stream_exact(stream)?
-                    .into(),
-            ),
+            messaging::handler::IncomingNetworkStatus::ID => {
+                Ok(messaging::handler::IncomingNetworkStatus::from_le_stream_exact(stream)?.into())
+            }
+            messaging::handler::IncomingRouteError::ID => {
+                Ok(messaging::handler::IncomingRouteError::from_le_stream_exact(stream)?.into())
+            }
+            messaging::handler::IncomingSenderEui64::ID => {
+                Ok(messaging::handler::IncomingSenderEui64::from_le_stream_exact(stream)?.into())
+            }
+            messaging::handler::MacFilterMatchMessage::ID => {
+                Ok(messaging::handler::MacFilterMatchMessage::from_le_stream_exact(stream)?.into())
+            }
+            messaging::handler::MacPassthroughMessage::ID => {
+                Ok(messaging::handler::MacPassthroughMessage::from_le_stream_exact(stream)?.into())
+            }
+            messaging::handler::MessageSent::ID => {
+                Ok(messaging::handler::MessageSent::from_le_stream_exact(stream)?.into())
+            }
+            messaging::handler::Poll::ID => {
+                Ok(messaging::handler::Poll::from_le_stream_exact(stream)?.into())
+            }
+            messaging::handler::PollComplete::ID => {
+                Ok(messaging::handler::PollComplete::from_le_stream_exact(stream)?.into())
+            }
+            messaging::handler::RawTransmitComplete::ID => {
+                Ok(messaging::handler::RawTransmitComplete::from_le_stream_exact(stream)?.into())
+            }
             // MfgLib callbacks.
-            mfglib::handler::rx::Handler::ID => {
-                Ok(mfglib::handler::rx::Handler::from_le_stream_exact(stream)?.into())
+            mfglib::handler::Rx::ID => {
+                Ok(mfglib::handler::Rx::from_le_stream_exact(stream)?.into())
             }
             // Networking callbacks.
-            networking::handler::child_join::Handler::ID => Ok(
-                networking::handler::child_join::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            networking::handler::duty_cycle::Handler::ID => Ok(
-                networking::handler::duty_cycle::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            networking::handler::energy_scan_result::Handler::ID => Ok(
-                networking::handler::energy_scan_result::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            networking::handler::network_found::Handler::ID => Ok(
-                networking::handler::network_found::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            networking::handler::scan_complete::Handler::ID => Ok(
-                networking::handler::scan_complete::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            networking::handler::stack_status::Handler::ID => Ok(
-                networking::handler::stack_status::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            networking::handler::unused_pan_id_found::Handler::ID => Ok(
-                networking::handler::unused_pan_id_found::Handler::from_le_stream_exact(stream)?.into(),
-            ),
+            networking::handler::ChildJoin::ID => {
+                Ok(networking::handler::ChildJoin::from_le_stream_exact(stream)?.into())
+            }
+            networking::handler::DutyCycle::ID => {
+                Ok(networking::handler::DutyCycle::from_le_stream_exact(stream)?.into())
+            }
+            networking::handler::EnergyScanResult::ID => {
+                Ok(networking::handler::EnergyScanResult::from_le_stream_exact(stream)?.into())
+            }
+            networking::handler::NetworkFound::ID => {
+                Ok(networking::handler::NetworkFound::from_le_stream_exact(stream)?.into())
+            }
+            networking::handler::ScanComplete::ID => {
+                Ok(networking::handler::ScanComplete::from_le_stream_exact(stream)?.into())
+            }
+            networking::handler::StackStatus::ID => {
+                Ok(networking::handler::StackStatus::from_le_stream_exact(stream)?.into())
+            }
+            networking::handler::UnusedPanIdFound::ID => {
+                Ok(networking::handler::UnusedPanIdFound::from_le_stream_exact(stream)?.into())
+            }
             // Security callbacks.
-            security::handler::switch_network_key::Handler::ID => Ok(
-                security::handler::switch_network_key::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            security::handler::zigbee_key_establishment::Handler::ID => Ok(
-                security::handler::zigbee_key_establishment::Handler::from_le_stream_exact(stream)?
-                    .into(),
-            ),
+            security::handler::SwitchNetworkKey::ID => {
+                Ok(security::handler::SwitchNetworkKey::from_le_stream_exact(stream)?.into())
+            }
+            security::handler::ZigbeeKeyEstablishment::ID => {
+                Ok(security::handler::ZigbeeKeyEstablishment::from_le_stream_exact(stream)?.into())
+            }
             // Trust Center callbacks.
-            trust_center::handler::trust_center_join::Handler::ID => Ok(
-                trust_center::handler::trust_center_join::Handler::from_le_stream_exact(stream)?
-                    .into(),
-            ),
+            trust_center::handler::TrustCenterJoin::ID => {
+                Ok(trust_center::handler::TrustCenterJoin::from_le_stream_exact(stream)?.into())
+            }
             // Utilities callbacks.
-            utilities::handler::counter_rollover::Handler::ID => Ok(
-                utilities::handler::counter_rollover::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            utilities::handler::custom_frame::Handler::ID => Ok(
-                utilities::handler::custom_frame::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            utilities::handler::stack_token_changed::Handler::ID => Ok(
-                utilities::handler::stack_token_changed::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            utilities::handler::timer::Handler::ID => {
-                Ok(utilities::handler::timer::Handler::from_le_stream_exact(stream)?.into())
+            utilities::handler::CounterRollover::ID => {
+                Ok(utilities::handler::CounterRollover::from_le_stream_exact(stream)?.into())
+            }
+            utilities::handler::CustomFrame::ID => {
+                Ok(utilities::handler::CustomFrame::from_le_stream_exact(stream)?.into())
+            }
+            utilities::handler::StackTokenChanged::ID => {
+                Ok(utilities::handler::StackTokenChanged::from_le_stream_exact(stream)?.into())
+            }
+            utilities::handler::Timer::ID => {
+                Ok(utilities::handler::Timer::from_le_stream_exact(stream)?.into())
             }
             // ZLL callbacks.
-            zll::handler::address_assignment::Handler::ID => Ok(
-                zll::handler::address_assignment::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            zll::handler::network_found::Handler::ID => Ok(
-                zll::handler::network_found::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            zll::handler::scan_complete::Handler::ID => Ok(
-                zll::handler::scan_complete::Handler::from_le_stream_exact(stream)?.into(),
-            ),
-            zll::handler::touch_link_target::Handler::ID => Ok(
-                zll::handler::touch_link_target::Handler::from_le_stream_exact(stream)?.into(),
-            ),
+            zll::handler::AddressAssignment::ID => {
+                Ok(zll::handler::AddressAssignment::from_le_stream_exact(stream)?.into())
+            }
+            zll::handler::NetworkFound::ID => {
+                Ok(zll::handler::NetworkFound::from_le_stream_exact(stream)?.into())
+            }
+            zll::handler::ScanComplete::ID => {
+                Ok(zll::handler::ScanComplete::from_le_stream_exact(stream)?.into())
+            }
+            zll::handler::TouchLinkTarget::ID => {
+                Ok(zll::handler::TouchLinkTarget::from_le_stream_exact(stream)?.into())
+            }
             _ => Err(Decode::InvalidFrameId(id)),
         }
     }
 }
 
-impl From<binding::handler::remote_delete_binding::Handler> for Handler {
-    fn from(handler: binding::handler::remote_delete_binding::Handler) -> Self {
-        Self::Binding(binding::handler::Handler::RemoteDeleteBinding(handler))
+impl From<binding::handler::RemoteDeleteBinding> for Handler {
+    fn from(handler: binding::handler::RemoteDeleteBinding) -> Self {
+        Self::Binding(handler.into())
     }
 }
 
-impl From<binding::handler::remote_set_binding::Handler> for Handler {
-    fn from(handler: binding::handler::remote_set_binding::Handler) -> Self {
-        Self::Binding(binding::handler::Handler::RemoteSetBinding(handler))
+impl From<binding::handler::RemoteSetBinding> for Handler {
+    fn from(handler: binding::handler::RemoteSetBinding) -> Self {
+        Self::Binding(handler.into())
     }
 }
 
-impl From<bootloader::handler::bootload_transmit_complete::Handler> for Handler {
-    fn from(handler: bootloader::handler::bootload_transmit_complete::Handler) -> Self {
-        Self::Bootloader(bootloader::handler::Handler::BootloadTransmitComplete(
-            handler,
-        ))
+impl From<bootloader::handler::BootloadTransmitComplete> for Handler {
+    fn from(handler: bootloader::handler::BootloadTransmitComplete) -> Self {
+        Self::Bootloader(handler.into())
     }
 }
 
-impl From<bootloader::handler::incoming_bootload_message::Handler> for Handler {
-    fn from(handler: bootloader::handler::incoming_bootload_message::Handler) -> Self {
-        Self::Bootloader(bootloader::handler::Handler::IncomingBootloadMessage(
-            handler,
-        ))
+impl From<bootloader::handler::IncomingBootloadMessage> for Handler {
+    fn from(handler: bootloader::handler::IncomingBootloadMessage) -> Self {
+        Self::Bootloader(handler.into())
     }
 }
 
-impl From<cbke::handler::calculate_smacs::Handler> for Handler {
-    fn from(handler: cbke::handler::calculate_smacs::Handler) -> Self {
-        Self::CertificateBasedKeyExchange(cbke::handler::Handler::CalculateSmacs(handler))
+impl From<cbke::handler::CalculateSmacs> for Handler {
+    fn from(handler: cbke::handler::CalculateSmacs) -> Self {
+        Self::CertificateBasedKeyExchange(handler.into())
     }
 }
 
-impl From<cbke::handler::calculate_smacs283k1::Handler> for Handler {
-    fn from(handler: cbke::handler::calculate_smacs283k1::Handler) -> Self {
-        Self::CertificateBasedKeyExchange(cbke::handler::Handler::CalculateSmacs283k1(handler))
+impl From<cbke::handler::CalculateSmacs283k1> for Handler {
+    fn from(handler: cbke::handler::CalculateSmacs283k1) -> Self {
+        Self::CertificateBasedKeyExchange(handler.into())
     }
 }
 
-impl From<cbke::handler::dsa_sign::Handler> for Handler {
-    fn from(handler: cbke::handler::dsa_sign::Handler) -> Self {
-        Self::CertificateBasedKeyExchange(cbke::handler::Handler::DsaSign(handler))
+impl From<cbke::handler::DsaSign> for Handler {
+    fn from(handler: cbke::handler::DsaSign) -> Self {
+        Self::CertificateBasedKeyExchange(handler.into())
     }
 }
 
-impl From<cbke::handler::dsa_verify::Handler> for Handler {
-    fn from(handler: cbke::handler::dsa_verify::Handler) -> Self {
-        Self::CertificateBasedKeyExchange(cbke::handler::Handler::DsaVerify(handler))
+impl From<cbke::handler::DsaVerify> for Handler {
+    fn from(handler: cbke::handler::DsaVerify) -> Self {
+        Self::CertificateBasedKeyExchange(handler.into())
     }
 }
 
-impl From<cbke::handler::generate_cbke_keys::Handler> for Handler {
-    fn from(handler: cbke::handler::generate_cbke_keys::Handler) -> Self {
-        Self::CertificateBasedKeyExchange(cbke::handler::Handler::GenerateCbkeKeys(handler))
+impl From<cbke::handler::GenerateCbkeKeys> for Handler {
+    fn from(handler: cbke::handler::GenerateCbkeKeys) -> Self {
+        Self::CertificateBasedKeyExchange(handler.into())
     }
 }
 
-impl From<cbke::handler::generate_cbke_keys283k1::Handler> for Handler {
-    fn from(handler: cbke::handler::generate_cbke_keys283k1::Handler) -> Self {
-        Self::CertificateBasedKeyExchange(cbke::handler::Handler::GenerateCbkeKeys283k1(handler))
+impl From<cbke::handler::GenerateCbkeKeys283k1> for Handler {
+    fn from(handler: cbke::handler::GenerateCbkeKeys283k1) -> Self {
+        Self::CertificateBasedKeyExchange(handler.into())
     }
 }
 
-impl From<green_power::handler::incoming_message::Handler> for Handler {
-    fn from(handler: green_power::handler::incoming_message::Handler) -> Self {
-        Self::GreenPower(green_power::handler::Handler::IncomingMessage(handler))
+impl From<green_power::handler::IncomingMessage> for Handler {
+    fn from(handler: green_power::handler::IncomingMessage) -> Self {
+        Self::GreenPower(handler.into())
     }
 }
 
-impl From<green_power::handler::sent::Handler> for Handler {
-    fn from(handler: green_power::handler::sent::Handler) -> Self {
-        Self::GreenPower(green_power::handler::Handler::Sent(handler))
+impl From<green_power::handler::Sent> for Handler {
+    fn from(handler: green_power::handler::Sent) -> Self {
+        Self::GreenPower(handler.into())
     }
 }
 
-impl From<messaging::handler::id_conflict::Handler> for Handler {
-    fn from(handler: messaging::handler::id_conflict::Handler) -> Self {
-        Self::Messaging(messaging::handler::Handler::IdConflict(handler))
+impl From<messaging::handler::IdConflict> for Handler {
+    fn from(handler: messaging::handler::IdConflict) -> Self {
+        Self::Messaging(handler.into())
     }
 }
 
-impl From<messaging::handler::incoming_many_to_one_route_request::Handler> for Handler {
-    fn from(handler: messaging::handler::incoming_many_to_one_route_request::Handler) -> Self {
-        Self::Messaging(messaging::handler::Handler::IncomingManyToOneRouteRequest(
-            handler,
-        ))
+impl From<messaging::handler::IncomingManyToOneRouteRequest> for Handler {
+    fn from(handler: messaging::handler::IncomingManyToOneRouteRequest) -> Self {
+        Self::Messaging(handler.into())
     }
 }
 
-impl From<messaging::handler::incoming_message::Handler> for Handler {
-    fn from(handler: messaging::handler::incoming_message::Handler) -> Self {
-        Self::Messaging(messaging::handler::Handler::IncomingMessage(handler))
+impl From<messaging::handler::IncomingMessage> for Handler {
+    fn from(handler: messaging::handler::IncomingMessage) -> Self {
+        Self::Messaging(handler.into())
     }
 }
 
-impl From<messaging::handler::incoming_network_status::Handler> for Handler {
-    fn from(handler: messaging::handler::incoming_network_status::Handler) -> Self {
-        Self::Messaging(messaging::handler::Handler::IncomingNetworkStatus(handler))
+impl From<messaging::handler::IncomingNetworkStatus> for Handler {
+    fn from(handler: messaging::handler::IncomingNetworkStatus) -> Self {
+        Self::Messaging(handler.into())
     }
 }
 
-impl From<messaging::handler::incoming_route_error::Handler> for Handler {
-    fn from(handler: messaging::handler::incoming_route_error::Handler) -> Self {
-        Self::Messaging(messaging::handler::Handler::IncomingRouteError(handler))
+impl From<messaging::handler::IncomingRouteError> for Handler {
+    fn from(handler: messaging::handler::IncomingRouteError) -> Self {
+        Self::Messaging(handler.into())
     }
 }
 
-impl From<messaging::handler::incoming_sender_eui64::Handler> for Handler {
-    fn from(handler: messaging::handler::incoming_sender_eui64::Handler) -> Self {
-        Self::Messaging(messaging::handler::Handler::IncomingSenderEui64(handler))
+impl From<messaging::handler::IncomingSenderEui64> for Handler {
+    fn from(handler: messaging::handler::IncomingSenderEui64) -> Self {
+        Self::Messaging(handler.into())
     }
 }
 
-impl From<messaging::handler::mac_filter_match_message::Handler> for Handler {
-    fn from(handler: messaging::handler::mac_filter_match_message::Handler) -> Self {
-        Self::Messaging(messaging::handler::Handler::MacFilterMatchMessage(handler))
+impl From<messaging::handler::MacFilterMatchMessage> for Handler {
+    fn from(handler: messaging::handler::MacFilterMatchMessage) -> Self {
+        Self::Messaging(handler.into())
     }
 }
 
-impl From<messaging::handler::mac_passthrough_message::Handler> for Handler {
-    fn from(handler: messaging::handler::mac_passthrough_message::Handler) -> Self {
-        Self::Messaging(messaging::handler::Handler::MacPassthroughMessage(handler))
+impl From<messaging::handler::MacPassthroughMessage> for Handler {
+    fn from(handler: messaging::handler::MacPassthroughMessage) -> Self {
+        Self::Messaging(handler.into())
     }
 }
 
-impl From<messaging::handler::message_sent::Handler> for Handler {
-    fn from(handler: messaging::handler::message_sent::Handler) -> Self {
-        Self::Messaging(messaging::handler::Handler::MessageSent(handler))
+impl From<messaging::handler::MessageSent> for Handler {
+    fn from(handler: messaging::handler::MessageSent) -> Self {
+        Self::Messaging(handler.into())
     }
 }
 
-impl From<messaging::handler::poll::Handler> for Handler {
-    fn from(handler: messaging::handler::poll::Handler) -> Self {
-        Self::Messaging(messaging::handler::Handler::Poll(handler))
+impl From<messaging::handler::Poll> for Handler {
+    fn from(handler: messaging::handler::Poll) -> Self {
+        Self::Messaging(handler.into())
     }
 }
 
-impl From<messaging::handler::poll_complete::Handler> for Handler {
-    fn from(handler: messaging::handler::poll_complete::Handler) -> Self {
-        Self::Messaging(messaging::handler::Handler::PollComplete(handler))
+impl From<messaging::handler::PollComplete> for Handler {
+    fn from(handler: messaging::handler::PollComplete) -> Self {
+        Self::Messaging(handler.into())
     }
 }
 
-impl From<messaging::handler::raw_transmit_complete::Handler> for Handler {
-    fn from(handler: messaging::handler::raw_transmit_complete::Handler) -> Self {
-        Self::Messaging(messaging::handler::Handler::RawTransmitComplete(handler))
+impl From<messaging::handler::RawTransmitComplete> for Handler {
+    fn from(handler: messaging::handler::RawTransmitComplete) -> Self {
+        Self::Messaging(handler.into())
     }
 }
 
-impl From<mfglib::handler::rx::Handler> for Handler {
-    fn from(handler: mfglib::handler::rx::Handler) -> Self {
-        Self::MfgLib(mfglib::handler::Handler::Rx(handler))
+impl From<mfglib::handler::Rx> for Handler {
+    fn from(handler: mfglib::handler::Rx) -> Self {
+        Self::MfgLib(handler.into())
     }
 }
 
-impl From<networking::handler::child_join::Handler> for Handler {
-    fn from(handler: networking::handler::child_join::Handler) -> Self {
-        Self::Networking(networking::handler::Handler::ChildJoin(handler))
+impl From<networking::handler::ChildJoin> for Handler {
+    fn from(handler: networking::handler::ChildJoin) -> Self {
+        Self::Networking(handler.into())
     }
 }
 
-impl From<networking::handler::duty_cycle::Handler> for Handler {
-    fn from(handler: networking::handler::duty_cycle::Handler) -> Self {
-        Self::Networking(networking::handler::Handler::DutyCycle(handler))
+impl From<networking::handler::DutyCycle> for Handler {
+    fn from(handler: networking::handler::DutyCycle) -> Self {
+        Self::Networking(handler.into())
     }
 }
 
-impl From<networking::handler::energy_scan_result::Handler> for Handler {
-    fn from(handler: networking::handler::energy_scan_result::Handler) -> Self {
-        Self::Networking(networking::handler::Handler::EnergyScan(handler))
+impl From<networking::handler::EnergyScanResult> for Handler {
+    fn from(handler: networking::handler::EnergyScanResult) -> Self {
+        Self::Networking(handler.into())
     }
 }
 
-impl From<networking::handler::network_found::Handler> for Handler {
-    fn from(handler: networking::handler::network_found::Handler) -> Self {
-        Self::Networking(networking::handler::Handler::NetworkFound(handler))
+impl From<networking::handler::NetworkFound> for Handler {
+    fn from(handler: networking::handler::NetworkFound) -> Self {
+        Self::Networking(handler.into())
     }
 }
 
-impl From<networking::handler::scan_complete::Handler> for Handler {
-    fn from(handler: networking::handler::scan_complete::Handler) -> Self {
-        Self::Networking(networking::handler::Handler::ScanComplete(handler))
+impl From<networking::handler::ScanComplete> for Handler {
+    fn from(handler: networking::handler::ScanComplete) -> Self {
+        Self::Networking(handler.into())
     }
 }
 
-impl From<networking::handler::stack_status::Handler> for Handler {
-    fn from(handler: networking::handler::stack_status::Handler) -> Self {
-        Self::Networking(networking::handler::Handler::StackStatus(handler))
+impl From<networking::handler::StackStatus> for Handler {
+    fn from(handler: networking::handler::StackStatus) -> Self {
+        Self::Networking(handler.into())
     }
 }
 
-impl From<networking::handler::unused_pan_id_found::Handler> for Handler {
-    fn from(handler: networking::handler::unused_pan_id_found::Handler) -> Self {
-        Self::Networking(networking::handler::Handler::UnusedPanIdFound(handler))
+impl From<networking::handler::UnusedPanIdFound> for Handler {
+    fn from(handler: networking::handler::UnusedPanIdFound) -> Self {
+        Self::Networking(handler.into())
     }
 }
 
-impl From<security::handler::switch_network_key::Handler> for Handler {
-    fn from(handler: security::handler::switch_network_key::Handler) -> Self {
-        Self::Security(security::handler::Handler::SwitchNetworkKey(handler))
+impl From<security::handler::SwitchNetworkKey> for Handler {
+    fn from(handler: security::handler::SwitchNetworkKey) -> Self {
+        Self::Security(handler.into())
     }
 }
 
-impl From<security::handler::zigbee_key_establishment::Handler> for Handler {
-    fn from(handler: security::handler::zigbee_key_establishment::Handler) -> Self {
-        Self::Security(security::handler::Handler::ZigbeeKeyEstablishment(handler))
+impl From<security::handler::ZigbeeKeyEstablishment> for Handler {
+    fn from(handler: security::handler::ZigbeeKeyEstablishment) -> Self {
+        Self::Security(handler.into())
     }
 }
 
-impl From<trust_center::handler::trust_center_join::Handler> for Handler {
-    fn from(handler: trust_center::handler::trust_center_join::Handler) -> Self {
-        Self::TrustCenter(trust_center::handler::Handler::TrustCenterJoin(handler))
+impl From<trust_center::handler::TrustCenterJoin> for Handler {
+    fn from(handler: trust_center::handler::TrustCenterJoin) -> Self {
+        Self::TrustCenter(handler.into())
     }
 }
 
-impl From<utilities::handler::counter_rollover::Handler> for Handler {
-    fn from(handler: utilities::handler::counter_rollover::Handler) -> Self {
-        Self::Utilities(utilities::handler::Handler::CounterRollover(handler))
+impl From<utilities::handler::CounterRollover> for Handler {
+    fn from(handler: utilities::handler::CounterRollover) -> Self {
+        Self::Utilities(handler.into())
     }
 }
 
-impl From<utilities::handler::custom_frame::Handler> for Handler {
-    fn from(handler: utilities::handler::custom_frame::Handler) -> Self {
-        Self::Utilities(utilities::handler::Handler::CustomFrame(handler))
+impl From<utilities::handler::CustomFrame> for Handler {
+    fn from(handler: utilities::handler::CustomFrame) -> Self {
+        Self::Utilities(handler.into())
     }
 }
 
-impl From<utilities::handler::stack_token_changed::Handler> for Handler {
-    fn from(handler: utilities::handler::stack_token_changed::Handler) -> Self {
-        Self::Utilities(utilities::handler::Handler::StackTokenChanged(handler))
+impl From<utilities::handler::StackTokenChanged> for Handler {
+    fn from(handler: utilities::handler::StackTokenChanged) -> Self {
+        Self::Utilities(handler.into())
     }
 }
 
-impl From<utilities::handler::timer::Handler> for Handler {
-    fn from(handler: utilities::handler::timer::Handler) -> Self {
-        Self::Utilities(utilities::handler::Handler::Timer(handler))
+impl From<utilities::handler::Timer> for Handler {
+    fn from(handler: utilities::handler::Timer) -> Self {
+        Self::Utilities(handler.into())
     }
 }
 
-impl From<zll::handler::address_assignment::Handler> for Handler {
-    fn from(handler: zll::handler::address_assignment::Handler) -> Self {
-        Self::Zll(zll::handler::Handler::AddressAssignment(handler))
+impl From<zll::handler::AddressAssignment> for Handler {
+    fn from(handler: zll::handler::AddressAssignment) -> Self {
+        Self::Zll(handler.into())
     }
 }
 
-impl From<zll::handler::network_found::Handler> for Handler {
-    fn from(handler: zll::handler::network_found::Handler) -> Self {
-        Self::Zll(zll::handler::Handler::NetworkFound(handler))
+impl From<zll::handler::NetworkFound> for Handler {
+    fn from(handler: zll::handler::NetworkFound) -> Self {
+        Self::Zll(handler.into())
     }
 }
 
-impl From<zll::handler::scan_complete::Handler> for Handler {
-    fn from(handler: zll::handler::scan_complete::Handler) -> Self {
-        Self::Zll(zll::handler::Handler::ScanComplete(handler))
+impl From<zll::handler::ScanComplete> for Handler {
+    fn from(handler: zll::handler::ScanComplete) -> Self {
+        Self::Zll(handler.into())
     }
 }
 
-impl From<zll::handler::touch_link_target::Handler> for Handler {
-    fn from(handler: zll::handler::touch_link_target::Handler) -> Self {
-        Self::Zll(zll::handler::Handler::TouchLinkTarget(handler))
+impl From<zll::handler::TouchLinkTarget> for Handler {
+    fn from(handler: zll::handler::TouchLinkTarget) -> Self {
+        Self::Zll(handler.into())
     }
 }

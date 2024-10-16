@@ -8,6 +8,7 @@ use crate::frame::parameters::utilities::invalid_command;
 use crate::{ember, ezsp};
 pub use decode::Decode;
 use std::fmt::{Debug, Display, Formatter};
+#[allow(clippy::module_name_repetitions)]
 pub use value_error::ValueError;
 
 /// An error that can occur when communicating with an NCP.
@@ -52,7 +53,7 @@ impl Display for Error {
                 Ok(reason) => write!(f, "Invalid command: {reason}"),
                 Err(code) => write!(f, "Invalid command: {code:#04X}"),
             },
-            Error::ProtocolVersionMismatch {
+            Self::ProtocolVersionMismatch {
                 desired,
                 negotiated,
             } => {

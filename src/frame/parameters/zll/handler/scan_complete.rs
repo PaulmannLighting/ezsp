@@ -2,7 +2,6 @@ use le_stream::derive::FromLeStream;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::resolve::Resolve;
 
 const ID: u16 = 0x00B7;
 

@@ -41,7 +41,7 @@ impl TryFrom<u8> for Incoming {
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum Outgoing {
-    /// Unicast sent directly to an EmberNodeId.
+    /// Unicast sent directly to an `EmberNodeId`.
     Direct = 0x00,
     /// Unicast sent using an entry in the address table.
     ViaAddressTable = 0x01,

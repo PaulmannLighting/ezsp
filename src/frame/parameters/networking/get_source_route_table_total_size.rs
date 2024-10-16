@@ -5,7 +5,7 @@ use crate::frame::Parameter;
 const ID: u16 = 0x00C3;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
+pub struct Command;
 
 impl Parameter for Command {
     type Id = u16;
@@ -13,7 +13,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     source_route_table_total_size: u8,
 }
 

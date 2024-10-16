@@ -8,7 +8,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x0103;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     token: u32,
     index: u32,
     token_data: Data,
@@ -31,7 +31,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
 }
 

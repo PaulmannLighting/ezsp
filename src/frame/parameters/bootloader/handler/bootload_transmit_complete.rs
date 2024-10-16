@@ -7,7 +7,8 @@ use crate::{Error, ValueError};
 
 const ID: u16 = 0x0093;
 
-/// A callback invoked by the EmberZNet stack when the MAC has finished transmitting a bootload message.
+/// A callback invoked by the `EmberZNet` stack when the MAC
+/// has finished transmitting a bootload message.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     status: u8,
@@ -15,7 +16,7 @@ pub struct Handler {
 }
 
 impl Handler {
-    /// `true` if an ACK was received from the destination or `false` if no ACK was received.
+    /// Returns `true` if an ACK was received from the destination or `false` if no ACK was received.
     ///
     /// # Errors
     ///

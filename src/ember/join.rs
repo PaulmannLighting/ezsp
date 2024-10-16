@@ -44,7 +44,7 @@ pub enum Method {
     #[default]
     MacAssociation = 0x00,
     /// For those networks where the "permit joining" flag is never turned on,
-    /// they will need to use a ZigBee NWK Rejoin.
+    /// they will need to use a `ZigBee` NWK Rejoin.
     ///
     /// This value causes the rejoin to be sent without NWK security and the Trust Center
     /// will be asked to send the NWK key to the device.
@@ -54,7 +54,7 @@ pub enum Method {
     /// `emberTrustCenterJoinHandler()`.
     NwkRejoin = 0x01,
     /// For those networks where the "permit joining" flag is never turned on,
-    /// they will need to use a ZigBee NWK Rejoin.
+    /// they will need to use a `ZigBee` NWK Rejoin.
     ///
     /// This value causes the rejoin to be sent without NWK security and the Trust Center
     /// will be asked to send the NWK key to the device.

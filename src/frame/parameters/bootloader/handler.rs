@@ -1,20 +1,28 @@
-pub mod bootload_transmit_complete;
-pub mod incoming_bootload_message;
+//! Bootloader handlers.
 
+mod bootload_transmit_complete;
+mod incoming_bootload_message;
+
+pub use bootload_transmit_complete::Handler as BootloadTransmitComplete;
+pub use incoming_bootload_message::Handler as IncomingBootloadMessage;
+
+/// The handler for the bootloader command.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
-    BootloadTransmitComplete(bootload_transmit_complete::Handler),
-    IncomingBootloadMessage(incoming_bootload_message::Handler),
+    /// The handler for the bootload transmit complete command.
+    BootloadTransmitComplete(BootloadTransmitComplete),
+    /// The handler for the incoming bootload message command.
+    IncomingBootloadMessage(IncomingBootloadMessage),
 }
 
-impl From<bootload_transmit_complete::Handler> for Handler {
-    fn from(handler: bootload_transmit_complete::Handler) -> Self {
+impl From<BootloadTransmitComplete> for Handler {
+    fn from(handler: BootloadTransmitComplete) -> Self {
         Self::BootloadTransmitComplete(handler)
     }
 }
 
-impl From<incoming_bootload_message::Handler> for Handler {
-    fn from(handler: incoming_bootload_message::Handler) -> Self {
+impl From<IncomingBootloadMessage> for Handler {
+    fn from(handler: IncomingBootloadMessage) -> Self {
         Self::IncomingBootloadMessage(handler)
     }
 }

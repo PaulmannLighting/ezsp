@@ -18,7 +18,7 @@ impl Header<u8> for Extended {
             sequence,
             low_byte,
             high_byte: HighByte::default(),
-            id: id as u16,
+            id: u16::from(id),
         }
     }
 
@@ -39,7 +39,8 @@ impl Header<u8> for Extended {
 
     #[must_use]
     fn id(self) -> u8 {
-        self.id as u8
+        u8::try_from(self.id)
+            .expect("extended frame ID should fir into u8 when used in `Header<u8>`")
     }
 }
 

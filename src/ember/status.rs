@@ -62,7 +62,8 @@ pub enum Status {
     InvalidCall,
     /// The link cost to a node is not known.
     CostNotKnown,
-    /// The maximum number of in-flight messages (i.e. EMBER_APS_UNICAST_MESSAGE_COUNT) has been reached.
+    // TODO: Where is `EMBER_APS_UNICAST_MESSAGE_COUNT` defined?
+    /// The maximum number of in-flight messages (i.e. `EMBER_APS_UNICAST_MESSAGE_COUNT`) has been reached.
     MaxMessageLimitReached,
     /// The message to be transmitted is too big to fit into a single over-the-air packet.
     MessageTooLong,
@@ -88,9 +89,9 @@ pub enum Status {
     InvalidSecurityLevel,
     /// After moving, a mobile node's attempt to re-establish contact with the network failed.
     MoveFailed,
-    /// An attempt to join as a router failed due to a ZigBee versus ZigBee Pro incompatibility.
+    /// An attempt to join as a router failed due to a `ZigBee` versus `ZigBee` Pro incompatibility.
     ///
-    /// ZigBee devices joining ZigBee Pro networks (or vice versa) must join as End Devices, not Routers.
+    /// `ZigBee` devices joining `ZigBee` Pro networks (or vice versa) must join as End Devices, not Routers.
     CannotJoinAsRouter,
     /// The local node ID has changed.
     ///
@@ -137,10 +138,10 @@ pub enum Status {
     /// There was an attempt to form or join a network with security
     /// without calling `emberSetInitialSecurityState()` first.
     SecurityStateNotSet,
-    /// A ZigBee route error command frame was received indicating that
+    /// A `ZigBee` route error command frame was received indicating that
     /// a source routed message from this node failed en route
     SourceRouteFailure,
-    /// A ZigBee route error command frame was received indicating that a message sent
+    /// A `ZigBee` route error command frame was received indicating that a message sent
     /// to this node along a many-to-one route failed en route.
     ///
     /// The route error frame was delivered by an ad-hoc search for a functioning route.
@@ -175,7 +176,7 @@ pub enum Status {
     /// so that all routers have a chance to receive the broadcast of the new network key.
     TooSoonForSwitchKey,
     /// The received signature corresponding to the message that was passed
-    /// to the CBKE Library failed verification, it is not valid.
+    /// to the `CBKE` Library failed verification, it is not valid.
     SignatureVerifyFailure,
     /// The stack accepted the command and is currently processing the request.
     ///
@@ -186,7 +187,7 @@ pub enum Status {
     ///
     /// APS Commands (sent by the stack) are allowed.
     /// To use it for encryption of APS data messages it must be authorized using
-    /// a key agreement protocol (such as CBKE).
+    /// a key agreement protocol (such as `CBKE`).
     KeyNotAuthorized,
     /// The security data provided was not valid, or an integrity check failed.
     SecurityDataInvalid,

@@ -84,7 +84,7 @@ impl Parameters {
 
     /// Return the NWK Update ID.
     ///
-    /// The value of the ZigBee nwkUpdateId known by the stack.
+    /// The value of the `ZigBee` nwkUpdateId known by the stack.
     /// This is used to determine the newest instance of the network after a PAN ID or channel change.
     /// This may only be set at joining when using `EMBER_USE_CONFIGURED_NWK_STATE` as the join method.
     #[must_use]

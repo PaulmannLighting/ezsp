@@ -1,4 +1,4 @@
-//! Definitions of parameter structures used in the Ember ZNet Serial Protocol (EZSP).
+//! Definitions of parameter structures used in the *Ember ZNet Serial Protocol* (`EZSP`).
 
 pub mod binding;
 pub mod bootloader;
@@ -9,7 +9,7 @@ pub mod messaging;
 pub mod mfglib;
 pub mod networking;
 pub mod security;
-pub mod token_interface;
+pub(crate) mod token_interface;
 pub mod trust_center;
 pub mod utilities;
 pub mod wwah;

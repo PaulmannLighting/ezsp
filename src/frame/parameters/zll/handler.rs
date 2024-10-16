@@ -1,41 +1,48 @@
-pub mod address_assignment;
-pub mod network_found;
-pub mod scan_complete;
-pub mod touch_link_target;
+//! Handlers for the ZLL commands.
+
+mod address_assignment;
+mod network_found;
+mod scan_complete;
+mod touch_link_target;
+
+pub use address_assignment::Handler as AddressAssignment;
+pub use network_found::Handler as NetworkFound;
+pub use scan_complete::Handler as ScanComplete;
+pub use touch_link_target::Handler as TouchLinkTarget;
 
 /// The handler for the ZLL commands.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     /// The handler for the address assignment command.
-    AddressAssignment(address_assignment::Handler),
+    AddressAssignment(AddressAssignment),
     /// The handler for the network found command.
-    NetworkFound(network_found::Handler),
+    NetworkFound(NetworkFound),
     /// The handler for the scan complete command.
-    ScanComplete(scan_complete::Handler),
+    ScanComplete(ScanComplete),
     /// The handler for the touch link target command.
-    TouchLinkTarget(touch_link_target::Handler),
+    TouchLinkTarget(TouchLinkTarget),
 }
 
-impl From<address_assignment::Handler> for Handler {
-    fn from(handler: address_assignment::Handler) -> Self {
+impl From<AddressAssignment> for Handler {
+    fn from(handler: AddressAssignment) -> Self {
         Self::AddressAssignment(handler)
     }
 }
 
-impl From<network_found::Handler> for Handler {
-    fn from(handler: network_found::Handler) -> Self {
+impl From<NetworkFound> for Handler {
+    fn from(handler: NetworkFound) -> Self {
         Self::NetworkFound(handler)
     }
 }
 
-impl From<scan_complete::Handler> for Handler {
-    fn from(handler: scan_complete::Handler) -> Self {
+impl From<ScanComplete> for Handler {
+    fn from(handler: ScanComplete) -> Self {
         Self::ScanComplete(handler)
     }
 }
 
-impl From<touch_link_target::Handler> for Handler {
-    fn from(handler: touch_link_target::Handler) -> Self {
+impl From<TouchLinkTarget> for Handler {
+    fn from(handler: TouchLinkTarget) -> Self {
         Self::TouchLinkTarget(handler)
     }
 }

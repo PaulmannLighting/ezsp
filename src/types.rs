@@ -1,5 +1,7 @@
 //! Types used in the `EZSP` protocol.
 
+use le_stream::derive::FromLeStream;
+
 /// A stack-allocated vector with a maximum size of 255 elements.
 pub type ByteSizedVec<T> = heapless::Vec<T, { u8::MAX as usize }>;
 
@@ -25,5 +27,32 @@ pub enum SourceRouteDiscoveryMode {
 impl From<SourceRouteDiscoveryMode> for u8 {
     fn from(mode: SourceRouteDiscoveryMode) -> Self {
         mode as Self
+    }
+}
+
+#[allow(clippy::struct_field_names)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+pub struct VariableLengthU32 {
+    byte_1: u8,
+    byte_2: Option<u8>,
+    byte_3: Option<u8>,
+    byte_4: Option<u8>,
+}
+
+impl From<VariableLengthU32> for u32 {
+    fn from(status: VariableLengthU32) -> Self {
+        let mut result = Self::from(status.byte_1);
+
+        if let Some(byte) = status.byte_2 {
+            result |= Self::from(byte) << 8;
+        }
+        if let Some(byte) = status.byte_3 {
+            result |= Self::from(byte) << 16;
+        }
+        if let Some(byte) = status.byte_4 {
+            result |= Self::from(byte) << 24;
+        }
+
+        result
     }
 }

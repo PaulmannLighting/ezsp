@@ -1,4 +1,4 @@
-//! EmberZNet protocol stack.
+//! Ember ZNet Serial Protocol stack.
 
 pub mod aes;
 pub mod aps;
@@ -29,6 +29,7 @@ pub mod security;
 mod status;
 pub mod token;
 mod types;
+pub mod zdo;
 pub mod zigbee;
 pub mod zll;
 

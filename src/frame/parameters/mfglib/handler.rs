@@ -1,14 +1,18 @@
-pub mod rx;
+//! MFGlib event handler.
+
+mod rx;
+
+pub use rx::Handler as Rx;
 
 /// Handler of a MFGlib event.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     /// Received data event.
-    Rx(rx::Handler),
+    Rx(Rx),
 }
 
-impl From<rx::Handler> for Handler {
-    fn from(handler: rx::Handler) -> Self {
+impl From<Rx> for Handler {
+    fn from(handler: Rx) -> Self {
         Self::Rx(handler)
     }
 }

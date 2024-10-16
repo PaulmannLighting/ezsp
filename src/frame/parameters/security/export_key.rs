@@ -8,7 +8,7 @@ use siliconlabs::Status;
 const ID: u16 = 0x0114;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     context: ManContext,
 }
 
@@ -25,7 +25,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     key: ManKey,
     status: u32,
 }

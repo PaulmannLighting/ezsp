@@ -1,42 +1,49 @@
-pub mod counter_rollover;
-pub mod custom_frame;
-pub mod stack_token_changed;
-pub mod timer;
+//! Handlers for the utility commands.
+
+mod counter_rollover;
+mod custom_frame;
+mod stack_token_changed;
+mod timer;
+
+pub use counter_rollover::Handler as CounterRollover;
+pub use custom_frame::Handler as CustomFrame;
+pub use stack_token_changed::Handler as StackTokenChanged;
+pub use timer::Handler as Timer;
 
 /// Callbacks for the utility parameters.
 #[allow(variant_size_differences, clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     /// The counter has rolled over.
-    CounterRollover(counter_rollover::Handler),
+    CounterRollover(CounterRollover),
     /// A custom frame has been received.
-    CustomFrame(custom_frame::Handler),
+    CustomFrame(CustomFrame),
     /// The stack token has changed.
-    StackTokenChanged(stack_token_changed::Handler),
+    StackTokenChanged(StackTokenChanged),
     /// A timer event has occurred.
-    Timer(timer::Handler),
+    Timer(Timer),
 }
 
-impl From<counter_rollover::Handler> for Handler {
-    fn from(handler: counter_rollover::Handler) -> Self {
+impl From<CounterRollover> for Handler {
+    fn from(handler: CounterRollover) -> Self {
         Self::CounterRollover(handler)
     }
 }
 
-impl From<custom_frame::Handler> for Handler {
-    fn from(handler: custom_frame::Handler) -> Self {
+impl From<CustomFrame> for Handler {
+    fn from(handler: CustomFrame) -> Self {
         Self::CustomFrame(handler)
     }
 }
 
-impl From<stack_token_changed::Handler> for Handler {
-    fn from(handler: stack_token_changed::Handler) -> Self {
+impl From<StackTokenChanged> for Handler {
+    fn from(handler: StackTokenChanged) -> Self {
         Self::StackTokenChanged(handler)
     }
 }
 
-impl From<timer::Handler> for Handler {
-    fn from(handler: timer::Handler) -> Self {
+impl From<Timer> for Handler {
+    fn from(handler: Timer) -> Self {
         Self::Timer(handler)
     }
 }

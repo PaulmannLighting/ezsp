@@ -1,3 +1,5 @@
+//! Custom frame handler.
+
 use le_stream::derive::FromLeStream;
 
 use crate::frame::Parameter;

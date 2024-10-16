@@ -8,7 +8,7 @@ use crate::Resolve;
 const ID: u16 = 0x004C;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     max_devices: u8,
 }
 
@@ -25,7 +25,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
     device_duty_cycles: DeviceDutyCycles,
 }

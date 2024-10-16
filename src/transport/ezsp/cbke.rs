@@ -107,13 +107,13 @@ pub trait CertificateBasedKeyExchange {
     /// This call starts the generation of the ECC Ephemeral Public/Private key pair.
     ///
     /// When complete it stores the private key.
-    /// The results are returned via [`generate_cbke_keys::Handler`](crate::frame::parameters::cbke::handler::generate_cbke_keys::Handler).
+    /// The results are returned via [`GenerateCbkeKeys`](crate::frame::parameters::cbke::handler::GenerateCbkeKeys).
     fn generate_cbke_keys(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This call starts the generation of the ECC 283k1 curve Ephemeral Public/Private key pair.
     ///
     /// When complete it stores the private key.
-    /// The results are returned via [`generate_cbke_keys283k1::Handler`](crate::frame::parameters::cbke::handler::generate_cbke_keys283k1::Handler).
+    /// The results are returned via [`GenerateCbkeKeys283k1`](crate::frame::parameters::cbke::handler::GenerateCbkeKeys283k1).
     fn generate_cbke_keys283k1(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Retrieves the certificate installed on the NCP.

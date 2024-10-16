@@ -38,8 +38,7 @@ impl HighByte {
             self.contains(Self::FRAME_FORMAT_VERSION_1),
             self.contains(Self::FRAME_FORMAT_VERSION_0),
         ) {
-            (true, true) => FrameFormatVersion::Reserved,
-            (true, false) => FrameFormatVersion::Reserved,
+            (true, _) => FrameFormatVersion::Reserved,
             (false, true) => FrameFormatVersion::One,
             (false, false) => FrameFormatVersion::Zero,
         }

@@ -1,3 +1,5 @@
+//! Indicates that the NCP received an invalid command.
+
 use crate::ezsp::Status;
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeStream, ToLeStream};
@@ -6,7 +8,7 @@ const ID: u16 = 0x0058;
 
 /// Response sent by the NCP when it received an invalid command.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     reason: u8,
 }
 

@@ -1,100 +1,128 @@
-pub mod id_conflict;
-pub mod incoming_many_to_one_route_request;
-pub mod incoming_message;
-pub mod incoming_network_status;
-pub mod incoming_route_error;
-pub mod incoming_sender_eui64;
-pub mod mac_filter_match_message;
-pub mod mac_passthrough_message;
-pub mod message_sent;
-pub mod poll;
-pub mod poll_complete;
-pub mod raw_transmit_complete;
+//! Message handlers.
 
+mod id_conflict;
+mod incoming_many_to_one_route_request;
+mod incoming_message;
+mod incoming_network_status;
+mod incoming_route_error;
+mod incoming_sender_eui64;
+mod mac_filter_match_message;
+mod mac_passthrough_message;
+mod message_sent;
+mod poll;
+mod poll_complete;
+mod raw_transmit_complete;
+
+pub use id_conflict::Handler as IdConflict;
+pub use incoming_many_to_one_route_request::Handler as IncomingManyToOneRouteRequest;
+pub use incoming_message::Handler as IncomingMessage;
+pub use incoming_network_status::Handler as IncomingNetworkStatus;
+pub use incoming_route_error::Handler as IncomingRouteError;
+pub use incoming_sender_eui64::Handler as IncomingSenderEui64;
+pub use mac_filter_match_message::Handler as MacFilterMatchMessage;
+pub use mac_passthrough_message::Handler as MacPassthroughMessage;
+pub use message_sent::Handler as MessageSent;
+pub use poll::Handler as Poll;
+pub use poll_complete::Handler as PollComplete;
+pub use raw_transmit_complete::Handler as RawTransmitComplete;
+
+/// Message handlers.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
-    IdConflict(id_conflict::Handler),
-    IncomingManyToOneRouteRequest(incoming_many_to_one_route_request::Handler),
-    IncomingMessage(incoming_message::Handler),
-    IncomingNetworkStatus(incoming_network_status::Handler),
-    IncomingRouteError(incoming_route_error::Handler),
-    IncomingSenderEui64(incoming_sender_eui64::Handler),
-    MacFilterMatchMessage(mac_filter_match_message::Handler),
-    MacPassthroughMessage(mac_passthrough_message::Handler),
-    MessageSent(message_sent::Handler),
-    Poll(poll::Handler),
-    PollComplete(poll_complete::Handler),
-    RawTransmitComplete(raw_transmit_complete::Handler),
+    /// An ID conflict handler.
+    IdConflict(IdConflict),
+    /// An incoming many-to-one route request handler.
+    IncomingManyToOneRouteRequest(IncomingManyToOneRouteRequest),
+    /// An incoming message handler.
+    IncomingMessage(IncomingMessage),
+    /// An incoming network status handler.
+    IncomingNetworkStatus(IncomingNetworkStatus),
+    /// An incoming route error handler.
+    IncomingRouteError(IncomingRouteError),
+    /// An incoming sender EUI64 handler.
+    IncomingSenderEui64(IncomingSenderEui64),
+    /// A MAC filter match message handler.
+    MacFilterMatchMessage(MacFilterMatchMessage),
+    /// A MAC passthrough message handler.
+    MacPassthroughMessage(MacPassthroughMessage),
+    /// A message sent handler.
+    MessageSent(MessageSent),
+    /// A poll handler.
+    Poll(Poll),
+    /// A poll complete handler.
+    PollComplete(PollComplete),
+    /// A raw transmit complete handler.
+    RawTransmitComplete(RawTransmitComplete),
 }
 
-impl From<id_conflict::Handler> for Handler {
-    fn from(handler: id_conflict::Handler) -> Self {
+impl From<IdConflict> for Handler {
+    fn from(handler: IdConflict) -> Self {
         Self::IdConflict(handler)
     }
 }
 
-impl From<incoming_many_to_one_route_request::Handler> for Handler {
-    fn from(handler: incoming_many_to_one_route_request::Handler) -> Self {
+impl From<IncomingManyToOneRouteRequest> for Handler {
+    fn from(handler: IncomingManyToOneRouteRequest) -> Self {
         Self::IncomingManyToOneRouteRequest(handler)
     }
 }
 
-impl From<incoming_message::Handler> for Handler {
-    fn from(handler: incoming_message::Handler) -> Self {
+impl From<IncomingMessage> for Handler {
+    fn from(handler: IncomingMessage) -> Self {
         Self::IncomingMessage(handler)
     }
 }
 
-impl From<incoming_network_status::Handler> for Handler {
-    fn from(handler: incoming_network_status::Handler) -> Self {
+impl From<IncomingNetworkStatus> for Handler {
+    fn from(handler: IncomingNetworkStatus) -> Self {
         Self::IncomingNetworkStatus(handler)
     }
 }
 
-impl From<incoming_route_error::Handler> for Handler {
-    fn from(handler: incoming_route_error::Handler) -> Self {
+impl From<IncomingRouteError> for Handler {
+    fn from(handler: IncomingRouteError) -> Self {
         Self::IncomingRouteError(handler)
     }
 }
 
-impl From<incoming_sender_eui64::Handler> for Handler {
-    fn from(handler: incoming_sender_eui64::Handler) -> Self {
+impl From<IncomingSenderEui64> for Handler {
+    fn from(handler: IncomingSenderEui64) -> Self {
         Self::IncomingSenderEui64(handler)
     }
 }
 
-impl From<mac_filter_match_message::Handler> for Handler {
-    fn from(handler: mac_filter_match_message::Handler) -> Self {
+impl From<MacFilterMatchMessage> for Handler {
+    fn from(handler: MacFilterMatchMessage) -> Self {
         Self::MacFilterMatchMessage(handler)
     }
 }
 
-impl From<mac_passthrough_message::Handler> for Handler {
-    fn from(handler: mac_passthrough_message::Handler) -> Self {
+impl From<MacPassthroughMessage> for Handler {
+    fn from(handler: MacPassthroughMessage) -> Self {
         Self::MacPassthroughMessage(handler)
     }
 }
 
-impl From<message_sent::Handler> for Handler {
-    fn from(handler: message_sent::Handler) -> Self {
+impl From<MessageSent> for Handler {
+    fn from(handler: MessageSent) -> Self {
         Self::MessageSent(handler)
     }
 }
 
-impl From<poll::Handler> for Handler {
-    fn from(handler: poll::Handler) -> Self {
+impl From<Poll> for Handler {
+    fn from(handler: Poll) -> Self {
         Self::Poll(handler)
     }
 }
 
-impl From<poll_complete::Handler> for Handler {
-    fn from(handler: poll_complete::Handler) -> Self {
+impl From<PollComplete> for Handler {
+    fn from(handler: PollComplete) -> Self {
         Self::PollComplete(handler)
     }
 }
 
-impl From<raw_transmit_complete::Handler> for Handler {
-    fn from(handler: raw_transmit_complete::Handler) -> Self {
+impl From<RawTransmitComplete> for Handler {
+    fn from(handler: RawTransmitComplete) -> Self {
         Self::RawTransmitComplete(handler)
     }
 }

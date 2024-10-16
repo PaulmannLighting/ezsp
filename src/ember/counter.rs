@@ -73,7 +73,7 @@ pub enum Type {
     /// The number of relayed unicast packets.
     RelayedUnicast = 28,
     /// The number of times we dropped a packet due to reaching the preset PHY to MAC queue limit
-    /// (sli_802154mac_max_phy_to_mac_queue_length).
+    /// (`sli_802154mac_max_phy_to_mac_queue_length`).
     PhyToMacQueueLimitReached = 29,
     /// The number of times we dropped a packet due to the packet-validate library checking a
     /// packet and rejecting it due to length or other formatting problems.

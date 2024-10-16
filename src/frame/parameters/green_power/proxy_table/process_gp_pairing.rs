@@ -6,7 +6,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x00C9;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     options: u32,
     addr: Address,
     comm_mode: u8,
@@ -20,6 +20,7 @@ pub(crate) struct Command {
 }
 
 impl Command {
+    #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub const fn new(
         options: u32,
@@ -54,7 +55,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     gp_pairing_added: bool,
 }
 

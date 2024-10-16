@@ -5,7 +5,7 @@ use crate::frame::Parameter;
 const ID: u16 = 0x00F4;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     wait_before_retry_interval_ms: u8,
 }
 
@@ -24,7 +24,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response;
+pub struct Response;
 
 impl Parameter for Response {
     type Id = u16;

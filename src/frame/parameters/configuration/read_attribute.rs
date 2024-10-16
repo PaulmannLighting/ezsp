@@ -1,3 +1,5 @@
+//! Read attribute data on NCP endpoints.
+
 use crate::ember::Status;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
@@ -40,6 +42,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
+/// Read attribute data.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Payload {
     data_type: u8,
@@ -47,13 +50,15 @@ pub struct Payload {
 }
 
 impl Payload {
+    /// Attribute data type.
     #[must_use]
     pub const fn data_type(&self) -> u8 {
         self.data_type
     }
 
+    /// Attribute data.
     #[must_use]
-    pub const fn data_ptr(&self) -> &ByteSizedVec<u8> {
+    pub fn data(&self) -> &[u8] {
         &self.data
     }
 }

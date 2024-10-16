@@ -23,9 +23,9 @@ impl Handler {
     ///
     /// One of the following expected errors:
     ///
-    /// - [`Status::Mac(Mac::NoData)`](Mac::NoData) No data was pending.
+    /// - [`Status::Mac(Mac::NoData)`](crate::ember::Mac::NoData) No data was pending.
     /// - [`Status::DeliveryFailed`] The poll message could not be sent.
-    /// - [`Status::Mac(Mac::NoAckReceived)`](Mac::NoAckReceived) The poll message was sent but not acknowledged by the parent.
+    /// - [`Status::Mac(crate::ember::Mac::NoAckReceived)`](crate::ember::Mac::NoAckReceived) The poll message was sent but not acknowledged by the parent.
     ///
     /// Returns any other [`Error`] if the value is not a valid status.
     pub fn status(&self) -> Result<(), Error> {

@@ -50,7 +50,16 @@ pub struct Clusters {
 }
 
 /// Manual implementation of `ToLeStream` because the length hints of both `input_clusters`
-/// and `output_clusters` must be output before their actual elements.
+/// and `output_clusters` must be output before their actual elements:
+///
+/// I.e. the order of output bytes is:
+///
+/// 1. Number of input clusters
+/// 2. Number of output clusters
+/// 3. Input cluster list
+/// 4. Output cluster list
+///
+/// See p. 50 of the `EZSP` specification.
 impl ToLeStream for Clusters {
     type Iter = Chain<
         Chain<

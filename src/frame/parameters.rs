@@ -1,4 +1,4 @@
-//! Definitions of parameter structures used in the Ember ZNet Serial Protocol (EZSP)
+//! Definitions of parameter structures used in the Ember ZNet Serial Protocol (EZSP).
 
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::{Debug, Display, LowerHex, UpperHex};

@@ -4,10 +4,10 @@ use crate::ember::radio::PowerMode;
 use crate::ember::zll::{DataToken, InitialSecurityState, Network};
 use crate::ezsp::zll::NetworkOperation;
 use crate::frame::parameters::zll::{
-    get_tokens, is_zll_network, network_ops, operation_in_progress, rx_on_when_idle_get_active,
-    set_additional_state, set_data_token, set_initial_security_state, set_node_type,
-    set_non_zll_network, set_radio_idle_mode, set_rx_on_when_idle, set_security_state_without_key,
-    start_scan,
+    get_primary_channel_mask, get_tokens, is_zll_network, network_ops, operation_in_progress,
+    rx_on_when_idle_get_active, set_additional_state, set_data_token, set_initial_security_state,
+    set_node_type, set_non_zll_network, set_radio_idle_mode, set_rx_on_when_idle,
+    set_security_state_without_key, start_scan,
 };
 use crate::resolve::Resolve;
 use crate::{Error, Transport};
@@ -15,6 +15,9 @@ use std::future::Future;
 
 /// The `Zll` trait provides an interface for the Zigbee Light Link (ZLL) protocol.
 pub trait Zll {
+    /// Get the primary ZLL (touchlink) channel mask.
+    fn get_primary_channel_mask(&mut self) -> impl Future<Output = Result<u32, Error>> + Send;
+
     /// Get the ZLL tokens.
     fn get_tokens(&mut self) -> impl Future<Output = Result<get_tokens::Response, Error>> + Send;
 
@@ -97,6 +100,12 @@ impl<T> Zll for T
 where
     T: Transport,
 {
+    async fn get_primary_channel_mask(&mut self) -> Result<u32, Error> {
+        self.communicate::<_, get_primary_channel_mask::Response>(get_primary_channel_mask::Command)
+            .await
+            .map(|response| response.zll_primary_channel_mask())
+    }
+
     async fn get_tokens(&mut self) -> Result<get_tokens::Response, Error> {
         self.communicate::<_, get_tokens::Response>(get_tokens::Command)
             .await

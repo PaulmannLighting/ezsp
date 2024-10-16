@@ -44,12 +44,12 @@ impl Parameter for Command {
 
 /// Read attribute data.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Payload {
+pub struct Attribbute {
     data_type: u8,
     data: ByteSizedVec<u8>,
 }
 
-impl Payload {
+impl Attribbute {
     /// Attribute data type.
     #[must_use]
     pub const fn data_type(&self) -> u8 {
@@ -66,7 +66,7 @@ impl Payload {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub(crate) struct Response {
     status: u8,
-    payload: Payload,
+    payload: Attribbute,
 }
 
 impl Parameter for Response {
@@ -75,7 +75,7 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Output = Payload;
+    type Output = Attribbute;
 
     fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(self.status)

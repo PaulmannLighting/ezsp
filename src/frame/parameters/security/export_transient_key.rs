@@ -2,6 +2,6 @@
 
 pub(crate) mod by_eui;
 pub(crate) mod by_index;
-mod payload;
+mod transient_key;
 
-pub use payload::Payload;
+pub use transient_key::TransientKey;

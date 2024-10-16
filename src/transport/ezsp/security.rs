@@ -56,13 +56,13 @@ pub trait Security {
     fn export_transient_key_by_eui(
         &mut self,
         eui: Eui64,
-    ) -> impl Future<Output = Result<export_transient_key::Payload, Error>> + Send;
+    ) -> impl Future<Output = Result<export_transient_key::TransientKey, Error>> + Send;
 
     /// Export a transient link key from a given table index.
     fn export_transient_key_by_index(
         &mut self,
         index: u8,
-    ) -> impl Future<Output = Result<export_transient_key::Payload, Error>> + Send;
+    ) -> impl Future<Output = Result<export_transient_key::TransientKey, Error>> + Send;
 
     /// This function searches through the Key Table and tries to find the entry
     /// that matches the passed search criteria.
@@ -76,7 +76,7 @@ pub trait Security {
     fn get_aps_key_info(
         &mut self,
         context_in: ManContext,
-    ) -> impl Future<Output = Result<get_aps_key_info::Payload, Error>> + Send;
+    ) -> impl Future<Output = Result<get_aps_key_info::KeyInfo, Error>> + Send;
 
     /// Gets the current security state that is being used by a device that is joined in the network.
     fn get_current_security_state(
@@ -225,7 +225,7 @@ where
     async fn export_transient_key_by_eui(
         &mut self,
         eui: Eui64,
-    ) -> Result<export_transient_key::Payload, Error> {
+    ) -> Result<export_transient_key::TransientKey, Error> {
         self.communicate::<_, export_transient_key::by_eui::Response>(
             export_transient_key::by_eui::Command::new(eui),
         )
@@ -236,7 +236,7 @@ where
     async fn export_transient_key_by_index(
         &mut self,
         index: u8,
-    ) -> Result<export_transient_key::Payload, Error> {
+    ) -> Result<export_transient_key::TransientKey, Error> {
         self.communicate::<_, export_transient_key::by_index::Response>(
             export_transient_key::by_index::Command::new(index),
         )
@@ -255,7 +255,7 @@ where
     async fn get_aps_key_info(
         &mut self,
         context_in: ManContext,
-    ) -> Result<get_aps_key_info::Payload, Error> {
+    ) -> Result<get_aps_key_info::KeyInfo, Error> {
         self.communicate::<_, get_aps_key_info::Response>(get_aps_key_info::Command::new(
             context_in,
         ))

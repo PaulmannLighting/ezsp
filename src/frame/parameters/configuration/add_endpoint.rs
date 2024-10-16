@@ -1,12 +1,3 @@
-//! Configures endpoint information on the NCP.
-//!
-//! The NCP does not remember these settings after a reset.
-//!
-//! Endpoints can be added by the Host after the NCP has reset.
-//! Once the status of the stack changes to [`Status::NetworkUp`](crate::ember::Status::NetworkUp),
-//! endpoints can no longer be added and this command will respond with
-//! [`Status::InvalidCall`](crate::ember::Status::InvalidCall).
-
 use crate::Resolve;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use le_stream::ToLeStream;
@@ -20,7 +11,7 @@ use crate::types::ByteSizedVec;
 const ID: u16 = 0x0002;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
+pub struct Command {
     endpoint: u8,
     profile_id: u16,
     device_id: u16,
@@ -102,7 +93,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
 }
 

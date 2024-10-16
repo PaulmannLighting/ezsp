@@ -1,6 +1,6 @@
 //! Configuration Frames
 
-pub mod add_endpoint;
+pub(crate) mod add_endpoint;
 pub(crate) mod get_configuration_value;
 pub(crate) mod get_extended_value;
 pub(crate) mod get_policy;

@@ -29,7 +29,7 @@ impl Parameter for Command {
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub(crate) struct Response {
-    payload: Payload,
+    payload: KeyInfo,
     status: u32,
 }
 
@@ -39,7 +39,7 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Output = Payload;
+    type Output = KeyInfo;
 
     fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(self.status)
@@ -48,14 +48,14 @@ impl Resolve for Response {
     }
 }
 
-/// Payload of the get APS key info command.
+/// The retrieved key information.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Payload {
+pub struct KeyInfo {
     eui: Eui64,
     key_data: ManApsKeyMetadata,
 }
 
-impl Payload {
+impl KeyInfo {
     /// Returns the EUI64.
     #[must_use]
     pub const fn eui(&self) -> Eui64 {

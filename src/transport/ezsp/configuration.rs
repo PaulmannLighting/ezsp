@@ -66,7 +66,7 @@ pub trait Configuration {
         attribute_id: u16,
         mask: u8,
         manufacturer_code: u16,
-    ) -> impl Future<Output = Result<read_attribute::Payload, Error>> + Send;
+    ) -> impl Future<Output = Result<read_attribute::Attribbute, Error>> + Send;
 
     /// Triggers a pan id update message.
     fn send_pan_id_update(
@@ -191,7 +191,7 @@ where
         attribute_id: u16,
         mask: u8,
         manufacturer_code: u16,
-    ) -> Result<read_attribute::Payload, Error> {
+    ) -> Result<read_attribute::Attribbute, Error> {
         self.communicate::<_, read_attribute::Response>(read_attribute::Command::new(
             endpoint,
             cluster,

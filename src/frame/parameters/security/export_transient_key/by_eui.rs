@@ -1,4 +1,4 @@
-use super::payload::Payload;
+use super::transient_key::TransientKey;
 use crate::ember::Eui64;
 use crate::frame::Parameter;
 use crate::Error;
@@ -27,7 +27,7 @@ impl Parameter for Command {
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
-    payload: Payload,
+    payload: TransientKey,
     status: u32,
 }
 
@@ -37,7 +37,7 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Output = Payload;
+    type Output = TransientKey;
 
     fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(self.status)

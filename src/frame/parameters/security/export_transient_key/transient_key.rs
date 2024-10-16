@@ -1,15 +1,15 @@
 use le_stream::derive::FromLeStream;
 use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManContext, ManKey};
 
-/// Payload of the get APS key info command.
+/// The exported transient key.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Payload {
+pub struct TransientKey {
     context: ManContext,
     plaintext_key: ManKey,
     key_data: ManApsKeyMetadata,
 }
 
-impl Payload {
+impl TransientKey {
     /// Returns the context.
     #[must_use]
     pub const fn context(&self) -> &ManContext {

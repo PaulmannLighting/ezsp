@@ -5,8 +5,8 @@ use crate::ember::zll::{DataToken, InitialSecurityState, Network};
 use crate::ezsp::zll::NetworkOperation;
 use crate::frame::parameters::zll::{
     get_tokens, is_zll_network, network_ops, set_data_token, set_initial_security_state,
-    set_non_zll_network, set_radio_idle_mode, set_rx_on_when_idle, set_security_state_without_key,
-    start_scan,
+    set_node_type, set_non_zll_network, set_radio_idle_mode, set_rx_on_when_idle,
+    set_security_state_without_key, start_scan,
 };
 use crate::resolve::Resolve;
 use crate::{Error, Transport};
@@ -42,6 +42,9 @@ pub trait Zll {
         network_key: Data,
         security_state: InitialSecurityState,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// This call sets the default node type for a factory new ZLL device.
+    fn set_node_type(&mut self, node_type: Type) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Set the ZLL data token bitmask to reflect the ZLL network state.
     fn set_non_zll_network(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
@@ -123,6 +126,12 @@ where
         )
         .await?
         .resolve()
+    }
+
+    async fn set_node_type(&mut self, node_type: Type) -> Result<(), Error> {
+        self.communicate::<_, set_node_type::Response>(set_node_type::Command::new(node_type))
+            .await
+            .map(drop)
     }
 
     async fn set_non_zll_network(&mut self) -> Result<(), Error> {

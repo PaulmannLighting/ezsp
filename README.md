@@ -10,9 +10,11 @@ The goal is to provide a Rust implementation of the `EZSP` library as documented
 
 ## Documentation
 
-The official documentation can be found
-on [www.silabs.com](https://www.silabs.com/documents/public/user-guides/ug100-ezsp-reference-guide.pdf)
-and [docs.silabs.com](https://docs.silabs.com/zigbee/6.6/em35x/).
+The official documentation can be found at
+
+- <https://www.silabs.com/documents/public/user-guides/ug100-ezsp-reference-guide.pdf>
+- <https://docs.silabs.com/zigbee/6.6/em35x/>
+- <https://www.silabs.com/documents/public/miscellaneous/EmberZNet-API-EM260.pdf>
 
 ## Legal
 

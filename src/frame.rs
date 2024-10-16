@@ -3,10 +3,11 @@ use std::fmt::Debug;
 pub use handler::Handler;
 pub use header::{Command, Extended, Header, Legacy};
 use le_stream::derive::{FromLeStream, ToLeStream};
-pub use parameters::Parameter;
+pub use parameter::Parameter;
 
 mod handler;
 mod header;
+mod parameter;
 pub mod parameters;
 
 /// A frame that contains a header and parameters.

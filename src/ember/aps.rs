@@ -1,3 +1,5 @@
+//! Application Support Sublayer (APS) module.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;

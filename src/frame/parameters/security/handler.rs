@@ -1,6 +1,7 @@
 pub mod switch_network_key;
 pub mod zigbee_key_establishment;
 
+#[allow(variant_size_differences, clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     SwitchNetworkKey(switch_network_key::Handler),

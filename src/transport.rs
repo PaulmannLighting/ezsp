@@ -1,3 +1,5 @@
+//! Transport layer to communicate with an NCP that supports the `EZSP` protocol.
+
 #[cfg(feature = "ashv2")]
 pub(crate) mod ashv2;
 mod ezsp;

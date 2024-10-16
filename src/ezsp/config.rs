@@ -1,3 +1,5 @@
+//! Configuration values that can be set using the `EZSP` API.
+
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 

@@ -1,3 +1,5 @@
+//! Radio parameters.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// Radio parameters.

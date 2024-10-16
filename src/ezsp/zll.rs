@@ -1,3 +1,5 @@
+//! Zigbee Light Link (ZLL) specific types.
+
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 

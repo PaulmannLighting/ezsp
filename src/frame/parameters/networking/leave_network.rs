@@ -10,13 +10,6 @@ const ID: u16 = 0x0020;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Command {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
 impl Parameter for Command {
     type Id = u16;
     const ID: Self::Id = ID;
@@ -25,15 +18,6 @@ impl Parameter for Command {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
-}
-
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
 }
 
 impl Parameter for Response {

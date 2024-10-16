@@ -1,3 +1,5 @@
+//! ZigBee network parameters.
+
 use crate::ember::types::PanId;
 use le_stream::derive::{FromLeStream, ToLeStream};
 

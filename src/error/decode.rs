@@ -1,10 +1,23 @@
 use std::fmt::Display;
 
+/// An error that occurs when decoding a frame.
+#[allow(variant_size_differences)]
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Decode {
+    /// Too few bytes to decode.
     TooFewBytes,
-    TooManyBytes { next: u8 },
-    FrameIdMismatch { expected: u16, found: u16 },
+    /// Too many bytes to decode.
+    TooManyBytes {
+        /// The next byte in the stream.
+        next: u8,
+    },
+    /// Frame ID mismatch.
+    FrameIdMismatch {
+        /// The expected frame ID.
+        expected: u16,
+        /// The found frame ID.
+        found: u16,
+    },
 }
 
 impl Display for Decode {

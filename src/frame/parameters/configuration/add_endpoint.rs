@@ -48,6 +48,8 @@ pub struct Clusters {
     output_clusters: ByteSizedVec<u16>,
 }
 
+/// Manual implementation of `ToLeStream` because the length hints of both `input_clusters`
+/// and `output_clusters` must me output before their actual elements.
 impl ToLeStream for Clusters {
     type Iter = Chain<
         Chain<
@@ -57,6 +59,7 @@ impl ToLeStream for Clusters {
         FlatMap<<ByteSizedVec<u16> as IntoIterator>::IntoIter, [u8; 2], fn(u16) -> [u8; 2]>,
     >;
 
+    #[allow(trivial_casts, clippy::cast_possible_truncation)]
     fn to_le_stream(self) -> Self::Iter {
         (self.input_clusters.len() as u8)
             .to_le_stream()

@@ -1,3 +1,5 @@
+//! Neighbor table entries.
+
 use crate::ember::types::Eui64;
 use le_stream::derive::{FromLeStream, ToLeStream};
 

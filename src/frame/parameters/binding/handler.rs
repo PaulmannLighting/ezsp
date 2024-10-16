@@ -1,6 +1,7 @@
 pub mod remote_delete_binding;
 pub mod remote_set_binding;
 
+#[allow(variant_size_differences, clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     RemoteDeleteBinding(remote_delete_binding::Handler),

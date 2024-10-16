@@ -2,6 +2,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 
 use super::{Header, HighByte, LowByte};
 
+/// An extended header.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
 pub struct Extended {
     sequence: u8,

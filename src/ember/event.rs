@@ -1,3 +1,5 @@
+//! Ember event types.
+
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -33,6 +35,7 @@ impl TryFrom<u8> for Units {
     }
 }
 
+/// Ember event duration.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 pub struct Duration {
     time: u16,
@@ -41,6 +44,10 @@ pub struct Duration {
 
 impl Duration {
     /// Create a new duration.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the time is greater than [`MAX_TIME`].
     pub const fn try_new(time: u16, units: Units) -> Result<Self, u16> {
         if time > MAX_TIME {
             Err(time)
@@ -65,6 +72,7 @@ impl Duration {
 impl TryFrom<Option<std::time::Duration>> for Duration {
     type Error = std::time::Duration;
 
+    #[allow(clippy::cast_possible_truncation)]
     fn try_from(duration: Option<std::time::Duration>) -> Result<Self, Self::Error> {
         let Some(duration) = duration else {
             return Ok(Self {

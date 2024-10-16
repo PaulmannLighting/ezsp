@@ -1,3 +1,5 @@
+//! Proxy table entry.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::gp::security::FrameCounter;

@@ -1,3 +1,5 @@
+//! Error handling for the NCP protocol.
+
 mod decode;
 mod value_error;
 

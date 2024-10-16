@@ -1,3 +1,5 @@
+//! Beacon data structures.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::types::PanId;

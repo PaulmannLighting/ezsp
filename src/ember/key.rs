@@ -1,3 +1,5 @@
+//! Ember key types and structures.
+
 use std::num::TryFromIntError;
 use std::time::Duration;
 

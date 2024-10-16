@@ -30,15 +30,6 @@ pub struct Response {
     status: u8,
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status) -> Self {
-        Self {
-            status: status.into(),
-        }
-    }
-}
-
 impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;

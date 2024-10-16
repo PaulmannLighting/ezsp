@@ -1,3 +1,5 @@
+//! Network module for Ember.
+
 pub use duration::Duration;
 pub use parameters::Parameters;
 pub use status::Status;

@@ -1,3 +1,5 @@
+//! Child node data structure.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 

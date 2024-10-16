@@ -5,6 +5,7 @@ pub mod dsa_verify;
 pub mod generate_cbke_keys;
 pub mod generate_cbke_keys283k1;
 
+#[allow(variant_size_differences, clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     CalculateSmacs(calculate_smacs::Handler),

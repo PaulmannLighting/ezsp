@@ -1,3 +1,5 @@
+//! Ember radio module.
+
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 

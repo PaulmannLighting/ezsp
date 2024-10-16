@@ -1,3 +1,5 @@
+//! Entropy source.
+
 use crate::resolve::Resolve;
 use crate::ValueError;
 use num_derive::FromPrimitive;

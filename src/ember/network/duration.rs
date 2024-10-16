@@ -20,8 +20,7 @@ impl From<u8> for Duration {
         match value {
             OFF => Self::Disable,
             0x01..=0xFE => Self::Seconds(Seconds(value)),
-            ON => Self::Enable,
-            _ => unreachable!(),
+            ON.. => Self::Enable,
         }
     }
 }

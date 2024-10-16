@@ -1,3 +1,5 @@
+//! Zigbee Light Link (ZLL) specific types.
+
 mod address_assignment;
 mod data_token;
 mod device_info_record;

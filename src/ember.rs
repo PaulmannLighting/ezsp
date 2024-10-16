@@ -1,3 +1,5 @@
+//! EmberZNet protocol stack.
+
 pub mod aes;
 pub mod aps;
 pub mod beacon;

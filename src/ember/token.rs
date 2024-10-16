@@ -1,3 +1,5 @@
+//! Ember token types.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// Ember token data.

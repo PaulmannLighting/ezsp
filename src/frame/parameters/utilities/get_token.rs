@@ -29,25 +29,6 @@ pub struct Response {
     token_data: [u8; 8],
 }
 
-impl Response {
-    #[must_use]
-    pub fn new(status: Status, token_data: [u8; 8]) -> Self {
-        Self {
-            status: status.into(),
-            token_data,
-        }
-    }
-
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub const fn token_data(&self) -> [u8; 8] {
-        self.token_data
-    }
-}
-
 impl Parameter for Response {
     type Id = u16;
     const ID: u16 = ID;

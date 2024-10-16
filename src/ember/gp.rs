@@ -1,3 +1,5 @@
+//! This module contains the types and traits for the Green Power (GP) stack.
+
 mod address;
 pub mod proxy;
 pub mod security;

@@ -1,3 +1,5 @@
+//! Ember multicast table.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// Ember multicast ID.

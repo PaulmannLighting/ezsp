@@ -1,3 +1,5 @@
+//! The AES encryption algorithm.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// The hash context for an ongoing hash operation.

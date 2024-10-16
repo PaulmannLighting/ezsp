@@ -1,3 +1,5 @@
+//! Policy decision identifiers and bitmasks.
+
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 

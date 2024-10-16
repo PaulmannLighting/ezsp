@@ -1,3 +1,5 @@
+//! Ember library management.
+
 /// Ember library ID.
 pub type Id = u8;
 

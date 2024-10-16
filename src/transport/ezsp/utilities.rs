@@ -158,7 +158,7 @@ where
     async fn custom_frame(&mut self, payload: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
         self.communicate::<_, custom_frame::Response>(custom_frame::Command::new(payload))
             .await?
-            .into()
+            .resolve()
     }
 
     async fn debug_write(

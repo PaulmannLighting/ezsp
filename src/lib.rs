@@ -6,13 +6,13 @@
 //! This library is free software and is not affiliated with Silicon Labs.
 mod constants;
 pub mod ember;
-pub mod error;
+mod error;
 pub mod ezsp;
 mod frame;
 mod resolve;
 mod result;
 mod transport;
-pub mod types;
+mod types;
 
 pub use constants::{EZSP_MAX_FRAME_SIZE, EZSP_MAX_HEADER_SIZE};
 pub use error::{Error, ValueError};
@@ -27,3 +27,4 @@ pub use transport::{
     Mfglib, Networking, ProxyTable, Security, SinkTable, TokenInterface, Transport, TrustCenter,
     Utilities, Wwah, Zll,
 };
+pub use types::SourceRouteDiscoveryMode;

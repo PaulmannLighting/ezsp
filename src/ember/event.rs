@@ -3,7 +3,6 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-const MAX_TIME: u16 = 32767;
 const MILLIS_PER_BINARY_QUARTER_SEC: u128 = 256;
 const MILLIS_PER_BINARY_MINUTE: u128 = 65536;
 
@@ -43,13 +42,16 @@ pub struct Duration {
 }
 
 impl Duration {
+    /// Maximum time value.
+    pub const MAX_TIME: u16 = 32767;
+
     /// Create a new duration.
     ///
     /// # Errors
     ///
-    /// Returns an error if the time is greater than [`MAX_TIME`].
+    /// Returns an error if the time is greater than [`Self::MAX_TIME`].
     pub const fn try_new(time: u16, units: Units) -> Result<Self, u16> {
-        if time > MAX_TIME {
+        if time > Self::MAX_TIME {
             Err(time)
         } else {
             Ok(Self { time, units })
@@ -83,7 +85,7 @@ impl TryFrom<Option<std::time::Duration>> for Duration {
 
         let millis = duration.as_millis();
 
-        if millis < MAX_TIME as u128 {
+        if millis < Self::MAX_TIME as u128 {
             return Ok(Self {
                 time: millis as u16,
                 units: Units::MsTime,
@@ -92,7 +94,7 @@ impl TryFrom<Option<std::time::Duration>> for Duration {
 
         let binary_quarter_secs = millis / MILLIS_PER_BINARY_QUARTER_SEC;
 
-        if binary_quarter_secs < MAX_TIME as u128 {
+        if binary_quarter_secs < Self::MAX_TIME as u128 {
             return Ok(Self {
                 time: binary_quarter_secs as u16,
                 units: Units::QsTime,
@@ -101,7 +103,7 @@ impl TryFrom<Option<std::time::Duration>> for Duration {
 
         let binary_minutes = millis / MILLIS_PER_BINARY_MINUTE;
 
-        if binary_minutes < MAX_TIME as u128 {
+        if binary_minutes < Self::MAX_TIME as u128 {
             return Ok(Self {
                 time: binary_minutes as u16,
                 units: Units::MinuteTime,

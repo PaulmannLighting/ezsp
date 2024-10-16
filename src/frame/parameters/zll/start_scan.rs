@@ -15,6 +15,7 @@ pub struct Command {
 }
 
 impl Command {
+    /// Create a new command to start a scan..
     #[must_use]
     pub fn new(channel_mask: u32, radio_power_for_scan: i8, node_type: Type) -> Self {
         Self {

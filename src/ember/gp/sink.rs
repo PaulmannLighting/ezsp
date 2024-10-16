@@ -1,6 +1,6 @@
 //! Ember GP sink structs.
 //!
-//! For details, see https://docs.silabs.com/d/zigbee-stack-api/7.2.2/gp-types-h
+//! For details, see <https://docs.silabs.com/d/zigbee-stack-api/7.2.2/gp-types-h>
 use le_stream::derive::{FromLeStream, ToLeStream};
 use le_stream::FromLeStream;
 use num_derive::FromPrimitive;

@@ -69,7 +69,7 @@ pub trait CertificateBasedKeyExchange {
     ///
     /// This function begins the process of signing the passed message contained within the messageContents array.
     /// If no other ECC operation is going on, it will immediately return with
-    /// [`Status::OperationInProgress`](ember::Status::OperationInProgress) to indicate the start of ECC operation.
+    /// [`Status::OperationInProgress`](crate::ember::Status::OperationInProgress) to indicate the start of ECC operation.
     /// It will delay a period of time to let APS retries take place,
     /// but then it will shut down the radio and consume the CPU processing until the signing is complete.
     /// This may take up to 1 second. The signed message will be returned in the dsaSignHandler response.
@@ -107,13 +107,13 @@ pub trait CertificateBasedKeyExchange {
     /// This call starts the generation of the ECC Ephemeral Public/Private key pair.
     ///
     /// When complete it stores the private key.
-    /// The results are returned via [`generate_cbke_keys_handler::Result`](crate::frame::parameters::cbke::generate_cbke_keys_handler::Response).
+    /// The results are returned via [`generate_cbke_keys::Handler`](crate::frame::parameters::cbke::handler::generate_cbke_keys::Handler).
     fn generate_cbke_keys(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This call starts the generation of the ECC 283k1 curve Ephemeral Public/Private key pair.
     ///
     /// When complete it stores the private key.
-    /// The results are returned via [`generate_cbke_keys_handler283k1::Result`](crate::frame::parameters::cbke::generate_cbke_keys_handler283k1::Response).
+    /// The results are returned via [`generate_cbke_keys283k1::Handler`](crate::frame::parameters::cbke::handler::generate_cbke_keys283k1::Handler).
     fn generate_cbke_keys283k1(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Retrieves the certificate installed on the NCP.

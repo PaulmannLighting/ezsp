@@ -53,7 +53,7 @@ pub trait Mfglib {
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Activate use of mfglib test routines and enables the radio receiver to report packets it
-    /// receives to the [`rx_handler`] callback.
+    /// receives to the [`Handler`](crate::frame::parameters::mfglib::handler::rx::Handler) callback.
     ///
     /// These packets will not be passed up with a CRC failure.
     /// All other mfglib functions will return an error until the [`start()`](Self::start) has been called.

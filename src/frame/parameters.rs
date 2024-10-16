@@ -1,3 +1,5 @@
+//! This module contains the definition of the parameters used in the Ember ZNet protocol.
+
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::{Debug, Display, LowerHex, UpperHex};
 use std::hash::Hash;

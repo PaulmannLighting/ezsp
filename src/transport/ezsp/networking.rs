@@ -162,7 +162,7 @@ pub trait Networking {
     /// Returns the route table entry at the given index.
     ///
     /// The route table size can be obtained using the
-    /// [`get_configuration_value()`](Self::get_configuration_value) command.
+    /// [`get_configuration_value()`](crate::Configuration::get_configuration_value) command.
     fn get_route_table_entry(
         &mut self,
         index: u8,

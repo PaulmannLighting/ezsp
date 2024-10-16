@@ -4,9 +4,10 @@ use crate::ember::radio::PowerMode;
 use crate::ember::zll::{DataToken, InitialSecurityState, Network};
 use crate::ezsp::zll::NetworkOperation;
 use crate::frame::parameters::zll::{
-    get_tokens, is_zll_network, network_ops, operation_in_progress, set_additional_state,
-    set_data_token, set_initial_security_state, set_node_type, set_non_zll_network,
-    set_radio_idle_mode, set_rx_on_when_idle, set_security_state_without_key, start_scan,
+    get_tokens, is_zll_network, network_ops, operation_in_progress, rx_on_when_idle_get_active,
+    set_additional_state, set_data_token, set_initial_security_state, set_node_type,
+    set_non_zll_network, set_radio_idle_mode, set_rx_on_when_idle, set_security_state_without_key,
+    start_scan,
 };
 use crate::resolve::Resolve;
 use crate::{Error, Transport};
@@ -32,6 +33,9 @@ pub trait Zll {
 
     /// Is there a ZLL (Touchlink) operation in progress?
     fn operation_in_progress(&mut self) -> impl Future<Output = Result<bool, Error>> + Send;
+
+    /// Is the ZLL radio on when idle mode is active?
+    fn rx_on_when_idle_get_active(&mut self) -> impl Future<Output = Result<bool, Error>> + Send;
 
     /// This call sets additional capability bits in the ZLL state.
     fn set_additional_state(
@@ -123,6 +127,14 @@ where
         self.communicate::<_, operation_in_progress::Response>(operation_in_progress::Command)
             .await
             .map(|response| response.zll_operation_in_progress())
+    }
+
+    async fn rx_on_when_idle_get_active(&mut self) -> Result<bool, Error> {
+        self.communicate::<_, rx_on_when_idle_get_active::Response>(
+            rx_on_when_idle_get_active::Command,
+        )
+        .await
+        .map(|response| response.zll_rx_on_when_idle_get_active())
     }
 
     async fn set_additional_state(&mut self, state: u16) -> Result<(), Error> {

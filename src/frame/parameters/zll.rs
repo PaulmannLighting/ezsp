@@ -15,6 +15,6 @@ pub mod set_non_zll_network;
 pub mod set_primary_channel_mask;
 pub mod set_radio_idle_mode;
 pub mod set_rx_on_when_idle;
+pub mod set_secondary_channel_mask;
 pub mod set_security_state_without_key;
-pub mod set_zll_secondary_channel_mask;
 pub mod start_scan;

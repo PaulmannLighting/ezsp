@@ -3,8 +3,8 @@ use crate::ember::node::Type;
 use crate::ember::zll::{InitialSecurityState, Network};
 use crate::ezsp::zll::NetworkOperation;
 use crate::frame::parameters::zll::{
-    network_ops, set_initial_security_state, set_rx_on_when_idle, set_security_state_without_key,
-    start_scan,
+    get_tokens, network_ops, set_initial_security_state, set_rx_on_when_idle,
+    set_security_state_without_key, start_scan,
 };
 use crate::resolve::Resolve;
 use crate::{Error, Transport};
@@ -12,6 +12,9 @@ use std::future::Future;
 
 /// The `Zll` trait provides an interface for the Zigbee Light Link (ZLL) protocol.
 pub trait Zll {
+    /// Get the ZLL tokens.
+    fn get_tokens(&mut self) -> impl Future<Output = Result<get_tokens::Response, Error>> + Send;
+
     /// A consolidation of ZLL network operations with similar signatures;
     /// specifically, forming and joining networks or touch-linking.
     fn network_ops(
@@ -59,6 +62,11 @@ impl<T> Zll for T
 where
     T: Transport,
 {
+    async fn get_tokens(&mut self) -> Result<get_tokens::Response, Error> {
+        self.communicate::<_, get_tokens::Response>(get_tokens::Command)
+            .await
+    }
+
     async fn network_ops(
         &mut self,
         network_info: Network,

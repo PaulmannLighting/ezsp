@@ -1,7 +1,7 @@
 pub mod clear_tokens;
 pub mod get_primary_channel_mask;
+pub mod get_secondary_channel_mask;
 pub mod get_tokens;
-pub mod get_zll_secondary_channel_mask;
 pub mod handler;
 pub mod is_zll_network;
 pub mod network_ops;

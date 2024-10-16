@@ -1,3 +1,5 @@
+//! Utilities Frames
+
 pub mod callback;
 pub mod custom_frame;
 pub mod debug_write;

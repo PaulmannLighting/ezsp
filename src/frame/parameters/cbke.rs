@@ -1,3 +1,5 @@
+//! Certificate-Based Key Exchange (CBKE) Frames
+
 pub mod calculate_smacs;
 pub mod calculate_smacs283k1;
 pub mod clear_temporary_data_maybe_store_link_key;

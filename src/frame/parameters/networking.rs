@@ -1,3 +1,5 @@
+//! Networking Frames
+
 pub mod child_id;
 pub mod clear_stored_beacons;
 pub mod energy_scan_request;

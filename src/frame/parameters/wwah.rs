@@ -1,3 +1,5 @@
+//! WWAH Frames
+
 pub mod get_parent_classification_enabled;
 pub mod is_hub_connected;
 pub mod is_uptime_long;

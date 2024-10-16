@@ -1,3 +1,5 @@
+//! Configuration Frames
+
 pub mod add_endpoint;
 pub mod get_configuration_value;
 pub mod get_extended_value;

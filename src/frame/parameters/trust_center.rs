@@ -1,3 +1,5 @@
+//! Trust Center Frames
+
 pub mod aes_mmo_hash;
 pub mod broadcast_network_key_switch;
 pub mod broadcast_next_network_key;

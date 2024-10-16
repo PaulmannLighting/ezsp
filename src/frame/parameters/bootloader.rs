@@ -1,3 +1,5 @@
+//! Bootloader Frames
+
 pub mod aes_encrypt;
 pub mod get_standalone_bootloader_version_plat_micro_phy;
 pub mod handler;

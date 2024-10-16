@@ -1,3 +1,5 @@
+//! Messaging Frames
+
 pub mod address_table_entry_is_active;
 pub mod get_address_table_remote_eui64;
 pub mod get_address_table_remote_node_id;

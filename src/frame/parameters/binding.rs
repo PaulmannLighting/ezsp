@@ -1,3 +1,5 @@
+//! Binding Frames
+
 pub mod binding_is_active;
 pub mod clear_binding_table;
 pub mod delete_binding;

@@ -1,3 +1,5 @@
+//! Mfglib Frames
+
 pub mod end;
 pub mod get_channel;
 pub mod get_power;

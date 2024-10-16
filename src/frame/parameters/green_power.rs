@@ -1,3 +1,5 @@
+//! Green Power Frames
+
 pub mod handler;
 pub mod proxy_table;
 pub mod send;

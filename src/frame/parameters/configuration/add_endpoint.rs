@@ -43,7 +43,7 @@ impl Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-struct Clusters {
+pub struct Clusters {
     input_clusters: ByteSizedVec<u16>,
     output_clusters: ByteSizedVec<u16>,
 }

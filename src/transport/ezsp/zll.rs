@@ -1,9 +1,9 @@
 use crate::ember::key::Data;
 use crate::ember::node::Type;
-use crate::ember::zll::{InitialSecurityState, Network};
+use crate::ember::zll::{DataToken, InitialSecurityState, Network};
 use crate::ezsp::zll::NetworkOperation;
 use crate::frame::parameters::zll::{
-    get_tokens, network_ops, set_initial_security_state, set_rx_on_when_idle,
+    get_tokens, network_ops, set_data_token, set_initial_security_state, set_rx_on_when_idle,
     set_security_state_without_key, start_scan,
 };
 use crate::resolve::Resolve;
@@ -23,6 +23,10 @@ pub trait Zll {
         op: NetworkOperation,
         radio_tx_power: i8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Set the ZLL data token.
+    fn set_data_token(&mut self, data: DataToken)
+        -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This call will cause the device to setup the security information used in its network.
     ///
@@ -80,6 +84,12 @@ where
         ))
         .await?
         .resolve()
+    }
+
+    async fn set_data_token(&mut self, data: DataToken) -> Result<(), Error> {
+        self.communicate::<_, set_data_token::Response>(set_data_token::Command::new(data))
+            .await
+            .map(drop)
     }
 
     async fn set_initial_security_state(

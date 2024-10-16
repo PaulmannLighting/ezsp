@@ -3,13 +3,33 @@ use le_stream::derive::FromLeStream;
 use crate::ember::gp::{Address, KeyType, SecurityLevel};
 use crate::ember::Status;
 use crate::frame::Parameter;
+use crate::resolve::Resolve;
 use crate::types::ByteSizedVec;
+use crate::Error;
 
 const ID: u16 = 0x00C5;
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     status: u8,
+    payload: Payload,
+}
+
+impl Handler {
+    pub fn result(self) -> Result<Payload, Error> {
+        Status::try_from(self.status)
+            .resolve()
+            .map(|()| self.payload)
+    }
+}
+
+impl Parameter for Handler {
+    type Id = u16;
+    const ID: Self::Id = ID;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+struct Payload {
     gpd_link: u8,
     sequence_number: u8,
     addr: Address,
@@ -21,14 +41,11 @@ pub struct Handler {
     gpd_command_id: u8,
     mic: u32,
     proxy_table_index: u8,
+    #[allow(clippy::struct_field_names)]
     gpd_command_payload: ByteSizedVec<u8>,
 }
 
-impl Handler {
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
-    }
-
+impl Payload {
     #[must_use]
     pub const fn gpd_link(&self) -> u8 {
         self.gpd_link
@@ -88,9 +105,4 @@ impl Handler {
     pub const fn gpd_command_payload(&self) -> &ByteSizedVec<u8> {
         &self.gpd_command_payload
     }
-}
-
-impl Parameter for Handler {
-    type Id = u16;
-    const ID: Self::Id = ID;
 }

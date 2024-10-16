@@ -18,6 +18,8 @@ pub enum Decode {
         /// The found frame ID.
         found: u16,
     },
+    /// Invalid frame ID.
+    InvalidFrameId(u16),
 }
 
 impl Display for Decode {
@@ -31,6 +33,7 @@ impl Display for Decode {
                     "Frame ID mismatch: Expected {expected:#06X}, found {found:#06X}."
                 )
             }
+            Self::InvalidFrameId(id) => write!(f, "Invalid frame ID: {id:#06X}."),
         }
     }
 }

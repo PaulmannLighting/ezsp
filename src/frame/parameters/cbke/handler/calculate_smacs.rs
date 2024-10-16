@@ -18,10 +18,8 @@ impl Parameter for Handler {
     const ID: Self::Id = ID;
 }
 
-impl Resolve for Handler {
-    type Output = Payload;
-
-    fn resolve(self) -> Result<Self::Output, Error> {
+impl Handler {
+    fn result(self) -> Result<Payload, Error> {
         Status::try_from(self.status)
             .resolve()
             .map(|_| self.payload)

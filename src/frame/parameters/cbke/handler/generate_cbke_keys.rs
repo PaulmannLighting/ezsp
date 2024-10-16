@@ -2,6 +2,8 @@ use le_stream::derive::FromLeStream;
 
 use crate::ember::{PublicKeyData, Status};
 use crate::frame::Parameter;
+use crate::resolve::Resolve;
+use crate::Error;
 
 const ID: u16 = 0x009E;
 
@@ -12,13 +14,10 @@ pub struct Handler {
 }
 
 impl Handler {
-    pub fn status(&self) -> Result<Status, u8> {
+    pub fn result(self) -> Result<PublicKeyData, Error> {
         Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub const fn ephemeral_public_key(&self) -> &PublicKeyData {
-        &self.ephemeral_public_key
+            .resolve()
+            .map(|()| self.ephemeral_public_key)
     }
 }
 

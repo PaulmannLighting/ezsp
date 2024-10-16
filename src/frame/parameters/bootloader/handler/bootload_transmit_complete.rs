@@ -14,17 +14,15 @@ pub struct Handler {
     message: ByteSizedVec<u8>,
 }
 
-impl Parameter for Handler {
-    type Id = u16;
-    const ID: Self::Id = ID;
-}
-
-impl Resolve for Handler {
-    type Output = ByteSizedVec<u8>;
-
-    fn resolve(self) -> Result<Self::Output, Error> {
+impl Handler {
+    pub fn result(self) -> Result<ByteSizedVec<u8>, Error> {
         Status::try_from(self.status)
             .resolve()
             .map(|_| self.message)
     }
+}
+
+impl Parameter for Handler {
+    type Id = u16;
+    const ID: Self::Id = ID;
 }

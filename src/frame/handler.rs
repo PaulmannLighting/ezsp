@@ -1,14 +1,10 @@
-use le_stream::FromLeStream;
-
+use crate::error::Decode;
 use crate::frame::parameters::{
     binding, bootloader, cbke, green_power, messaging, mfglib, networking, security, trust_center,
     utilities, zll,
 };
 use crate::frame::Parameter;
-
-pub use parse_error::ParseError;
-
-mod parse_error;
+use le_stream::FromLeStream;
 
 /// Possible callback responses, which are called "handler"s according to the EZSP documentation.
 #[allow(clippy::large_enum_variant)]
@@ -29,7 +25,7 @@ pub enum Handler {
 
 impl Handler {
     #[allow(clippy::too_many_lines)]
-    pub fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, ParseError>
+    pub fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, Decode>
     where
         T: Iterator<Item = u8>,
     {
@@ -197,7 +193,7 @@ impl Handler {
             zll::handler::touch_link_target::Handler::ID => Ok(
                 zll::handler::touch_link_target::Handler::from_le_stream_exact(stream)?.into(),
             ),
-            _ => Err(ParseError::InvalidFrameId(id)),
+            _ => Err(Decode::InvalidFrameId(id)),
         }
     }
 }

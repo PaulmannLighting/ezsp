@@ -2,6 +2,8 @@ use le_stream::derive::FromLeStream;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
+use crate::resolve::Resolve;
+use crate::Error;
 
 const ID: u16 = 0x00C7;
 
@@ -12,13 +14,10 @@ pub struct Handler {
 }
 
 impl Handler {
-    pub fn status(&self) -> Result<Status, u8> {
+    pub fn status(self) -> Result<u8, Error> {
         Status::try_from(self.status)
-    }
-
-    #[must_use]
-    pub const fn gpep_handle(&self) -> u8 {
-        self.gpep_handle
+            .resolve()
+            .map(|()| self.gpep_handle)
     }
 }
 

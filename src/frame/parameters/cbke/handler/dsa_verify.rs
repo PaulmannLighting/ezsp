@@ -2,6 +2,8 @@ use le_stream::derive::FromLeStream;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
+use crate::resolve::Resolve;
+use crate::Error;
 
 const ID: u16 = 0x0078;
 
@@ -11,8 +13,8 @@ pub struct Handler {
 }
 
 impl Handler {
-    pub fn status(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+    pub fn status(&self) -> Result<(), Error> {
+        Status::try_from(self.status).resolve()
     }
 }
 

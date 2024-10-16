@@ -16,9 +16,10 @@ use crate::{Error, Transport};
 
 /// The `CertificateBasedKeyExchange` trait provides an interface for the Certificate Based Key Exchange features.
 pub trait CertificateBasedKeyExchange {
+    // TODO: Where is `ezspGenerateKeysRetrieveCert()` defined?
     /// Calculates the SMAC verification keys for both the initiator and responder roles of
     /// CBKE using the passed parameters and the stored public/private key pair previously
-    /// generated with ezspGenerateKeysRetrieveCert().
+    /// generated with `ezspGenerateKeysRetrieveCert()`.
     /// It also stores the unverified link key data in temporary storage on the NCP until the key
     /// establishment is complete.
     fn calculate_smacs(
@@ -28,9 +29,10 @@ pub trait CertificateBasedKeyExchange {
         partner_ephemeral_public_key: PublicKeyData,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
+    // TODO: Where is `ezspGenerateKeysRetrieveCert283k1()` defined?
     /// Calculates the SMAC verification keys for both the initiator and responder roles of
     /// CBKE for the 283k1 ECC curve using the passed parameters and the stored public/private
-    /// key pair previously generated with ezspGenerateKeysRetrieveCert283k1().
+    /// key pair previously generated with `ezspGenerateKeysRetrieveCert283k1()`.
     ///
     /// It also stores the unverified link key data in temporary storage on the NCP until the
     /// key establishment is complete.
@@ -61,27 +63,37 @@ pub trait CertificateBasedKeyExchange {
         store_link_key: bool,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
-    /// This functionality has been replaced by a single bit in the EmberApsFrame, `EMBER_APS_OPTION_DSA_SIGN`.
+    /// This functionality has been replaced by a single bit in the `EmberApsFrame`,
+    /// `EMBER_APS_OPTION_DSA_SIGN`.
     ///
-    /// Devices wishing to send signed messages should use that as it requires fewer function calls and message buffering.
+    /// Devices wishing to send signed messages should use that as it requires fewer function calls
+    /// and message buffering.
     /// The dsaSignHandler response is still called when `EMBER_APS_OPTION_DSA_SIGN` is used.
     /// However, this function is still supported.
     ///
-    /// This function begins the process of signing the passed message contained within the messageContents array.
+    /// This function begins the process of signing the passed message contained within the
+    /// `messageContents` array.
     /// If no other ECC operation is going on, it will immediately return with
-    /// [`Status::OperationInProgress`](crate::ember::Status::OperationInProgress) to indicate the start of ECC operation.
-    /// It will delay a period of time to let APS retries take place,
-    /// but then it will shut down the radio and consume the CPU processing until the signing is complete.
-    /// This may take up to 1 second. The signed message will be returned in the dsaSignHandler response.
+    /// [`Status::OperationInProgress`](crate::ember::Status::OperationInProgress) to indicate the
+    /// start of ECC operation.
+    /// It will delay a period of time to let APS retries take place, but then it will shut down the
+    /// radio and consume the CPU processing until the signing is complete.
+    /// This may take up to 1 second. The signed message will be returned in the dsaSignHandler
+    /// response.
     ///
-    /// Note that the last byte of the messageContents passed to this function has special significance.
-    /// As the typical use case for DSA signing is to sign the ZCL payload of a DRLC Report Event Status message in SE 1.0,
+    /// Note that the last byte of the messageContents passed to this function has special
+    /// significance.
+    /// As the typical use case for DSA signing is to sign the ZCL payload of a `DRLC` Report Event
+    /// Status message in SE 1.0,
     /// there is often both a signed portion (ZCL payload) and an unsigned portion (ZCL header).
-    /// The last byte in the content of messageToSign is therefore used as a special indicator to signify
-    /// how many bytes of leading data in the array should be excluded from consideration during the signing process.
-    /// If the signature needs to cover the entire array (all bytes except last one), the caller should ensure that the last byte of messageContents is 0x00.
-    /// When the signature operation is complete, this final byte will be replaced by the signature type indicator (0x01 for ECDSA signatures),
-    /// and the actual signature will be appended to the original contents after this byte.
+    /// The last byte in the content of messageToSign is therefore used as a special indicator to
+    /// signify how many bytes of leading data in the array should be excluded from consideration
+    /// during the signing process.
+    /// If the signature needs to cover the entire array (all bytes except last one), the caller
+    /// should ensure that the last byte of messageContents is 0x00.
+    /// When the signature operation is complete, this final byte will be replaced by the signature
+    /// type indicator (0x01 for ECDSA signatures),  and the actual signature will be appended to
+    /// the original contents after this byte.
     #[deprecated]
     fn dsa_sign(
         &mut self,

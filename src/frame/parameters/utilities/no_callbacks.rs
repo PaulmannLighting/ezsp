@@ -7,7 +7,7 @@ const ID: u16 = 0x0007;
 ///
 /// This frame is a response to the callback command.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response;
+pub struct Response;
 
 impl Parameter for Response {
     type Id = u16;

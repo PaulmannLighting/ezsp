@@ -1,4 +1,4 @@
-//! Definitions of parameter structures used in the *Ember ZNet Serial Protocol* (`EZSP`).
+//! Definitions of parameter structures used in the `Ember ZNet Serial Protocol` (`EZSP`).
 
 pub mod binding;
 pub mod bootloader;

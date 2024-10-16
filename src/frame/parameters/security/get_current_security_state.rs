@@ -30,6 +30,6 @@ impl Resolve for Response {
     type Output = State;
 
     fn resolve(self) -> Result<Self::Output, Error> {
-        Status::try_from(self.status).resolve().map(|_| self.state)
+        Status::try_from(self.status).resolve().map(|()| self.state)
     }
 }

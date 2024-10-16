@@ -54,7 +54,7 @@ impl From<Response> for Result<MmoHashContext, Error> {
         response
             .status()
             .resolve()
-            .map(|_| response.return_context())
+            .map(|()| response.return_context())
     }
 }
 

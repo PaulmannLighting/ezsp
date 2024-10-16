@@ -89,9 +89,9 @@ pub enum Status {
     InvalidSecurityLevel,
     /// After moving, a mobile node's attempt to re-establish contact with the network failed.
     MoveFailed,
-    /// An attempt to join as a router failed due to a `ZigBee` versus `ZigBee` Pro incompatibility.
+    /// An attempt to join as a router failed due to a Zigbee versus Zigbee Pro incompatibility.
     ///
-    /// `ZigBee` devices joining `ZigBee` Pro networks (or vice versa) must join as End Devices, not Routers.
+    /// Zigbee devices joining Zigbee Pro networks (or vice versa) must join as End Devices, not Routers.
     CannotJoinAsRouter,
     /// The local node ID has changed.
     ///
@@ -138,10 +138,10 @@ pub enum Status {
     /// There was an attempt to form or join a network with security
     /// without calling `emberSetInitialSecurityState()` first.
     SecurityStateNotSet,
-    /// A `ZigBee` route error command frame was received indicating that
+    /// A Zigbee route error command frame was received indicating that
     /// a source routed message from this node failed en route
     SourceRouteFailure,
-    /// A `ZigBee` route error command frame was received indicating that a message sent
+    /// A Zigbee route error command frame was received indicating that a message sent
     /// to this node along a many-to-one route failed en route.
     ///
     /// The route error frame was delivered by an ad-hoc search for a functioning route.

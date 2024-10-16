@@ -6,7 +6,7 @@ use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x0046;
 
-/// A callback invoked by the EmberZNet stack when a raw MAC message that
+/// A callback invoked by the `EmberZNet` stack when a raw MAC message that
 /// has matched one of the application's configured MAC filters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
@@ -25,6 +25,10 @@ impl Handler {
     }
 
     /// The type of MAC passthrough message received.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the message type is not a valid [`PassThroughType`].
     pub fn legacy_passthrough_type(&self) -> Result<PassThroughType, u8> {
         PassThroughType::try_from(self.legacy_passthrough_type)
     }

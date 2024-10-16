@@ -25,7 +25,7 @@ pub struct Ashv2<const BUF_SIZE: usize> {
 }
 
 impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
-    /// Creates an ASHv2 host.
+    /// Creates an `ASHv2` host.
     #[must_use]
     pub const fn new(ash: AshFramed<BUF_SIZE>) -> Self {
         Self { ash, sequence: 0 }

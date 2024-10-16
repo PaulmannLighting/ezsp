@@ -6,7 +6,7 @@ use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x0092;
 
-/// A callback invoked by the EmberZNet stack when a bootload message is received.
+/// A callback invoked by the `EmberZNet` stack when a bootload message is received.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     long_id: Eui64,

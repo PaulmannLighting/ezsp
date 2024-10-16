@@ -1,10 +1,10 @@
-//! MFGlib event handler.
+//! `Mfglib` event handler.
 
 mod rx;
 
 pub use rx::Handler as Rx;
 
-/// Handler of a MFGlib event.
+/// Handler of a `Mfglib` event.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     /// Received data event.

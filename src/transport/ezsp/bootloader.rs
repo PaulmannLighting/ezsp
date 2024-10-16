@@ -39,7 +39,7 @@ pub trait Bootloader {
     /// A bootloader method for selecting the radio channel.
     ///
     /// This routine only works for sending and receiving bootload packets.
-    /// Does not correctly do ZigBee stack changes.
+    /// Does not correctly do Zigbee stack changes.
     ///
     /// NOTE: this API is not safe to call on multi-network devices and it will return failure when so.
     /// Use of the ember/ezspSetRadioChannel APIs are multi-network safe and are recommended instead.
@@ -49,8 +49,8 @@ pub trait Bootloader {
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Transmits the given bootload message to a neighboring node using a specific 802.15.4 header
-    /// that allows the EmberZNet stack as well as the bootloader to recognize the message,
-    /// but will not interfere with other ZigBee stacks.
+    /// that allows the `EmberZNet` stack as well as the bootloader to recognize the message,
+    /// but will not interfere with other Zigbee stacks.
     fn send_bootload_message(
         &mut self,
         broadcast: bool,

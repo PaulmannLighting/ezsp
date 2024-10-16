@@ -1,4 +1,4 @@
-//! Initial security state configuration for the EmberZNet stack.
+//! Initial security state configuration for the `EmberZNet` stack.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
@@ -11,7 +11,7 @@ use crate::ember::Eui64;
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u16)]
 pub enum Bitmask {
-    /// This enables `ZigBee` Standard Security on the node.
+    /// This enables Zigbee Standard Security on the node.
     StandardSecurityMode = 0x0000,
     /// This enables Distributed Trust Center Mode for the device forming the network.
     /// (Previously known as `EMBER_NO_TRUST_CENTER_MODE`)

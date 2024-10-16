@@ -7,7 +7,7 @@ use crate::Error;
 
 const ID: u16 = 0x0098;
 
-/// A callback invoked by the EmberZNet stack when the MAC has finished transmitting a raw message.
+/// A callback invoked by the `EmberZNet` stack when the MAC has finished transmitting a raw message.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     status: u8,

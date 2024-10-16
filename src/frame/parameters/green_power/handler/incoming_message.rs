@@ -9,7 +9,7 @@ use crate::Error;
 
 const ID: u16 = 0x00C5;
 
-/// A callback invoked by the ZigBee GP stack when a GPDF is received.
+/// A callback invoked by the Zigbee GP stack when a GPDF is received.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     status: u8,

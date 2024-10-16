@@ -28,6 +28,6 @@ impl Resolve for Response {
     type Output = u16;
 
     fn resolve(self) -> crate::Result<Self::Output> {
-        Status::try_from(self.status).resolve().map(|_| self.value)
+        Status::try_from(self.status).resolve().map(|()| self.value)
     }
 }

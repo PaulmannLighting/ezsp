@@ -46,7 +46,7 @@ impl Network {
         }
     }
 
-    /// Return the parameters of a ZigBee network.
+    /// Return the parameters of a Zigbee network.
     #[must_use]
     pub const fn zigbee_network(&self) -> &zigbee::Network {
         &self.zigbee_network

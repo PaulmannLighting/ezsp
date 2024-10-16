@@ -40,6 +40,6 @@ impl Resolve for Response {
     fn resolve(self) -> Result<Self::Output, crate::Error> {
         Status::try_from(self.status)
             .resolve()
-            .map(|_| self.payload)
+            .map(|()| self.payload)
     }
 }

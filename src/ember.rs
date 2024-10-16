@@ -1,4 +1,4 @@
-//! Ember ZNet Serial Protocol stack.
+//! `Ember ZNet Serial Protocol` stack.
 
 pub mod aes;
 pub mod aps;

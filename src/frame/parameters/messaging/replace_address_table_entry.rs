@@ -40,7 +40,7 @@ impl Parameter for Command {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
-    payload: Payload,
+    payload: PreviousEntry,
 }
 
 impl Parameter for Response {
@@ -49,7 +49,7 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Output = Payload;
+    type Output = PreviousEntry;
 
     fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(self.status)
@@ -58,30 +58,30 @@ impl Resolve for Response {
     }
 }
 
-/// The response to a replace address table entry command.
+/// Information about the previous entry that was replaced.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Payload {
-    old_eui64: Eui64,
-    old_id: NodeId,
-    old_extended_timeout: bool,
+pub struct PreviousEntry {
+    eui64: Eui64,
+    id: NodeId,
+    extended_timeout: bool,
 }
 
-impl Payload {
+impl PreviousEntry {
     /// Returns the old EUI64.
     #[must_use]
-    pub const fn old_eui64(&self) -> Eui64 {
-        self.old_eui64
+    pub const fn eui64(&self) -> Eui64 {
+        self.eui64
     }
 
     /// Returns the old node ID.
     #[must_use]
-    pub const fn old_id(&self) -> NodeId {
-        self.old_id
+    pub const fn id(&self) -> NodeId {
+        self.id
     }
 
     /// Returns if the old entry had an extended timeout.
     #[must_use]
-    pub const fn old_extended_timeout(&self) -> bool {
-        self.old_extended_timeout
+    pub const fn extended_timeout(&self) -> bool {
+        self.extended_timeout
     }
 }

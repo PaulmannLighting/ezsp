@@ -43,7 +43,7 @@ impl Response {
 
 impl From<Response> for Result<ByteSizedVec<u8>, Error> {
     fn from(response: Response) -> Self {
-        response.status().resolve().map(|_| response.reply())
+        response.status().resolve().map(|()| response.reply())
     }
 }
 

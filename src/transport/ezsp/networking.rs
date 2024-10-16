@@ -52,11 +52,11 @@ pub trait Networking {
     ///
     /// The stack will call `ezspStackStatusHandler` to indicate that the network is down,
     /// then try to re-establish contact with the network by performing an active scan,
-    /// choosing a network with matching extended pan id, and sending a ZigBee network rejoin request.
+    /// choosing a network with matching extended pan id, and sending a Zigbee network rejoin request.
     /// A second call to the `ezspStackStatusHandler` callback indicates either the success or the
     /// failure of the attempt. The process takes approximately 150 milliseconds per channel to complete.
     ///
-    /// This call replaces the emberMobileNodeHasMoved API from EmberZNet 2.x,
+    /// This call replaces the emberMobileNodeHasMoved API from `EmberZNet` 2.x,
     /// which used MAC association and consequently took half a second longer to complete.
     fn find_and_rejoin_network(
         &mut self,
@@ -206,7 +206,7 @@ pub trait Networking {
     ///
     /// It can take several seconds for the stack to associate with the local network.
     /// Do not send messages until the stackStatusHandler callback informs you that the stack is up.
-    /// Unlike ::emberJoinNetwork(), this function does not issue an active scan before joining.
+    /// Unlike [`Self::join_network`], this function does not issue an active scan before joining.
     /// Instead, it will cause the local node to issue a MAC Association Request directly to the
     /// specified target node. It is assumed that the beacon parameter is an artifact after issuing
     /// an active scan. (For more information, see emberGetBestBeacon and emberGetNextBeacon.)

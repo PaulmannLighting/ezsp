@@ -10,7 +10,7 @@ use crate::ember::types::Eui64;
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u16)]
 pub enum Bitmask {
-    /// This denotes that the device is running in a network with `ZigBee` Standard Security.
+    /// This denotes that the device is running in a network with Zigbee Standard Security.
     StandardSecurityMode = 0x0000,
     /// This denotes that the device is running in a network without a centralized Trust Center.
     DistributedTrustCenterMode = 0x0002,

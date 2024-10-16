@@ -42,6 +42,10 @@ impl Handler {
     }
 
     /// The node type of the child.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the type is not a valid node type.
     pub fn child_type(&self) -> Result<Type, u8> {
         Type::try_from(self.child_type)
     }

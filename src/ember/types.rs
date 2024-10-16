@@ -1,10 +1,10 @@
-/// 16-bit `ZigBee` network address.
+/// 16-bit Zigbee network address.
 pub type NodeId = u16;
 
 /// 802.15.4 PAN ID.
 pub type PanId = u16;
 
-/// 16-bit `ZigBee` multicast group identifier.
+/// 16-bit Zigbee multicast group identifier.
 pub type MulticastId = u16;
 
 /// EUI 64-bit ID (an IEEE address).

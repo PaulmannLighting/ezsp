@@ -30,7 +30,7 @@ pub enum Option {
     EnableAddressDiscovery = 0x1000,
     /// Reserved.
     PollResponse = 0x2000,
-    /// This incoming message is a ZDO request not handled by the EmberZNet stack,
+    /// This incoming message is a ZDO request not handled by the `EmberZNet` stack,
     /// and the application is responsible for sending a ZDO response.
     ///
     /// This flag is used only when the ZDO is configured to have requests handled by the application.
@@ -58,7 +58,7 @@ impl TryFrom<u16> for Option {
     }
 }
 
-/// ZigBee APS frame parameters.
+/// Zigbee APS frame parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Frame {
     profile_id: u16,

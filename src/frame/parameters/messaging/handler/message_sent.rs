@@ -22,6 +22,10 @@ pub struct Handler {
 
 impl Handler {
     /// The type of message sent.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the value is not a valid [`Outgoing`] variant.
     pub fn typ(&self) -> Result<Outgoing, u8> {
         Outgoing::try_from(self.typ)
     }

@@ -11,13 +11,13 @@ pub enum Id {
     TokenStackNodeData = 0x00,
     /// The types of MAC passthrough messages that the host wishes to receive.
     MacPassthroughFlags = 0x01,
-    /// The source address used to filter legacy EmberNet messages when the
+    /// The source address used to filter legacy `EmberNet` messages when the
     /// [`PassThroughType`](crate::ember::mac::PassThroughType) flag is set in
     /// [`Self::MacPassthroughFlags`].
     EmbernetPassthroughSourceAddress = 0x02,
     /// The number of available internal RAM general purpose buffers. Read only.
     FreeBuffers = 0x03,
-    /// Selects sending synchronous callbacks in ezsp-uart.
+    /// Selects sending synchronous callbacks in `EZSP-UART`.
     UartSynchCallbacks = 0x04,
     /// The maximum incoming transfer size for the local node.
     ///
@@ -86,7 +86,7 @@ pub enum Id {
     /// If the NCP initiated a rejoin it will record this value internally for retrieval by
     /// `ezspGetValue(EZSP_VALUE_REAL_REJOIN_REASON)`.
     LastRejoinReason = 0x13,
-    /// The next `ZigBee` sequence number.
+    /// The next Zigbee sequence number.
     NextZigbeeSequenceNumber = 0x14,
     /// CCA energy detect threshold for radio.
     CcaThreshold = 0x15,

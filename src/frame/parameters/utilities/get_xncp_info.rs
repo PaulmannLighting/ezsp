@@ -28,7 +28,7 @@ impl Resolve for Response {
     type Output = Payload;
 
     fn resolve(self) -> crate::Result<Self::Output> {
-        Status::try_from(self.status).resolve().and_then(|_| {
+        Status::try_from(self.status).resolve().and_then(|()| {
             self.payload
                 .ok_or(crate::Error::Custom("No payload.".into()))
         })

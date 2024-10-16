@@ -8,7 +8,8 @@ use crate::types::ByteSizedVec;
 use crate::Resolve;
 use crate::{Error, Transport};
 
-/// The `Mfglib` trait provides an interface for the  Manufacturing and Functional Test Library (MfgLib) test routines.
+/// The `Mfglib` trait provides an interface for the  
+/// Manufacturing and Functional Test Library (`MfgLib`) test routines.
 pub trait Mfglib {
     /// Deactivate use of `Mfglib` test routines; restores the hardware to the state it was in prior
     /// to [`start()`](Self::start) and stops receiving packets started by [`start()`](Self::start)

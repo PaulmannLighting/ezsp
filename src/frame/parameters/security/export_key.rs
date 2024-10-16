@@ -39,6 +39,6 @@ impl Resolve for Response {
     type Output = ManKey;
 
     fn resolve(self) -> Result<Self::Output, Error> {
-        Status::try_from(self.status).resolve().map(|_| self.key)
+        Status::try_from(self.status).resolve().map(|()| self.key)
     }
 }

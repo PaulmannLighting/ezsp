@@ -93,7 +93,7 @@ pub trait Messaging {
         failure_limit: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
-    /// Sends a proxied broadcast message as per the ZigBee specification.
+    /// Sends a proxied broadcast message as per the Zigbee specification.
     #[allow(clippy::too_many_arguments)]
     fn proxy_broadcast(
         &mut self,
@@ -115,9 +115,9 @@ pub trait Messaging {
         new_eui64: Eui64,
         new_id: NodeId,
         new_extended_timeout: bool,
-    ) -> impl Future<Output = Result<replace_address_table_entry::Payload, Error>> + Send;
+    ) -> impl Future<Output = Result<replace_address_table_entry::PreviousEntry, Error>> + Send;
 
-    /// Sends a broadcast message as per the ZigBee specification.
+    /// Sends a broadcast message as per the Zigbee specification.
     fn send_broadcast(
         &mut self,
         destination: NodeId,
@@ -131,8 +131,8 @@ pub trait Messaging {
     ///
     /// This function should be called by an application that wishes to communicate with many nodes,
     /// for example, a gateway, central monitor, or controller. A device using this function was
-    /// referred to as an 'aggregator' in EmberZNet 2.x and earlier, and is referred to as a
-    /// 'concentrator' in the ZigBee specification and EmberZNet 3.
+    /// referred to as an 'aggregator' in `EmberZNet` 2.x and earlier, and is referred to as a
+    /// 'concentrator' in the Zigbee specification and `EmberZNet` 3.
     ///
     /// This function enables large scale networks, because the other devices do not have to
     /// individually perform bandwidth-intensive route discoveries.
@@ -144,7 +144,7 @@ pub trait Messaging {
     /// This allows the concentrator to communicate with thousands of devices without requiring
     /// large route tables on neighboring nodes.
     ///
-    /// This function is only available in ZigBee Pro (stack profile 2), and cannot be called on
+    /// This function is only available in Zigbee Pro (stack profile 2), and cannot be called on
     /// end devices.
     /// Any router can be a concentrator (not just the coordinator),
     /// and there can be multiple concentrators on a network.
@@ -219,7 +219,7 @@ pub trait Messaging {
         message: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
-    /// Sends a unicast message as per the ZigBee specification.
+    /// Sends a unicast message as per the Zigbee specification.
     ///
     /// The message will arrive at its destination only if there is a known route to the destination node.
     /// Setting the `ENABLE_ROUTE_DISCOVERY` option will cause a route to be discovered if none is known.
@@ -231,7 +231,7 @@ pub trait Messaging {
     /// *Note*: Using the `FORCE_ROUTE_DISCOVERY` option will cause the first transmission to be
     /// consumed by a route request as part of discovery, so the application payload of this packet
     /// will not reach its destination on the first attempt.
-    /// If you want the packet to reach its destination, the APS_RETRY option must be set so that
+    /// If you want the packet to reach its destination, the `APS_RETRY` option must be set so that
     /// another attempt is made to transmit the message with its application payload after the route
     /// has been constructed.
     ///
@@ -458,7 +458,7 @@ where
         new_eui64: Eui64,
         new_id: NodeId,
         new_extended_timeout: bool,
-    ) -> Result<replace_address_table_entry::Payload, Error> {
+    ) -> Result<replace_address_table_entry::PreviousEntry, Error> {
         self.communicate::<_, replace_address_table_entry::Response>(
             replace_address_table_entry::Command::new(
                 address_table_index,

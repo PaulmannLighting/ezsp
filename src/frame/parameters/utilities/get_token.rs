@@ -40,6 +40,6 @@ impl Resolve for Response {
     fn resolve(self) -> Result<Self::Output, Error> {
         Status::try_from(self.status)
             .resolve()
-            .map(|_| self.token_data)
+            .map(|()| self.token_data)
     }
 }

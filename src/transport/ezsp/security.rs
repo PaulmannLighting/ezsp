@@ -116,7 +116,7 @@ pub trait Security {
     /// (which could be the Trust Center).
     ///
     /// A Link Key with the Trust Center is possible but the requesting device cannot be the Trust Center.
-    /// Link Keys are optional in ZigBee Standard Security and thus the stack cannot know whether the other device supports them.
+    /// Link Keys are optional in Zigbee Standard Security and thus the stack cannot know whether the other device supports them.
     ///
     /// If `EMBER_REQUEST_KEY_TIMEOUT` is non-zero on the Trust Center and the partner device is not the Trust Center,
     /// both devices must request keys with their partner device within the time period.
@@ -132,7 +132,7 @@ pub trait Security {
         partner: Eui64,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
-    /// This function sends an APS TransportKey command containing the current trust center link key.
+    /// This function sends an APS `TransportKey` command containing the current trust center link key.
     ///
     /// The node to which the command is sent is specified via the short and long address arguments.
     fn send_trust_center_link_key(

@@ -1,9 +1,9 @@
-//! ZigBee network parameters.
+//! Zigbee network parameters.
 
 use crate::ember::types::PanId;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
-/// The parameters of a ZigBee network.
+/// The parameters of a Zigbee network.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Network {
     channel: u8,

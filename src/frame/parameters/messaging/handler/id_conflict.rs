@@ -5,7 +5,7 @@ use crate::frame::Parameter;
 
 const ID: u16 = 0x007C;
 
-/// A callback invoked by the EmberZNet stack when an id conflict is discovered, that is,
+/// A callback invoked by the `EmberZNet` stack when an id conflict is discovered, that is,
 /// two different nodes in the network were found to be using the same short id.
 ///
 /// The stack automatically removes the conflicting short id from its internal tables

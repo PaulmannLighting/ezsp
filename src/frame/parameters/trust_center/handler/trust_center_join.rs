@@ -43,7 +43,7 @@ impl Handler {
         Update::try_from(self.status)
     }
 
-    /// An EmberJoinDecision reflecting the decision made.
+    /// A [`Decision`] reflecting the decision made.
     ///
     /// # Errors
     ///

@@ -6,8 +6,8 @@ use crate::ezsp::zll::NetworkOperation;
 use crate::frame::parameters::zll::{
     get_primary_channel_mask, get_secondary_channel_mask, get_tokens, is_zll_network, network_ops,
     operation_in_progress, rx_on_when_idle_get_active, set_additional_state, set_data_token,
-    set_initial_security_state, set_node_type, set_non_zll_network, set_radio_idle_mode,
-    set_rx_on_when_idle, set_security_state_without_key, start_scan,
+    set_initial_security_state, set_node_type, set_non_zll_network, set_primary_channel_mask,
+    set_radio_idle_mode, set_rx_on_when_idle, set_security_state_without_key, start_scan,
 };
 use crate::resolve::Resolve;
 use crate::{Error, Transport};
@@ -67,6 +67,12 @@ pub trait Zll {
 
     /// Set the ZLL data token bitmask to reflect the ZLL network state.
     fn set_non_zll_network(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
+
+    /// Set the primary ZLL (touchlink) channel mask
+    fn set_primary_channel_mask(
+        &mut self,
+        mask: u32,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This call sets the radio's default idle power mode.
     fn set_radio_idle_mode(
@@ -193,6 +199,14 @@ where
         self.communicate::<_, set_non_zll_network::Response>(set_non_zll_network::Command)
             .await
             .map(drop)
+    }
+
+    async fn set_primary_channel_mask(&mut self, mask: u32) -> Result<(), Error> {
+        self.communicate::<_, set_primary_channel_mask::Response>(
+            set_primary_channel_mask::Command::new(mask),
+        )
+        .await
+        .map(drop)
     }
 
     async fn set_radio_idle_mode(&mut self, mode: PowerMode) -> Result<(), Error> {

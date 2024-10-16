@@ -50,7 +50,7 @@ pub struct Clusters {
 }
 
 /// Manual implementation of `ToLeStream` because the length hints of both `input_clusters`
-/// and `output_clusters` must me output before their actual elements.
+/// and `output_clusters` must be output before their actual elements.
 impl ToLeStream for Clusters {
     type Iter = Chain<
         Chain<

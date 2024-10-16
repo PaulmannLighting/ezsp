@@ -3,9 +3,9 @@ mod response;
 
 use std::array::IntoIter;
 
-pub use command::{Command, SleepMode};
+pub use command::Command;
 use le_stream::{FromLeStream, ToLeStream};
-pub use response::{CallbackType, Response};
+pub use response::Response;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum LowByte {

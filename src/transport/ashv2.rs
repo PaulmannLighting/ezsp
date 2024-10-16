@@ -1,18 +1,20 @@
-use futures::{SinkExt, StreamExt};
-use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::io::ErrorKind;
+
+use futures::{SinkExt, StreamExt};
+use le_stream::{FromLeStream, ToLeStream};
 use tokio_util::codec::Framed;
 
-use crate::frame::{Frame, Header, Parameter};
+use crate::error::Error;
+use crate::frame::{Command, Frame, Header, Parameter};
 use crate::transport::Transport;
-use crate::{Command, Error};
-use codec::Codec;
 
 use ashv2::AshFramed;
+pub use callbacks::Codec as CallbackCodec;
+use codec::Codec;
 
-pub(crate) mod callbacks;
+mod callbacks;
 mod codec;
 
 /// An `EZSP` host using `ASHv2` on the transport layer.

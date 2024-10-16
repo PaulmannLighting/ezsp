@@ -1,3 +1,5 @@
+use std::future::Future;
+
 use crate::ember::constants::COUNTER_TYPE_COUNT;
 use crate::ember::entropy::Source;
 use crate::ember::{event, library, Eui64, NodeId};
@@ -8,11 +10,10 @@ use crate::frame::parameters::utilities::{
     get_true_random_entropy_source, get_xncp_info, nop, read_and_clear_counters, read_counters,
     set_mfg_token, set_timer, set_token,
 };
-use crate::frame::Handler;
+use crate::frame::{Extended, Handler};
+use crate::resolve::Resolve;
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
-use crate::{Extended, Resolve};
-use std::future::Future;
 
 /// The `Utilities` trait provides an interface for the utilities.
 pub trait Utilities {

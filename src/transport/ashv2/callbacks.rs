@@ -1,16 +1,18 @@
+use ashv2::{HexSlice, MAX_PAYLOAD_SIZE};
+use log::info;
+
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
 use tokio_util::bytes::BytesMut;
 use tokio_util::codec::Decoder;
 
 use crate::constants::EZSP_MAX_FRAME_SIZE;
-use crate::frame::parameters::utilities::invalid_command;
-use crate::frame::{Header, Parameter};
-use crate::{Error, Extended};
-
-use crate::frame::parameters::networking::handler::{network_found, scan_complete};
-use ashv2::{HexSlice, MAX_PAYLOAD_SIZE};
-use log::info;
+use crate::error::Error;
+use crate::frame::{
+    parameters::networking::handler::{network_found, scan_complete},
+    parameters::utilities::invalid_command,
+    Extended, Header, Parameter,
+};
 
 /// Codec to encode frames to bytes and decode bytes into frames.
 ///

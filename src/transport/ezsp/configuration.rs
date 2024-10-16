@@ -1,6 +1,7 @@
 use std::future::Future;
 
 use crate::ember::PanId;
+use crate::error::Error;
 use crate::ezsp::config::Id;
 use crate::ezsp::value::ExtendedId;
 use crate::ezsp::{decision, policy, value};
@@ -9,10 +10,10 @@ use crate::frame::parameters::configuration::{
     read_attribute, send_pan_id_update, set_configuration_value, set_passive_ack_config,
     set_policy, set_value, version, write_attribute,
 };
-use crate::frame::Parameter;
+use crate::frame::{Header, Parameter};
+use crate::resolve::Resolve;
+use crate::transport::Transport;
 use crate::types::ByteSizedVec;
-use crate::{Error, Transport};
-use crate::{Header, Resolve};
 
 /// The `Configuration` trait provides an interface for the configuration commands.
 pub trait Configuration {

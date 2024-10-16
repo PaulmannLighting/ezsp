@@ -4,10 +4,10 @@ mod legacy;
 mod low_byte;
 
 pub use extended::Extended;
-pub use high_byte::{FrameFormatVersion, HighByte};
+pub use high_byte::HighByte;
 use le_stream::{FromLeStream, ToLeStream};
 pub use legacy::Legacy;
-pub use low_byte::{CallbackType, Command, LowByte, Response, SleepMode};
+pub use low_byte::{Command, LowByte};
 use std::fmt::Debug;
 use std::hash::Hash;
 

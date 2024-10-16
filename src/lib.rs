@@ -11,16 +11,15 @@ pub mod ezsp;
 mod frame;
 mod resolve;
 mod result;
-pub mod transport;
+mod transport;
 pub mod types;
 
 pub use constants::{EZSP_MAX_FRAME_SIZE, EZSP_MAX_HEADER_SIZE};
 pub use error::{Error, ValueError};
-pub use frame::{CallbackType, Command, Extended, FrameFormatVersion, Header, Response, SleepMode};
-pub(crate) use resolve::Resolve;
+use resolve::Resolve;
 pub use result::Result;
 #[cfg(feature = "ashv2")]
-pub use transport::ashv2::callbacks::Codec;
+pub use transport::AshV2CallbackCodec;
 #[cfg(feature = "ashv2")]
 pub use transport::Ashv2;
 pub use transport::{

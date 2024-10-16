@@ -3,11 +3,16 @@ pub mod network_found;
 pub mod scan_complete;
 pub mod touch_link_target;
 
+/// The handler for the ZLL commands.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
+    /// The handler for the address assignment command.
     AddressAssignment(address_assignment::Handler),
+    /// The handler for the network found command.
     NetworkFound(network_found::Handler),
+    /// The handler for the scan complete command.
     ScanComplete(scan_complete::Handler),
+    /// The handler for the touch link target command.
     TouchLinkTarget(touch_link_target::Handler),
 }
 

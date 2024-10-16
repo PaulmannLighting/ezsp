@@ -6,7 +6,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x0009;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     token_id: u8,
     token_data: [u8; 8],
 }
@@ -27,7 +27,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
+pub(crate) struct Response {
     status: u8,
 }
 

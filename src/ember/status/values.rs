@@ -97,6 +97,7 @@ pub enum Values {
     TableEntryErased = 0xB6,
     SecurityConfigurationInvalid = 0xB7,
     TooSoonForSwitchKey = 0xB8,
+    SignatureVerifyFailure = 0xB9,
     OperationInProgress = 0xBA,
     KeyNotAuthorized = 0xBB,
     SecurityDataInvalid = 0xBD,

@@ -6,7 +6,7 @@ use crate::frame::Parameter;
 const ID: u16 = 0x007E;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     remote_eui64: Eui64,
     extended_timeout: bool,
 }
@@ -27,7 +27,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response;
+pub(crate) struct Response;
 
 impl Parameter for Response {
     type Id = u16;

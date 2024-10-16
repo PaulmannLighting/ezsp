@@ -5,7 +5,7 @@ use std::fmt::Debug;
 const ID: u8 = 0x00;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     desired_protocol_version: u8,
 }
 
@@ -28,6 +28,7 @@ impl Parameter for Command {
     const ID: Self::Id = ID;
 }
 
+/// The response to a version command.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     protocol_version: u8,

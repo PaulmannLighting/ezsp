@@ -2,19 +2,39 @@ use le_stream::derive::FromLeStream;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::resolve::Resolve;
-use crate::Error;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x0078;
 
+/// This callback is executed by the stack when the DSA verification has completed and has a result.
+///
+/// If the result is [`Status::Success`], the signature is valid.
+///
+/// If the result is [`Status::SignatureVerifyFailure`] then the signature is invalid.
+///
+/// If the result is anything else then the signature verify operation failed and the validity is unknown.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     status: u8,
 }
 
 impl Handler {
-    pub fn status(&self) -> Result<(), Error> {
-        Status::try_from(self.status).resolve()
+    /// The result of the DSA verification operation.
+    ///
+    /// # Returns
+    ///
+    /// Returns `true` if the signature is valid, `false` if it failed.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if the status is invalid.
+    pub fn is_valid(&self) -> Result<bool, Error> {
+        match Status::try_from(self.status) {
+            Ok(Status::Success) => Ok(true),
+            Ok(Status::SignatureVerifyFailure) => Ok(false),
+            Ok(status) => Err(Error::Ember(status)),
+            Err(error) => Err(ValueError::Ember(error).into()),
+        }
     }
 }
 

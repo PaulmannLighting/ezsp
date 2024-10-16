@@ -8,7 +8,7 @@ use crate::Resolve;
 const ID: u16 = 0x010A;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     options: u8,
     gpm_addr_for_security: u16,
     gpm_addr_for_pairing: u16,
@@ -38,7 +38,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
+pub(crate) struct Response {
     status: u8,
 }
 

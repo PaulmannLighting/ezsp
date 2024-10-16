@@ -5,7 +5,7 @@ use crate::frame::Parameter;
 const ID: u16 = 0x008D;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command;
+pub(crate) struct Command;
 
 impl Parameter for Command {
     type Id = u16;
@@ -13,7 +13,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
+pub(crate) struct Response {
     power: i8,
 }
 

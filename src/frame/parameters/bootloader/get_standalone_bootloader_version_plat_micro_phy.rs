@@ -4,13 +4,14 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x0091;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command;
+pub(crate) struct Command;
 
 impl Parameter for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
 
+/// The response to a get standalone bootloader version plat micro phy command.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     bootloader_version: u16,

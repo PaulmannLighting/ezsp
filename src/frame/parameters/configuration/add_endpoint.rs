@@ -11,7 +11,7 @@ use crate::types::ByteSizedVec;
 const ID: u16 = 0x0002;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     endpoint: u8,
     profile_id: u16,
     device_id: u16,
@@ -93,7 +93,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
+pub(crate) struct Response {
     status: u8,
 }
 

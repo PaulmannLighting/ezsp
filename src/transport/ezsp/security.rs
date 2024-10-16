@@ -1,6 +1,5 @@
 use std::future::Future;
 
-use siliconlabs;
 use siliconlabs::zigbee::security::{ManContext, ManFlags, ManKey};
 
 use crate::ember::{security, Eui64, NodeId};
@@ -45,13 +44,13 @@ pub trait Security {
     fn export_link_key_by_eui(
         &mut self,
         eui: Eui64,
-    ) -> impl Future<Output = Result<export_link_key_by_eui::Response, Error>> + Send;
+    ) -> impl Future<Output = Result<export_link_key_by_eui::Payload, Error>> + Send;
 
     /// Export the link key at given index from the key table.
     fn export_link_key_by_index(
         &mut self,
         index: u8,
-    ) -> impl Future<Output = Result<export_link_key_by_index::Response, Error>> + Send;
+    ) -> impl Future<Output = Result<export_link_key_by_index::Payload, Error>> + Send;
 
     /// Export a transient link key associated with a given EUI64.
     fn export_transient_key_by_eui(
@@ -204,7 +203,7 @@ where
     async fn export_link_key_by_eui(
         &mut self,
         eui: Eui64,
-    ) -> Result<export_link_key_by_eui::Response, Error> {
+    ) -> Result<export_link_key_by_eui::Payload, Error> {
         self.communicate::<_, export_link_key_by_eui::Response>(
             export_link_key_by_eui::Command::new(eui),
         )
@@ -215,7 +214,7 @@ where
     async fn export_link_key_by_index(
         &mut self,
         index: u8,
-    ) -> Result<export_link_key_by_index::Response, Error> {
+    ) -> Result<export_link_key_by_index::Payload, Error> {
         self.communicate::<_, export_link_key_by_index::Response>(
             export_link_key_by_index::Command::new(index),
         )

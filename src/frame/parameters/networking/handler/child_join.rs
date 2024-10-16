@@ -6,6 +6,7 @@ use crate::frame::Parameter;
 
 const ID: u16 = 0x0023;
 
+/// Indicates that a child has joined or left.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     index: u8,
@@ -16,26 +17,31 @@ pub struct Handler {
 }
 
 impl Handler {
+    /// The index of the child of interest.
     #[must_use]
     pub const fn index(&self) -> u8 {
         self.index
     }
 
+    /// True if the child is joining. False the child is leaving.
     #[must_use]
     pub const fn joining(&self) -> bool {
         self.joining
     }
 
+    /// The node ID of the child.
     #[must_use]
     pub const fn child_id(&self) -> NodeId {
         self.child_id
     }
 
+    /// The EUI64 of the child.
     #[must_use]
     pub const fn child_eui64(&self) -> Eui64 {
         self.child_eui64
     }
 
+    /// The node type of the child.
     pub fn child_type(&self) -> Result<Type, u8> {
         Type::try_from(self.child_type)
     }

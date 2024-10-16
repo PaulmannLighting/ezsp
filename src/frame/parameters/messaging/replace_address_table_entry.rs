@@ -8,7 +8,7 @@ use crate::Resolve;
 const ID: u16 = 0x0082;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     address_table_index: u8,
     new_eui64: Eui64,
     new_id: NodeId,
@@ -38,31 +38,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Payload {
-    old_eui64: Eui64,
-    old_id: NodeId,
-    old_extended_timeout: bool,
-}
-
-impl Payload {
-    #[must_use]
-    pub const fn old_eui64(&self) -> Eui64 {
-        self.old_eui64
-    }
-
-    #[must_use]
-    pub const fn old_id(&self) -> NodeId {
-        self.old_id
-    }
-
-    #[must_use]
-    pub const fn old_extended_timeout(&self) -> bool {
-        self.old_extended_timeout
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
+pub(crate) struct Response {
     status: u8,
     payload: Payload,
 }
@@ -79,5 +55,33 @@ impl Resolve for Response {
         Status::try_from(self.status)
             .resolve()
             .map(|()| self.payload)
+    }
+}
+
+/// The response to a replace address table entry command.
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+pub struct Payload {
+    old_eui64: Eui64,
+    old_id: NodeId,
+    old_extended_timeout: bool,
+}
+
+impl Payload {
+    /// Returns the old EUI64.
+    #[must_use]
+    pub const fn old_eui64(&self) -> Eui64 {
+        self.old_eui64
+    }
+
+    /// Returns the old node ID.
+    #[must_use]
+    pub const fn old_id(&self) -> NodeId {
+        self.old_id
+    }
+
+    /// Returns if the old entry had an extended timeout.
+    #[must_use]
+    pub const fn old_extended_timeout(&self) -> bool {
+        self.old_extended_timeout
     }
 }

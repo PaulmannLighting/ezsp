@@ -10,7 +10,7 @@ use crate::Resolve;
 const ID: u16 = 0x003B;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     local_node_type: u8,
     beacon: Data,
     radio_tx_power: i8,
@@ -40,7 +40,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
+pub(crate) struct Response {
     status: u8,
 }
 

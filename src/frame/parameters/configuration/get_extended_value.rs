@@ -8,7 +8,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x0003;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     value_id: u8,
     characteristics: u32,
 }
@@ -29,7 +29,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
+pub(crate) struct Response {
     status: u8,
     value: ByteSizedVec<u8>,
 }

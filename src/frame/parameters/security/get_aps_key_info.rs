@@ -9,7 +9,7 @@ use siliconlabs::Status;
 const ID: u16 = 0x010C;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     context_in: ManContext,
 }
 
@@ -26,25 +26,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Payload {
-    eui: Eui64,
-    key_data: ManApsKeyMetadata,
-}
-
-impl Payload {
-    #[must_use]
-    pub const fn eui(&self) -> Eui64 {
-        self.eui
-    }
-
-    #[must_use]
-    pub const fn key_data(&self) -> &ManApsKeyMetadata {
-        &self.key_data
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
+pub(crate) struct Response {
     payload: Payload,
     status: u32,
 }
@@ -61,5 +43,26 @@ impl Resolve for Response {
         Status::try_from(self.status)
             .resolve()
             .map(|_| self.payload)
+    }
+}
+
+/// Payload of the get APS key info command.
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+pub struct Payload {
+    eui: Eui64,
+    key_data: ManApsKeyMetadata,
+}
+
+impl Payload {
+    /// Returns the EUI64.
+    #[must_use]
+    pub const fn eui(&self) -> Eui64 {
+        self.eui
+    }
+
+    /// Returns the key data.
+    #[must_use]
+    pub const fn key_data(&self) -> &ManApsKeyMetadata {
+        &self.key_data
     }
 }

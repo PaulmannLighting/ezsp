@@ -8,7 +8,7 @@ use siliconlabs::Status;
 const ID: u16 = 0x010F;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     index: u8,
 }
 
@@ -25,28 +25,9 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    eui: Eui64,
-    plaintext_key: ManKey,
-    key_data: ManApsKeyMetadata,
+pub(crate) struct Response {
+    payload: Payload,
     status: u32,
-}
-
-impl Response {
-    #[must_use]
-    pub const fn eui(&self) -> Eui64 {
-        self.eui
-    }
-
-    #[must_use]
-    pub const fn plaintext_key(&self) -> &ManKey {
-        &self.plaintext_key
-    }
-
-    #[must_use]
-    pub const fn key_data(&self) -> &ManApsKeyMetadata {
-        &self.key_data
-    }
 }
 
 impl Parameter for Response {
@@ -55,9 +36,39 @@ impl Parameter for Response {
 }
 
 impl Resolve for Response {
-    type Output = Self;
+    type Output = Payload;
 
     fn resolve(self) -> Result<Self::Output, crate::Error> {
-        Status::try_from(self.status).resolve().map(|()| self)
+        Status::try_from(self.status)
+            .resolve()
+            .map(|()| self.payload)
+    }
+}
+
+/// Payload of the export link key by index command.
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+pub struct Payload {
+    eui: Eui64,
+    plaintext_key: ManKey,
+    key_data: ManApsKeyMetadata,
+}
+
+impl Payload {
+    /// Returns the EUI64.
+    #[must_use]
+    pub const fn eui(&self) -> Eui64 {
+        self.eui
+    }
+
+    /// Returns the plaintext key.
+    #[must_use]
+    pub const fn plaintext_key(&self) -> &ManKey {
+        &self.plaintext_key
+    }
+
+    /// Returns the key data.
+    #[must_use]
+    pub const fn key_data(&self) -> &ManApsKeyMetadata {
+        &self.key_data
     }
 }

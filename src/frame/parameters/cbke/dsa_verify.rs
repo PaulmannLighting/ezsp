@@ -8,7 +8,7 @@ use crate::Resolve;
 const ID: u16 = 0x00A3;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     digest: MessageDigest,
     signer_certificate: CertificateData,
     received_sig: SignatureData,
@@ -35,7 +35,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
+pub(crate) struct Response {
     status: u8,
 }
 

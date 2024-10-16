@@ -6,7 +6,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x0013;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command;
+pub(crate) struct Command;
 
 impl Parameter for Command {
     type Id = u16;
@@ -14,7 +14,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
+pub(crate) struct Response {
     status: u8,
     payload: Option<Payload>,
 }
@@ -35,7 +35,7 @@ impl Resolve for Response {
     }
 }
 
-/// Payload according to EZSP revision 5.1.
+/// Payload of the get XNCP info command.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Payload {
     manufacturer_id: u16,
@@ -43,11 +43,13 @@ pub struct Payload {
 }
 
 impl Payload {
+    /// Returns the manufacturer ID.
     #[must_use]
     pub const fn manufacturer_id(self) -> u16 {
         self.manufacturer_id
     }
 
+    /// Returns the version number.
     #[must_use]
     pub const fn version_number(self) -> u16 {
         self.version_number

@@ -1,7 +1,9 @@
 pub mod trust_center_join;
 
+/// The handler for the trust center command.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
+    /// The handler for the trust center join command.
     TrustCenterJoin(trust_center_join::Handler),
 }
 

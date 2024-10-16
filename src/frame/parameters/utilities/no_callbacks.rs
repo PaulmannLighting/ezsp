@@ -3,9 +3,11 @@ use le_stream::derive::FromLeStream;
 
 const ID: u16 = 0x0007;
 
-/// The response to this command can be any of the callback responses.
+/// Indicates that there are currently no pending callbacks.
+///
+/// This frame is a response to the callback command.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response;
+pub(crate) struct Response;
 
 impl Parameter for Response {
     type Id = u16;

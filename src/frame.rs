@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 
 pub use handler::Handler;
-pub use header::{Command, Extended, Header, Legacy};
+pub use header::{Extended, Header, Legacy};
 use le_stream::derive::{FromLeStream, ToLeStream};
 pub use parameter::Parameter;
 

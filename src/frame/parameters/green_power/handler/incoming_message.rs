@@ -9,6 +9,7 @@ use crate::Error;
 
 const ID: u16 = 0x00C5;
 
+/// A callback invoked by the ZigBee GP stack when a GPDF is received.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     status: u8,
@@ -16,10 +17,19 @@ pub struct Handler {
 }
 
 impl Handler {
-    pub fn result(self) -> Result<Payload, Error> {
+    /// The result of the GPDF receive.
+    ///
+    /// # Returns
+    ///
+    /// The payload of the GPDF if the status is [`Status::Success`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] the status is not [`Status::Success`].
+    pub fn result(&self) -> Result<&Payload, Error> {
         Status::try_from(self.status)
             .resolve()
-            .map(|()| self.payload)
+            .map(|()| &self.payload)
     }
 }
 
@@ -28,6 +38,7 @@ impl Parameter for Handler {
     const ID: Self::Id = ID;
 }
 
+/// The payload of the GPDF receive.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 struct Payload {
     gpd_link: u8,
@@ -46,61 +57,74 @@ struct Payload {
 }
 
 impl Payload {
+    /// The gpdLink value of the received GPDF.
     #[must_use]
     pub const fn gpd_link(&self) -> u8 {
         self.gpd_link
     }
 
+    /// The GPDF sequence number.
     #[must_use]
     pub const fn sequence_number(&self) -> u8 {
         self.sequence_number
     }
 
+    /// The address of the source GPD.
     #[must_use]
     pub const fn addr(&self) -> &Address {
         &self.addr
     }
 
+    /// The security level of the received GPDF.
     #[must_use]
     pub const fn gpdf_security_level(&self) -> SecurityLevel {
         self.gpdf_security_level
     }
 
+    /// The securityKeyType used to decrypt/authenticate the incoming GPDF.
     #[must_use]
     pub const fn gpdf_security_key_type(&self) -> KeyType {
         self.gpdf_security_key_type
     }
 
+    /// Whether the incoming GPDF had the auto-commissioning bit set.
     #[must_use]
     pub const fn auto_commissioning(&self) -> bool {
         self.auto_commissioning
     }
 
+    /// Bidirectional information represented in bitfields, where bit0 holds the rxAfterTx of
+    /// incoming gpdf and bit1 holds if tx queue is available for outgoing gpdf.
     #[must_use]
     pub const fn bidirectional_info(&self) -> u8 {
         self.bidirectional_info
     }
 
+    /// The security frame counter of the incoming GDPF.
     #[must_use]
     pub const fn gpd_security_frame_counter(&self) -> u32 {
         self.gpd_security_frame_counter
     }
 
+    /// The gpdCommandId of the incoming GPDF.
     #[must_use]
     pub const fn gpd_command_id(&self) -> u8 {
         self.gpd_command_id
     }
 
+    /// The received MIC of the GPDF.
     #[must_use]
     pub const fn mic(&self) -> u32 {
         self.mic
     }
 
+    /// The proxy table index of the corresponding proxy table entry to the incoming GPDF.
     #[must_use]
     pub const fn proxy_table_index(&self) -> u8 {
         self.proxy_table_index
     }
 
+    /// The GPD command payload.
     #[must_use]
     pub const fn gpd_command_payload(&self) -> &ByteSizedVec<u8> {
         &self.gpd_command_payload

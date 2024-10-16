@@ -26,6 +26,10 @@ mod sim_eeprom;
 mod values;
 
 /// Ember status.
+///
+/// # Documentation
+///
+/// See <https://www.silabs.com/documents/public/miscellaneous/EmberZNet-API-EM260.pdf> for details.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Status {
     /// The generic 'no error' message.
@@ -170,6 +174,9 @@ pub enum Status {
     /// The Trust Center must wait at least a period equal to the broadcast timeout
     /// so that all routers have a chance to receive the broadcast of the new network key.
     TooSoonForSwitchKey,
+    /// The received signature corresponding to the message that was passed
+    /// to the CBKE Library failed verification, it is not valid.
+    SignatureVerifyFailure,
     /// The stack accepted the command and is currently processing the request.
     ///
     /// The results will be returned via an appropriate handler.
@@ -266,6 +273,7 @@ impl Display for Status {
             Self::TableEntryErased => write!(f, "table entry erased"),
             Self::SecurityConfigurationInvalid => write!(f, "security configuration invalid"),
             Self::TooSoonForSwitchKey => write!(f, "too soon for switch key"),
+            Self::SignatureVerifyFailure => write!(f, "signature verify failure"),
             Self::OperationInProgress => write!(f, "operation in progress"),
             Self::KeyNotAuthorized => write!(f, "key not authorized"),
             Self::SecurityDataInvalid => write!(f, "security data invalid"),
@@ -347,6 +355,7 @@ impl From<Status> for Values {
             Status::TableEntryErased => Self::TableEntryErased,
             Status::SecurityConfigurationInvalid => Self::SecurityConfigurationInvalid,
             Status::TooSoonForSwitchKey => Self::TooSoonForSwitchKey,
+            Status::SignatureVerifyFailure => Self::SignatureVerifyFailure,
             Status::OperationInProgress => Self::OperationInProgress,
             Status::KeyNotAuthorized => Self::KeyNotAuthorized,
             Status::SecurityDataInvalid => Self::SecurityDataInvalid,
@@ -455,6 +464,7 @@ impl From<Values> for Status {
             Values::TableEntryErased => Self::TableEntryErased,
             Values::SecurityConfigurationInvalid => Self::SecurityConfigurationInvalid,
             Values::TooSoonForSwitchKey => Self::TooSoonForSwitchKey,
+            Values::SignatureVerifyFailure => Self::SignatureVerifyFailure,
             Values::OperationInProgress => Self::OperationInProgress,
             Values::KeyNotAuthorized => Self::KeyNotAuthorized,
             Values::SecurityDataInvalid => Self::SecurityDataInvalid,

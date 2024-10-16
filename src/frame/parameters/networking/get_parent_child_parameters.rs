@@ -6,13 +6,14 @@ use crate::frame::Parameter;
 const ID: u16 = 0x0029;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command;
+pub(crate) struct Command;
 
 impl Parameter for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
 
+/// The response to a get parent child parameters command.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     child_count: u8,
@@ -21,16 +22,19 @@ pub struct Response {
 }
 
 impl Response {
+    /// Returns the child count.
     #[must_use]
     pub const fn child_count(&self) -> u8 {
         self.child_count
     }
 
+    /// Returns the parent EUI64.
     #[must_use]
     pub const fn parent_eui64(&self) -> Eui64 {
         self.parent_eui64
     }
 
+    /// Returns the parent node ID.
     #[must_use]
     pub const fn parent_node_id(&self) -> NodeId {
         self.parent_node_id

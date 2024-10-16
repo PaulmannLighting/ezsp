@@ -4,7 +4,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x00E0;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     sink_index: u8,
 }
 
@@ -21,7 +21,7 @@ impl Parameter for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response;
+pub(crate) struct Response;
 
 impl Parameter for Response {
     type Id = u16;

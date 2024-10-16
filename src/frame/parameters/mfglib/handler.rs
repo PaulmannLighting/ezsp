@@ -1,7 +1,9 @@
 pub mod rx;
 
+/// Handler of a MFGlib event.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
+    /// Received data event.
     Rx(rx::Handler),
 }
 

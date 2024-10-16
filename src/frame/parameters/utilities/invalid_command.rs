@@ -6,7 +6,7 @@ const ID: u16 = 0x0058;
 
 /// Response sent by the NCP when it received an invalid command.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
-pub struct Response {
+pub(crate) struct Response {
     reason: u8,
 }
 

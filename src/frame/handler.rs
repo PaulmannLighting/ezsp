@@ -171,9 +171,6 @@ impl Handler {
             utilities::handler::custom_frame::Handler::ID => Ok(
                 utilities::handler::custom_frame::Handler::from_le_stream_exact(stream)?.into(),
             ),
-            utilities::handler::no_callbacks::Response::ID => Ok(
-                utilities::handler::no_callbacks::Response::from_le_stream_exact(stream)?.into(),
-            ),
             utilities::handler::stack_token_changed::Handler::ID => Ok(
                 utilities::handler::stack_token_changed::Handler::from_le_stream_exact(stream)?.into(),
             ),
@@ -423,12 +420,6 @@ impl From<utilities::handler::counter_rollover::Handler> for Handler {
 impl From<utilities::handler::custom_frame::Handler> for Handler {
     fn from(handler: utilities::handler::custom_frame::Handler) -> Self {
         Self::Utilities(utilities::handler::Handler::CustomFrame(handler))
-    }
-}
-
-impl From<utilities::handler::no_callbacks::Response> for Handler {
-    fn from(handler: utilities::handler::no_callbacks::Response) -> Self {
-        Self::Utilities(utilities::handler::Handler::NoCallbacks(handler))
     }
 }
 

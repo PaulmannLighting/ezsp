@@ -1,6 +1,5 @@
 pub mod counter_rollover;
 pub mod custom_frame;
-pub mod no_callbacks;
 pub mod stack_token_changed;
 pub mod timer;
 
@@ -12,8 +11,6 @@ pub enum Handler {
     CounterRollover(counter_rollover::Handler),
     /// A custom frame has been received.
     CustomFrame(custom_frame::Handler),
-    /// No callbacks are available.
-    NoCallbacks(no_callbacks::Response),
     /// The stack token has changed.
     StackTokenChanged(stack_token_changed::Handler),
     /// A timer event has occurred.
@@ -29,12 +26,6 @@ impl From<counter_rollover::Handler> for Handler {
 impl From<custom_frame::Handler> for Handler {
     fn from(handler: custom_frame::Handler) -> Self {
         Self::CustomFrame(handler)
-    }
-}
-
-impl From<no_callbacks::Response> for Handler {
-    fn from(response: no_callbacks::Response) -> Self {
-        Self::NoCallbacks(response)
     }
 }
 

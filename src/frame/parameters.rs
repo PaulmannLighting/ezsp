@@ -1,4 +1,4 @@
-//! This module contains the definition of the parameters used in the Ember ZNet protocol.
+//! Definitions of parameter structures used in the Ember ZNet Serial Protocol (EZSP)
 
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::{Debug, Display, LowerHex, UpperHex};

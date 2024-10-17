@@ -40,7 +40,7 @@ impl Command {
 
 impl Parameter for Command {
     type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: Option<Self::Id> = Some(ID);
 }
 
 /// Read attribute data.
@@ -72,7 +72,7 @@ pub(crate) struct Response {
 
 impl Parameter for Response {
     type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: Option<Self::Id> = Some(ID);
 }
 
 impl TryFrom<Response> for Attribbute {

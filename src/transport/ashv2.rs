@@ -56,7 +56,11 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         H: Header<P::Id>,
         P: Parameter + ToLeStream,
     {
-        let header = self.next_header::<H, P::Id>(P::ID);
+        let Some(id) = P::ID else {
+            return Err(Error::MissingId);
+        };
+
+        let header = self.next_header::<H, P::Id>(id);
         self.framed().send(Frame::new(header, command)).await
     }
 

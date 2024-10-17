@@ -56,7 +56,7 @@ where
                 return Ok(None);
             };
 
-            if header.id().into() == invalid_command::Response::ID {
+            if header.id().into() == invalid_command::Response::ID.ok_or(Error::MissingId)? {
                 return Err(Error::InvalidCommand(
                     invalid_command::Response::from_le_stream_exact(stream)?,
                 ));
@@ -85,14 +85,18 @@ where
         src.clear();
         let item = Self::Item::new(header, parameters);
 
-        if item.header().id() == P::ID {
-            Ok(Some(item))
-        } else {
-            Err(Decode::FrameIdMismatch {
-                expected: <P as Parameter>::ID.into(),
-                found: item.header().id().into(),
+        if let Some(id) = P::ID {
+            if item.header().id() == id {
+                Ok(Some(item))
+            } else {
+                Err(Decode::FrameIdMismatch {
+                    expected: id.into(),
+                    found: item.header().id().into(),
+                }
+                .into())
             }
-            .into())
+        } else {
+            Ok(Some(item))
         }
     }
 }

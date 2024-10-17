@@ -18,5 +18,5 @@ where
         + ToLeStream,
 {
     type Id;
-    const ID: Self::Id;
+    const ID: Option<Self::Id>;
 }

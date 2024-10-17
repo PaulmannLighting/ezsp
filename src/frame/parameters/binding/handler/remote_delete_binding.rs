@@ -20,7 +20,7 @@ pub struct Handler {
 
 impl Parameter for Handler {
     type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: Option<Self::Id> = Some(ID);
 }
 
 impl TryFrom<Handler> for u8 {

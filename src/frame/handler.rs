@@ -45,7 +45,7 @@ impl Handler {
     where
         T: Iterator<Item = u8>,
     {
-        match id {
+        match Some(id) {
             // Binding callbacks.
             binding::handler::RemoteDeleteBinding::ID => {
                 Ok(binding::handler::RemoteDeleteBinding::from_le_stream_exact(stream)?.into())

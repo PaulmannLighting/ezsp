@@ -12,7 +12,7 @@ pub struct Command {
 
 impl Parameter for Command {
     type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: Option<Self::Id> = Some(ID);
 }
 
 impl Command {
@@ -30,5 +30,5 @@ pub struct Response;
 
 impl Parameter for Response {
     type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: Option<Self::Id> = Some(ID);
 }

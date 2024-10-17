@@ -85,7 +85,7 @@ pub enum Values {
 
 impl Display for Values {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{self:?}")
+        write!(f, "Ezsp{self:?}")
     }
 }
 
@@ -97,12 +97,12 @@ impl From<Values> for u8 {
 
 impl LowerHex for Values {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:04x}", *self as u8)
+        write!(f, "{:#04x}", *self as u8)
     }
 }
 
 impl UpperHex for Values {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:04x}", *self as u8)
+        write!(f, "{:#04x}", *self as u8)
     }
 }

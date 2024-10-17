@@ -122,7 +122,7 @@ pub enum Values {
 
 impl Display for Values {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:#04X}", *self as u8)
+        write!(f, "Ember{self:?}")
     }
 }
 

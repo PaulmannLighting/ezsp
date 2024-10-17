@@ -69,12 +69,12 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         H: Header<P::Id> + Send,
         P: Parameter + FromLeStream,
     {
-        let Some(response) = self.framed::<H, P>().next().await else {
+        let Some(frame) = self.framed::<H, P>().next().await else {
             return Err(
                 std::io::Error::new(ErrorKind::UnexpectedEof, "Empty response from NCP.").into(),
             );
         };
 
-        Ok(response?.parameters())
+        Ok(frame?.parameters())
     }
 }

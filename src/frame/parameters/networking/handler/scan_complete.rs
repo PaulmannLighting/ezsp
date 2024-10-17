@@ -1,9 +1,9 @@
 use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::resolve::Resolve;
-use crate::Error;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x001C;
 
@@ -40,7 +40,15 @@ impl Handler {
     ///
     /// Returns an [`Error`] if the status is invalid.
     pub fn status(&self) -> Result<(), Error> {
-        Status::try_from(self.status).resolve()
+        Status::from_u8(self.status)
+            .ok_or_else(|| ValueError::Ember(self.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Ok(())
+                } else {
+                    Err(status.into())
+                }
+            })
     }
 }
 

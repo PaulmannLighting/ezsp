@@ -2,9 +2,6 @@ use std::fmt::{Debug, Display, Formatter};
 
 use num_traits::FromPrimitive;
 
-use crate::error::ValueError;
-use crate::Error;
-use crate::Resolve;
 pub use adc::Adc;
 pub use application::Application;
 pub use eeprom::Eeprom;
@@ -193,28 +190,6 @@ pub enum Status {
     SecurityDataInvalid,
     /// Application status.
     Application(Application),
-}
-
-impl Status {
-    /// Checks the status for success and returns `Ok(value)` in that case.
-    ///
-    /// # Errors
-    /// Returns `Err(self)` if the `Status` is not [`Status::Success`],
-    pub fn map<T>(self, value: T) -> Result<T, Self> {
-        if self == Self::Success {
-            Ok(value)
-        } else {
-            Err(self)
-        }
-    }
-
-    /// Checks the status for success and returns `Ok(())` in that case.
-    ///
-    /// # Errors
-    /// Returns `Err(self)` if the `Status` is not [`Status::Success`],
-    pub fn ok(self) -> Result<(), Self> {
-        self.map(())
-    }
 }
 
 impl Display for Status {
@@ -506,24 +481,5 @@ impl FromPrimitive for Status {
 
     fn from_u64(n: u64) -> Option<Self> {
         Values::from_u64(n).map(Self::from)
-    }
-}
-
-impl TryFrom<u8> for Status {
-    type Error = u8;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::from_u8(value).ok_or(value)
-    }
-}
-
-impl Resolve for Result<Status, u8> {
-    type Output = ();
-
-    fn resolve(self) -> Result<Self::Output, Error> {
-        match self {
-            Ok(status) => status.ok().map_err(Error::Ember),
-            Err(status) => Err(Error::ValueError(ValueError::Ember(status))),
-        }
     }
 }

@@ -7,7 +7,6 @@ use crate::frame::parameters::green_power::sink_table::{
     remove_entry, set_entry, set_security_frame_counter,
 };
 use crate::types::UintT;
-use crate::Resolve;
 use crate::{Error, Transport};
 
 /// The `SinkTable` trait provides an interface for the sink table.
@@ -75,7 +74,7 @@ where
     async fn get_entry(&mut self, sink_index: u8) -> Result<TableEntry, Error> {
         self.communicate::<_, get_entry::Response>(get_entry::Command::new(sink_index))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn init(&mut self) -> Result<(), Error> {
@@ -105,7 +104,7 @@ where
     async fn set_entry(&mut self, sink_index: u8, entry: TableEntry) -> Result<(), Error> {
         self.communicate::<_, set_entry::Response>(set_entry::Command::new(sink_index, entry))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn set_security_frame_counter(&mut self, index: u8, sfc: u32) -> Result<(), Error> {

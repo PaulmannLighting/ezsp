@@ -6,7 +6,6 @@ use crate::frame::parameters::bootloader::{
     override_current_channel, send_bootload_message,
 };
 use crate::types::ByteSizedVec;
-use crate::Resolve;
 use crate::{Error, Transport};
 
 /// The `Bootloader` trait provides an interface for the bootloader features.
@@ -83,7 +82,7 @@ where
             launch_standalone_bootloader::Command::new(mode),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn override_current_channel(&mut self, channel: u8) -> Result<(), Error> {
@@ -91,7 +90,7 @@ where
             override_current_channel::Command::new(channel),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn send_bootload_message(
@@ -104,6 +103,6 @@ where
             broadcast, dest_eui64, message,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 }

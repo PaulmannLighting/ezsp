@@ -1,10 +1,10 @@
 use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::resolve::Resolve;
 use crate::types::ByteSizedVec;
-use crate::Error;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x00A7;
 
@@ -19,24 +19,23 @@ pub struct Handler {
     message: ByteSizedVec<u8>,
 }
 
-impl Handler {
-    /// The result of the DSA signing operation.
-    ///
-    /// # Returns
-    ///
-    /// The message and attached which includes the original message and the appended signature.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] if the status is not [`Status::Success`].
-    pub fn result(&self) -> Result<&[u8], Error> {
-        Status::try_from(self.status)
-            .resolve()
-            .map(|()| self.message.as_slice())
-    }
-}
-
 impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl TryFrom<Handler> for ByteSizedVec<u8> {
+    type Error = Error;
+
+    fn try_from(handler: Handler) -> Result<Self, Self::Error> {
+        Status::from_u8(handler.status)
+            .ok_or_else(|| ValueError::Ember(handler.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Ok(handler.message)
+                } else {
+                    Err(status.into())
+                }
+            })
+    }
 }

@@ -1,11 +1,11 @@
 use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
 
 use crate::ember::gp::{Address, KeyType, SecurityLevel};
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::resolve::Resolve;
 use crate::types::ByteSizedVec;
-use crate::Error;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x00C5;
 
@@ -16,26 +16,25 @@ pub struct Handler {
     payload: Payload,
 }
 
-impl Handler {
-    /// The result of the GPDF receive.
-    ///
-    /// # Returns
-    ///
-    /// The payload of the GPDF if the status is [`Status::Success`].
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] the status is not [`Status::Success`].
-    pub fn result(&self) -> Result<&Payload, Error> {
-        Status::try_from(self.status)
-            .resolve()
-            .map(|()| &self.payload)
-    }
-}
-
 impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl TryFrom<Handler> for Payload {
+    type Error = Error;
+
+    fn try_from(handler: Handler) -> Result<Self, Self::Error> {
+        Status::from_u8(handler.status)
+            .ok_or_else(|| ValueError::Ember(handler.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Ok(handler.payload)
+                } else {
+                    Err(status.into())
+                }
+            })
+    }
 }
 
 /// The payload of the GPDF receive.

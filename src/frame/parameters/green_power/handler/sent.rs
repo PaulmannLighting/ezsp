@@ -1,9 +1,9 @@
 use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::resolve::Resolve;
-use crate::Error;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x00C7;
 
@@ -14,24 +14,23 @@ pub struct Handler {
     gpep_handle: u8,
 }
 
-impl Handler {
-    /// The handle of the GPDF.
-    ///
-    /// # Returns
-    ///
-    /// The handle of the GPDF if the status is [`Status::Success`].
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] the status is not [`Status::Success`].
-    pub fn status(&self) -> Result<u8, Error> {
-        Status::try_from(self.status)
-            .resolve()
-            .map(|()| self.gpep_handle)
-    }
-}
-
 impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl TryFrom<Handler> for u8 {
+    type Error = Error;
+
+    fn try_from(handler: Handler) -> Result<Self, Self::Error> {
+        Status::from_u8(handler.status)
+            .ok_or_else(|| ValueError::Ember(handler.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Ok(handler.gpep_handle)
+                } else {
+                    Err(status.into())
+                }
+            })
+    }
 }

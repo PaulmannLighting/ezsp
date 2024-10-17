@@ -1,9 +1,9 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
+use num_traits::FromPrimitive;
 
 use crate::ember::{Eui64, NodeId, Status};
 use crate::frame::Parameter;
-use crate::Error;
-use crate::Resolve;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x0061;
 
@@ -35,10 +35,18 @@ impl Parameter for Response {
     const ID: u16 = ID;
 }
 
-impl Resolve for Response {
-    type Output = Eui64;
+impl TryFrom<Response> for Eui64 {
+    type Error = Error;
 
-    fn resolve(self) -> Result<Self::Output, Error> {
-        Status::try_from(self.status).resolve().map(|()| self.eui64)
+    fn try_from(response: Response) -> Result<Self, Self::Error> {
+        Status::from_u8(response.status)
+            .ok_or_else(|| ValueError::Ember(response.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Ok(response.eui64)
+                } else {
+                    Err(status.into())
+                }
+            })
     }
 }

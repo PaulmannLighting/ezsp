@@ -22,7 +22,6 @@ use crate::frame::parameters::networking::{
     set_radio_ieee802154_cca_mode, set_radio_power, set_routing_shortcut_threshold, start_scan,
     stop_scan,
 };
-use crate::Resolve;
 use crate::{Error, Transport};
 
 /// The `Networking` trait provides an interface for the networking features.
@@ -176,7 +175,7 @@ pub trait Networking {
     fn get_source_route_table_entry(
         &mut self,
         index: u8,
-    ) -> impl Future<Output = Result<(NodeId, u8), Error>> + Send;
+    ) -> impl Future<Output = Result<get_source_route_table_entry::Entry, Error>> + Send;
 
     /// Returns the number of filled entries in source route table.
     fn get_source_route_table_filled_size(
@@ -426,7 +425,7 @@ where
             scan_count,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn find_and_rejoin_network(
@@ -438,7 +437,7 @@ where
             find_and_rejoin_network::Command::new(have_current_network_key, channel_mask),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn find_unused_pan_id(&mut self, channel_mask: u32, duration: u8) -> Result<(), Error> {
@@ -447,19 +446,19 @@ where
             duration,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn form_network(&mut self, parameters: network::Parameters) -> Result<(), Error> {
         self.communicate::<_, form_network::Response>(form_network::Command::new(parameters))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_child_data(&mut self, index: u8) -> Result<child::Data, Error> {
         self.communicate::<_, get_child_data::Response>(get_child_data::Command::new(index))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_current_duty_cycle(&mut self, max_devices: u8) -> Result<DeviceDutyCycles, Error> {
@@ -467,25 +466,25 @@ where
             get_current_duty_cycle::Command::new(max_devices),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn get_duty_cycle_limits(&mut self) -> Result<duty_cycle::Limits, Error> {
         self.communicate::<_, get_duty_cycle_limits::Response>(get_duty_cycle_limits::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_duty_cycle_state(&mut self) -> Result<duty_cycle::State, Error> {
         self.communicate::<_, get_duty_cycle_state::Response>(get_duty_cycle_state::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_first_beacon(&mut self) -> Result<beacon::Iterator, Error> {
         self.communicate::<_, get_first_beacon::Response>(get_first_beacon::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_logical_channel(&mut self) -> Result<u8, Error> {
@@ -497,7 +496,7 @@ where
     async fn get_neighbor(&mut self, index: u8) -> Result<neighbor::TableEntry, Error> {
         self.communicate::<_, get_neighbor::Response>(get_neighbor::Command::new(index))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_neighbor_frame_counter(&mut self, eui64: Eui64) -> Result<u32, Error> {
@@ -505,19 +504,19 @@ where
             get_neighbor_frame_counter::Command::new(eui64),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn get_network_parameters(&mut self) -> Result<(node::Type, network::Parameters), Error> {
         self.communicate::<_, get_network_parameters::Response>(get_network_parameters::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_next_beacon(&mut self) -> Result<beacon::Data, Error> {
         self.communicate::<_, get_next_beacon::Response>(get_next_beacon::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_num_stored_beacons(&mut self) -> Result<u8, Error> {
@@ -546,7 +545,7 @@ where
             phy_index,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn get_route_table_entry(&mut self, index: u8) -> Result<route::TableEntry, Error> {
@@ -554,7 +553,7 @@ where
             index,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn get_routing_shortcut_threshold(&mut self) -> Result<u8, Error> {
@@ -565,12 +564,15 @@ where
         .map(|response| response.routing_shortcut_thresh())
     }
 
-    async fn get_source_route_table_entry(&mut self, index: u8) -> Result<(NodeId, u8), Error> {
+    async fn get_source_route_table_entry(
+        &mut self,
+        index: u8,
+    ) -> Result<get_source_route_table_entry::Entry, Error> {
         self.communicate::<_, get_source_route_table_entry::Response>(
             get_source_route_table_entry::Command::new(index),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn get_source_route_table_filled_size(&mut self) -> Result<u8, Error> {
@@ -604,7 +606,7 @@ where
             node_type, parameters,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn join_network_directly(
@@ -621,13 +623,13 @@ where
             clear_beacons_after_network_up,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn leave_network(&mut self) -> Result<(), Error> {
         self.communicate::<_, leave_network::Response>(leave_network::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn multi_phy_set_radio_channel(
@@ -640,7 +642,7 @@ where
             multi_phy_set_radio_channel::Command::new(phy_index, page, channel),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn multi_phy_set_radio_power(&mut self, phy_index: u8, power: i8) -> Result<(), Error> {
@@ -648,7 +650,7 @@ where
             multi_phy_set_radio_power::Command::new(phy_index, power),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn multi_phy_start(
@@ -663,13 +665,13 @@ where
             phy_index, page, channel, power, bitmask,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn multi_phy_stop(&mut self, phy_index: u8) -> Result<(), Error> {
         self.communicate::<_, multi_phy_stop::Response>(multi_phy_stop::Command::new(phy_index))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn neighbor_count(&mut self) -> Result<u8, Error> {
@@ -681,19 +683,19 @@ where
     async fn network_init(&mut self, bitmask: &[InitBitmask]) -> Result<(), Error> {
         self.communicate::<_, network_init::Response>(network_init::Command::new(bitmask))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn network_state(&mut self) -> Result<network::Status, Error> {
         self.communicate::<_, network_state::Response>(network_state::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn permit_joining(&mut self, duration: network::Duration) -> Result<(), Error> {
         self.communicate::<_, permit_joining::Response>(permit_joining::Command::new(duration))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn send_link_power_delta_request(&mut self) -> Result<(), Error> {
@@ -701,7 +703,7 @@ where
             send_link_power_delta_request::Command,
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_broken_route_error_code(&mut self, error_code: u8) -> Result<(), Error> {
@@ -709,7 +711,7 @@ where
             set_broken_route_error_code::Command::new(error_code),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_child_data(&mut self, index: u8, child_data: child::Data) -> Result<(), Error> {
@@ -717,7 +719,7 @@ where
             index, child_data,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_concentrator(
@@ -728,7 +730,7 @@ where
             parameters,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_duty_cycle_limits_in_stack(
@@ -739,7 +741,7 @@ where
             set_duty_cycle_limits_in_stack::Command::from(limits),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_logical_and_radio_channel(&mut self, radio_channel: u8) -> Result<(), Error> {
@@ -747,7 +749,7 @@ where
             set_logical_and_radio_channel::Command::new(radio_channel),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_manufacturer_code(&mut self, code: u16) -> Result<(), Error> {
@@ -767,7 +769,7 @@ where
             set_neighbor_frame_counter::Command::new(eui64, frame_counter),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_power_descriptor(&mut self, power_descriptor: u16) -> Result<(), Error> {
@@ -781,7 +783,7 @@ where
     async fn set_radio_channel(&mut self, channel: u8) -> Result<(), Error> {
         self.communicate::<_, set_radio_channel::Response>(set_radio_channel::Command::new(channel))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn set_radio_ieee802154_cca_mode(&mut self, cca_mode: u8) -> Result<(), Error> {
@@ -789,13 +791,13 @@ where
             set_radio_ieee802154_cca_mode::Command::new(cca_mode),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_radio_power(&mut self, power: i8) -> Result<(), Error> {
         self.communicate::<_, set_radio_power::Response>(set_radio_power::Command::new(power))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn set_routing_shortcut_threshold(&mut self, cost_thresh: u8) -> Result<(), Error> {
@@ -803,7 +805,7 @@ where
             set_routing_shortcut_threshold::Command::new(cost_thresh),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn start_scan(
@@ -818,12 +820,12 @@ where
             duration,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn stop_scan(&mut self) -> Result<(), Error> {
         self.communicate::<_, stop_scan::Response>(stop_scan::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 }

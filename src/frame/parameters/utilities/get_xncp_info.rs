@@ -1,7 +1,9 @@
+use le_stream::derive::{FromLeStream, ToLeStream};
+use num_traits::FromPrimitive;
+
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::resolve::Resolve;
-use le_stream::derive::{FromLeStream, ToLeStream};
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x0013;
 
@@ -24,14 +26,21 @@ impl Parameter for Response {
     const ID: Self::Id = ID;
 }
 
-impl Resolve for Response {
-    type Output = Payload;
+impl TryFrom<Response> for Payload {
+    type Error = Error;
 
-    fn resolve(self) -> crate::Result<Self::Output> {
-        Status::try_from(self.status).resolve().and_then(|()| {
-            self.payload
-                .ok_or(crate::Error::Custom("No payload.".into()))
-        })
+    fn try_from(response: Response) -> Result<Self, Self::Error> {
+        Status::from_u8(response.status)
+            .ok_or_else(|| ValueError::Ember(response.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    response
+                        .payload
+                        .ok_or(Error::Custom("missing payload".into()))
+                } else {
+                    Err(status.into())
+                }
+            })
     }
 }
 

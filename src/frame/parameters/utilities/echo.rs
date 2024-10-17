@@ -1,6 +1,7 @@
+use le_stream::derive::{FromLeStream, ToLeStream};
+
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0081;
 

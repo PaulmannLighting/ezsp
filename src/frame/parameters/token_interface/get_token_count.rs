@@ -1,7 +1,6 @@
-use crate::frame::Parameter;
-use crate::Error;
-use crate::Resolve;
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::frame::Parameter;
 
 const ID: u16 = 0x0100;
 
@@ -23,10 +22,8 @@ impl Parameter for Response {
     const ID: Self::Id = ID;
 }
 
-impl Resolve for Response {
-    type Output = u8;
-
-    fn resolve(self) -> Result<Self::Output, Error> {
-        Ok(self.count)
+impl From<Response> for u8 {
+    fn from(response: Response) -> Self {
+        response.count
     }
 }

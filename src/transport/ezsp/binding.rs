@@ -6,7 +6,6 @@ use crate::frame::parameters::binding::{
     binding_is_active, clear_binding_table, delete_binding, get_binding,
     get_binding_remote_node_id, set_binding, set_binding_remote_node_id,
 };
-use crate::Resolve;
 use crate::{Error, Transport};
 
 /// The `Binding` trait provides an interface for the binding table.
@@ -71,19 +70,19 @@ where
     async fn clear_binding_table(&mut self) -> Result<(), Error> {
         self.communicate::<_, clear_binding_table::Response>(clear_binding_table::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn delete_binding(&mut self, index: u8) -> Result<(), Error> {
         self.communicate::<_, delete_binding::Response>(delete_binding::Command::new(index))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_binding(&mut self, index: u8) -> Result<TableEntry, Error> {
         self.communicate::<_, get_binding::Response>(get_binding::Command::new(index))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_binding_remote_node_id(&mut self, index: u8) -> Result<NodeId, Error> {
@@ -97,7 +96,7 @@ where
     async fn set_binding(&mut self, index: u8, value: TableEntry) -> Result<(), Error> {
         self.communicate::<_, set_binding::Response>(set_binding::Command::new(index, value))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn set_binding_remote_node_id(

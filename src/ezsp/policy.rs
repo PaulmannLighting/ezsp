@@ -1,7 +1,6 @@
 //! Policy configuration.
 
 use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
 
 /// Identifies a policy.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
@@ -38,13 +37,5 @@ pub enum Id {
 impl From<Id> for u8 {
     fn from(id: Id) -> Self {
         id as Self
-    }
-}
-
-impl TryFrom<u8> for Id {
-    type Error = u8;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::from_u8(value).ok_or(value)
     }
 }

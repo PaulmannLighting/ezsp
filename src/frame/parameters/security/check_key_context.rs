@@ -1,10 +1,10 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
+use num_traits::FromPrimitive;
 use siliconlabs::zigbee::security::ManContext;
 use siliconlabs::Status;
 
 use crate::frame::Parameter;
-use crate::Error;
-use crate::Resolve;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x0110;
 
@@ -35,10 +35,18 @@ impl Parameter for Response {
     const ID: Self::Id = ID;
 }
 
-impl Resolve for Response {
-    type Output = ();
+impl TryFrom<Response> for () {
+    type Error = Error;
 
-    fn resolve(self) -> Result<Self::Output, Error> {
-        Status::try_from(self.status).resolve()
+    fn try_from(response: Response) -> Result<Self, Self::Error> {
+        Status::from_u32(response.status)
+            .ok_or_else(|| ValueError::Siliconlabs(response.status).into())
+            .and_then(|status| {
+                if status == Status::Ok {
+                    Ok(())
+                } else {
+                    Err(status.into())
+                }
+            })
     }
 }

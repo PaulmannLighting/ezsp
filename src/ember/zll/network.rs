@@ -1,4 +1,5 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
+use num_traits::FromPrimitive;
 
 use crate::ember::node::Type;
 use crate::ember::zll::{SecurityAlgorithmData, State};
@@ -83,7 +84,7 @@ impl Network {
     /// # Errors
     /// Returns the [`u8`] value of the type if it has an invalid value.
     pub fn node_type(&self) -> Result<Type, u8> {
-        Type::try_from(self.node_type)
+        Type::from_u8(self.node_type).ok_or(self.node_type)
     }
 
     /// Return the number of sub devices.

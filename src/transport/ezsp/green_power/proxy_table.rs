@@ -4,7 +4,6 @@ use crate::ember::gp::proxy::TableEntry;
 use crate::ember::gp::Address;
 use crate::ember::key::Data;
 use crate::frame::parameters::green_power::proxy_table::{get_entry, lookup, process_gp_pairing};
-use crate::Resolve;
 use crate::{Error, Transport};
 
 /// The `ProxyTable` trait provides an interface for the proxy table.
@@ -42,7 +41,7 @@ where
     async fn get_entry(&mut self, proxy_index: u8) -> Result<TableEntry, Error> {
         self.communicate::<_, get_entry::Response>(get_entry::Command::new(proxy_index))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn lookup(&mut self, addr: Address) -> Result<u8, Error> {

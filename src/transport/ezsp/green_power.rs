@@ -6,7 +6,6 @@ pub use sink_table::SinkTable;
 use crate::ember::gp::Address;
 use crate::frame::parameters::green_power::{send, sink_commission, translation_table_clear};
 use crate::types::ByteSizedVec;
-use crate::Resolve;
 use crate::{Error, Transport};
 
 mod proxy_table;
@@ -64,7 +63,7 @@ where
             gp_tx_queue_entry_lifetime_millis,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn sink_commission(
@@ -81,7 +80,7 @@ where
             sink_endpoint,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn translation_table_clear(&mut self) -> Result<(), Error> {

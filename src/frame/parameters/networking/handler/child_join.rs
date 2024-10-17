@@ -1,8 +1,8 @@
-use le_stream::derive::FromLeStream;
-
 use crate::ember::node::Type;
 use crate::ember::{Eui64, NodeId};
 use crate::frame::Parameter;
+use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
 
 const ID: u16 = 0x0023;
 
@@ -47,7 +47,7 @@ impl Handler {
     ///
     /// Returns an error if the type is not a valid node type.
     pub fn child_type(&self) -> Result<Type, u8> {
-        Type::try_from(self.child_type)
+        Type::from_u8(self.child_type).ok_or(self.child_type)
     }
 }
 

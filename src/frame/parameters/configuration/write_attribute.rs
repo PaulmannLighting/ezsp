@@ -1,10 +1,12 @@
 //! Write attribute data on NCP endpoints.
 
+use le_stream::derive::{FromLeStream, ToLeStream};
+use num_traits::FromPrimitive;
+
 use crate::ember::Status;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use crate::Resolve;
-use le_stream::derive::{FromLeStream, ToLeStream};
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x0109;
 
@@ -52,11 +54,19 @@ impl Parameter for Response {
     const ID: Self::Id = ID;
 }
 
-impl Resolve for Response {
-    type Output = ();
+impl TryFrom<Response> for () {
+    type Error = Error;
 
-    fn resolve(self) -> Result<Self::Output, crate::Error> {
-        Status::try_from(self.status).resolve()
+    fn try_from(response: Response) -> Result<Self, Self::Error> {
+        Status::from_u8(response.status)
+            .ok_or_else(|| ValueError::Ember(response.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Ok(())
+                } else {
+                    Err(status.into())
+                }
+            })
     }
 }
 

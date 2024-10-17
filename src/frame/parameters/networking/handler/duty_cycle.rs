@@ -1,4 +1,5 @@
 use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
 
 use crate::ember::duty_cycle::State;
 use crate::frame::Parameter;
@@ -35,7 +36,7 @@ impl Handler {
     ///
     /// Returns an error if the state is invalid.
     pub fn state(&self) -> Result<State, u8> {
-        State::try_from(self.state)
+        State::from_u8(self.state).ok_or(self.state)
     }
 
     /// The total number of connected end devices that are being monitored for duty cycle.

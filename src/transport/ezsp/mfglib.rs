@@ -5,10 +5,9 @@ use crate::frame::parameters::mfglib::{
     start_tone, stop_stream, stop_tone,
 };
 use crate::types::ByteSizedVec;
-use crate::Resolve;
 use crate::{Error, Transport};
 
-/// The `Mfglib` trait provides an interface for the  
+/// The `Mfglib` trait provides an interface for the
 /// Manufacturing and Functional Test Library (`MfgLib`) test routines.
 pub trait Mfglib {
     /// Deactivate use of `Mfglib` test routines; restores the hardware to the state it was in prior
@@ -86,7 +85,7 @@ where
     async fn end(&mut self) -> Result<(), Error> {
         self.communicate::<_, end::Response>(end::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_channel(&mut self) -> Result<u8, Error> {
@@ -104,48 +103,48 @@ where
     async fn send_packet(&mut self, content: ByteSizedVec<u8>) -> Result<(), Error> {
         self.communicate::<_, send_packet::Response>(send_packet::Command::new(content))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn set_channel(&mut self, channel: u8) -> Result<(), Error> {
         self.communicate::<_, set_channel::Response>(set_channel::Command::new(channel))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn set_power(&mut self, tx_power_mode: u16, power: i8) -> Result<(), Error> {
         self.communicate::<_, set_power::Response>(set_power::Command::new(tx_power_mode, power))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn start(&mut self, rx_callback: bool) -> Result<(), Error> {
         self.communicate::<_, start::Response>(start::Command::new(rx_callback))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn start_stream(&mut self) -> Result<(), Error> {
         self.communicate::<_, start_stream::Response>(start_stream::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn start_tone(&mut self) -> Result<(), Error> {
         self.communicate::<_, start_tone::Response>(start_tone::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn stop_stream(&mut self) -> Result<(), Error> {
         self.communicate::<_, stop_stream::Response>(stop_stream::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn stop_tone(&mut self) -> Result<(), Error> {
         self.communicate::<_, stop_tone::Response>(stop_tone::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 }

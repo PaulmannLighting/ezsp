@@ -1,9 +1,9 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
+use num_traits::FromPrimitive;
 
 use crate::ember::{DeviceDutyCycles, Status};
 use crate::frame::Parameter;
-use crate::Error;
-use crate::Resolve;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x004C;
 
@@ -35,12 +35,18 @@ impl Parameter for Response {
     const ID: Self::Id = ID;
 }
 
-impl Resolve for Response {
-    type Output = DeviceDutyCycles;
+impl TryFrom<Response> for DeviceDutyCycles {
+    type Error = Error;
 
-    fn resolve(self) -> Result<Self::Output, Error> {
-        Status::try_from(self.status)
-            .resolve()
-            .map(|()| self.device_duty_cycles)
+    fn try_from(response: Response) -> Result<Self, Self::Error> {
+        Status::from_u8(response.status)
+            .ok_or_else(|| ValueError::Ember(response.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Ok(response.device_duty_cycles)
+                } else {
+                    Err(status.into())
+                }
+            })
     }
 }

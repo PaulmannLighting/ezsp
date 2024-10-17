@@ -1,7 +1,9 @@
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::resolve::Resolve;
+use crate::{Error, ValueError};
+
 use le_stream::derive::{FromLeStream, ToLeStream};
+use num_traits::FromPrimitive;
 
 const ID: u16 = 0x0049;
 
@@ -24,10 +26,18 @@ impl Parameter for Response {
     const ID: Self::Id = ID;
 }
 
-impl Resolve for Response {
-    type Output = u16;
+impl TryFrom<Response> for u16 {
+    type Error = Error;
 
-    fn resolve(self) -> crate::Result<Self::Output> {
-        Status::try_from(self.status).resolve().map(|()| self.value)
+    fn try_from(response: Response) -> Result<Self, Self::Error> {
+        Status::from_u8(response.status)
+            .ok_or_else(|| ValueError::Ember(response.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Ok(response.value)
+                } else {
+                    Err(status.into())
+                }
+            })
     }
 }

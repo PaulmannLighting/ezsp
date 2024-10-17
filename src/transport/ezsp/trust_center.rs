@@ -8,7 +8,6 @@ use crate::frame::parameters::trust_center::{
     unicast_nwk_key_update,
 };
 use crate::types::ByteSizedVec;
-use crate::Resolve;
 use crate::{Error, Transport};
 
 /// The `TrustCenter` trait provides an interface for the Trust Center features.
@@ -79,7 +78,7 @@ where
             context, finalize, data,
         ))
         .await?
-        .into()
+        .try_into()
     }
 
     async fn broadcast_network_key_switch(&mut self) -> Result<(), Error> {
@@ -87,8 +86,7 @@ where
             broadcast_network_key_switch::Command,
         )
         .await?
-        .status()
-        .resolve()
+        .try_into()
     }
 
     async fn broadcast_next_network_key(&mut self, key: Data) -> Result<(), Error> {
@@ -96,8 +94,7 @@ where
             broadcast_next_network_key::Command::new(key),
         )
         .await?
-        .status()
-        .resolve()
+        .try_into()
     }
 
     async fn remove_device(
@@ -112,7 +109,7 @@ where
             target_long,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn unicast_nwk_key_update(
@@ -125,6 +122,6 @@ where
             unicast_nwk_key_update::Command::new(dest_short, dest_long, key),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 }

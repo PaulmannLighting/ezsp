@@ -1,10 +1,10 @@
 use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
 
 use crate::ember::binding::TableEntry;
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::resolve::Resolve;
-use crate::Error;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x0031;
 
@@ -39,7 +39,15 @@ impl Handler {
     ///
     /// Returns an error if the status is not [`Status::Success`].
     pub fn policy_decision(&self) -> Result<(), Error> {
-        Status::try_from(self.policy_decision).resolve()
+        Status::from_u8(self.policy_decision)
+            .ok_or_else(|| ValueError::Ember(self.policy_decision).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Ok(())
+                } else {
+                    Err(status.into())
+                }
+            })
     }
 }
 

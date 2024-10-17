@@ -1,4 +1,5 @@
 use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
@@ -24,7 +25,7 @@ impl Handler {
     ///
     /// Returns an error if the status is invalid.
     pub fn result(&self) -> Result<Status, u8> {
-        Status::try_from(self.status)
+        Status::from_u8(self.status).ok_or(self.status)
     }
 }
 

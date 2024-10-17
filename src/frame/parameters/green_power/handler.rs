@@ -4,6 +4,7 @@ mod incoming_message;
 mod sent;
 
 pub use incoming_message::Handler as IncomingMessage;
+pub use incoming_message::Payload;
 pub use sent::Handler as Sent;
 
 /// Callbacks for the Green Power cluster.

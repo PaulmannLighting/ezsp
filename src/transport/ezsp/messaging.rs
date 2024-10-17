@@ -19,7 +19,6 @@ use crate::frame::parameters::messaging::{
     write_node_data,
 };
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
-use crate::Resolve;
 use crate::{Error, Transport};
 
 /// The `Messaging` trait provides an interface for the messaging features.
@@ -373,7 +372,7 @@ where
             get_beacon_classification_params::Command,
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn get_extended_timeout(&mut self, remote_eui64: Eui64) -> Result<bool, Error> {
@@ -389,7 +388,7 @@ where
             get_multicast_table_entry::Command::new(index),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn lookup_eui64_by_node_id(&mut self, node_id: NodeId) -> Result<Eui64, Error> {
@@ -397,7 +396,7 @@ where
             lookup_eui64_by_node_id::Command::new(node_id),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn lookup_node_id_by_eui64(&mut self, eui64: Eui64) -> Result<NodeId, Error> {
@@ -426,7 +425,7 @@ where
             failure_limit,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn proxy_broadcast(
@@ -449,7 +448,7 @@ where
             message,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn replace_address_table_entry(
@@ -468,7 +467,7 @@ where
             ),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn send_broadcast(
@@ -487,7 +486,7 @@ where
             message,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn send_many_to_one_route_request(
@@ -499,7 +498,7 @@ where
             send_many_to_one_route_request::Command::new(concentrator_type, radius),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn send_multicast(
@@ -518,7 +517,7 @@ where
             message,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn send_multicast_with_alias(
@@ -543,7 +542,7 @@ where
             ),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn send_raw_message(&mut self, message_contents: ByteSizedVec<u8>) -> Result<(), Error> {
@@ -551,7 +550,7 @@ where
             message_contents,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn send_raw_message_extended(
@@ -564,7 +563,7 @@ where
             send_raw_message_extended::Command::new(message, priority, use_cca),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn send_reply(
@@ -577,7 +576,7 @@ where
             sender, aps_frame, message,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn send_unicast(
@@ -596,7 +595,7 @@ where
             message,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_address_table_remote_eui64(
@@ -608,7 +607,7 @@ where
             set_address_table_remote_eui64::Command::new(address_table_index, eui64),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_address_table_remote_node_id(
@@ -631,7 +630,7 @@ where
             set_beacon_classification_params::Command::new(param),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_extended_timeout(
@@ -667,7 +666,7 @@ where
             set_multicast_table_entry::Command::new(index, value),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_source_route_discovery_mode(
@@ -691,12 +690,12 @@ where
             unicast_current_network_key::Command::new(target_short, target_long, parent_short_id),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn write_node_data(&mut self, erase: bool) -> Result<(), Error> {
         self.communicate::<_, write_node_data::Response>(write_node_data::Command::new(erase))
             .await?
-            .resolve()
+            .try_into()
     }
 }

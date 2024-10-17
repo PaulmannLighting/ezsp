@@ -12,7 +12,6 @@ use crate::frame::parameters::configuration::{
 };
 use crate::frame::Header;
 use crate::parameters::configuration::write_attribute::Attribute;
-use crate::resolve::Resolve;
 use crate::transport::Transport;
 use crate::types::ByteSizedVec;
 
@@ -148,7 +147,7 @@ where
             output_clusters,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn get_configuration_value(&mut self, config_id: Id) -> Result<u16, Error> {
@@ -156,7 +155,7 @@ where
             get_configuration_value::Command::new(config_id),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn get_extended_value(
@@ -169,19 +168,19 @@ where
             characteristics,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn get_policy(&mut self, policy_id: policy::Id) -> Result<decision::Id, Error> {
         self.communicate::<_, get_policy::Response>(get_policy::Command::new(policy_id))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_value(&mut self, value_id: value::Id) -> Result<ByteSizedVec<u8>, Error> {
         self.communicate::<_, get_value::Response>(get_value::Command::new(value_id))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn read_attribute(
@@ -200,15 +199,15 @@ where
             manufacturer_code,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn send_pan_id_update(&mut self, new_pan: PanId) -> Result<bool, Error> {
         self.communicate::<_, send_pan_id_update::Response>(send_pan_id_update::Command::new(
             new_pan,
         ))
-        .await?
-        .resolve()
+        .await
+        .map(Into::into)
     }
 
     async fn set_configuration_value(&mut self, config_id: Id, value: u16) -> Result<(), Error> {
@@ -216,7 +215,7 @@ where
             set_configuration_value::Command::new(config_id, value),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_passive_ack_config(
@@ -228,7 +227,7 @@ where
             set_passive_ack_config::Command::new(config, min_acks_needed),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_policy(
@@ -241,7 +240,7 @@ where
             decision_id,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_value(
@@ -251,7 +250,7 @@ where
     ) -> Result<(), Error> {
         self.communicate::<_, set_value::Response>(set_value::Command::new(value_id, value))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn version<H>(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error>
@@ -274,6 +273,6 @@ where
             endpoint, cluster, attribute, just_test,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 }

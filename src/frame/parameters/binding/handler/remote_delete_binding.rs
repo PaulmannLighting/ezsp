@@ -1,9 +1,9 @@
 use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::resolve::Resolve;
-use crate::Error;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x0032;
 
@@ -18,27 +18,23 @@ pub struct Handler {
     policy_decision: u8,
 }
 
-impl Handler {
-    /// The index of the binding whose deletion was requested.
-    #[must_use]
-    pub const fn index(&self) -> u8 {
-        self.index
-    }
-
-    /// Returns the index of the binding whose deletion was requested
-    /// if the binding was removed from the table and any other status if not.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] if the status is not [`Status::Success`].
-    pub fn result(&self) -> Result<u8, Error> {
-        Status::try_from(self.policy_decision)
-            .resolve()
-            .map(|()| self.index)
-    }
-}
-
 impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl TryFrom<Handler> for u8 {
+    type Error = Error;
+
+    fn try_from(handler: Handler) -> Result<Self, Self::Error> {
+        Status::from_u8(handler.policy_decision)
+            .ok_or_else(|| ValueError::Ember(handler.policy_decision).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Ok(handler.index)
+                } else {
+                    Err(status.into())
+                }
+            })
+    }
 }

@@ -1,9 +1,9 @@
 use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
 
 use crate::ember::{PublicKeyData, Status};
 use crate::frame::Parameter;
-use crate::resolve::Resolve;
-use crate::Error;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x009E;
 
@@ -20,24 +20,23 @@ pub struct Handler {
     ephemeral_public_key: PublicKeyData,
 }
 
-impl Handler {
-    /// The result of the CBKE operation.
-    ///
-    /// # Returns
-    ///
-    /// The generated ephemeral public key.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] if the status is not [`Status::Success`].
-    pub fn result(&self) -> Result<PublicKeyData, Error> {
-        Status::try_from(self.status)
-            .resolve()
-            .map(|()| self.ephemeral_public_key)
-    }
-}
-
 impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
+}
+
+impl TryFrom<Handler> for PublicKeyData {
+    type Error = Error;
+
+    fn try_from(handler: Handler) -> Result<Self, Self::Error> {
+        Status::from_u8(handler.status)
+            .ok_or_else(|| ValueError::Ember(handler.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Ok(handler.ephemeral_public_key)
+                } else {
+                    Err(status.into())
+                }
+            })
+    }
 }

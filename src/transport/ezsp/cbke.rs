@@ -11,7 +11,6 @@ use crate::frame::parameters::cbke::{
     save_preinstalled_cbke_data283k1, set_preinstalled_cbke_data,
 };
 use crate::types::ByteSizedVec;
-use crate::Resolve;
 use crate::{Error, Transport};
 
 /// The `CertificateBasedKeyExchange` trait provides an interface for the Certificate Based Key Exchange features.
@@ -168,7 +167,7 @@ where
             partner_ephemeral_public_key,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn calculate_smacs283k1(
@@ -183,7 +182,7 @@ where
             partner_ephemeral_public_key,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn clear_temporary_data_maybe_store_link_key(
@@ -194,7 +193,7 @@ where
             clear_temporary_data_maybe_store_link_key::Command::new(store_link_key),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn clear_temporary_data_maybe_store_link_key283k1(
@@ -205,7 +204,7 @@ where
             clear_temporary_data_maybe_store_link_key283k1::Command::new(store_link_key),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn dsa_sign(&mut self, message: ByteSizedVec<u8>) -> Result<(), Error> {
@@ -226,7 +225,7 @@ where
             received_sig,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn dsa_verify283k1(
@@ -241,31 +240,31 @@ where
             received_sig,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn generate_cbke_keys(&mut self) -> Result<(), Error> {
         self.communicate::<_, generate_cbke_keys::Response>(generate_cbke_keys::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn generate_cbke_keys283k1(&mut self) -> Result<(), Error> {
         self.communicate::<_, generate_cbke_keys283k1::Response>(generate_cbke_keys283k1::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_certificate(&mut self) -> Result<CertificateData, Error> {
         self.communicate::<_, get_certificate::Response>(get_certificate::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_certificate283k1(&mut self) -> Result<Certificate283k1Data, Error> {
         self.communicate::<_, get_certificate283k1::Response>(get_certificate283k1::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn save_preinstalled_cbke_data283k1(&mut self) -> Result<(), Error> {
@@ -273,7 +272,7 @@ where
             save_preinstalled_cbke_data283k1::Command,
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_preinstalled_cbke_data(
@@ -286,6 +285,6 @@ where
             set_preinstalled_cbke_data::Command::new(ca_public, my_cert, my_key),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 }

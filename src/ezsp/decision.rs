@@ -1,7 +1,6 @@
 //! Policy decision identifiers and bitmasks.
 
 use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
 
 /// Identifies a policy decision.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
@@ -84,14 +83,6 @@ impl From<Id> for u8 {
     }
 }
 
-impl TryFrom<u8> for Id {
-    type Error = u8;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Self::from_u8(value).ok_or(value)
-    }
-}
-
 /// This is the policy decision bitmask that controls the trust center decision strategies.
 ///
 /// The bitmask is modified and extracted from the [`Id`] for supporting bitmask operations.
@@ -117,13 +108,5 @@ pub enum Bitmask {
 impl From<Bitmask> for u16 {
     fn from(bitmask: Bitmask) -> Self {
         bitmask as Self
-    }
-}
-
-impl TryFrom<u16> for Bitmask {
-    type Error = u16;
-
-    fn try_from(value: u16) -> Result<Self, Self::Error> {
-        Self::from_u16(value).ok_or(value)
     }
 }

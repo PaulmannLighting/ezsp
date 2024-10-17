@@ -1,11 +1,11 @@
+use le_stream::derive::{FromLeStream, ToLeStream};
+use num_traits::FromPrimitive;
+
 use crate::error::ValueError;
 use crate::ezsp::Status;
 use crate::ezsp::{decision, policy};
 use crate::frame::Parameter;
 use crate::Error;
-use crate::Resolve;
-use le_stream::derive::{FromLeStream, ToLeStream};
-
 const ID: u16 = 0x0056;
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
@@ -38,13 +38,19 @@ impl Parameter for Response {
     const ID: Self::Id = ID;
 }
 
-impl Resolve for Response {
-    type Output = decision::Id;
+impl TryFrom<Response> for decision::Id {
+    type Error = Error;
 
-    fn resolve(self) -> Result<Self::Output, Error> {
-        Status::try_from(self.status).resolve().and_then(|()| {
-            decision::Id::try_from(self.decision_id)
-                .map_err(|id| Error::ValueError(ValueError::DecisionId(id)))
-        })
+    fn try_from(response: Response) -> Result<Self, Self::Error> {
+        Status::from_u8(response.status)
+            .ok_or_else(|| ValueError::Ezsp(response.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Self::from_u8(response.decision_id)
+                        .ok_or_else(|| ValueError::DecisionId(response.decision_id).into())
+                } else {
+                    Err(status.into())
+                }
+            })
     }
 }

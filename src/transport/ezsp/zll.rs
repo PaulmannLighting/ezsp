@@ -10,7 +10,6 @@ use crate::frame::parameters::zll::{
     set_primary_channel_mask, set_radio_idle_mode, set_rx_on_when_idle, set_secondary_channel_mask,
     set_security_state_without_key, start_scan,
 };
-use crate::resolve::Resolve;
 use crate::{Error, Transport};
 use std::future::Future;
 
@@ -162,7 +161,7 @@ where
             radio_tx_power,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn operation_in_progress(&mut self) -> Result<bool, Error> {
@@ -201,7 +200,7 @@ where
             set_initial_security_state::Command::new(network_key, security_state),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_node_type(&mut self, node_type: Type) -> Result<(), Error> {
@@ -237,7 +236,7 @@ where
             duration_millis,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_secondary_channel_mask(&mut self, mask: u32) -> Result<(), Error> {
@@ -256,7 +255,7 @@ where
             set_security_state_without_key::Command::new(security_state),
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn start_scan(
@@ -271,6 +270,6 @@ where
             node_type,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 }

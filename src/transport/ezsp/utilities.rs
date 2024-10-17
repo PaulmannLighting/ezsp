@@ -11,7 +11,6 @@ use crate::frame::parameters::utilities::{
     set_mfg_token, set_timer, set_token,
 };
 use crate::frame::{Extended, Handler};
-use crate::resolve::Resolve;
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 
@@ -158,7 +157,7 @@ where
     async fn custom_frame(&mut self, payload: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
         self.communicate::<_, custom_frame::Response>(custom_frame::Command::new(payload))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn debug_write(
@@ -171,8 +170,7 @@ where
             message,
         ))
         .await?
-        .status()
-        .resolve()
+        .try_into()
     }
 
     async fn delay_test(&mut self, delay_millis: u16) -> Result<(), Error> {
@@ -225,7 +223,7 @@ where
     async fn get_random_number(&mut self) -> Result<u16, Error> {
         self.communicate::<_, get_random_number::Response>(get_random_number::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_timer(&mut self, timer_id: u8) -> Result<get_timer::Response, Error> {
@@ -236,7 +234,7 @@ where
     async fn get_token(&mut self, token_id: u8) -> Result<[u8; 8], Error> {
         self.communicate::<_, get_token::Response>(get_token::Command::new(token_id))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_true_random_entropy_source(&mut self) -> Result<Source, Error> {
@@ -244,13 +242,13 @@ where
             get_true_random_entropy_source::Command,
         )
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn get_xncp_info(&mut self) -> Result<get_xncp_info::Payload, Error> {
         self.communicate::<_, get_xncp_info::Response>(get_xncp_info::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn nop(&mut self) -> Result<(), Error> {
@@ -274,7 +272,7 @@ where
     async fn set_mfg_token(&mut self, token_id: Id, token: ByteSizedVec<u8>) -> Result<(), Error> {
         self.communicate::<_, set_mfg_token::Response>(set_mfg_token::Command::new(token_id, token))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn set_timer(
@@ -290,12 +288,12 @@ where
             repeat,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn set_token(&mut self, token_id: u8, token: [u8; 8]) -> Result<(), Error> {
         self.communicate::<_, set_token::Response>(set_token::Command::new(token_id, token))
             .await?
-            .resolve()
+            .try_into()
     }
 }

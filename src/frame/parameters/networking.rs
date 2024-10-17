@@ -22,7 +22,7 @@ pub(crate) mod get_radio_channel;
 pub(crate) mod get_radio_parameters;
 pub(crate) mod get_route_table_entry;
 pub(crate) mod get_routing_shortcut_threshold;
-pub(crate) mod get_source_route_table_entry;
+pub mod get_source_route_table_entry;
 pub(crate) mod get_source_route_table_filled_size;
 pub(crate) mod get_source_route_table_total_size;
 pub mod handler;

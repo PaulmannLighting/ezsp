@@ -1,7 +1,6 @@
-use crate::frame::Parameter;
-use crate::Error;
-use crate::Resolve;
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::frame::Parameter;
 
 const ID: u16 = 0x0077;
 
@@ -32,12 +31,4 @@ pub struct Response;
 impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
-}
-
-impl Resolve for Response {
-    type Output = ();
-
-    fn resolve(self) -> Result<Self::Output, Error> {
-        Ok(())
-    }
 }

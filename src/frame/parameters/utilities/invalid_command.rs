@@ -1,8 +1,10 @@
 //! Indicates that the NCP received an invalid command.
 
+use le_stream::derive::{FromLeStream, ToLeStream};
+use num_traits::FromPrimitive;
+
 use crate::ezsp::Status;
 use crate::frame::Parameter;
-use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0058;
 
@@ -19,7 +21,7 @@ impl Response {
     ///
     /// Returns an error if the reason is not a valid [`Status`].
     pub fn reason(&self) -> Result<Status, u8> {
-        Status::try_from(self.reason)
+        Status::from_u8(self.reason).ok_or(self.reason)
     }
 }
 

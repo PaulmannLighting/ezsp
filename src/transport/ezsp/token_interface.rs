@@ -3,7 +3,6 @@ use crate::frame::parameters::token_interface::{
     get_token_count, get_token_data, get_token_info, gp_security_test_vectors, reset_node,
     set_token_data, token_factory_reset,
 };
-use crate::Resolve;
 use crate::Transport;
 use std::future::Future;
 
@@ -54,32 +53,32 @@ where
 {
     async fn get_token_count(&mut self) -> Result<u8, crate::Error> {
         self.communicate::<_, get_token_count::Response>(get_token_count::Command)
-            .await?
-            .resolve()
+            .await
+            .map(Into::into)
     }
 
     async fn get_token_data(&mut self, token: u32, index: u32) -> Result<Data, crate::Error> {
         self.communicate::<_, get_token_data::Response>(get_token_data::Command::new(token, index))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn get_token_info(&mut self, index: u8) -> Result<Info, crate::Error> {
         self.communicate::<_, get_token_info::Response>(get_token_info::Command::new(index))
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn gp_security_test_vectors(&mut self) -> Result<(), crate::Error> {
         self.communicate::<_, gp_security_test_vectors::Response>(gp_security_test_vectors::Command)
             .await?
-            .resolve()
+            .try_into()
     }
 
     async fn reset_node(&mut self) -> Result<(), crate::Error> {
         self.communicate::<_, reset_node::Response>(reset_node::Command)
-            .await?
-            .resolve()
+            .await
+            .map(drop)
     }
 
     async fn set_token_data(
@@ -92,7 +91,7 @@ where
             token, index, token_data,
         ))
         .await?
-        .resolve()
+        .try_into()
     }
 
     async fn token_factory_reset(
@@ -104,7 +103,7 @@ where
             exclude_outgoing_fc,
             exclude_boot_counter,
         ))
-        .await?
-        .resolve()
+        .await
+        .map(drop)
     }
 }

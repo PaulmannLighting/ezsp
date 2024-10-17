@@ -1,11 +1,12 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
+use num_traits::FromPrimitive;
 
 use crate::ember::network::Parameters;
 use crate::ember::node::Type;
 use crate::ember::Status;
 use crate::error::ValueError;
 use crate::frame::Parameter;
-use crate::Resolve;
+use crate::Error;
 
 const ID: u16 = 0x0028;
 
@@ -29,14 +30,20 @@ impl Parameter for Response {
     const ID: Self::Id = ID;
 }
 
-impl Resolve for Response {
-    type Output = (Type, Parameters);
+impl TryFrom<Response> for (Type, Parameters) {
+    type Error = Error;
 
-    fn resolve(self) -> Result<Self::Output, crate::Error> {
-        Status::try_from(self.status).resolve().and_then(|()| {
-            Type::try_from(self.node_type)
-                .map_err(|node_type| crate::Error::ValueError(ValueError::EmberNodeType(node_type)))
-                .map(|node_type| (node_type, self.parameters))
-        })
+    fn try_from(response: Response) -> Result<Self, Self::Error> {
+        Status::from_u8(response.status)
+            .ok_or_else(|| ValueError::Ember(response.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Type::from_u8(response.node_type)
+                        .ok_or_else(|| ValueError::EmberNodeType(response.node_type).into())
+                        .map(|node_type| (node_type, response.parameters))
+                } else {
+                    Err(status.into())
+                }
+            })
     }
 }

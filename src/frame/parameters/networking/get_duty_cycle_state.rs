@@ -1,11 +1,11 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
+use num_traits::FromPrimitive;
 
 use crate::ember::duty_cycle::State;
 use crate::ember::Status;
 use crate::error::ValueError;
 use crate::frame::Parameter;
 use crate::Error;
-use crate::Resolve;
 
 const ID: u16 = 0x0035;
 
@@ -28,14 +28,20 @@ impl Parameter for Response {
     const ID: Self::Id = ID;
 }
 
-impl Resolve for Response {
-    type Output = State;
+impl TryFrom<Response> for State {
+    type Error = Error;
 
-    fn resolve(self) -> Result<Self::Output, Error> {
-        Status::try_from(self.status).resolve().and_then(|()| {
-            State::try_from(self.returned_state).map_err(|duty_cycle_state| {
-                Error::ValueError(ValueError::EmberDutyCycleState(duty_cycle_state))
+    fn try_from(response: Response) -> Result<Self, Self::Error> {
+        Status::from_u8(response.status)
+            .ok_or_else(|| ValueError::Ember(response.status).into())
+            .and_then(|status| {
+                if status == Status::Success {
+                    Self::from_u8(response.returned_state).ok_or_else(|| {
+                        ValueError::EmberDutyCycleState(response.returned_state).into()
+                    })
+                } else {
+                    Err(status.into())
+                }
             })
-        })
     }
 }

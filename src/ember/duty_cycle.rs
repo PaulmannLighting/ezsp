@@ -2,7 +2,6 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
 
 /// Ember duty cycle state.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
@@ -23,14 +22,6 @@ pub enum State {
 impl From<State> for u8 {
     fn from(state: State) -> Self {
         state as Self
-    }
-}
-
-impl TryFrom<u8> for State {
-    type Error = u8;
-
-    fn try_from(duty_cycle_state: u8) -> Result<Self, Self::Error> {
-        Self::from_u8(duty_cycle_state).ok_or(duty_cycle_state)
     }
 }
 

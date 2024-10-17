@@ -1,8 +1,6 @@
 use num_traits::FromPrimitive;
 use std::fmt::Display;
 
-use crate::error::ValueError;
-use crate::Resolve;
 pub use ash::Ash;
 pub use error::Error;
 pub use spi_err::SpiErr;
@@ -286,24 +284,5 @@ impl FromPrimitive for Status {
 
     fn from_u64(n: u64) -> Option<Self> {
         Values::from_u64(n).map(Self::from)
-    }
-}
-
-impl Resolve for Result<Status, u8> {
-    type Output = ();
-
-    fn resolve(self) -> Result<Self::Output, crate::Error> {
-        match self {
-            Ok(status) => status.ok().map_err(crate::Error::Ezsp),
-            Err(status) => Err(crate::Error::ValueError(ValueError::Ezsp(status))),
-        }
-    }
-}
-
-impl TryFrom<u8> for Status {
-    type Error = u8;
-
-    fn try_from(value: u8) -> Result<Self, <Self as TryFrom<u8>>::Error> {
-        Self::from_u8(value).ok_or(value)
     }
 }

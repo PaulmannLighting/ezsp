@@ -1,11 +1,11 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
+use num_traits::FromPrimitive;
 use siliconlabs::Status;
 
 use crate::ezsp::network::scan::Type;
 use crate::frame::Parameter;
 use crate::types::VariableLengthU32;
-use crate::Error;
-use crate::Resolve;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x001A;
 
@@ -42,10 +42,19 @@ impl Parameter for Response {
     const ID: Self::Id = ID;
 }
 
-impl Resolve for Response {
-    type Output = ();
+impl TryFrom<Response> for () {
+    type Error = Error;
 
-    fn resolve(self) -> Result<Self::Output, Error> {
-        Status::try_from(u32::from(self.status)).resolve()
+    fn try_from(response: Response) -> Result<Self, Self::Error> {
+        let status = response.status.into();
+        Status::from_u32(status)
+            .ok_or_else(|| ValueError::Siliconlabs(status).into())
+            .and_then(|status| {
+                if status == Status::Ok {
+                    Ok(())
+                } else {
+                    Err(status.into())
+                }
+            })
     }
 }

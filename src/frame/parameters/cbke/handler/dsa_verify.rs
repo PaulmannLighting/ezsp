@@ -1,8 +1,8 @@
-use le_stream::derive::FromLeStream;
-
 use crate::ember::Status;
 use crate::frame::Parameter;
 use crate::{Error, ValueError};
+use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
 
 const ID: u16 = 0x0078;
 
@@ -29,11 +29,11 @@ impl Handler {
     ///
     /// Returns an [`Error`] if the status is invalid.
     pub fn is_valid(&self) -> Result<bool, Error> {
-        match Status::try_from(self.status) {
-            Ok(Status::Success) => Ok(true),
-            Ok(Status::SignatureVerifyFailure) => Ok(false),
-            Ok(status) => Err(Error::Ember(status)),
-            Err(error) => Err(ValueError::Ember(error).into()),
+        match Status::from_u8(self.status) {
+            Some(Status::Success) => Ok(true),
+            Some(Status::SignatureVerifyFailure) => Ok(false),
+            Some(status) => Err(Error::Ember(status)),
+            None => Err(ValueError::Ember(self.status).into()),
         }
     }
 }

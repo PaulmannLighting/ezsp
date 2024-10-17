@@ -49,10 +49,7 @@ impl Display for Error {
             Self::Siliconlabs(status) => {
                 write!(f, "Siliconlabs: {status:?} ({:#010X})", u32::from(*status))
             }
-            Self::InvalidCommand(response) => match response.reason() {
-                Ok(reason) => write!(f, "Invalid command: {reason}"),
-                Err(code) => write!(f, "Invalid command: {code:#04X}"),
-            },
+            Self::InvalidCommand(response) => write!(f, "Invalid command: {response}"),
             Self::ProtocolVersionMismatch {
                 desired,
                 negotiated,

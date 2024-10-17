@@ -18,10 +18,10 @@ pub use value_error::ValueError;
 pub enum Error {
     /// An I/O error occurred.
     Io(std::io::Error),
-    /// A status related error.
-    Status(Status),
     /// Decoding error.
     Decode(Decode),
+    /// A status related error.
+    Status(Status),
     /// The NCP responded with `invalidCommand` (0x0058).
     InvalidCommand(invalid_command::Response),
     /// The protocol negotiation failed.
@@ -33,8 +33,6 @@ pub enum Error {
     },
     /// Invalid status
     ValueError(ValueError),
-    /// A custom error message.
-    Custom(String),
 }
 
 impl Display for Error {
@@ -56,7 +54,6 @@ impl Display for Error {
                 )
             }
             Self::ValueError(status) => Display::fmt(status, f),
-            Self::Custom(msg) => Display::fmt(msg, f),
         }
     }
 }
@@ -141,11 +138,5 @@ impl From<ValueError> for Error {
 impl From<invalid_command::Response> for Error {
     fn from(response: invalid_command::Response) -> Self {
         Self::InvalidCommand(response)
-    }
-}
-
-impl From<String> for Error {
-    fn from(msg: String) -> Self {
-        Self::Custom(msg)
     }
 }

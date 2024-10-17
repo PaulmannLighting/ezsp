@@ -248,7 +248,6 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     }
 
     // Test key export.
-
     let context = ManContext::new(
         ManKey::default(),
         0,
@@ -259,11 +258,11 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         0,
     );
     match ezsp.export_key(context).await {
-        Ok(state) => {
-            info!("Duty cycle state: {state:#04X?}");
+        Ok(key) => {
+            info!("Exported key: {key:#04X?}");
         }
         Err(error) => {
-            error!("Error getting duty cycle state: {error}");
+            error!("Error exporting key: {error}");
         }
     }
 }

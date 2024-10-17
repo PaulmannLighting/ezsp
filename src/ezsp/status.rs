@@ -42,28 +42,6 @@ pub enum Status {
     NoError,
 }
 
-impl Status {
-    /// Checks the status for success and returns `Ok(value)` in that case.
-    ///
-    /// # Errors
-    /// Returns `Err(self)` if the `Status` is not [`Status::Success`],
-    pub fn map<T>(self, value: T) -> Result<T, Self> {
-        if self == Self::Success {
-            Ok(value)
-        } else {
-            Err(self)
-        }
-    }
-
-    /// Checks the status for success and returns `Ok(())` in that case.
-    ///
-    /// # Errors
-    /// Returns `Err(self)` if the `Status` is not [`Status::Success`],
-    pub fn ok(self) -> Result<(), Self> {
-        self.map(())
-    }
-}
-
 impl Display for Status {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

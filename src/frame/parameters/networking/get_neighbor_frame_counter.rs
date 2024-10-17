@@ -3,7 +3,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::{Eui64, Status};
 use crate::frame::Parameter;
-use crate::{Error, ValueError};
+use crate::Error;
 
 const ID: u16 = 0x003E;
 
@@ -39,14 +39,9 @@ impl TryFrom<Response> for u32 {
     type Error = Error;
 
     fn try_from(response: Response) -> Result<Self, Self::Error> {
-        Status::from_u8(response.status)
-            .ok_or_else(|| ValueError::Ember(response.status).into())
-            .and_then(|status| {
-                if status == Status::Success {
-                    Ok(response.return_frame_counter)
-                } else {
-                    Err(status.into())
-                }
-            })
+        match Status::from_u8(response.status).ok_or(response.status) {
+            Ok(Status::Success) => Ok(response.return_frame_counter),
+            other => Err(other.into()),
+        }
     }
 }

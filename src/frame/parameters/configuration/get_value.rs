@@ -5,7 +5,7 @@ use crate::ezsp::value::Id;
 use crate::ezsp::Status;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use crate::{Error, ValueError};
+use crate::Error;
 
 const ID: u16 = 0x00AA;
 
@@ -43,14 +43,9 @@ impl TryFrom<Response> for ByteSizedVec<u8> {
     type Error = Error;
 
     fn try_from(response: Response) -> Result<Self, Self::Error> {
-        Status::from_u8(response.status)
-            .ok_or_else(|| ValueError::Ezsp(response.status).into())
-            .and_then(|status| {
-                if status == Status::Success {
-                    Ok(response.value)
-                } else {
-                    Err(status.into())
-                }
-            })
+        match Status::from_u8(response.status).ok_or(response.status) {
+            Ok(Status::Success) => Ok(response.value),
+            other => Err(other.into()),
+        }
     }
 }

@@ -5,7 +5,7 @@ use siliconlabs::Status;
 use super::transient_key::TransientKey;
 use crate::ember::Eui64;
 use crate::frame::Parameter;
-use crate::{Error, ValueError};
+use crate::Error;
 
 const ID: u16 = 0x0113;
 
@@ -41,14 +41,9 @@ impl TryFrom<Response> for TransientKey {
     type Error = Error;
 
     fn try_from(response: Response) -> Result<Self, Self::Error> {
-        Status::from_u32(response.status)
-            .ok_or_else(|| ValueError::Siliconlabs(response.status).into())
-            .and_then(|status| {
-                if status == Status::Ok {
-                    Ok(response.payload)
-                } else {
-                    Err(status.into())
-                }
-            })
+        match Status::from_u32(response.status).ok_or(response.status) {
+            Ok(Status::Ok) => Ok(response.payload),
+            other => Err(other.into()),
+        }
     }
 }

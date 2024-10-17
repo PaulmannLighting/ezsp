@@ -44,24 +44,7 @@ pub enum Status {
 
 impl Display for Status {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Success => write!(f, "Success"),
-            Self::SpiErr(spi_err) => write!(f, "SPI error: {spi_err}"),
-            Self::HostFatalError => write!(f, "Host fatal error"),
-            Self::DataFrameTooLong => write!(f, "Data frame too long"),
-            Self::DataFrameTooShort => write!(f, "Data frame too short"),
-            Self::NoTxSpace => write!(f, "No space for tx'ed data frame"),
-            Self::NoRxSpace => write!(f, "No space for rec'd data frame"),
-            Self::NoRxData => write!(f, "No receive data available"),
-            Self::NotConnected => write!(f, "Not in connected state"),
-            Self::Error(error) => Display::fmt(error, f),
-            Self::Ash(ash) => write!(f, "ASH: {ash}"),
-            Self::CpcErrorInit => write!(
-                f,
-                "Failed to connect to CPC daemon or failed to open CPC endpoint"
-            ),
-            Self::NoError => write!(f, "No reset or error"),
-        }
+        Display::fmt(&Values::from(*self), f)
     }
 }
 
@@ -267,12 +250,12 @@ impl FromPrimitive for Status {
 
 impl LowerHex for Status {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:#04x}", u8::from(*self))
+        LowerHex::fmt(&Values::from(*self), f)
     }
 }
 
 impl UpperHex for Status {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:#04X}", u8::from(*self))
+        UpperHex::fmt(&Values::from(*self), f)
     }
 }

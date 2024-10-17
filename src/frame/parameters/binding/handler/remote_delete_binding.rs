@@ -3,7 +3,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::{Error, ValueError};
+use crate::Error;
 
 const ID: u16 = 0x0032;
 
@@ -27,14 +27,9 @@ impl TryFrom<Handler> for u8 {
     type Error = Error;
 
     fn try_from(handler: Handler) -> Result<Self, Self::Error> {
-        Status::from_u8(handler.policy_decision)
-            .ok_or_else(|| ValueError::Ember(handler.policy_decision).into())
-            .and_then(|status| {
-                if status == Status::Success {
-                    Ok(handler.index)
-                } else {
-                    Err(status.into())
-                }
-            })
+        match Status::from_u8(handler.policy_decision).ok_or(handler.policy_decision) {
+            Ok(Status::Success) => Ok(handler.index),
+            other => Err(other.into()),
+        }
     }
 }

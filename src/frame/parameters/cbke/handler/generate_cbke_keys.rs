@@ -3,7 +3,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::{PublicKeyData, Status};
 use crate::frame::Parameter;
-use crate::{Error, ValueError};
+use crate::Error;
 
 const ID: u16 = 0x009E;
 
@@ -29,14 +29,9 @@ impl TryFrom<Handler> for PublicKeyData {
     type Error = Error;
 
     fn try_from(handler: Handler) -> Result<Self, Self::Error> {
-        Status::from_u8(handler.status)
-            .ok_or_else(|| ValueError::Ember(handler.status).into())
-            .and_then(|status| {
-                if status == Status::Success {
-                    Ok(handler.ephemeral_public_key)
-                } else {
-                    Err(status.into())
-                }
-            })
+        match Status::from_u8(handler.status).ok_or(handler.status) {
+            Ok(Status::Success) => Ok(handler.ephemeral_public_key),
+            other => Err(other.into()),
+        }
     }
 }

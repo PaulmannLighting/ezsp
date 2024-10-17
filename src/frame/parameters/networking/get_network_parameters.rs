@@ -34,16 +34,11 @@ impl TryFrom<Response> for (Type, Parameters) {
     type Error = Error;
 
     fn try_from(response: Response) -> Result<Self, Self::Error> {
-        Status::from_u8(response.status)
-            .ok_or_else(|| ValueError::Ember(response.status).into())
-            .and_then(|status| {
-                if status == Status::Success {
-                    Type::from_u8(response.node_type)
-                        .ok_or_else(|| ValueError::EmberNodeType(response.node_type).into())
-                        .map(|node_type| (node_type, response.parameters))
-                } else {
-                    Err(status.into())
-                }
-            })
+        match Status::from_u8(response.status).ok_or(response.status) {
+            Ok(Status::Success) => Type::from_u8(response.node_type)
+                .ok_or_else(|| ValueError::EmberNodeType(response.node_type).into())
+                .map(|node_type| (node_type, response.parameters)),
+            other => Err(other.into()),
+        }
     }
 }

@@ -1,6 +1,6 @@
 use crate::ember::{NodeId, Status};
 use crate::frame::Parameter;
-use crate::{Error, ValueError};
+use crate::Error;
 use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 
@@ -29,13 +29,11 @@ impl Handler {
     ///
     /// Returns an [`Error`] if the value is not a valid status.
     pub fn status(&self) -> Result<Status, Error> {
-        Status::from_u8(self.status).map_or_else(
-            || Err(ValueError::Ember(self.status).into()),
-            |status| match status {
-                Status::SourceRouteFailure | Status::ManyToOneRouteFailure => Ok(status),
-                _ => Err(Error::Ember(status)),
-            },
-        )
+        match Status::from_u8(self.status).ok_or(self.status) {
+            Ok(Status::SourceRouteFailure) => Ok(Status::SourceRouteFailure),
+            Ok(Status::ManyToOneRouteFailure) => Ok(Status::ManyToOneRouteFailure),
+            other => Err(other.into()),
+        }
     }
 
     /// The short id of the remote node.

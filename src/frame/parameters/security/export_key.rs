@@ -4,7 +4,7 @@ use siliconlabs::zigbee::security::{ManContext, ManKey};
 use siliconlabs::Status;
 
 use crate::frame::Parameter;
-use crate::{Error, ValueError};
+use crate::Error;
 
 const ID: u16 = 0x0114;
 
@@ -40,14 +40,9 @@ impl TryFrom<Response> for ManKey {
     type Error = Error;
 
     fn try_from(response: Response) -> Result<Self, Self::Error> {
-        Status::from_u32(response.status)
-            .ok_or_else(|| ValueError::Siliconlabs(response.status).into())
-            .and_then(|status| {
-                if status == Status::Ok {
-                    Ok(response.key)
-                } else {
-                    Err(status.into())
-                }
-            })
+        match Status::from_u32(response.status).ok_or(response.status) {
+            Ok(Status::Ok) => Ok(response.key),
+            other => Err(other.into()),
+        }
     }
 }

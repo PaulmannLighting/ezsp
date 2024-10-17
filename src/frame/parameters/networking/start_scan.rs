@@ -5,7 +5,7 @@ use siliconlabs::Status;
 use crate::ezsp::network::scan::Type;
 use crate::frame::Parameter;
 use crate::types::VariableLengthU32;
-use crate::{Error, ValueError};
+use crate::Error;
 
 const ID: u16 = 0x001A;
 
@@ -47,14 +47,9 @@ impl TryFrom<Response> for () {
 
     fn try_from(response: Response) -> Result<Self, Self::Error> {
         let status = response.status.into();
-        Status::from_u32(status)
-            .ok_or_else(|| ValueError::Siliconlabs(status).into())
-            .and_then(|status| {
-                if status == Status::Ok {
-                    Ok(())
-                } else {
-                    Err(status.into())
-                }
-            })
+        match Status::from_u32(status).ok_or(status) {
+            Ok(Status::Ok) => Ok(()),
+            other => Err(other.into()),
+        }
     }
 }

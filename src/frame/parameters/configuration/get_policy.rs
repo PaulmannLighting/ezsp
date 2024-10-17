@@ -42,15 +42,10 @@ impl TryFrom<Response> for decision::Id {
     type Error = Error;
 
     fn try_from(response: Response) -> Result<Self, Self::Error> {
-        Status::from_u8(response.status)
-            .ok_or_else(|| ValueError::Ezsp(response.status).into())
-            .and_then(|status| {
-                if status == Status::Success {
-                    Self::from_u8(response.decision_id)
-                        .ok_or_else(|| ValueError::DecisionId(response.decision_id).into())
-                } else {
-                    Err(status.into())
-                }
-            })
+        match Status::from_u8(response.status).ok_or(response.status) {
+            Ok(Status::Success) => Self::from_u8(response.decision_id)
+                .ok_or_else(|| ValueError::DecisionId(response.decision_id).into()),
+            other => Err(other.into()),
+        }
     }
 }

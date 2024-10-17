@@ -1,7 +1,7 @@
 use crate::ember::Status;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use crate::{Error, ValueError};
+use crate::Error;
 use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 
@@ -22,11 +22,10 @@ impl Handler {
     ///
     /// Returns an [`Error`] if the status is not [`Status::Success`] or [`Status::DeliveryFailed`].
     pub fn ack_received(&self) -> Result<bool, Error> {
-        match Status::from_u8(self.status) {
-            Some(Status::Success) => Ok(true),
-            Some(Status::DeliveryFailed) => Ok(false),
-            Some(status) => Err(Error::Ember(status)),
-            None => Err(ValueError::Ember(self.status).into()),
+        match Status::from_u8(self.status).ok_or(self.status) {
+            Ok(Status::Success) => Ok(true),
+            Ok(Status::DeliveryFailed) => Ok(false),
+            other => Err(other.into()),
         }
     }
 

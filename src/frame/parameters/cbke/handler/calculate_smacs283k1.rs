@@ -4,7 +4,7 @@ use num_traits::FromPrimitive;
 use super::Payload;
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::{Error, ValueError};
+use crate::Error;
 
 const ID: u16 = 0x00EB;
 
@@ -29,14 +29,9 @@ impl TryFrom<Handler> for Payload {
     type Error = Error;
 
     fn try_from(handler: Handler) -> Result<Self, Self::Error> {
-        Status::from_u8(handler.status)
-            .ok_or_else(|| ValueError::Ember(handler.status).into())
-            .and_then(|status| {
-                if status == Status::Success {
-                    Ok(handler.payload)
-                } else {
-                    Err(status.into())
-                }
-            })
+        match Status::from_u8(handler.status).ok_or(handler.status) {
+            Ok(Status::Success) => Ok(handler.payload),
+            other => Err(other.into()),
+        }
     }
 }

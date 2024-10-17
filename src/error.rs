@@ -1,12 +1,14 @@
 //! Error handling for the NCP protocol.
 
 mod decode;
+mod status;
 mod value_error;
 
 use crate::frame::parameters::configuration::version;
 use crate::frame::parameters::utilities::invalid_command;
 use crate::{ember, ezsp};
 pub use decode::Decode;
+pub use status::Status;
 use std::fmt::{Debug, Display, Formatter};
 #[allow(clippy::module_name_repetitions)]
 pub use value_error::ValueError;
@@ -16,14 +18,10 @@ pub use value_error::ValueError;
 pub enum Error {
     /// An I/O error occurred.
     Io(std::io::Error),
+    /// A status related error.
+    Status(Status),
     /// Decoding error.
     Decode(Decode),
-    /// The received [`ezsp::Status`] indicates an error.
-    Ezsp(ezsp::Status),
-    /// The received [`ember::Status`] indicates an error.
-    Ember(ember::Status),
-    /// The received [`siliconlabs::Status`] indicates an error.
-    Siliconlabs(siliconlabs::Status),
     /// The NCP responded with `invalidCommand` (0x0058).
     InvalidCommand(invalid_command::Response),
     /// The protocol negotiation failed.
@@ -44,11 +42,7 @@ impl Display for Error {
         match self {
             Self::Io(error) => Display::fmt(error, f),
             Self::Decode(decode) => Display::fmt(decode, f),
-            Self::Ezsp(status) => write!(f, "Ezsp: {status:?} ({:#04X})", u8::from(*status)),
-            Self::Ember(status) => write!(f, "Ember: {status:?} ({:#04X})", u8::from(*status)),
-            Self::Siliconlabs(status) => {
-                write!(f, "Siliconlabs: {status:?} ({:#010X})", u32::from(*status))
-            }
+            Self::Status(status) => Display::fmt(status, f),
             Self::InvalidCommand(response) => write!(f, "Invalid command: {response}"),
             Self::ProtocolVersionMismatch {
                 desired,
@@ -96,21 +90,45 @@ impl From<le_stream::Error> for Error {
     }
 }
 
+impl From<Status> for Error {
+    fn from(status: Status) -> Self {
+        Self::Status(status)
+    }
+}
+
+impl From<Result<ezsp::Status, u8>> for Error {
+    fn from(status: Result<ezsp::Status, u8>) -> Self {
+        Self::Status(status.into())
+    }
+}
+
+impl From<Result<ember::Status, u8>> for Error {
+    fn from(status: Result<ember::Status, u8>) -> Self {
+        Self::Status(status.into())
+    }
+}
+
+impl From<Result<siliconlabs::Status, u32>> for Error {
+    fn from(status: Result<siliconlabs::Status, u32>) -> Self {
+        Self::Status(status.into())
+    }
+}
+
 impl From<ezsp::Status> for Error {
     fn from(status: ezsp::Status) -> Self {
-        Self::Ezsp(status)
+        Self::Status(status.into())
     }
 }
 
 impl From<ember::Status> for Error {
     fn from(status: ember::Status) -> Self {
-        Self::Ember(status)
+        Self::Status(status.into())
     }
 }
 
 impl From<siliconlabs::Status> for Error {
     fn from(status: siliconlabs::Status) -> Self {
-        Self::Siliconlabs(status)
+        Self::Status(status.into())
     }
 }
 

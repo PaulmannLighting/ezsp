@@ -1,4 +1,5 @@
 use num_derive::FromPrimitive;
+use std::fmt::{Display, LowerHex, UpperHex};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]
@@ -119,8 +120,26 @@ pub enum Values {
     ApplicationError15 = 0xFF,
 }
 
+impl Display for Values {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:#04X}", *self as u8)
+    }
+}
+
 impl From<Values> for u8 {
     fn from(value: Values) -> Self {
         value as Self
+    }
+}
+
+impl LowerHex for Values {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:#04x}", *self as u8)
+    }
+}
+
+impl UpperHex for Values {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:#04X}", *self as u8)
     }
 }

@@ -11,7 +11,7 @@ const ID: u16 = 0x0111;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {
-    context: ManContext,
+    context: ManContext<Eui64>,
     eui64: Eui64,
     plaintext_key: ManKey,
     flags: u8,
@@ -19,7 +19,12 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub fn new(context: ManContext, eui64: Eui64, plaintext_key: ManKey, flags: ManFlags) -> Self {
+    pub fn new(
+        context: ManContext<Eui64>,
+        eui64: Eui64,
+        plaintext_key: ManKey,
+        flags: ManFlags,
+    ) -> Self {
         Self {
             context,
             eui64,

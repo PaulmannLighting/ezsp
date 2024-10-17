@@ -3,7 +3,7 @@
 use ashv2::{make_pair, open, BaudRate, HexSlice};
 use clap::Parser;
 use ezsp::ashv2::Ashv2;
-use ezsp::ember::{CertificateData, PublicKeyData};
+use ezsp::ember::{CertificateData, Eui64, PublicKeyData};
 use ezsp::ezsp::value::Id;
 use ezsp::{
     CertificateBasedKeyExchange, Configuration, Ezsp, Networking, ProxyTable, Security, SinkTable,
@@ -12,6 +12,7 @@ use ezsp::{
 use le_stream::ToLeStream;
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
+use siliconlabs::zigbee::security::{ManContext, ManKey};
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use std::thread::spawn;
@@ -244,6 +245,26 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         transceiver_thread
             .join()
             .expect("Transceiver thread panicked.");
+    }
+
+    // Test key export.
+
+    let context = ManContext::new(
+        ManKey::default(),
+        0,
+        0,
+        Eui64::new(1, 2, 3, 4, 5, 6, 7, 8),
+        0,
+        0,
+        0,
+    );
+    match ezsp.export_key(context).await {
+        Ok(state) => {
+            info!("Duty cycle state: {state:#04X?}");
+        }
+        Err(error) => {
+            error!("Error getting duty cycle state: {error}");
+        }
     }
 }
 

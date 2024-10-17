@@ -6,7 +6,7 @@ use futures::{SinkExt, StreamExt};
 use le_stream::{FromLeStream, ToLeStream};
 use tokio_util::codec::Framed;
 
-use crate::error::Error;
+use crate::error::{Decode, Error};
 use crate::frame::{Command, Frame, Header, Parameter};
 use crate::transport::Transport;
 
@@ -57,7 +57,7 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         P: Parameter + ToLeStream,
     {
         let Some(id) = P::ID else {
-            return Err(Error::MissingId);
+            return Err(Decode::MissingId.into());
         };
 
         let header = self.next_header::<H, P::Id>(id);

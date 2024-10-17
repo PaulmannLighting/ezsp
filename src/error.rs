@@ -35,8 +35,6 @@ pub enum Error {
     },
     /// Invalid status
     ValueError(ValueError),
-    /// The ID of the parameter is missing.
-    MissingId,
     /// A custom error message.
     Custom(String),
 }
@@ -67,7 +65,6 @@ impl Display for Error {
                 )
             }
             Self::ValueError(status) => Display::fmt(status, f),
-            Self::MissingId => write!(f, "Parameter ID is missing"),
             Self::Custom(msg) => Display::fmt(msg, f),
         }
     }

@@ -20,6 +20,8 @@ pub enum Decode {
     },
     /// Invalid frame ID.
     InvalidFrameId(u16),
+    /// The ID of the parameter is missing.
+    MissingId,
 }
 
 impl Display for Decode {
@@ -34,6 +36,7 @@ impl Display for Decode {
                 )
             }
             Self::InvalidFrameId(id) => write!(f, "Invalid frame ID: {id:#06X}."),
+            Self::MissingId => write!(f, "Parameter ID is missing."),
         }
     }
 }

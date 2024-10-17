@@ -4,6 +4,7 @@ use crate::frame::parameters::{
     utilities, zll,
 };
 use crate::frame::Parameter;
+use crate::parsable::Parsable;
 use le_stream::FromLeStream;
 
 /// Possible callback responses, which are called "handler"s according to the EZSP documentation.
@@ -34,14 +35,14 @@ pub enum Handler {
     Zll(zll::handler::Handler),
 }
 
-impl Handler {
+impl Parsable for Handler {
     /// Parse a handler from a little-endian stream.
     ///
     /// # Errors
     ///
     /// Returns an error if the frame ID is not recognized.
     #[allow(clippy::too_many_lines)]
-    pub fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, Decode>
+    fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, Decode>
     where
         T: Iterator<Item = u8>,
     {

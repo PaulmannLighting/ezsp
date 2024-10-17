@@ -9,6 +9,7 @@ pub mod ember;
 mod error;
 pub mod ezsp;
 mod frame;
+mod parsable;
 mod result;
 mod transport;
 mod types;

@@ -3,6 +3,7 @@ use le_stream::FromLeStream;
 
 use crate::error::Decode;
 use crate::frame::{Extended, Handler, Header};
+use crate::parsable::Parsable;
 use crate::{Error, EZSP_MAX_FRAME_SIZE};
 
 #[derive(Debug)]

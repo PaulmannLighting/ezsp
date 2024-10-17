@@ -56,7 +56,9 @@ where
                 return Ok(None);
             };
 
-            if header.id().into() == invalid_command::Response::ID.ok_or(Error::MissingId)? {
+            if header.id().into()
+                == invalid_command::Response::ID.ok_or_else(|| Error::from(Decode::MissingId))?
+            {
                 return Err(Error::InvalidCommand(
                     invalid_command::Response::from_le_stream_exact(stream)?,
                 ));

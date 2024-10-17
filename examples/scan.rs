@@ -2,8 +2,9 @@
 
 use ashv2::{make_pair, open, BaudRate, Payload};
 use clap::Parser;
+use ezsp::ashv2::{Ashv2, Callbacks};
 use ezsp::ezsp::network::scan::Type;
-use ezsp::{parameters, Ashv2, Callbacks, Ezsp, Handler, Networking, EZSP_MAX_FRAME_SIZE};
+use ezsp::{parameters, Ezsp, Handler, Networking, EZSP_MAX_FRAME_SIZE};
 use log::{error, info, warn};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;

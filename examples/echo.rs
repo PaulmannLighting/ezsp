@@ -2,7 +2,8 @@
 
 use ashv2::{make_pair, open, BaudRate};
 use clap::Parser;
-use ezsp::{Ashv2, Ezsp, Utilities, EZSP_MAX_FRAME_SIZE};
+use ezsp::ashv2::Ashv2;
+use ezsp::{Ezsp, Utilities, EZSP_MAX_FRAME_SIZE};
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;

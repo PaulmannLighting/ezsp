@@ -2,11 +2,12 @@
 
 use ashv2::{make_pair, open, BaudRate, HexSlice};
 use clap::Parser;
+use ezsp::ashv2::Ashv2;
 use ezsp::ember::{CertificateData, PublicKeyData};
 use ezsp::ezsp::value::Id;
 use ezsp::{
-    Ashv2, CertificateBasedKeyExchange, Configuration, Ezsp, Networking, ProxyTable, Security,
-    SinkTable, Utilities, EZSP_MAX_FRAME_SIZE,
+    CertificateBasedKeyExchange, Configuration, Ezsp, Networking, ProxyTable, Security, SinkTable,
+    Utilities, EZSP_MAX_FRAME_SIZE,
 };
 use le_stream::ToLeStream;
 use log::{error, info};

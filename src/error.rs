@@ -22,6 +22,8 @@ pub enum Error {
     Decode(Decode),
     /// A status related error.
     Status(Status),
+    /// Invalid status
+    ValueError(ValueError),
     /// The NCP responded with `invalidCommand` (0x0058).
     InvalidCommand(invalid_command::Response),
     /// The protocol negotiation failed.
@@ -31,8 +33,6 @@ pub enum Error {
         /// The version that was received.
         negotiated: version::Response,
     },
-    /// Invalid status
-    ValueError(ValueError),
 }
 
 impl Display for Error {
@@ -41,6 +41,7 @@ impl Display for Error {
             Self::Io(error) => Display::fmt(error, f),
             Self::Decode(decode) => Display::fmt(decode, f),
             Self::Status(status) => Display::fmt(status, f),
+            Self::ValueError(status) => Display::fmt(status, f),
             Self::InvalidCommand(response) => write!(f, "Invalid command: {response}"),
             Self::ProtocolVersionMismatch {
                 desired,
@@ -53,7 +54,6 @@ impl Display for Error {
                     negotiated.protocol_version()
                 )
             }
-            Self::ValueError(status) => Display::fmt(status, f),
         }
     }
 }
@@ -65,7 +65,7 @@ impl std::error::Error for Error {
             Self::Decode(decode) => Some(decode),
             Self::Status(status) => Some(status),
             Self::ValueError(value_error) => Some(value_error),
-            _ => None,
+            Self::InvalidCommand(_) | Self::ProtocolVersionMismatch { .. } => None,
         }
     }
 }

@@ -2,13 +2,14 @@
 
 use crate::ember::types::PanId;
 use le_stream::derive::{FromLeStream, ToLeStream};
+use macaddr::MacAddr8;
 
 /// The parameters of a Zigbee network.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Network {
     channel: u8,
     pan_id: PanId,
-    extended_pan_id: u64,
+    extended_pan_id: MacAddr8,
     allowing_join: bool,
     stack_profile: u8,
     nwk_update_id: u8,
@@ -20,7 +21,7 @@ impl Network {
     pub const fn new(
         channel: u8,
         pan_id: PanId,
-        extended_pan_id: u64,
+        extended_pan_id: MacAddr8,
         allowing_join: bool,
         stack_profile: u8,
         nwk_update_id: u8,
@@ -49,7 +50,7 @@ impl Network {
 
     /// Return the network's extended PAN identifier.
     #[must_use]
-    pub const fn extended_pan_id(&self) -> u64 {
+    pub const fn extended_pan_id(&self) -> MacAddr8 {
         self.extended_pan_id
     }
 

@@ -1,4 +1,5 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
+use macaddr::MacAddr8;
 use num_traits::FromPrimitive;
 
 use crate::ember::join::Method;
@@ -7,7 +8,7 @@ use crate::ember::types::PanId;
 /// Network parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Parameters {
-    extended_pan_id: u64,
+    extended_pan_id: MacAddr8,
     pan_id: PanId,
     radio_tx_power: u8,
     radio_channel: u8,
@@ -22,7 +23,7 @@ impl Parameters {
     #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub fn new(
-        extended_pan_id: u64,
+        extended_pan_id: MacAddr8,
         pan_id: PanId,
         radio_tx_power: u8,
         radio_channel: u8,
@@ -45,7 +46,7 @@ impl Parameters {
 
     /// Return the network's extended PAN identifier.
     #[must_use]
-    pub const fn extended_pan_id(&self) -> u64 {
+    pub const fn extended_pan_id(&self) -> MacAddr8 {
         self.extended_pan_id
     }
 

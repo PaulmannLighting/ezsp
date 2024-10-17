@@ -1,8 +1,8 @@
 //! Beacon data structures.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
-
 use crate::ember::types::PanId;
+use le_stream::derive::{FromLeStream, ToLeStream};
+use macaddr::MacAddr8;
 
 /// Beacon data structure.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
@@ -15,7 +15,7 @@ pub struct Data {
     power: i8,
     parent_priority: i8,
     pan_id: PanId,
-    extended_pan_id: u64,
+    extended_pan_id: MacAddr8,
     sender: u16,
     enhanced: bool,
     permit_join: bool,
@@ -35,7 +35,7 @@ impl Data {
         power: i8,
         parent_priority: i8,
         pan_id: PanId,
-        extended_pan_id: u64,
+        extended_pan_id: MacAddr8,
         sender: u16,
         enhanced: bool,
         permit_join: bool,
@@ -114,7 +114,7 @@ impl Data {
 
     /// Return the extended PAN ID of the received beacon.
     #[must_use]
-    pub const fn extended_pan_id(&self) -> u64 {
+    pub const fn extended_pan_id(&self) -> MacAddr8 {
         self.extended_pan_id
     }
 

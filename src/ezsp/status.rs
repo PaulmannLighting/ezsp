@@ -1,5 +1,5 @@
 use num_traits::FromPrimitive;
-use std::fmt::Display;
+use std::fmt::{Display, LowerHex, UpperHex};
 
 pub use ash::Ash;
 pub use error::Error;
@@ -284,5 +284,17 @@ impl FromPrimitive for Status {
 
     fn from_u64(n: u64) -> Option<Self> {
         Values::from_u64(n).map(Self::from)
+    }
+}
+
+impl LowerHex for Status {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:#04x}", u8::from(*self))
+    }
+}
+
+impl UpperHex for Status {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:#04X}", u8::from(*self))
     }
 }

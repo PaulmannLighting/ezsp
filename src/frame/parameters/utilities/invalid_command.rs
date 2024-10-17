@@ -2,6 +2,7 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
+use std::fmt::Display;
 
 use crate::ezsp::Status;
 use crate::frame::Parameter;
@@ -25,6 +26,15 @@ impl Response {
     /// Returns an error if the reason is not a valid [`Status`].
     pub fn reason(&self) -> Result<Status, u8> {
         Status::from_u8(self.reason).ok_or(self.reason)
+    }
+}
+
+impl Display for Response {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.reason() {
+            Ok(status) => write!(f, "{status} ({status:#04X})"),
+            Err(reason) => write!(f, "Unknown reason: {reason:#04X}"),
+        }
     }
 }
 

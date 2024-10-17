@@ -1,6 +1,6 @@
 use super::super::values::Values;
 use num_traits::FromPrimitive;
-use std::fmt::Display;
+use std::fmt::{Display, LowerHex, UpperHex};
 
 /// ASH-related errors.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -88,5 +88,17 @@ impl FromPrimitive for Error {
 
     fn from_u64(n: u64) -> Option<Self> {
         Values::from_u64(n).and_then(|value| Self::try_from(value).ok())
+    }
+}
+
+impl LowerHex for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:#04x}", u8::from(*self))
+    }
+}
+
+impl UpperHex for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:#04X}", u8::from(*self))
     }
 }

@@ -4,22 +4,24 @@
 //! You can find the protocol's definition on [siliconlabs.com](https://www.silabs.com/documents/public/user-guides/ug100-ezsp-reference-guide.pdf).
 //!
 //! This library is free software and is not affiliated with Silicon Labs.
+#[cfg(feature = "ashv2")]
+pub mod ashv2;
 mod constants;
 pub mod ember;
 mod error;
 pub mod ezsp;
 mod frame;
-mod parsable;
 mod result;
 mod transport;
 mod types;
 
 pub use constants::{EZSP_MAX_FRAME_SIZE, EZSP_MAX_HEADER_SIZE};
 pub use error::{Error, ValueError};
-pub use frame::{parameters, Handler};
+pub use frame::{
+    parameters, CallbackType, Command, Extended, FormatVersion, Frame, Handler, Header, HighByte,
+    Legacy, LowByte, Response, SleepMode,
+};
 pub use result::Result;
-#[cfg(feature = "ashv2")]
-pub use transport::{Ashv2, Callbacks};
 pub use transport::{
     Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, GreenPower, Messaging,
     Mfglib, Networking, ProxyTable, Security, SinkTable, TokenInterface, Transport, TrustCenter,

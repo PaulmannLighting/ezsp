@@ -2,6 +2,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 
 use super::{Header, HighByte, LowByte};
 
+/// A legacy header.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
 pub struct Legacy {
     sequence: u8,

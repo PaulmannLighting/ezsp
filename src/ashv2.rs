@@ -1,3 +1,5 @@
+//! `ASHv2` transport layer.
+
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::io::ErrorKind;
@@ -13,9 +15,12 @@ use crate::transport::Transport;
 use ashv2::AshFramed;
 pub use callbacks::Callbacks;
 use codec::Codec;
+pub use parsable::Parsable;
 
 mod callbacks;
 mod codec;
+mod frame;
+mod parsable;
 
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]

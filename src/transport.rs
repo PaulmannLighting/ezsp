@@ -1,13 +1,9 @@
 //! Transport layer to communicate with an NCP that supports the `EZSP` protocol.
 
-#[cfg(feature = "ashv2")]
-mod ashv2;
 mod ezsp;
 
 use crate::frame::{Extended, Header, Parameter};
 use crate::Error;
-#[cfg(feature = "ashv2")]
-pub use ashv2::{Ashv2, Callbacks};
 pub use ezsp::{
     Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, GreenPower, Messaging,
     Mfglib, Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities,

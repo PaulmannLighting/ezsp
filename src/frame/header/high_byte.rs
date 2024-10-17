@@ -1,7 +1,7 @@
-mod frame_format_version;
+mod format_version;
 
 use bitflags::bitflags;
-pub use frame_format_version::FrameFormatVersion;
+pub use format_version::FormatVersion;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// The extended frame control field of the frame header.
@@ -23,24 +23,27 @@ bitflags! {
 
 impl HighByte {
     /// Returns `true` if security is enabled else `false`.
+    #[must_use]
     pub const fn is_security_enabled(self) -> bool {
         self.contains(Self::SECURITY_ENABLED)
     }
 
     /// Returns `true` if padding is enabled else `false`.
+    #[must_use]
     pub const fn is_padding_enabled(self) -> bool {
         self.contains(Self::PADDING_ENABLED)
     }
 
     /// Returns the frame format version.
-    pub const fn frame_format_version(self) -> FrameFormatVersion {
+    #[must_use]
+    pub const fn frame_format_version(self) -> FormatVersion {
         match (
             self.contains(Self::FRAME_FORMAT_VERSION_1),
             self.contains(Self::FRAME_FORMAT_VERSION_0),
         ) {
-            (true, _) => FrameFormatVersion::Reserved,
-            (false, true) => FrameFormatVersion::One,
-            (false, false) => FrameFormatVersion::Zero,
+            (true, _) => FormatVersion::Reserved,
+            (false, true) => FormatVersion::One,
+            (false, false) => FormatVersion::Zero,
         }
     }
 }

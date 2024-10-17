@@ -3,22 +3,27 @@ mod response;
 
 use std::array::IntoIter;
 
-pub use command::Command;
+pub use command::{Command, SleepMode};
 use le_stream::{FromLeStream, ToLeStream};
-pub use response::Response;
+pub use response::{CallbackType, Response};
 
+/// The low byte of a frame header.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum LowByte {
+    /// A command.
     Command(Command),
+    /// A response.
     Response(Response),
 }
 
 impl LowByte {
+    /// Returns `true` if the low byte is a command else `false`.
     #[must_use]
     pub const fn is_command(self) -> bool {
         matches!(self, Self::Command(_))
     }
 
+    /// Returns `true` if the low byte is a response else `false`.
     #[must_use]
     pub const fn is_response(self) -> bool {
         matches!(self, Self::Response(_))

@@ -1,13 +1,13 @@
 use ashv2::Payload;
 use le_stream::FromLeStream;
 
+use crate::ashv2::parsable::Parsable;
 use crate::error::Decode;
 use crate::frame::{Extended, Handler, Header};
-use crate::parsable::Parsable;
 use crate::{Error, EZSP_MAX_FRAME_SIZE};
 
 #[derive(Debug)]
-pub struct CallbackStream<T>
+pub struct Stream<T>
 where
     T: Iterator<Item = Payload>,
 {
@@ -16,7 +16,7 @@ where
     buffer: heapless::Vec<u8, EZSP_MAX_FRAME_SIZE>,
 }
 
-impl<T> CallbackStream<T>
+impl<T> Stream<T>
 where
     T: Iterator<Item = Payload>,
 {
@@ -52,7 +52,7 @@ where
     }
 }
 
-impl<T> Iterator for CallbackStream<T>
+impl<T> Iterator for Stream<T>
 where
     T: Iterator<Item = Payload>,
 {

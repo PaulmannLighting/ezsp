@@ -7,7 +7,7 @@ use crate::error::Decode;
 use crate::frame::{Frame, Header, Parameter};
 use crate::Error;
 
-use crate::parsable::Parsable;
+use crate::ashv2::parsable::Parsable;
 use ashv2::MAX_PAYLOAD_SIZE;
 
 /// Codec to encode frames to bytes and decode bytes into frames.

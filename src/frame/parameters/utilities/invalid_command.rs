@@ -15,6 +15,9 @@ pub struct Response {
 }
 
 impl Response {
+    /// The unique ID of the [`Response`] frame type.
+    pub const ID: u16 = ID;
+
     /// Returns the reason for the invalid command response.
     ///
     /// # Errors

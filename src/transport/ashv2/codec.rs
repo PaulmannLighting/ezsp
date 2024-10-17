@@ -8,6 +8,7 @@ use crate::frame::parameters::utilities::invalid_command;
 use crate::frame::{Frame, Header, Parameter};
 use crate::Error;
 
+use crate::parsable::Parsable;
 use ashv2::MAX_PAYLOAD_SIZE;
 
 /// Codec to encode frames to bytes and decode bytes into frames.
@@ -22,6 +23,41 @@ where
     header: Option<H>,
     _parameter: std::marker::PhantomData<P>,
     buffers: Buffers,
+}
+
+impl<H, P> Codec<H, P>
+where
+    H: Header<P::Id>,
+    P: Parameter,
+{
+    fn process_chunk(&mut self, chunk: &[u8]) -> Result<bool, Error> {
+        let mut stream = chunk.iter().copied();
+
+        let Some(header) = H::from_le_stream(&mut stream) else {
+            return Ok(false);
+        };
+
+        if header.id().into() == invalid_command::Response::ID {
+            return Err(Error::InvalidCommand(
+                invalid_command::Response::from_le_stream_exact(stream)?,
+            ));
+        }
+
+        if let Some(last_header) = self.header {
+            if last_header.id() != header.id() {
+                return Err(Decode::FrameIdMismatch {
+                    expected: last_header.id().into(),
+                    found: header.id().into(),
+                }
+                .into());
+            }
+        } else {
+            self.header.replace(header);
+        }
+
+        self.buffers.parameters.extend(stream);
+        Ok(true)
+    }
 }
 
 impl<H, P> Default for Codec<H, P>
@@ -41,7 +77,7 @@ where
 impl<H, P> Decoder for Codec<H, P>
 where
     H: Header<P::Id>,
-    P: Parameter + FromLeStream,
+    P: Parameter + Parsable,
 {
     type Item = Frame<H, P>;
     type Error = Error;
@@ -50,56 +86,19 @@ where
         self.buffers.clear();
 
         for chunk in src.chunks(MAX_PAYLOAD_SIZE) {
-            let mut stream = chunk.iter().copied();
-
-            let Some(header) = H::from_le_stream(&mut stream) else {
+            if !self.process_chunk(chunk)? {
                 return Ok(None);
-            };
-
-            if header.id().into()
-                == invalid_command::Response::ID.ok_or_else(|| Error::from(Decode::MissingId))?
-            {
-                return Err(Error::InvalidCommand(
-                    invalid_command::Response::from_le_stream_exact(stream)?,
-                ));
             }
-
-            if let Some(current_header) = self.header {
-                if current_header.id() != header.id() {
-                    return Err(Decode::FrameIdMismatch {
-                        expected: current_header.id().into(),
-                        found: header.id().into(),
-                    }
-                    .into());
-                }
-            } else {
-                self.header.replace(header);
-            }
-
-            self.buffers.parameters.extend(stream);
         }
 
         let Some(header) = self.header else {
             return Ok(None);
         };
 
-        let parameters = P::from_le_stream_exact(self.buffers.parameters.iter().copied())?;
+        let parameters =
+            P::parse_from_le_stream(header.id().into(), self.buffers.parameters.iter().copied())?;
         src.clear();
-        let item = Self::Item::new(header, parameters);
-
-        if let Some(id) = P::ID {
-            if item.header().id() == id {
-                Ok(Some(item))
-            } else {
-                Err(Decode::FrameIdMismatch {
-                    expected: id.into(),
-                    found: item.header().id().into(),
-                }
-                .into())
-            }
-        } else {
-            Ok(Some(item))
-        }
+        Ok(Some(Self::Item::new(header, parameters)))
     }
 }
 

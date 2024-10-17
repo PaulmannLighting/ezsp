@@ -63,7 +63,8 @@ impl std::error::Error for Error {
         match self {
             Self::Io(error) => Some(error),
             Self::Decode(decode) => Some(decode),
-            Self::ValueError(status) => Some(status),
+            Self::Status(status) => Some(status),
+            Self::ValueError(value_error) => Some(value_error),
             _ => None,
         }
     }

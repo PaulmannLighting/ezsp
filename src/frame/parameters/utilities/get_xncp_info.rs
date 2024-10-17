@@ -3,7 +3,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::Error;
+use crate::{Error, ValueError};
 
 const ID: u16 = 0x0013;
 
@@ -33,7 +33,7 @@ impl TryFrom<Response> for Payload {
         match Status::from_u8(response.status).ok_or(response.status) {
             Ok(Status::Success) => response
                 .payload
-                .ok_or(Error::Custom("missing payload".into())),
+                .ok_or_else(|| ValueError::MissingPayload.into()),
             other => Err(other.into()),
         }
     }

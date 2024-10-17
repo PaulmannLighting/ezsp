@@ -14,6 +14,8 @@ pub enum ValueError {
     DecisionId(u8),
     /// The decision ID is invalid.
     EntropySource(u8),
+    /// Indicates that some expected payload was missing.
+    MissingPayload,
 }
 
 impl Display for ValueError {
@@ -28,6 +30,7 @@ impl Display for ValueError {
             Self::EmberNodeType(node_type) => write!(f, "InvalidEmber node type: {node_type:#04X}"),
             Self::DecisionId(id) => write!(f, "Invalid decision ID: {id:#04X}"),
             Self::EntropySource(source) => write!(f, "Invalid entropy source: {source:#04X}"),
+            Self::MissingPayload => write!(f, "Missing payload"),
         }
     }
 }

@@ -23,7 +23,7 @@ log = "0.4"
 macaddr = "1.0"
 num-derive = "0.4"
 num-traits = "0.2"
-siliconlabs = { git = "https://github.com/PaulmannLighting/siliconlabs.git", version = "0.2", features = ["le-stream", "num-traits"] }
+siliconlabs = { git = "https://github.com/PaulmannLighting/siliconlabs.git", version = "0.3", features = ["le-stream", "num-traits"] }
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
 
 [dev-dependencies]

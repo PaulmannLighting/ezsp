@@ -12,15 +12,13 @@ edition = "2021"
 exclude = [".gitignore"]
 publish = false
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 futures = "0.3"
 num-derive = "0.4"
 num-traits = "0.2"
 rw-exact-ext = { git = "https://github.com/PaulmannLighting/rw-exact-ext.git", version = "0.1", features = ["num-traits", "heapless"] }
 serialport = { version = "4.3", default-features = false }
-siliconlabs = { git = "https://github.com/PaulmannLighting/siliconlabs.git", version = "0.2", features = ["le-stream"] }
+siliconlabs = { git = "https://github.com/PaulmannLighting/siliconlabs.git", version = "0.2", features = ["le-stream", "num-traits"] }
 ashv2 = { git = "https://github.com/PaulmannLighting/ashv2.git", version = "0.1", optional = true }
 le-stream = { version = "0.4", features = ["derive", "macaddr"] }
 log = "0.4"

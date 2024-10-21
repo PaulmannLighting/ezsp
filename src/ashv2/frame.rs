@@ -1,10 +1,10 @@
+use le_stream::FromLeStream;
+
 use crate::ashv2::Parsable;
-use crate::constants::MAX_FRAME_SIZE;
 use crate::error::Decode;
 use crate::frame::{Frame, Header, Parameter};
 use crate::parameters::utilities::invalid_command;
-use crate::Error;
-use le_stream::FromLeStream;
+use crate::{Error, MAX_PARAMETER_SIZE};
 
 /// Extension of [`Frame`] to support parsing it from an iterator of `ASHv2` frames.
 impl<H, P> Frame<H, P>
@@ -20,7 +20,7 @@ where
     /// or if the frame is an [`invalid_command::Response`].
     pub fn from_ash_frames_buffered<'a, T>(
         frames: T,
-        parameters: &mut heapless::Vec<u8, MAX_FRAME_SIZE>,
+        parameters: &mut heapless::Vec<u8, MAX_PARAMETER_SIZE>,
     ) -> crate::Result<Self>
     where
         T: Iterator<Item = &'a [u8]>,

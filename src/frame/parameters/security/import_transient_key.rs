@@ -19,7 +19,7 @@ pub struct Command {
 
 impl Command {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         context: ManContext<Eui64>,
         eui64: Eui64,
         plaintext_key: ManKey,
@@ -29,7 +29,7 @@ impl Command {
             context,
             eui64,
             plaintext_key,
-            flags: flags.into(),
+            flags: flags as u8,
         }
     }
 }

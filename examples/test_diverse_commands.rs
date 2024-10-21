@@ -7,7 +7,7 @@ use ezsp::ember::{CertificateData, Eui64, PublicKeyData};
 use ezsp::ezsp::value::Id;
 use ezsp::{
     CertificateBasedKeyExchange, Configuration, Ezsp, Networking, ProxyTable, Security, SinkTable,
-    Utilities, EZSP_MAX_FRAME_SIZE,
+    Utilities, MAX_FRAME_SIZE,
 };
 use le_stream::ToLeStream;
 use log::{error, info};
@@ -42,7 +42,7 @@ async fn main() {
 
 #[allow(clippy::too_many_lines)]
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
-    let (ash, transceiver) = make_pair::<EZSP_MAX_FRAME_SIZE, _>(serial_port, 4, None);
+    let (ash, transceiver) = make_pair::<MAX_FRAME_SIZE, _>(serial_port, 4, None);
     let running = Arc::new(AtomicBool::new(true));
     let transceiver_thread = spawn(|| transceiver.run(running));
     let mut ezsp = Ashv2::new(ash);

@@ -15,7 +15,7 @@ mod result;
 mod transport;
 mod types;
 
-pub use constants::{EZSP_MAX_FRAME_SIZE, EZSP_MAX_HEADER_SIZE};
+pub use constants::{MAX_FRAME_SIZE, MAX_HEADER_SIZE};
 pub use error::{Error, ValueError};
 pub use frame::{
     parameters, CallbackType, Command, Extended, FormatVersion, Frame, Handler, Header, HighByte,

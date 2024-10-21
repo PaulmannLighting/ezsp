@@ -4,7 +4,7 @@ use ashv2::{make_pair, open, BaudRate, Payload};
 use clap::Parser;
 use ezsp::ashv2::{Ashv2, Callbacks};
 use ezsp::ezsp::network::scan::Type;
-use ezsp::{parameters, Ezsp, Handler, Networking, EZSP_MAX_FRAME_SIZE};
+use ezsp::{parameters, Ezsp, Handler, Networking, MAX_FRAME_SIZE};
 use log::{error, info, warn};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;
@@ -48,7 +48,7 @@ async fn main() {
 
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     let (cb_tx, cb_rx) = sync_channel(32);
-    let (ash, transceiver) = make_pair::<EZSP_MAX_FRAME_SIZE, _>(serial_port, 4, Some(cb_tx));
+    let (ash, transceiver) = make_pair::<MAX_FRAME_SIZE, _>(serial_port, 4, Some(cb_tx));
     let running = Arc::new(AtomicBool::new(true));
     let transceiver_thread = spawn(|| transceiver.run(running));
     let mut ezsp = Ashv2::new(ash);

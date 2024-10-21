@@ -4,7 +4,7 @@ use le_stream::FromLeStream;
 use crate::ashv2::parsable::Parsable;
 use crate::error::Decode;
 use crate::frame::{Extended, Handler, Header};
-use crate::{Error, EZSP_MAX_FRAME_SIZE};
+use crate::{Error, MAX_FRAME_SIZE};
 
 #[derive(Debug)]
 pub struct Stream<T>
@@ -13,7 +13,7 @@ where
 {
     frames: T,
     last_header: Option<Extended>,
-    buffer: heapless::Vec<u8, EZSP_MAX_FRAME_SIZE>,
+    buffer: heapless::Vec<u8, MAX_FRAME_SIZE>,
 }
 
 impl<T> Stream<T>

@@ -1,5 +1,5 @@
 use crate::ashv2::Parsable;
-use crate::constants::EZSP_MAX_FRAME_SIZE;
+use crate::constants::MAX_FRAME_SIZE;
 use crate::error::Decode;
 use crate::frame::{Frame, Header, Parameter};
 use crate::parameters::utilities::invalid_command;
@@ -20,7 +20,7 @@ where
     /// or if the frame is an [`invalid_command::Response`].
     pub fn from_ash_frames_buffered<'a, T>(
         frames: T,
-        parameters: &mut heapless::Vec<u8, EZSP_MAX_FRAME_SIZE>,
+        parameters: &mut heapless::Vec<u8, MAX_FRAME_SIZE>,
     ) -> crate::Result<Self>
     where
         T: Iterator<Item = &'a [u8]>,

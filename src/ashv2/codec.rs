@@ -2,7 +2,7 @@ use le_stream::ToLeStream;
 use tokio_util::bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
 
-use crate::constants::{EZSP_MAX_FRAME_SIZE, EZSP_MAX_HEADER_SIZE};
+use crate::constants::{MAX_FRAME_SIZE, MAX_HEADER_SIZE};
 use crate::error::Decode;
 use crate::frame::{Frame, Header, Parameter};
 use crate::Error;
@@ -95,8 +95,8 @@ where
 
 #[derive(Debug, Default)]
 struct Buffers {
-    pub header: heapless::Vec<u8, EZSP_MAX_HEADER_SIZE>,
-    pub parameters: heapless::Vec<u8, EZSP_MAX_FRAME_SIZE>,
+    pub header: heapless::Vec<u8, MAX_HEADER_SIZE>,
+    pub parameters: heapless::Vec<u8, MAX_FRAME_SIZE>,
 }
 
 impl Buffers {

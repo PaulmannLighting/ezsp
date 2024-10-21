@@ -13,26 +13,23 @@ exclude = [".gitignore"]
 publish = false
 
 [dependencies]
-futures = "0.3"
-num-derive = "0.4"
-num-traits = "0.2"
-rw-exact-ext = { git = "https://github.com/PaulmannLighting/rw-exact-ext.git", version = "0.1", features = ["num-traits", "heapless"] }
-serialport = { version = "4.3", default-features = false }
-siliconlabs = { git = "https://github.com/PaulmannLighting/siliconlabs.git", version = "0.2", features = ["le-stream", "num-traits"] }
 ashv2 = { git = "https://github.com/PaulmannLighting/ashv2.git", version = "0.1", optional = true }
-le-stream = { version = "0.4", features = ["derive", "macaddr"] }
-log = "0.4"
+bitflags = "2.6"
+futures = { version = "0.3", optional = true }
 heapless = "0.8"
 itertools = "0.13"
-tokio = { version = "1.40", default-features = false }
-tokio-stream = "0.1"
-tokio-util = { version = "0.7", features = ["codec"] }
-bitflags = "2.6"
+le-stream = { version = "0.4", features = ["derive", "macaddr"] }
+log = "0.4"
 macaddr = "1.0"
+num-derive = "0.4"
+num-traits = "0.2"
+siliconlabs = { git = "https://github.com/PaulmannLighting/siliconlabs.git", version = "0.2", features = ["le-stream", "num-traits"] }
+tokio-util = { version = "0.7", features = ["codec"], optional = true }
 
 [dev-dependencies]
 clap = { version = "4.5", features = ["derive"] }
 env_logger = "0.11"
+serialport = { version = "4.3", default-features = false }
 tokio = { version = "1.40", features = ["rt", "rt-multi-thread", "macros"] }
 
 [[example]]
@@ -44,7 +41,7 @@ name = "echo"
 required-features = ["ashv2"]
 
 [features]
-ashv2 = ["dep:ashv2"]
+ashv2 = ["dep:ashv2", "dep:tokio-util", "dep:futures"]
 
 [profile.release]
 opt-level = 3

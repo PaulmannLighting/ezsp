@@ -3,9 +3,12 @@
 //!
 //! The response provides information about the firmware running on the NCP.
 
-use crate::frame::Parameter;
-use le_stream::derive::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
+
+use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::ezsp::StackVersion;
+use crate::frame::Parameter;
 
 const ID: u8 = 0x00;
 
@@ -52,8 +55,8 @@ impl Response {
 
     /// The version number of the stack.
     #[must_use]
-    pub const fn stack_version(&self) -> u16 {
-        self.stack_version
+    pub const fn stack_version(&self) -> StackVersion {
+        StackVersion(self.stack_version)
     }
 }
 

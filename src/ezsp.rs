@@ -6,8 +6,10 @@ pub mod policy;
 
 pub mod config;
 pub mod decision;
+mod stack_version;
 mod status;
 pub mod value;
 pub mod zll;
 
+pub use stack_version::StackVersion;
 pub use status::{Ash, Error, SpiErr, Status};

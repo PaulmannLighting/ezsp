@@ -34,6 +34,8 @@ struct Args {
         help = "Duration for scan command"
     )]
     scan_duration: u8,
+    #[arg(short, long, help = "Keep listening for incoming messages")]
+    keep_listening: bool,
 }
 
 #[tokio::main]
@@ -54,7 +56,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     let transceiver_thread = spawn(|| transceiver.run(running));
     let mut ezsp = Ashv2::new(ash);
 
-    spawn(move || handle_callbacks(&cb_rx));
+    spawn(move || handle_callbacks(&cb_rx, args.keep_listening));
 
     // Test version negotiation.
     match ezsp.negotiate_version(args.version).await {
@@ -89,7 +91,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         .expect("Transceiver thread panicked.");
 }
 
-fn handle_callbacks(frames: &Receiver<Payload>) {
+fn handle_callbacks(frames: &Receiver<Payload>, keep_listening: bool) {
     for result in frames.iter().callbacks() {
         match result {
             Ok(handler) => match handler {
@@ -114,7 +116,9 @@ fn handle_callbacks(frames: &Receiver<Payload>) {
                         info!("Scan succeeded.");
                     }
 
-                    break;
+                    if !keep_listening {
+                        break;
+                    }
                 }
                 other => {
                     warn!("Received unexpected handler: {other:?}");

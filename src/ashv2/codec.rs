@@ -9,6 +9,7 @@ use crate::Error;
 
 use crate::ashv2::parsable::Parsable;
 use ashv2::MAX_PAYLOAD_SIZE;
+use log::debug;
 
 /// Codec to encode frames to bytes and decode bytes into frames.
 ///
@@ -23,6 +24,43 @@ where
     _parameter: std::marker::PhantomData<P>,
     buffers: Buffers,
     expected_frames: usize,
+}
+
+impl<H, P> Codec<H, P>
+where
+    H: Header<P::Id>,
+    P: Parameter + Parsable,
+{
+    fn try_decode_partial(&mut self, buf: &BytesMut, next: u8) -> Option<Frame<H, P>> {
+        debug!("Attempting partial decoding");
+
+        if self.expected_frames == 0 || self.expected_frames == 1 {
+            return None;
+        }
+
+        let chunk_size = buf.len() / self.expected_frames;
+
+        // Try to decode all partial frames from `self.expected_frames` < n <= 1.
+        for n in (1..self.expected_frames).rev() {
+            let mut chunks = buf.chunks(chunk_size);
+
+            if let Ok(frame) = <Self as Decoder>::Item::from_ash_frames_buffered(
+                (&mut chunks).take(n),
+                &mut self.buffers.parameters,
+            ) {
+                // Check if the initially mismatched excess byte matches.
+                // Otherwise, we probably received garbage.
+                if let Some(chunk) = chunks.next() {
+                    if chunk.first() == Some(&next) {
+                        debug!("Successfully decoded frame from partial stream using {n} chunks of size {chunk_size}");
+                        return Some(frame);
+                    }
+                }
+            }
+        }
+
+        None
+    }
 }
 
 impl<H, P> Default for Codec<H, P>
@@ -59,6 +97,12 @@ where
                 Ok(Some(frame))
             }
             Err(Error::Decode(Decode::TooFewBytes)) => Ok(None),
+            Err(Error::Decode(Decode::TooManyBytes { next })) => {
+                self.try_decode_partial(src, next).map_or_else(
+                    || Err(Error::Decode(Decode::TooManyBytes { next })),
+                    |frame| Ok(Some(frame)),
+                )
+            }
             Err(other) => Err(other),
         }
     }

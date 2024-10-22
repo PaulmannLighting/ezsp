@@ -79,6 +79,8 @@ where
             .extend(item.parameters().to_le_stream());
 
         if self.buffers.parameters.is_empty() {
+            // If there are no parameters to send, e.g. on `nop`, a call to `.chunks()`
+            // would yield an empty iterator, resulting in us not even sending one chunk.
             dst.extend_from_slice(&self.buffers.header);
             self.expected_frames = 1;
         } else {

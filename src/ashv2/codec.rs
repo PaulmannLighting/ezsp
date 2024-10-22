@@ -118,8 +118,9 @@ where
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
         self.buffers.clear();
+        let mut stream = src.iter().copied();
 
-        while src.iter().copied().buffer_next(&mut self.buffers.frame) == Some(()) {
+        while stream.buffer_next(&mut self.buffers.frame) == Some(()) {
             match self.try_parse_frame_fragment() {
                 Ok(Some(frame)) => {
                     return Ok(Some(frame));

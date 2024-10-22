@@ -1,4 +1,4 @@
-use ashv2::{Frames, HexSlice, Payload, MAX_PAYLOAD_SIZE};
+use ashv2::{Frames, HexSlice, MAX_PAYLOAD_SIZE};
 use le_stream::ToLeStream;
 use log::trace;
 use tokio_util::bytes::BytesMut;
@@ -63,10 +63,13 @@ where
     /// # Errors
     ///
     /// Returns `Err(Decode)` if the frame fragment could not be parsed.
-    fn try_parse_frame_fragment(&mut self, frame: Payload) -> Result<Option<Frame<H, P>>, Error> {
-        trace!("Decoding ASHv2 frame: {:#04X}", HexSlice::new(&frame));
+    fn try_parse_frame_fragment(&mut self) -> Result<Option<Frame<H, P>>, Error> {
+        trace!(
+            "Decoding ASHv2 frame: {:#04X}",
+            HexSlice::new(&self.buffers.frame)
+        );
 
-        let mut stream = frame.into_iter();
+        let mut stream = self.buffers.frame.iter().copied();
         let next_header = H::from_le_stream(&mut stream).ok_or(Decode::TooFewBytes)?;
 
         if let Some(header) = self.header.take() {
@@ -116,8 +119,8 @@ where
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
         self.buffers.clear();
 
-        for frame in src.iter().copied().frames() {
-            match self.try_parse_frame_fragment(frame) {
+        while src.iter().copied().buffer_next(&mut self.buffers.frame) == Some(()) {
+            match self.try_parse_frame_fragment() {
                 Ok(Some(frame)) => {
                     return Ok(Some(frame));
                 }

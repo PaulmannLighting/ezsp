@@ -1,6 +1,6 @@
 use ashv2::{HexSlice, MAX_PAYLOAD_SIZE};
 use le_stream::{FromLeStream, ToLeStream};
-use log::{debug, trace};
+use log::{debug, trace, warn};
 use tokio_util::bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
 
@@ -159,6 +159,8 @@ where
                     return Ok(Some(frame));
                 }
                 Err(error) => {
+                    warn!("Failed to decode frame from partial stream using {n} chunks of size {chunk_size}");
+                    trace!("Error: {error}");
                     last_error.replace(error);
                 }
             }

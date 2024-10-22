@@ -150,8 +150,8 @@ where
 
             match self.try_parse_frame(src.chunks(chunk_size).take(n)) {
                 Ok(frame) => {
-                    if n < expected_frames {
-                        debug!("Successfully decoded frame from partial stream using {n} chunks of size {chunk_size}");
+                    if n != expected_frames {
+                        debug!("Successfully decoded frame from partial stream using {n}/{expected_frames} chunks of size {chunk_size}");
                     }
 
                     src.clear();

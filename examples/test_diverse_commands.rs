@@ -262,6 +262,14 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
     }
 
+    // Test nop.
+    if let Err(error) = ezsp.nop().await {
+        error!("Nop error: {error}");
+    } else {
+        info!("Nop succeeded");
+    }
+
+    // Teardonw.
     if !args.keep_listening {
         running.store(false, Relaxed);
     }

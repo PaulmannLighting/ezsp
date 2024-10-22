@@ -22,6 +22,7 @@ where
     header: Option<H>,
     _parameter: std::marker::PhantomData<P>,
     buffers: Buffers,
+    expected_frames: usize,
 }
 
 impl<H, P> Default for Codec<H, P>
@@ -34,6 +35,7 @@ where
             header: None,
             _parameter: std::marker::PhantomData,
             buffers: Buffers::default(),
+            expected_frames: 0,
         }
     }
 }
@@ -78,14 +80,17 @@ where
 
         if self.buffers.parameters.is_empty() {
             dst.extend_from_slice(&self.buffers.header);
+            self.expected_frames = 1;
         } else {
-            for chunk in self
+            for (index, chunk) in self
                 .buffers
                 .parameters
                 .chunks(MAX_PAYLOAD_SIZE.saturating_sub(self.buffers.header.len()))
+                .enumerate()
             {
                 dst.extend_from_slice(&self.buffers.header);
                 dst.extend_from_slice(chunk);
+                self.expected_frames = index.saturating_add(1);
             }
         }
 

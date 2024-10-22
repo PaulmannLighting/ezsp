@@ -25,26 +25,21 @@ mod parsable;
 pub struct Ashv2<const BUF_SIZE: usize> {
     ash: AshFramed<BUF_SIZE>,
     sequence: u8,
-    expected_frames: usize,
 }
 
 impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
     /// Creates an `ASHv2` host.
     #[must_use]
     pub const fn new(ash: AshFramed<BUF_SIZE>) -> Self {
-        Self {
-            ash,
-            sequence: 0,
-            expected_frames: 0,
-        }
+        Self { ash, sequence: 0 }
     }
 
-    fn framed<H, P>(&mut self) -> Framed<&mut AshFramed<BUF_SIZE>, Codec<'_, H, P>>
+    fn framed<H, P>(&mut self) -> Framed<&mut AshFramed<BUF_SIZE>, Codec<H, P>>
     where
         H: Header<P::Id>,
         P: Parameter,
     {
-        Framed::new(&mut self.ash, Codec::new(&mut self.expected_frames))
+        Framed::new(&mut self.ash, Codec::default())
     }
 }
 

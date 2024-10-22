@@ -1,6 +1,6 @@
-use ashv2::{HexSlice, MAX_PAYLOAD_SIZE};
-use le_stream::{FromLeStream, ToLeStream};
-use log::{debug, trace, warn};
+use ashv2::{Frames, HexSlice, Payload, MAX_PAYLOAD_SIZE};
+use le_stream::ToLeStream;
+use log::trace;
 use tokio_util::bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
 
@@ -9,8 +9,8 @@ use crate::frame::{Frame, Header, Parameter};
 use crate::Error;
 
 use crate::ashv2::parsable::Parsable;
-use crate::parameters::utilities::invalid_command;
 
+use crate::parameters::utilities::invalid_command;
 use buffers::Buffers;
 
 mod buffers;
@@ -19,7 +19,7 @@ mod buffers;
 ///
 /// This can be used with `tokio::codec::Framed` to encode and decode frames.
 #[derive(Debug)]
-pub struct Codec<'a, H, P>
+pub struct Codec<H, P>
 where
     H: Header<P::Id>,
     P: Parameter,
@@ -27,67 +27,27 @@ where
     header: Option<H>,
     _parameter: std::marker::PhantomData<P>,
     buffers: Buffers,
-    expected_frames: &'a mut usize,
 }
 
-impl<'a, H, P> Codec<'a, H, P>
+impl<H, P> Default for Codec<H, P>
 where
     H: Header<P::Id>,
     P: Parameter,
 {
-    pub fn new(expected_frames: &'a mut usize) -> Self {
+    fn default() -> Self {
         Self {
             header: None,
             _parameter: std::marker::PhantomData,
             buffers: Buffers::default(),
-            expected_frames,
         }
     }
 }
 
-impl<'a, H, P> Codec<'a, H, P>
+impl<H, P> Codec<H, P>
 where
     H: Header<P::Id>,
     P: Parameter + Parsable,
 {
-    /// Try to parse a frame `Frame<H, P>` from a stream of bytes.
-    ///
-    /// # Returns
-    ///
-    /// Returns `Ok(frame)` if the frame was successfully parsed.
-    ///
-    /// # Errors
-    ///
-    /// Returns `Err(Error)` if the frame could not be parsed.
-    fn try_parse_frame<'frames>(
-        &mut self,
-        frames: impl Iterator<Item = &'frames [u8]>,
-    ) -> Result<Frame<H, P>, Error> {
-        self.buffers.parameters.clear();
-        let mut header: Option<H> = None;
-
-        for frame in frames {
-            header = self.try_parse_frame_fragment(frame)?;
-        }
-
-        let Some(header) = header else {
-            return Err(Decode::TooFewBytes.into());
-        };
-
-        if header.id().into() == invalid_command::Response::ID {
-            return Err(Error::InvalidCommand(
-                invalid_command::Response::from_le_stream_exact(
-                    self.buffers.parameters.iter().copied(),
-                )?,
-            ));
-        }
-
-        Ok(Frame::new(
-            header,
-            P::parse_from_le_stream(header.id().into(), self.buffers.parameters.iter().copied())?,
-        ))
-    }
-
     /// Try to parse a frame fragment from a chunk of bytes.
     ///
     /// This function will try to parse a frame fragment from a chunk of bytes.
@@ -103,30 +63,49 @@ where
     /// # Errors
     ///
     /// Returns `Err(Decode)` if the frame fragment could not be parsed.
-    fn try_parse_frame_fragment(&mut self, frame: &[u8]) -> Result<Option<H>, Decode> {
-        trace!("Decoding ASHv2 frame: {:#04X}", HexSlice::new(frame));
+    fn try_parse_frame_fragment(&mut self, frame: Payload) -> Result<Option<Frame<H, P>>, Error> {
+        trace!("Decoding ASHv2 frame: {:#04X}", HexSlice::new(&frame));
 
-        let mut stream = frame.iter().copied();
+        let mut stream = frame.into_iter();
         let next_header = H::from_le_stream(&mut stream).ok_or(Decode::TooFewBytes)?;
-        let mut header: Option<H> = None;
 
-        if let Some(header) = header {
-            if header.id() != next_header.id() || header.sequence() != next_header.sequence() {
+        if let Some(header) = self.header.take() {
+            if header != next_header {
                 return Err(Decode::FrameIdMismatch {
                     expected: header.id().into(),
                     found: next_header.id().into(),
-                });
+                }
+                .into());
             }
-        } else {
-            header.replace(next_header);
         }
 
         self.buffers.parameters.extend(stream);
-        Ok(header)
+
+        match P::parse_from_le_stream(
+            next_header.id().into(),
+            self.buffers.parameters.iter().copied(),
+        ) {
+            Ok(parameters) => Ok(Some(Frame::new(next_header, parameters))),
+            Err(error) => {
+                if let Ok(invalid_command) = invalid_command::Response::parse_from_le_stream(
+                    next_header.id().into(),
+                    self.buffers.parameters.iter().copied(),
+                ) {
+                    return Err(Error::InvalidCommand(invalid_command));
+                }
+
+                if error == Decode::TooFewBytes {
+                    self.header.replace(next_header);
+                    return Ok(None);
+                }
+
+                Err(error.into())
+            }
+        }
     }
 }
 
-impl<'a, H, P> Decoder for Codec<'a, H, P>
+impl<H, P> Decoder for Codec<H, P>
 where
     H: Header<P::Id>,
     P: Parameter + Parsable,
@@ -135,49 +114,25 @@ where
     type Error = Error;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        trace!("Decoding ASHv2 frame from buffer of size {}", src.len());
-        let expected_frames = (*self.expected_frames).clamp(1, src.len());
-        *self.expected_frames = 0;
-        trace!("Attempting partial decoding with {expected_frames} expected frames");
+        self.buffers.clear();
 
-        let chunk_size = src.len() / expected_frames;
-        trace!("Set chunk size to {chunk_size}");
-        let mut last_error: Option<Error> = None;
-
-        // Try to decode all partial frames from `self.expected_frames` < n <= 1.
-        for n in (1..=expected_frames).rev() {
-            trace!("Trying with {n} chunks");
-
-            match self.try_parse_frame(src.chunks(chunk_size).take(n)) {
-                Ok(frame) => {
-                    if n != expected_frames {
-                        debug!("Successfully decoded frame from partial stream using {n}/{expected_frames} chunks of size {chunk_size}");
-                    }
-
-                    src.clear();
-                    self.header.take();
+        for frame in src.iter().copied().frames() {
+            match self.try_parse_frame_fragment(frame) {
+                Ok(Some(frame)) => {
                     return Ok(Some(frame));
                 }
+                Ok(None) => continue,
                 Err(error) => {
-                    warn!("Failed to decode frame from partial stream using {n} chunks of size {chunk_size}");
-                    trace!("Error: {error}");
-                    last_error.replace(error);
+                    return Err(error);
                 }
             }
         }
 
-        // If we have too few bytes to decode a frame, return `None` to let the stream gather more bytes.
-        last_error.map_or_else(
-            || Ok(None),
-            |error| match error {
-                Error::Decode(Decode::TooFewBytes) => Ok(None),
-                error => Err(error),
-            },
-        )
+        Ok(None)
     }
 }
 
-impl<'a, H, P> Encoder<Frame<H, P>> for Codec<'a, H, P>
+impl<H, P> Encoder<Frame<H, P>> for Codec<H, P>
 where
     H: Header<P::Id>,
     P: Parameter + ToLeStream,
@@ -185,7 +140,6 @@ where
     type Error = Error;
 
     fn encode(&mut self, item: Frame<H, P>, dst: &mut BytesMut) -> Result<(), Self::Error> {
-        *self.expected_frames = 0;
         self.buffers.clear();
         self.buffers.header.extend(item.header().to_le_stream());
         self.buffers
@@ -196,7 +150,6 @@ where
             // If there are no parameters to send, e.g. on `nop`, a call to `.chunks()`
             // would yield an empty iterator, resulting in us not even sending one chunk.
             dst.extend_from_slice(&self.buffers.header);
-            *self.expected_frames = 1;
             return Ok(());
         }
 
@@ -207,7 +160,6 @@ where
         {
             dst.extend_from_slice(&self.buffers.header);
             dst.extend_from_slice(chunk);
-            *self.expected_frames = self.expected_frames.saturating_add(1);
         }
 
         Ok(())

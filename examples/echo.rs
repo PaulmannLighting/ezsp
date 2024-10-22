@@ -50,7 +50,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
                 version.protocol_version()
             );
             info!("Negotiated stack type: {:#04X}", version.stack_type());
-            info!("Negotiated stack version: {:#06X}", version.stack_version());
+            info!("Negotiated stack version: {}", version.stack_version());
         }
         Err(error) => {
             error!("{error}");

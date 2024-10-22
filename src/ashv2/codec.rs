@@ -1,21 +1,25 @@
-use le_stream::ToLeStream;
+use ashv2::{HexSlice, MAX_PAYLOAD_SIZE};
+use le_stream::{FromLeStream, ToLeStream};
+use log::{debug, trace};
 use tokio_util::bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
 
-use crate::constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 use crate::error::Decode;
 use crate::frame::{Frame, Header, Parameter};
 use crate::Error;
 
 use crate::ashv2::parsable::Parsable;
-use ashv2::MAX_PAYLOAD_SIZE;
-use log::debug;
+use crate::parameters::utilities::invalid_command;
+
+use buffers::Buffers;
+
+mod buffers;
 
 /// Codec to encode frames to bytes and decode bytes into frames.
 ///
 /// This can be used with `tokio::codec::Framed` to encode and decode frames.
 #[derive(Debug)]
-pub struct Codec<H, P>
+pub struct Codec<'a, H, P>
 where
     H: Header<P::Id>,
     P: Parameter,
@@ -23,62 +27,110 @@ where
     header: Option<H>,
     _parameter: std::marker::PhantomData<P>,
     buffers: Buffers,
-    expected_frames: usize,
+    expected_frames: &'a mut usize,
 }
 
-impl<H, P> Codec<H, P>
-where
-    H: Header<P::Id>,
-    P: Parameter + Parsable,
-{
-    fn try_decode_partial(&mut self, buf: &BytesMut, next: u8) -> Option<Frame<H, P>> {
-        debug!("Attempting partial decoding");
-
-        if self.expected_frames == 0 || self.expected_frames == 1 {
-            return None;
-        }
-
-        let chunk_size = buf.len() / self.expected_frames;
-
-        // Try to decode all partial frames from `self.expected_frames` < n <= 1.
-        for n in (1..self.expected_frames).rev() {
-            let mut chunks = buf.chunks(chunk_size);
-
-            if let Ok(frame) = <Self as Decoder>::Item::from_ash_frames_buffered(
-                (&mut chunks).take(n),
-                &mut self.buffers.parameters,
-            ) {
-                // Check if the initially mismatched excess byte matches.
-                // Otherwise, we probably received garbage.
-                if let Some(chunk) = chunks.next() {
-                    if chunk.first() == Some(&next) {
-                        debug!("Successfully decoded frame from partial stream using {n} chunks of size {chunk_size}");
-                        return Some(frame);
-                    }
-                }
-            }
-        }
-
-        None
-    }
-}
-
-impl<H, P> Default for Codec<H, P>
+impl<'a, H, P> Codec<'a, H, P>
 where
     H: Header<P::Id>,
     P: Parameter,
 {
-    fn default() -> Self {
+    pub fn new(expected_frames: &'a mut usize) -> Self {
         Self {
             header: None,
             _parameter: std::marker::PhantomData,
             buffers: Buffers::default(),
-            expected_frames: 0,
+            expected_frames,
         }
     }
 }
 
-impl<H, P> Decoder for Codec<H, P>
+impl<'a, H, P> Codec<'a, H, P>
+where
+    H: Header<P::Id>,
+    P: Parameter + Parsable,
+{
+    fn decode_graceful(&mut self, buf: &BytesMut) -> Result<Frame<H, P>, Error> {
+        let expected_frames = (*self.expected_frames).clamp(1, buf.len());
+        *self.expected_frames = 0;
+        trace!("Attempting partial decoding with {expected_frames} expected frames");
+
+        let chunk_size = buf.len() / expected_frames;
+        trace!("Set chunk size to {chunk_size}");
+        let mut last_error: Option<Error> = None;
+
+        // Try to decode all partial frames from `self.expected_frames` < n <= 1.
+        for n in (1..=expected_frames).rev() {
+            trace!("Trying with {n} chunks");
+            let mut chunks = buf.chunks(chunk_size);
+
+            match self.decode_frame((&mut chunks).take(n)) {
+                Ok(frame) => {
+                    debug!("Successfully decoded frame from partial stream using {n} chunks of size {chunk_size}");
+                    return Ok(frame);
+                }
+                Err(error) => {
+                    last_error.replace(error);
+                }
+            }
+        }
+
+        last_error.map_or_else(|| Err(Decode::TooFewBytes.into()), Err)
+    }
+
+    fn decode_frame<'frames>(
+        &mut self,
+        frames: impl Iterator<Item = &'frames [u8]>,
+    ) -> Result<Frame<H, P>, Error> {
+        self.buffers.parameters.clear();
+        let mut header: Option<H> = None;
+
+        for frame in frames {
+            header = self.parse_partial_frame(frame)?;
+        }
+
+        let Some(header) = header else {
+            return Err(Decode::TooFewBytes.into());
+        };
+
+        if header.id().into() == invalid_command::Response::ID {
+            return Err(Error::InvalidCommand(
+                invalid_command::Response::from_le_stream_exact(
+                    self.buffers.parameters.iter().copied(),
+                )?,
+            ));
+        }
+
+        Ok(Frame::new(
+            header,
+            P::parse_from_le_stream(header.id().into(), self.buffers.parameters.iter().copied())?,
+        ))
+    }
+
+    fn parse_partial_frame(&mut self, frame: &[u8]) -> Result<Option<H>, Decode> {
+        trace!("Decoding ASHv2 frame: {:#04X}", HexSlice::new(frame));
+
+        let mut stream = frame.iter().copied();
+        let next_header = H::from_le_stream(&mut stream).ok_or(Decode::TooFewBytes)?;
+        let mut header: Option<H> = None;
+
+        if let Some(header) = header {
+            if header.id() != next_header.id() || header.sequence() != next_header.sequence() {
+                return Err(Decode::FrameIdMismatch {
+                    expected: header.id().into(),
+                    found: next_header.id().into(),
+                });
+            }
+        } else {
+            header.replace(next_header);
+        }
+
+        self.buffers.parameters.extend(stream);
+        Ok(header)
+    }
+}
+
+impl<'a, H, P> Decoder for Codec<'a, H, P>
 where
     H: Header<P::Id>,
     P: Parameter + Parsable,
@@ -87,28 +139,21 @@ where
     type Error = Error;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        match Self::Item::from_ash_frames_buffered(
-            src.chunks(MAX_PAYLOAD_SIZE),
-            &mut self.buffers.parameters,
-        ) {
+        debug!("Decoding ASHv2 frame from buffer of size {}", src.len());
+
+        match self.decode_graceful(src) {
             Ok(frame) => {
                 src.clear();
                 self.header = None;
                 Ok(Some(frame))
             }
             Err(Error::Decode(Decode::TooFewBytes)) => Ok(None),
-            Err(Error::Decode(Decode::TooManyBytes { next })) => {
-                self.try_decode_partial(src, next).map_or_else(
-                    || Err(Error::Decode(Decode::TooManyBytes { next })),
-                    |frame| Ok(Some(frame)),
-                )
-            }
             Err(other) => Err(other),
         }
     }
 }
 
-impl<H, P> Encoder<Frame<H, P>> for Codec<H, P>
+impl<'a, H, P> Encoder<Frame<H, P>> for Codec<'a, H, P>
 where
     H: Header<P::Id>,
     P: Parameter + ToLeStream,
@@ -116,6 +161,7 @@ where
     type Error = Error;
 
     fn encode(&mut self, item: Frame<H, P>, dst: &mut BytesMut) -> Result<(), Self::Error> {
+        *self.expected_frames = 0;
         self.buffers.clear();
         self.buffers.header.extend(item.header().to_le_stream());
         self.buffers
@@ -126,34 +172,22 @@ where
             // If there are no parameters to send, e.g. on `nop`, a call to `.chunks()`
             // would yield an empty iterator, resulting in us not even sending one chunk.
             dst.extend_from_slice(&self.buffers.header);
-            self.expected_frames = 1;
-        } else {
-            for (index, chunk) in self
-                .buffers
-                .parameters
-                .chunks(MAX_PAYLOAD_SIZE.saturating_sub(self.buffers.header.len()))
-                .enumerate()
-            {
-                dst.extend_from_slice(&self.buffers.header);
-                dst.extend_from_slice(chunk);
-                self.expected_frames = index.saturating_add(1);
-            }
+            debug!("Setting expected frames to 1");
+            *self.expected_frames = 1;
+            return Ok(());
+        }
+
+        for chunk in self
+            .buffers
+            .parameters
+            .chunks(MAX_PAYLOAD_SIZE.saturating_sub(self.buffers.header.len()))
+        {
+            dst.extend_from_slice(&self.buffers.header);
+            dst.extend_from_slice(chunk);
+            debug!("Incrementing expected frames");
+            *self.expected_frames = self.expected_frames.saturating_add(1);
         }
 
         Ok(())
-    }
-}
-
-#[derive(Debug, Default)]
-struct Buffers {
-    pub header: heapless::Vec<u8, MAX_HEADER_SIZE>,
-    pub parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
-}
-
-impl Buffers {
-    /// Clears the buffers.
-    pub fn clear(&mut self) {
-        self.header.clear();
-        self.parameters.clear();
     }
 }

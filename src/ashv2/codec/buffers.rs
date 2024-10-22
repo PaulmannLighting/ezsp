@@ -1,12 +1,9 @@
-use ashv2::FrameBuffer;
-
 use crate::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 
 #[derive(Debug, Default)]
 pub struct Buffers {
     pub header: heapless::Vec<u8, MAX_HEADER_SIZE>,
     pub parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
-    pub frame: FrameBuffer,
 }
 
 impl Buffers {

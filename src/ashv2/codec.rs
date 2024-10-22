@@ -50,6 +50,15 @@ where
     H: Header<P::Id>,
     P: Parameter + Parsable,
 {
+    /// Try to parse a frame `Frame<H, P>` from a stream of bytes.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok(frame)` if the frame was successfully parsed.
+    ///
+    /// # Errors
+    ///
+    /// Returns `Err(Error)` if the frame could not be parsed.
     fn try_parse_frame<'frames>(
         &mut self,
         frames: impl Iterator<Item = &'frames [u8]>,
@@ -79,6 +88,21 @@ where
         ))
     }
 
+    /// Try to parse a frame fragment from a chunk of bytes.
+    ///
+    /// This function will try to parse a frame fragment from a chunk of bytes.
+    ///
+    /// It will parse the header and append the remaining bytes to the parameter buffer.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok(Some(header))` if the frame fragment was successfully parsed.
+    ///
+    /// Returns `Ok(None)` if the frame is not yet complete.
+    ///
+    /// # Errors
+    ///
+    /// Returns `Err(Decode)` if the frame fragment could not be parsed.
     fn try_parse_frame_fragment(&mut self, frame: &[u8]) -> Result<Option<H>, Decode> {
         trace!("Decoding ASHv2 frame: {:#04X}", HexSlice::new(frame));
 
@@ -140,6 +164,7 @@ where
             }
         }
 
+        // If we have too few bytes to decode a frame, return `None` to let the stream gather more bytes.
         last_error.map_or_else(
             || Ok(None),
             |error| match error {

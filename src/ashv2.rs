@@ -11,7 +11,7 @@ use crate::error::{Decode, Error};
 use crate::frame::{Command, Frame, Header, Parameter};
 use crate::transport::Transport;
 
-use ashv2::AshFramed;
+use ashv2::Stream;
 pub use callbacks::Callbacks;
 use codec::Codec;
 pub use parsable::Parsable;
@@ -23,18 +23,18 @@ mod parsable;
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
 pub struct Ashv2<const BUF_SIZE: usize> {
-    ash: AshFramed<BUF_SIZE>,
+    ash: Stream<BUF_SIZE>,
     sequence: u8,
 }
 
 impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
     /// Creates an `ASHv2` host.
     #[must_use]
-    pub const fn new(ash: AshFramed<BUF_SIZE>) -> Self {
+    pub const fn new(ash: Stream<BUF_SIZE>) -> Self {
         Self { ash, sequence: 0 }
     }
 
-    fn framed<H, P>(&mut self) -> Framed<&mut AshFramed<BUF_SIZE>, Codec<H, P>>
+    fn framed<H, P>(&mut self) -> Framed<&mut Stream<BUF_SIZE>, Codec<H, P>>
     where
         H: Header<P::Id>,
         P: Parameter,

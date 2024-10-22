@@ -9,6 +9,7 @@ use ezsp::{parameters, Ezsp, Handler, Networking, MAX_FRAME_SIZE};
 use log::{error, info, warn};
 use serialport::{FlowControl, SerialPort};
 use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
 use std::sync::mpsc::sync_channel;
 use std::sync::mpsc::Receiver;
 use std::sync::Arc;
@@ -53,10 +54,11 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     let (cb_tx, cb_rx) = sync_channel(32);
     let (ash, transceiver) = make_pair::<MAX_FRAME_SIZE, _>(serial_port, 4, Some(cb_tx));
     let running = Arc::new(AtomicBool::new(true));
-    let transceiver_thread = spawn(|| transceiver.run(running));
+    let transceiver_running = running.clone();
+    let transceiver_thread = spawn(|| transceiver.run(transceiver_running));
     let mut ezsp = Ashv2::new(ash);
 
-    spawn(move || handle_callbacks(&cb_rx, args.keep_listening));
+    let callback_thread = spawn(move || handle_callbacks(&cb_rx, args.keep_listening));
 
     // Test version negotiation.
     match ezsp.negotiate_version(args.version).await {
@@ -86,6 +88,8 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
     }
 
+    callback_thread.join().expect("Callback thread panicked.");
+    running.store(false, Relaxed);
     transceiver_thread
         .join()
         .expect("Transceiver thread panicked.");
@@ -117,7 +121,7 @@ fn handle_callbacks(frames: &Receiver<Payload>, keep_listening: bool) {
                     }
 
                     if !keep_listening {
-                        break;
+                        return;
                     }
                 }
                 other => {

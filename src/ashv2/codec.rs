@@ -50,35 +50,7 @@ where
     H: Header<P::Id>,
     P: Parameter + Parsable,
 {
-    fn decode_graceful(&mut self, buf: &BytesMut) -> Result<Frame<H, P>, Error> {
-        let expected_frames = (*self.expected_frames).clamp(1, buf.len());
-        *self.expected_frames = 0;
-        trace!("Attempting partial decoding with {expected_frames} expected frames");
-
-        let chunk_size = buf.len() / expected_frames;
-        trace!("Set chunk size to {chunk_size}");
-        let mut last_error: Option<Error> = None;
-
-        // Try to decode all partial frames from `self.expected_frames` < n <= 1.
-        for n in (1..=expected_frames).rev() {
-            trace!("Trying with {n} chunks");
-            let mut chunks = buf.chunks(chunk_size);
-
-            match self.decode_frame((&mut chunks).take(n)) {
-                Ok(frame) => {
-                    debug!("Successfully decoded frame from partial stream using {n} chunks of size {chunk_size}");
-                    return Ok(frame);
-                }
-                Err(error) => {
-                    last_error.replace(error);
-                }
-            }
-        }
-
-        last_error.map_or_else(|| Err(Decode::TooFewBytes.into()), Err)
-    }
-
-    fn decode_frame<'frames>(
+    fn try_parse_frame<'frames>(
         &mut self,
         frames: impl Iterator<Item = &'frames [u8]>,
     ) -> Result<Frame<H, P>, Error> {
@@ -86,7 +58,7 @@ where
         let mut header: Option<H> = None;
 
         for frame in frames {
-            header = self.parse_partial_frame(frame)?;
+            header = self.try_parse_frame_fragment(frame)?;
         }
 
         let Some(header) = header else {
@@ -107,7 +79,7 @@ where
         ))
     }
 
-    fn parse_partial_frame(&mut self, frame: &[u8]) -> Result<Option<H>, Decode> {
+    fn try_parse_frame_fragment(&mut self, frame: &[u8]) -> Result<Option<H>, Decode> {
         trace!("Decoding ASHv2 frame: {:#04X}", HexSlice::new(frame));
 
         let mut stream = frame.iter().copied();
@@ -139,17 +111,42 @@ where
     type Error = Error;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        debug!("Decoding ASHv2 frame from buffer of size {}", src.len());
+        trace!("Decoding ASHv2 frame from buffer of size {}", src.len());
+        let expected_frames = (*self.expected_frames).clamp(1, src.len());
+        *self.expected_frames = 0;
+        trace!("Attempting partial decoding with {expected_frames} expected frames");
 
-        match self.decode_graceful(src) {
-            Ok(frame) => {
-                src.clear();
-                self.header = None;
-                Ok(Some(frame))
+        let chunk_size = src.len() / expected_frames;
+        trace!("Set chunk size to {chunk_size}");
+        let mut last_error: Option<Error> = None;
+
+        // Try to decode all partial frames from `self.expected_frames` < n <= 1.
+        for n in (1..=expected_frames).rev() {
+            trace!("Trying with {n} chunks");
+
+            match self.try_parse_frame(src.chunks(chunk_size).take(n)) {
+                Ok(frame) => {
+                    if n < expected_frames {
+                        debug!("Successfully decoded frame from partial stream using {n} chunks of size {chunk_size}");
+                    }
+
+                    src.clear();
+                    self.header.take();
+                    return Ok(Some(frame));
+                }
+                Err(error) => {
+                    last_error.replace(error);
+                }
             }
-            Err(Error::Decode(Decode::TooFewBytes)) => Ok(None),
-            Err(other) => Err(other),
         }
+
+        last_error.map_or_else(
+            || Ok(None),
+            |error| match error {
+                Error::Decode(Decode::TooFewBytes) => Ok(None),
+                error => Err(error),
+            },
+        )
     }
 }
 
@@ -172,7 +169,6 @@ where
             // If there are no parameters to send, e.g. on `nop`, a call to `.chunks()`
             // would yield an empty iterator, resulting in us not even sending one chunk.
             dst.extend_from_slice(&self.buffers.header);
-            debug!("Setting expected frames to 1");
             *self.expected_frames = 1;
             return Ok(());
         }
@@ -184,7 +180,6 @@ where
         {
             dst.extend_from_slice(&self.buffers.header);
             dst.extend_from_slice(chunk);
-            debug!("Incrementing expected frames");
             *self.expected_frames = self.expected_frames.saturating_add(1);
         }
 

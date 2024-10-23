@@ -1,11 +1,6 @@
 //! CBKE handler.
 
-mod calculate_smacs;
-mod calculate_smacs283k1;
-mod dsa_sign;
-mod dsa_verify;
-mod generate_cbke_keys;
-mod generate_cbke_keys283k1;
+use le_stream::derive::FromLeStream;
 
 use crate::ember::SmacData;
 pub use calculate_smacs::Handler as CalculateSmacs;
@@ -14,7 +9,13 @@ pub use dsa_sign::Handler as DsaSign;
 pub use dsa_verify::Handler as DsaVerify;
 pub use generate_cbke_keys::Handler as GenerateCbkeKeys;
 pub use generate_cbke_keys283k1::Handler as GenerateCbkeKeys283k1;
-use le_stream::derive::FromLeStream;
+
+mod calculate_smacs;
+mod calculate_smacs283k1;
+mod dsa_sign;
+mod dsa_verify;
+mod generate_cbke_keys;
+mod generate_cbke_keys283k1;
 
 /// Certificate-Based Key Exchange (CBKE) handlers.
 #[allow(variant_size_differences, clippy::large_enum_variant)]

@@ -3,9 +3,9 @@
 use le_stream::FromLeStream;
 
 use crate::error::Decode;
+use crate::frame::parsable::Parsable;
 use crate::frame::Parameter;
 
-use crate::ashv2::Parsable;
 pub use remote_delete_binding::Handler as RemoteDeleteBinding;
 pub use remote_set_binding::Handler as RemoteSetBinding;
 

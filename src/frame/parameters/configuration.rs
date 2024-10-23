@@ -6,17 +6,17 @@ use crate::error::Decode;
 use crate::frame::parsable::Parsable;
 use crate::frame::Parameter;
 
-pub(crate) mod add_endpoint;
-pub(crate) mod get_configuration_value;
-pub(crate) mod get_extended_value;
-pub(crate) mod get_policy;
-pub(crate) mod get_value;
+pub mod add_endpoint;
+pub mod get_configuration_value;
+pub mod get_extended_value;
+pub mod get_policy;
+pub mod get_value;
 pub mod read_attribute;
-pub(crate) mod send_pan_id_update;
-pub(crate) mod set_configuration_value;
-pub(crate) mod set_passive_ack_config;
-pub(crate) mod set_policy;
-pub(crate) mod set_value;
+pub mod send_pan_id_update;
+pub mod set_configuration_value;
+pub mod set_passive_ack_config;
+pub mod set_policy;
+pub mod set_value;
 pub mod version;
 pub mod write_attribute;
 
@@ -90,11 +90,9 @@ impl Parsable for Response {
                     set_configuration_value::Response::from_le_stream_exact(stream)?,
                 ))
             }
-            <set_passive_ack_config::Response as Parameter>::ID => {
-                Ok(Self::SetPassiveAckConfig(
-                    set_passive_ack_config::Response::from_le_stream_exact(stream)?,
-                ))
-            }
+            <set_passive_ack_config::Response as Parameter>::ID => Ok(Self::SetPassiveAckConfig(
+                set_passive_ack_config::Response::from_le_stream_exact(stream)?,
+            )),
             <set_policy::Response as Parameter>::ID => Ok(Self::SetPolicy(
                 set_policy::Response::from_le_stream_exact(stream)?,
             )),

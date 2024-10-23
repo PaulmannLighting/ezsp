@@ -8,14 +8,14 @@ use crate::frame::Parameter;
 
 use handler::{RemoteDeleteBinding, RemoteSetBinding};
 
-pub(crate) mod binding_is_active;
-pub(crate) mod clear_binding_table;
-pub(crate) mod delete_binding;
-pub(crate) mod get_binding;
-pub(crate) mod get_binding_remote_node_id;
+pub mod binding_is_active;
+pub mod clear_binding_table;
+pub mod delete_binding;
+pub mod get_binding;
+pub mod get_binding_remote_node_id;
 pub mod handler;
-pub(crate) mod set_binding;
-pub(crate) mod set_binding_remote_node_id;
+pub mod set_binding;
+pub mod set_binding_remote_node_id;
 
 /// Command parameters for binding frames.
 #[derive(Clone, Debug, Eq, PartialEq)]

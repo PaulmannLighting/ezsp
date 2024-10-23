@@ -39,7 +39,7 @@ impl Parse for Handler {
     where
         T: Iterator<Item = u8>,
     {
-        match Some(id) {
+        match id {
             <RemoteDeleteBinding as Parameter>::ID => Ok(Self::RemoteDeleteBinding(
                 RemoteDeleteBinding::from_le_stream_exact(stream)?,
             )),

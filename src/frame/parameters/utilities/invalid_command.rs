@@ -40,5 +40,5 @@ impl Display for Response {
 
 impl Parameter for Response {
     type Id = u16;
-    const ID: Option<Self::Id> = Some(ID);
+    const ID: Self::Id = ID;
 }

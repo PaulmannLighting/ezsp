@@ -15,7 +15,7 @@ pub struct Command;
 
 impl Parameter for Command {
     type Id = u16;
-    const ID: Option<Self::Id> = Some(ID);
+    const ID: Self::Id = ID;
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
@@ -27,7 +27,7 @@ pub struct Response {
 
 impl Parameter for Response {
     type Id = u16;
-    const ID: Option<Self::Id> = Some(ID);
+    const ID: Self::Id = ID;
 }
 
 impl TryFrom<Response> for (Type, Parameters) {

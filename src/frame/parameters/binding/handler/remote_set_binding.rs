@@ -48,5 +48,5 @@ impl Handler {
 
 impl Parameter for Handler {
     type Id = u16;
-    const ID: Option<Self::Id> = Some(ID);
+    const ID: Self::Id = ID;
 }

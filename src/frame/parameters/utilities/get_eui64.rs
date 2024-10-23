@@ -9,7 +9,7 @@ pub struct Command;
 
 impl Parameter for Command {
     type Id = u16;
-    const ID: Option<Self::Id> = Some(ID);
+    const ID: Self::Id = ID;
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
@@ -26,7 +26,7 @@ impl Response {
 
 impl Parameter for Response {
     type Id = u16;
-    const ID: Option<Self::Id> = Some(ID);
+    const ID: Self::Id = ID;
 }
 
 impl From<Response> for Eui64 {

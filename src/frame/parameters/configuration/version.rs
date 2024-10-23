@@ -29,7 +29,7 @@ impl Command {
 
 impl Parameter for Command {
     type Id = u8;
-    const ID: Option<Self::Id> = Some(ID);
+    const ID: Self::Id = ID;
 }
 
 /// The response provides information about the firmware running on the NCP.
@@ -62,5 +62,5 @@ impl Response {
 
 impl Parameter for Response {
     type Id = u8;
-    const ID: Option<Self::Id> = Some(ID);
+    const ID: Self::Id = ID;
 }

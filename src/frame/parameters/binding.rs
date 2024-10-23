@@ -61,7 +61,7 @@ impl Parse for Response {
     where
         T: Iterator<Item = u8>,
     {
-        match Some(id) {
+        match id {
             <binding_is_active::Response as Parameter>::ID => Ok(Self::BindingIsActive(
                 binding_is_active::Response::from_le_stream_exact(stream)?,
             )),

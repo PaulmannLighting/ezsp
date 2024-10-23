@@ -7,7 +7,7 @@ use std::hash::Hash;
 use std::io::ErrorKind;
 use tokio_util::codec::Framed;
 
-use crate::error::{Decode, Error};
+use crate::error::Error;
 use crate::frame::{Command, Frame, Header, Parameter};
 use crate::transport::Transport;
 
@@ -59,11 +59,7 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
         H: Header<P::Id>,
         P: Parameter + ToLeStream,
     {
-        let Some(id) = P::ID else {
-            return Err(Decode::MissingId.into());
-        };
-
-        let header = self.next_header::<H, P::Id>(id);
+        let header = self.next_header::<H, P::Id>(P::ID);
         self.framed().send(Frame::new(header, command)).await
     }
 

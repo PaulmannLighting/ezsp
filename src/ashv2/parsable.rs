@@ -27,13 +27,9 @@ where
     where
         S: Iterator<Item = u8>,
     {
-        let Some(my_id) = Self::ID else {
-            return Err(Decode::MissingId);
-        };
-
-        if my_id.into() != id {
+        if Self::ID.into() != id {
             return Err(Decode::FrameIdMismatch {
-                expected: my_id.into(),
+                expected: Self::ID.into(),
                 found: id,
             });
         }
@@ -53,7 +49,7 @@ impl Parsable for Handler {
     where
         T: Iterator<Item = u8>,
     {
-        match Some(id) {
+        match id {
             // Binding callbacks.
             binding::handler::RemoteDeleteBinding::ID => {
                 Ok(binding::handler::RemoteDeleteBinding::from_le_stream_exact(stream)?.into())

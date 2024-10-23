@@ -1,8 +1,8 @@
 use ashv2::Payload;
 use le_stream::FromLeStream;
 
-use crate::ashv2::parsable::Parsable;
 use crate::error::Decode;
+use crate::frame::parsable::Parsable;
 use crate::frame::{Extended, Handler, Header};
 use crate::{Error, MAX_FRAME_SIZE};
 

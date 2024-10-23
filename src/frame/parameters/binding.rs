@@ -1,10 +1,9 @@
 //! Binding Frames
 
-use le_stream::FromLeStream;
-
+use crate::ashv2::Parsable;
 use crate::error::Decode;
-use crate::frame::parse::Parse;
 use crate::frame::Parameter;
+use le_stream::FromLeStream;
 
 pub(crate) mod binding_is_active;
 pub(crate) mod clear_binding_table;
@@ -56,8 +55,8 @@ pub enum Response {
     Handler(handler::Handler),
 }
 
-impl Parse for Response {
-    fn parse<T>(id: u16, stream: T) -> Result<Self, Decode>
+impl Parsable for Response {
+    fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, Decode>
     where
         T: Iterator<Item = u8>,
     {

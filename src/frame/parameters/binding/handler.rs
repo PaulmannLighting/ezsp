@@ -3,9 +3,9 @@
 use le_stream::FromLeStream;
 
 use crate::error::Decode;
-use crate::frame::parse::Parse;
 use crate::frame::Parameter;
 
+use crate::ashv2::Parsable;
 pub use remote_delete_binding::Handler as RemoteDeleteBinding;
 pub use remote_set_binding::Handler as RemoteSetBinding;
 
@@ -34,8 +34,8 @@ impl From<RemoteSetBinding> for Handler {
     }
 }
 
-impl Parse for Handler {
-    fn parse<T>(id: u16, stream: T) -> Result<Self, Decode>
+impl Parsable for Handler {
+    fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, Decode>
     where
         T: Iterator<Item = u8>,
     {

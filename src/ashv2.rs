@@ -11,14 +11,13 @@ use crate::error::Error;
 use crate::frame::{Command, Frame, Header, Parameter};
 use crate::transport::Transport;
 
+pub use crate::frame::parsable::Parsable;
 use ashv2::Stream;
 pub use callbacks::Callbacks;
 use codec::Codec;
-pub use parsable::Parsable;
 
 mod callbacks;
 mod codec;
-mod parsable;
 
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]

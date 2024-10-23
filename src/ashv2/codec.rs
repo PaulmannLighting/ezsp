@@ -5,12 +5,10 @@ use tokio_util::bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
 
 use crate::error::Decode;
-use crate::frame::{Frame, Header, Parameter};
+use crate::frame::{parsable::Parsable, Frame, Header, Parameter};
+use crate::parameters::utilities::invalid_command;
 use crate::Error;
 
-use crate::ashv2::parsable::Parsable;
-
-use crate::parameters::utilities::invalid_command;
 use buffers::Buffers;
 
 mod buffers;

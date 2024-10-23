@@ -12,7 +12,7 @@ mod handler;
 mod header;
 mod parameter;
 pub mod parameters;
-mod parse;
+pub mod parsable;
 
 /// A frame that contains a header and parameters.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]

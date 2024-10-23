@@ -9,7 +9,7 @@ pub mod messaging;
 pub mod mfglib;
 pub mod networking;
 pub mod security;
-pub(crate) mod token_interface;
+pub mod token_interface;
 pub mod trust_center;
 pub mod utilities;
 pub mod wwah;

@@ -1,3 +1,5 @@
+//! Paramters for [`Bootloader::override_current_channel()`](crate::Bootloader::override_current_channel).
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 

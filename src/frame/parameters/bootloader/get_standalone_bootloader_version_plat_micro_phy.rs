@@ -1,9 +1,4 @@
-//! Detects if the standalone bootloader is installed, and if so returns the installed version.
-//! If not return `0xffff`.
-//!
-//! A returned version of `0x1234` would indicate version 1.2 build 34.
-//!
-//! Also return the node's version of `PLAT`, `MICRO` and `PHY`.
+//! Parameters for [`Bootloader::get_standalone_bootloader_version_plat_micro_phy()`](crate::Bootloader::get_standalone_bootloader_version_plat_micro_phy).
 
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeStream, ToLeStream};
@@ -11,7 +6,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x0091;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
+pub struct Command;
 
 impl Parameter for Command {
     type Id = u16;

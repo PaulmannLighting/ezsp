@@ -1,3 +1,5 @@
+//! Parameters for [`Bootloader::aes_encrypt()`](crate::Bootloader::aes_encrypt).
+
 use crate::frame::Parameter;
 use le_stream::derive::{FromLeStream, ToLeStream};
 

@@ -4,9 +4,7 @@ use le_stream::FromLeStream;
 
 use crate::error::Decode;
 use crate::frame::parsable::Parsable;
-
 use crate::frame::Parameter;
-use handler::{BootloadTransmitComplete, IncomingBootloadMessage};
 
 pub mod aes_encrypt;
 pub mod get_standalone_bootloader_version_plat_micro_phy;
@@ -21,20 +19,18 @@ pub mod send_bootload_message;
 pub enum Response {
     /// Response parameters for [`Bootloader::aes_encrypt()`](crate::Bootloader::aes_encrypt).
     AesEncrypt(aes_encrypt::Response),
-    /// The handler for the bootload transmit complete command.
-    BootloadTransmitCompleteHandler(BootloadTransmitComplete),
     /// Response parameters for [`Bootloader::get_standalone_bootloader_version_plat_micro_phy()`](crate::Bootloader::get_standalone_bootloader_version_plat_micro_phy).
     GetStandaloneBootloaderVersionPlatMicroPhy(
         get_standalone_bootloader_version_plat_micro_phy::Response,
     ),
-    /// The handler for the incoming bootload message command.
-    IncomingBootloadMessageHandler(IncomingBootloadMessage),
     /// Response parameters for [`Bootloader::launch_standalone_bootloader()`](crate::Bootloader::launch_standalone_bootloader).
     LaunchStandaloneBootloader(launch_standalone_bootloader::Response),
     /// Response parameters for [`Bootloader::override_current_channel()`](crate::Bootloader::override_current_channel).
     OverrideCurrentChannel(override_current_channel::Response),
     /// Response parameters for [`Bootloader::send_bootload_message()`](crate::Bootloader::send_bootload_message).
     SendBootloadMessage(send_bootload_message::Response),
+    /// Callback handlers.
+    Handler(handler::Handler),
 }
 
 impl Parsable for Response {
@@ -46,14 +42,8 @@ impl Parsable for Response {
             <aes_encrypt::Response as Parameter>::ID => {
                 Ok(Self::AesEncrypt(aes_encrypt::Response::from_le_stream_exact(stream)?))
             }
-            <BootloadTransmitComplete as Parameter>::ID => Ok(Self::BootloadTransmitCompleteHandler(
-                BootloadTransmitComplete::from_le_stream_exact(stream)?,
-            )),
             <get_standalone_bootloader_version_plat_micro_phy::Response as Parameter>::ID => Ok(Self::GetStandaloneBootloaderVersionPlatMicroPhy(
                 get_standalone_bootloader_version_plat_micro_phy::Response::from_le_stream_exact(stream)?,
-            )),
-            <IncomingBootloadMessage as Parameter>::ID => Ok(Self::IncomingBootloadMessageHandler(
-                IncomingBootloadMessage::from_le_stream_exact(stream)?,
             )),
             <launch_standalone_bootloader::Response as Parameter>::ID => Ok(Self::LaunchStandaloneBootloader(
                 launch_standalone_bootloader::Response::from_le_stream_exact(stream)?,
@@ -63,6 +53,16 @@ impl Parsable for Response {
             )),
             <send_bootload_message::Response as Parameter>::ID => Ok(Self::SendBootloadMessage(
                 send_bootload_message::Response::from_le_stream_exact(stream)?,
+            )),
+            <handler::BootloadTransmitComplete as Parameter>::ID => Ok(Self::Handler(
+                handler::Handler::BootloadTransmitComplete(
+                    handler::BootloadTransmitComplete::from_le_stream_exact(stream)?,
+                ),
+            )),
+            <handler::IncomingBootloadMessage as Parameter>::ID => Ok(Self::Handler(
+                handler::Handler::IncomingBootloadMessage(
+                    handler::IncomingBootloadMessage::from_le_stream_exact(stream)?,
+                ),
             )),
             _ => Err(Decode::InvalidFrameId(id)),
         }

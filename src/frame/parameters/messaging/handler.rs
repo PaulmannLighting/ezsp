@@ -1,17 +1,8 @@
 //! Message handlers.
 
-mod id_conflict;
-mod incoming_many_to_one_route_request;
-mod incoming_message;
-mod incoming_network_status;
-mod incoming_route_error;
-mod incoming_sender_eui64;
-mod mac_filter_match_message;
-mod mac_passthrough_message;
-mod message_sent;
-mod poll;
-mod poll_complete;
-mod raw_transmit_complete;
+use crate::error::Decode;
+use crate::frame::parsable::Parsable;
+use crate::frame::Parameter;
 
 pub use id_conflict::Handler as IdConflict;
 pub use incoming_many_to_one_route_request::Handler as IncomingManyToOneRouteRequest;
@@ -25,6 +16,19 @@ pub use message_sent::Handler as MessageSent;
 pub use poll::Handler as Poll;
 pub use poll_complete::Handler as PollComplete;
 pub use raw_transmit_complete::Handler as RawTransmitComplete;
+
+mod id_conflict;
+mod incoming_many_to_one_route_request;
+mod incoming_message;
+mod incoming_network_status;
+mod incoming_route_error;
+mod incoming_sender_eui64;
+mod mac_filter_match_message;
+mod mac_passthrough_message;
+mod message_sent;
+mod poll;
+mod poll_complete;
+mod raw_transmit_complete;
 
 /// Message handlers.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -124,5 +128,53 @@ impl From<PollComplete> for Handler {
 impl From<RawTransmitComplete> for Handler {
     fn from(handler: RawTransmitComplete) -> Self {
         Self::RawTransmitComplete(handler)
+    }
+}
+
+impl Parsable for Handler {
+    fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, Decode>
+    where
+        T: Iterator<Item = u8>,
+    {
+        match id {
+            <id_conflict::Handler as Parameter>::ID => Ok(Self::IdConflict(
+                id_conflict::Handler::parse_from_le_stream(id, stream)?,
+            )),
+            <incoming_many_to_one_route_request::Handler as Parameter>::ID => {
+                Ok(Self::IncomingManyToOneRouteRequest(
+                    incoming_many_to_one_route_request::Handler::parse_from_le_stream(id, stream)?,
+                ))
+            }
+            <incoming_message::Handler as Parameter>::ID => Ok(Self::IncomingMessage(
+                incoming_message::Handler::parse_from_le_stream(id, stream)?,
+            )),
+            <incoming_network_status::Handler as Parameter>::ID => Ok(Self::IncomingNetworkStatus(
+                incoming_network_status::Handler::parse_from_le_stream(id, stream)?,
+            )),
+            <incoming_route_error::Handler as Parameter>::ID => Ok(Self::IncomingRouteError(
+                incoming_route_error::Handler::parse_from_le_stream(id, stream)?,
+            )),
+            <incoming_sender_eui64::Handler as Parameter>::ID => Ok(Self::IncomingSenderEui64(
+                incoming_sender_eui64::Handler::parse_from_le_stream(id, stream)?,
+            )),
+            <mac_filter_match_message::Handler as Parameter>::ID => {
+                Ok(Self::MacFilterMatchMessage(
+                    mac_filter_match_message::Handler::parse_from_le_stream(id, stream)?,
+                ))
+            }
+            <mac_passthrough_message::Handler as Parameter>::ID => Ok(Self::MacPassthroughMessage(
+                mac_passthrough_message::Handler::parse_from_le_stream(id, stream)?,
+            )),
+            <message_sent::Handler as Parameter>::ID => Ok(Self::MessageSent(
+                message_sent::Handler::parse_from_le_stream(id, stream)?,
+            )),
+            <poll::Handler as Parameter>::ID => {
+                Ok(Self::Poll(poll::Handler::parse_from_le_stream(id, stream)?))
+            }
+            <poll_complete::Handler as Parameter>::ID => Ok(Self::PollComplete(
+                poll_complete::Handler::parse_from_le_stream(id, stream)?,
+            )),
+            _ => Err(Decode::InvalidFrameId(id)),
+        }
     }
 }

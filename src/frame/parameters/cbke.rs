@@ -76,76 +76,76 @@ impl Parsable for Response {
         T: Iterator<Item = u8>,
     {
         match id {
-            <calculate_smacs::Response as Parameter>::ID => Ok(Response::CalculateSmacs(
+            <calculate_smacs::Response as Parameter>::ID => Ok(Self::CalculateSmacs(
                 calculate_smacs::Response::from_le_stream_exact(stream)?,
             )),
-            <handler::CalculateSmacs as Parameter>::ID => Ok(Response::CalculateSmacsHandler(
+            <handler::CalculateSmacs as Parameter>::ID => Ok(Self::CalculateSmacsHandler(
                 handler::CalculateSmacs::from_le_stream_exact(stream)?,
             )),
-            <calculate_smacs283k1::Response as Parameter>::ID => Ok(Response::CalculateSmacs283k1(
+            <calculate_smacs283k1::Response as Parameter>::ID => Ok(Self::CalculateSmacs283k1(
                 calculate_smacs283k1::Response::from_le_stream_exact(stream)?,
             )),
 
             <handler::CalculateSmacs283k1 as Parameter>::ID => {
-                Ok(Response::CalculateSmacs283k1Handler(
+                Ok(Self::CalculateSmacs283k1Handler(
                     handler::CalculateSmacs283k1::from_le_stream_exact(stream)?,
                 ))
             }
             <clear_temporary_data_maybe_store_link_key::Response as Parameter>::ID => {
-                Ok(Response::ClearTemporaryDataMaybeStoreLinkKey(
+                Ok(Self::ClearTemporaryDataMaybeStoreLinkKey(
                     clear_temporary_data_maybe_store_link_key::Response::from_le_stream_exact(
                         stream,
                     )?,
                 ))
             }
             <clear_temporary_data_maybe_store_link_key283k1::Response as Parameter>::ID => {
-                Ok(Response::ClearTemporaryDataMaybeStoreLinkKey283k1(
+                Ok(Self::ClearTemporaryDataMaybeStoreLinkKey283k1(
                     clear_temporary_data_maybe_store_link_key283k1::Response::from_le_stream_exact(
                         stream,
                     )?,
                 ))
             }
-            <dsa_sign::Response as Parameter>::ID => Ok(Response::DsaSign(
+            <dsa_sign::Response as Parameter>::ID => Ok(Self::DsaSign(
                 dsa_sign::Response::from_le_stream_exact(stream)?,
             )),
-            <handler::DsaSign as Parameter>::ID => Ok(Response::DsaSignHandler(
+            <handler::DsaSign as Parameter>::ID => Ok(Self::DsaSignHandler(
                 handler::DsaSign::from_le_stream_exact(stream)?,
             )),
-            <dsa_verify::Response as Parameter>::ID => Ok(Response::DsaVerify(
+            <dsa_verify::Response as Parameter>::ID => Ok(Self::DsaVerify(
                 dsa_verify::Response::from_le_stream_exact(stream)?,
             )),
-            <handler::DsaVerify as Parameter>::ID => Ok(Response::DsaVerifyHandler(
+            <handler::DsaVerify as Parameter>::ID => Ok(Self::DsaVerifyHandler(
                 handler::DsaVerify::from_le_stream_exact(stream)?,
             )),
-            <dsa_verify283k1::Response as Parameter>::ID => Ok(Response::DsaVerify283k1(
+            <dsa_verify283k1::Response as Parameter>::ID => Ok(Self::DsaVerify283k1(
                 dsa_verify283k1::Response::from_le_stream_exact(stream)?,
             )),
-            <generate_cbke_keys::Response as Parameter>::ID => Ok(Response::GenerateCbkeKeys(
+            <generate_cbke_keys::Response as Parameter>::ID => Ok(Self::GenerateCbkeKeys(
                 generate_cbke_keys::Response::from_le_stream_exact(stream)?,
             )),
-            <handler::GenerateCbkeKeys as Parameter>::ID => Ok(Response::GenerateCbkeKeysHandler(
+            <handler::GenerateCbkeKeys as Parameter>::ID => Ok(Self::GenerateCbkeKeysHandler(
                 handler::GenerateCbkeKeys::from_le_stream_exact(stream)?,
             )),
             <generate_cbke_keys283k1::Response as Parameter>::ID => {
-                Ok(Response::GenerateCbkeKeys283k1(
+                Ok(Self::GenerateCbkeKeys283k1(
                     generate_cbke_keys283k1::Response::from_le_stream_exact(stream)?,
                 ))
             }
             <handler::GenerateCbkeKeys283k1 as Parameter>::ID => {
-                Ok(Response::GenerateCbkeKeys283k1Handler(
+                Ok(Self::GenerateCbkeKeys283k1Handler(
                     handler::GenerateCbkeKeys283k1::from_le_stream_exact(stream)?,
                 ))
             }
-            <get_certificate::Response as Parameter>::ID => Ok(Response::GetCertificate(
+            <get_certificate::Response as Parameter>::ID => Ok(Self::GetCertificate(
                 get_certificate::Response::from_le_stream_exact(stream)?,
             )),
             <save_preinstalled_cbke_data283k1::Response as Parameter>::ID => {
-                Ok(Response::SavePreinstalledCbkeData283k1(
+                Ok(Self::SavePreinstalledCbkeData283k1(
                     save_preinstalled_cbke_data283k1::Response::from_le_stream_exact(stream)?,
                 ))
             }
             <set_preinstalled_cbke_data::Response as Parameter>::ID => {
-                Ok(Response::SetPreinstalledCbkeData(
+                Ok(Self::SetPreinstalledCbkeData(
                     set_preinstalled_cbke_data::Response::from_le_stream_exact(stream)?,
                 ))
             }

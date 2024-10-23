@@ -31,7 +31,7 @@ pub enum Command {
     GreenPower(green_power::Command),
     /// Command parameters for messaging frames.
     Messaging(messaging::Command),
-    /// Command parameters for Manufacturing Test Library (MfgLib) frames.
+    /// Command parameters for Manufacturing Test Library (`MfgLib`) frames.
     MfgLib(mfglib::Command),
     /// Command parameters for networking frames.
     Networking(networking::Command),
@@ -64,7 +64,7 @@ pub enum Response {
     GreenPower(green_power::Response),
     /// Response parameters for messaging frames.
     Messaging(messaging::Response),
-    /// Response parameters for Manufacturing Test Library (MfgLib) frames.
+    /// Response parameters for Manufacturing Test Library (`MfgLib`) frames.
     MfgLib(mfglib::Response),
     /// Response parameters for networking frames.
     Networking(networking::Response),

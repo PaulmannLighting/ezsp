@@ -14,13 +14,12 @@ pub mod translation_table_clear;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {
-    IncomingMessageHandler(handler::IncomingMessage),
     ProxyTable(proxy_table::Response),
     Send(send::Response),
-    SentHandler(handler::Sent),
     SinkCommission(sink_commission::Response),
     SinkTable(sink_table::Response),
     TranslationTableClear(translation_table_clear::Response),
+    Handler(handler::Handler),
 }
 
 impl Parsable for Response {
@@ -29,9 +28,6 @@ impl Parsable for Response {
         T: Iterator<Item = u8>,
     {
         match id {
-            <handler::IncomingMessage as Parameter>::ID => Ok(Self::IncomingMessageHandler(
-                handler::IncomingMessage::from_le_stream_exact(stream)?,
-            )),
             <proxy_table::get_entry::Response as Parameter>::ID => {
                 Ok(Self::ProxyTable(proxy_table::Response::GetEntry(
                     proxy_table::get_entry::Response::from_le_stream_exact(stream)?,
@@ -50,9 +46,6 @@ impl Parsable for Response {
             <send::Response as Parameter>::ID => {
                 Ok(Self::Send(send::Response::from_le_stream_exact(stream)?))
             }
-            <handler::Sent as Parameter>::ID => Ok(Self::SentHandler(
-                handler::Sent::from_le_stream_exact(stream)?,
-            )),
             <sink_commission::Response as Parameter>::ID => Ok(Self::SinkCommission(
                 sink_commission::Response::from_le_stream_exact(stream)?,
             )),
@@ -106,6 +99,14 @@ impl Parsable for Response {
                     translation_table_clear::Response::from_le_stream_exact(stream)?,
                 ))
             }
+            <handler::IncomingMessage as Parameter>::ID => {
+                Ok(Self::Handler(handler::Handler::IncomingMessage(
+                    handler::IncomingMessage::from_le_stream_exact(stream)?,
+                )))
+            }
+            <handler::Sent as Parameter>::ID => Ok(Self::Handler(handler::Handler::Sent(
+                handler::Sent::from_le_stream_exact(stream)?,
+            ))),
             _ => Err(Decode::InvalidFrameId(id)),
         }
     }

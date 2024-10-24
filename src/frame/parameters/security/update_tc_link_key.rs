@@ -8,7 +8,7 @@ use crate::Error;
 const ID: u16 = 0x006C;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     max_attempts: u8,
 }
 

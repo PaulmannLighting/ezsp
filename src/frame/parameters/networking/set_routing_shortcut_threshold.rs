@@ -8,7 +8,7 @@ use crate::Error;
 const ID: u16 = 0x00D0;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     cost_thresh: u8,
 }
 

@@ -9,7 +9,7 @@ use crate::Error;
 const ID: u16 = 0x00CF;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     security_state: InitialSecurityState,
 }
 

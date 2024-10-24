@@ -6,7 +6,7 @@ use crate::frame::Identified;
 const ID: u16 = 0x007E;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     remote_eui64: Eui64,
     extended_timeout: bool,
 }

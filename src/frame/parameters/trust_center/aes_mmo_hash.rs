@@ -10,7 +10,7 @@ use crate::Error;
 const ID: u16 = 0x006F;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     context: MmoHashContext,
     finalize: bool,
     data: ByteSizedVec<u8>,

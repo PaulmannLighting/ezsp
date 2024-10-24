@@ -9,7 +9,7 @@ use crate::Error;
 const ID: u16 = 0x00C8;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     proxy_index: u8,
 }
 

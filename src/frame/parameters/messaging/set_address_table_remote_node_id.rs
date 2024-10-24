@@ -6,7 +6,7 @@ use crate::frame::Identified;
 const ID: u16 = 0x005D;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     address_table_index: u8,
     id: NodeId,
 }

@@ -10,7 +10,7 @@ use crate::Error;
 const ID: u16 = 0x0038;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     aps_frame: Frame,
     hops: u8,
     nonmember_radius: u8,

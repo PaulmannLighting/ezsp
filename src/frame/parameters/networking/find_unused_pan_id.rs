@@ -8,7 +8,7 @@ use crate::Error;
 const ID: u16 = 0x00D3;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     channel_mask: u32,
     duration: u8,
 }

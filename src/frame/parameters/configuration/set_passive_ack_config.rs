@@ -8,7 +8,7 @@ use crate::Error;
 const ID: u16 = 0x0105;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     config: u8,
     min_acks_needed: u8,
 }

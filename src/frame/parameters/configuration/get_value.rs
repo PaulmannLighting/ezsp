@@ -10,7 +10,7 @@ use crate::Error;
 const ID: u16 = 0x00AA;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     value_id: u8,
 }
 

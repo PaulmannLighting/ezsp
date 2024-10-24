@@ -10,7 +10,7 @@ use crate::Error;
 const ID: u16 = 0x003B;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     local_node_type: u8,
     beacon: Data,
     radio_tx_power: i8,

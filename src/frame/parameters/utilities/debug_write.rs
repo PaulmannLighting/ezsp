@@ -9,7 +9,7 @@ use crate::Error;
 const ID: u16 = 0x0012;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     binary_message: bool,
     message: ByteSizedVec<u8>,
 }

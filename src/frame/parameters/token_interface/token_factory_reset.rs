@@ -5,7 +5,7 @@ use crate::frame::Identified;
 const ID: u16 = 0x0077;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     exclude_outgoing_fc: bool,
     exclude_boot_counter: bool,
 }

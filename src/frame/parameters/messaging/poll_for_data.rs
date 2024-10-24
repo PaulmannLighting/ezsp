@@ -9,7 +9,7 @@ use crate::Error;
 const ID: u16 = 0x0042;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     interval: u16,
     units: u8,
     failure_limit: u8,

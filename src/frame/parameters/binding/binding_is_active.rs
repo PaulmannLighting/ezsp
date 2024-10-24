@@ -1,10 +1,13 @@
+//! Parameters for the [`Binding::binding_is_active`](crate::Binding::binding_is_active) command.
+
 use crate::frame::Identified;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x002E;
 
+/// Command parameters
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     index: u8,
 }
 

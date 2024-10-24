@@ -8,7 +8,7 @@ use crate::Error;
 const ID: u16 = 0x0082;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     address_table_index: u8,
     new_eui64: Eui64,
     new_id: NodeId,

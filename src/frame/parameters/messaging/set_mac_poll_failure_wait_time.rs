@@ -5,7 +5,7 @@ use crate::frame::Identified;
 const ID: u16 = 0x00F4;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     wait_before_retry_interval_ms: u8,
 }
 

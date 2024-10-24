@@ -10,7 +10,7 @@ use crate::Error;
 const ID: u16 = 0x00C6;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     action: bool,
     use_cca: bool,
     addr: Address,

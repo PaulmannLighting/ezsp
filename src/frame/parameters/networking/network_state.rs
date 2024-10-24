@@ -8,7 +8,7 @@ use crate::{Error, ValueError};
 const ID: u16 = 0x0018;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command;
+pub(crate) struct Command;
 
 impl Identified for Command {
     type Id = u16;

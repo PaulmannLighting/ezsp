@@ -4,7 +4,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 const ID: u16 = 0x00E3;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     has_long_up_time: bool,
 }
 

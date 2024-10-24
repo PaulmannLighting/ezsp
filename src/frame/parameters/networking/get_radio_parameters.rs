@@ -9,7 +9,7 @@ use crate::Error;
 const ID: u16 = 0x00FD;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     phy_index: u8,
 }
 

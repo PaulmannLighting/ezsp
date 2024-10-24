@@ -6,7 +6,7 @@ use crate::frame::Identified;
 const ID: u16 = 0x0057;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     new_pan: PanId,
 }
 

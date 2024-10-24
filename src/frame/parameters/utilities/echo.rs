@@ -6,7 +6,7 @@ use crate::types::ByteSizedVec;
 const ID: u16 = 0x0081;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     data: ByteSizedVec<u8>,
 }
 

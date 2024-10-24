@@ -9,7 +9,7 @@ use crate::Error;
 const ID: u16 = 0x0090;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     broadcast: bool,
     dest_eui64: Eui64,
     message: ByteSizedVec<u8>,

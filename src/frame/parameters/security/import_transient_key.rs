@@ -10,7 +10,7 @@ use crate::Error;
 const ID: u16 = 0x0111;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub struct Command {
+pub(crate) struct Command {
     context: ManContext<Eui64>,
     eui64: Eui64,
     plaintext_key: ManKey,

@@ -7,7 +7,7 @@ use crate::ember::Eui64;
 use crate::frame::Parameter;
 use crate::Error;
 
-const ID: u16 = 0x0110;
+const ID: u16 = 0x010D;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command {

@@ -8,6 +8,7 @@ pub mod remove_entry;
 pub mod set_entry;
 pub mod set_security_frame_counter;
 
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {
     ClearAll(clear_all::Response),
     FindOrAllocateEntry(find_or_allocate_entry::Response),

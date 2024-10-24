@@ -520,6 +520,11 @@ impl Parsable for Response {
                     messaging::handler::IncomingRouteError::from_le_stream_exact(stream)?,
                 ).into())))
             }
+            <messaging::handler::IncomingRouteRecord as Identified>::ID => {
+                Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::IncomingRouteRecord(
+                    messaging::handler::IncomingRouteRecord::from_le_stream_exact(stream)?,
+                ).into())))
+            }
             <messaging::handler::IncomingSenderEui64 as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::IncomingSenderEui64(
                     messaging::handler::IncomingSenderEui64::from_le_stream_exact(stream)?,

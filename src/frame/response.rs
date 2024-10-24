@@ -1246,6 +1246,123 @@ impl Parsable for Response {
                     wwah::set_parent_classification_enabled::Response::from_le_stream_exact(stream)?,
                 )))
             }
+            // ZLL responses
+            <zll::clear_tokens::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::ClearTokens(
+                    zll::clear_tokens::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::get_primary_channel_mask::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::GetPrimaryChannelMask(
+                    zll::get_primary_channel_mask::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::get_secondary_channel_mask::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::GetSecondaryChannelMask(
+                    zll::get_secondary_channel_mask::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::get_tokens::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::GetTokens(
+                    zll::get_tokens::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::is_zll_network::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::IsZllNetwork(
+                    zll::is_zll_network::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::network_ops::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::NetworkOps(
+                    zll::network_ops::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::operation_in_progress::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::OperationInProgress(
+                    zll::operation_in_progress::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::rx_on_when_idle_get_active::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::RxOnWhenIdleGetActive(
+                    zll::rx_on_when_idle_get_active::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::set_additional_state::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::SetAdditionalState(
+                    zll::set_additional_state::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::set_data_token::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::SetDataToken(
+                    zll::set_data_token::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::set_initial_security_state::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::SetInitialSecurityState(
+                    zll::set_initial_security_state::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::set_node_type::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::SetNodeType(
+                    zll::set_node_type::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::set_non_zll_network::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::SetNonZllNetwork(
+                    zll::set_non_zll_network::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::set_primary_channel_mask::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::SetPrimaryChannelMask(
+                    zll::set_primary_channel_mask::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::set_radio_idle_mode::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::SetRadioIdleMode(
+                    zll::set_radio_idle_mode::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::set_rx_on_when_idle::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::SetRxOnWhenIdle(
+                    zll::set_rx_on_when_idle::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::set_secondary_channel_mask::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::SetSecondaryChannelMask(
+                    zll::set_secondary_channel_mask::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::set_security_state_without_key::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::SetSecurityStateWithoutKey(
+                    zll::set_security_state_without_key::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::start_scan::Response as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::StartScan(
+                    zll::start_scan::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <zll::handler::AddressAssignment as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::Handler(zll::handler::Handler::AddressAssignment(
+                    zll::handler::AddressAssignment::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <zll::handler::NetworkFound as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::Handler(zll::handler::Handler::NetworkFound(
+                    zll::handler::NetworkFound::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <zll::handler::ScanComplete as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::Handler(zll::handler::Handler::ScanComplete(
+                    zll::handler::ScanComplete::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <zll::handler::TouchLinkTarget as Identified>::ID => {
+                Ok(Self::Zll(zll::Response::Handler(zll::handler::Handler::TouchLinkTarget(
+                    zll::handler::TouchLinkTarget::from_le_stream_exact(stream)?,
+                ))))
+            }
+            _=> Err(Decode::InvalidFrameId(id))
         }
     }
 }

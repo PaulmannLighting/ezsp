@@ -22,30 +22,6 @@ pub mod set_initial_security_state;
 pub mod update_tc_link_key;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Command {
-    CheckKeyContext(check_key_context::Command),
-    ClearKeyTable(clear_key_table::Command),
-    ClearTransientLinkKeys(clear_transient_link_keys::Command),
-    EraseKeyTableEntry(erase_key_table_entry::Command),
-    ExportKey(export_key::Command),
-    ExportLinkKeyByEui(export_link_key_by_eui::Command),
-    ExportLinkKeyByIndex(export_link_key_by_index::Command),
-    ExportTransientKeyByEui(export_transient_key::by_eui::Command),
-    ExportTransientKeyByIndex(export_transient_key::by_index::Command),
-    FindKeyTableEntry(find_key_table_entry::Command),
-    GetApsKeyInfo(get_aps_key_info::Command),
-    GetCurrentSecurityState(get_current_security_state::Command),
-    GetNetworkKeyInfo(get_network_key_info::Command),
-    ImportKey(import_key::Command),
-    ImportLinkKey(import_link_key::Command),
-    ImportTransientKey(import_transient_key::Command),
-    RequestLinkKey(request_link_key::Command),
-    SendTrustCenterLinkKey(send_trust_center_link_key::Command),
-    SetInitialSecurityState(set_initial_security_state::Command),
-    UpdateTcLinkKey(update_tc_link_key::Command),
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {
     CheckKeyContext(check_key_context::Response),
     ClearKeyTable(clear_key_table::Response),

@@ -4,7 +4,7 @@ use num_traits::FromPrimitive;
 use crate::ember::zll::Network;
 use crate::ember::Status;
 use crate::ezsp::zll::NetworkOperation;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::Error;
 
 const ID: u16 = 0x00B2;
@@ -27,7 +27,7 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -37,7 +37,7 @@ pub struct Response {
     status: u8,
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

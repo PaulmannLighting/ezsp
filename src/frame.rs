@@ -1,12 +1,13 @@
 use std::fmt::Debug;
 
+use le_stream::derive::{FromLeStream, ToLeStream};
+
 pub use handler::Handler;
 pub use header::{
     CallbackType, Command, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, Response,
     SleepMode,
 };
-use le_stream::derive::{FromLeStream, ToLeStream};
-pub use parameter::Parameter;
+pub use parameter::{Identified, Parameter};
 
 mod handler;
 mod header;

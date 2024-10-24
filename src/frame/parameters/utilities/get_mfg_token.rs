@@ -1,5 +1,5 @@
 use crate::ezsp::mfg_token::Id;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::types::ByteSizedVec;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
@@ -19,7 +19,7 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -29,7 +29,7 @@ pub struct Response {
     token_data: ByteSizedVec<u8>,
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

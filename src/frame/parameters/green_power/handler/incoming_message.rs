@@ -3,7 +3,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::gp::{Address, KeyType, SecurityLevel};
 use crate::ember::Status;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::types::ByteSizedVec;
 use crate::Error;
 
@@ -16,7 +16,7 @@ pub struct Handler {
     payload: Payload,
 }
 
-impl Parameter for Handler {
+impl Identified for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

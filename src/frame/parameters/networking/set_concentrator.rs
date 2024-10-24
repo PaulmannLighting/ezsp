@@ -3,7 +3,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::concentrator::Parameters;
 use crate::ember::Status;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::Error;
 
 const ID: u16 = 0x0010;
@@ -23,7 +23,7 @@ impl From<Option<Parameters>> for Command {
     }
 }
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -33,7 +33,7 @@ pub struct Response {
     status: u8,
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

@@ -1,6 +1,6 @@
 //! Parameters for [`Bootloader::aes_encrypt()`](crate::Bootloader::aes_encrypt).
 
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0094;
@@ -18,7 +18,7 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -35,7 +35,7 @@ impl Response {
     }
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

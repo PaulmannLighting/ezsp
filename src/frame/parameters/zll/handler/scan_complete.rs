@@ -2,7 +2,7 @@ use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 
 use crate::ember::Status;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 
 const ID: u16 = 0x00B7;
 
@@ -23,7 +23,7 @@ impl Handler {
     }
 }
 
-impl Parameter for Handler {
+impl Identified for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

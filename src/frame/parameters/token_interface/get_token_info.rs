@@ -3,7 +3,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::token::Info;
 use crate::ember::Status;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::Error;
 
 const ID: u16 = 0x0101;
@@ -20,7 +20,7 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -31,7 +31,7 @@ pub struct Response {
     token_info: Info,
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

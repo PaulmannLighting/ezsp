@@ -3,7 +3,7 @@ use num_traits::FromPrimitive;
 
 use crate::ezsp::config::Id;
 use crate::ezsp::Status;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::Error;
 
 const ID: u16 = 0x0052;
@@ -22,7 +22,7 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -33,7 +33,7 @@ pub struct Response {
     value: u16,
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

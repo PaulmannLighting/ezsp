@@ -4,7 +4,7 @@ use num_traits::FromPrimitive;
 use crate::ember::aps::Frame;
 use crate::ember::message::Outgoing;
 use crate::ember::Status;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::types::ByteSizedVec;
 use crate::Error;
 
@@ -79,7 +79,7 @@ impl Handler {
     }
 }
 
-impl Parameter for Handler {
+impl Identified for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

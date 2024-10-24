@@ -2,7 +2,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::ember::{DeviceDutyCycles, Status};
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::Error;
 
 const ID: u16 = 0x004C;
@@ -19,7 +19,7 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -30,7 +30,7 @@ pub struct Response {
     device_duty_cycles: DeviceDutyCycles,
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

@@ -2,7 +2,8 @@
 
 mod ezsp;
 
-use crate::frame::{Extended, Header, Parameter};
+use crate::frame::parsable::Parsable;
+use crate::frame::{Extended, Header, Identified, Parameter};
 use crate::Error;
 pub use ezsp::{
     Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, GreenPower, Messaging,
@@ -31,21 +32,21 @@ pub trait Transport: Send {
     fn send<H, P>(&mut self, command: P) -> impl Future<Output = Result<(), Error>> + Send
     where
         H: Header<P::Id>,
-        P: Parameter + ToLeStream;
+        P: Identified + ToLeStream;
 
     /// Receive a response from the NCP.
     fn receive<H, P>(&mut self) -> impl Future<Output = Result<P, Error>> + Send
     where
         H: Header<P::Id>,
-        P: Parameter + FromLeStream;
+        P: Parameter + Parsable;
 
     /// Communicate with the NCP.
     ///
     /// This assumes that `C::ID` and `R::ID` are the same.
     fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
     where
-        C: Parameter<Id = u16> + ToLeStream,
-        R: Clone + Debug + Parameter<Id = u16> + FromLeStream,
+        C: Identified<Id = u16> + ToLeStream,
+        R: Clone + Debug + Parameter<Id = u16> + Parsable,
     {
         async {
             self.send::<Extended, C>(command).await?;

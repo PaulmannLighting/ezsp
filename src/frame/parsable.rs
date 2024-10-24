@@ -1,5 +1,5 @@
 use crate::error::Decode;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::parameters::{
     binding, bootloader, cbke, green_power, messaging, mfglib, networking, security, trust_center,
     utilities, zll,
@@ -21,7 +21,7 @@ pub trait Parsable: Sized {
 
 impl<T> Parsable for T
 where
-    T: Parameter + FromLeStream,
+    T: Identified + FromLeStream,
 {
     fn parse_from_le_stream<S>(id: u16, stream: S) -> Result<Self, Decode>
     where

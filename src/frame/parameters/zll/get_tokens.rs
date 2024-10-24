@@ -1,7 +1,7 @@
 //! Get the ZLL tokens.
 
 use crate::ember::zll::{DataToken, SecurityToken};
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x00BC;
@@ -9,7 +9,7 @@ const ID: u16 = 0x00BC;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command;
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -35,7 +35,7 @@ impl Response {
     }
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

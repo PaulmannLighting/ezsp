@@ -1,7 +1,7 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::Eui64;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 
 const ID: u16 = 0x0075;
 
@@ -18,7 +18,7 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -28,7 +28,7 @@ pub struct Response {
     index: u8,
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

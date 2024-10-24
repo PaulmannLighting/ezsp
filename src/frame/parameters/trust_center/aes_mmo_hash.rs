@@ -3,7 +3,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::aes::MmoHashContext;
 use crate::ember::Status;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::types::ByteSizedVec;
 use crate::Error;
 
@@ -27,7 +27,7 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -38,7 +38,7 @@ pub struct Response {
     return_context: MmoHashContext,
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

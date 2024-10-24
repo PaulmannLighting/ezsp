@@ -1,7 +1,7 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::NodeId;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 
 const ID: u16 = 0x0030;
 
@@ -11,7 +11,7 @@ pub struct Command {
     node_id: NodeId,
 }
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -26,7 +26,7 @@ impl Command {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response;
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

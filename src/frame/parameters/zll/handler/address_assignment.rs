@@ -1,7 +1,7 @@
 use le_stream::derive::FromLeStream;
 
 use crate::ember::zll::AddressAssignment;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 
 const ID: u16 = 0x00B8;
 
@@ -34,7 +34,7 @@ impl Handler {
     }
 }
 
-impl Parameter for Handler {
+impl Identified for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

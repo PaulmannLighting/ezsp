@@ -2,7 +2,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::ember::entropy::Source;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::{Error, ValueError};
 
 const ID: u16 = 0x004F;
@@ -10,7 +10,7 @@ const ID: u16 = 0x004F;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -20,7 +20,7 @@ pub struct Response {
     entropy_source: u8,
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

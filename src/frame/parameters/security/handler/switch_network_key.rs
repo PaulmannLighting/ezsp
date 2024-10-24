@@ -1,6 +1,6 @@
 use le_stream::derive::FromLeStream;
 
-use crate::frame::Parameter;
+use crate::frame::Identified;
 
 const ID: u16 = 0x006E;
 
@@ -21,7 +21,7 @@ impl Handler {
     }
 }
 
-impl Parameter for Handler {
+impl Identified for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

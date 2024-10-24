@@ -1,5 +1,5 @@
 use crate::ember::Status;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::Error;
 
 use le_stream::derive::{FromLeStream, ToLeStream};
@@ -10,7 +10,7 @@ const ID: u16 = 0x0049;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -21,7 +21,7 @@ pub struct Response {
     value: u16,
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

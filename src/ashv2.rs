@@ -3,14 +3,16 @@
 use futures::{SinkExt, StreamExt};
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
+use std::future::Future;
 use std::hash::Hash;
 use std::io::ErrorKind;
 use tokio_util::codec::Framed;
 
 use crate::error::Error;
-use crate::frame::{Command, Frame, Header, Parameter};
+use crate::frame::{Command, Frame, Header, Identified, Parameter};
 use crate::transport::Transport;
 
+use crate::frame::parsable::Parsable;
 use ashv2::Stream;
 pub use callbacks::Callbacks;
 use codec::Codec;
@@ -55,7 +57,7 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
     async fn send<H, P>(&mut self, command: P) -> Result<(), Error>
     where
         H: Header<P::Id>,
-        P: Parameter + ToLeStream,
+        P: Identified + ToLeStream,
     {
         let header = self.next_header::<H, P::Id>(P::ID);
         self.framed().send(Frame::new(header, command)).await
@@ -64,7 +66,7 @@ impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
     async fn receive<H, P>(&mut self) -> Result<P, Error>
     where
         H: Header<P::Id> + Send,
-        P: Parameter + FromLeStream,
+        P: Parameter + Parsable,
     {
         let Some(frame) = self.framed::<H, P>().next().await else {
             return Err(

@@ -5,7 +5,7 @@ use crate::ember::network::Parameters;
 use crate::ember::node::Type;
 use crate::ember::Status;
 use crate::error::ValueError;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::Error;
 
 const ID: u16 = 0x0028;
@@ -13,7 +13,7 @@ const ID: u16 = 0x0028;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub struct Command;
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -25,7 +25,7 @@ pub struct Response {
     parameters: Parameters,
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

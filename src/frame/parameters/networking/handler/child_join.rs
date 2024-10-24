@@ -1,6 +1,6 @@
 use crate::ember::node::Type;
 use crate::ember::{Eui64, NodeId};
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 
@@ -51,7 +51,7 @@ impl Handler {
     }
 }
 
-impl Parameter for Handler {
+impl Identified for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

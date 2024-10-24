@@ -1,6 +1,6 @@
 use le_stream::derive::FromLeStream;
 
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x008E;
@@ -35,7 +35,7 @@ impl Handler {
     }
 }
 
-impl Parameter for Handler {
+impl Identified for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

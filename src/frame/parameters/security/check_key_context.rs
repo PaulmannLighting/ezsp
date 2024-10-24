@@ -4,7 +4,7 @@ use siliconlabs::zigbee::security::ManContext;
 use siliconlabs::Status;
 
 use crate::ember::Eui64;
-use crate::frame::Parameter;
+use crate::frame::Identified;
 use crate::Error;
 
 const ID: u16 = 0x0110;
@@ -21,7 +21,7 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
+impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -31,7 +31,7 @@ pub struct Response {
     status: u32,
 }
 
-impl Parameter for Response {
+impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

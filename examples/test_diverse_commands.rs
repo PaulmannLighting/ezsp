@@ -6,8 +6,8 @@ use ezsp::ashv2::Ashv2;
 use ezsp::ember::{CertificateData, Eui64, PublicKeyData};
 use ezsp::ezsp::value::Id;
 use ezsp::{
-    CertificateBasedKeyExchange, Configuration, Ezsp, Networking, ProxyTable, Security, SinkTable,
-    Utilities, MAX_FRAME_SIZE,
+    Cbke, Configuration, Ezsp, Networking, ProxyTable, Security, SinkTable, Utilities,
+    MAX_FRAME_SIZE,
 };
 use le_stream::ToLeStream;
 use log::{error, info};

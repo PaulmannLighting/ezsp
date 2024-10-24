@@ -13,8 +13,8 @@ use crate::frame::parameters::cbke::{
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 
-/// The `CertificateBasedKeyExchange` trait provides an interface for the Certificate Based Key Exchange features.
-pub trait CertificateBasedKeyExchange {
+/// The `Cbke` trait provides an interface for the Certificate Based Key Exchange features.
+pub trait Cbke {
     // TODO: Where is `ezspGenerateKeysRetrieveCert()` defined?
     /// Calculates the SMAC verification keys for both the initiator and responder roles of
     /// CBKE using the passed parameters and the stored public/private key pair previously
@@ -151,7 +151,7 @@ pub trait CertificateBasedKeyExchange {
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
-impl<T> CertificateBasedKeyExchange for T
+impl<T> Cbke for T
 where
     T: Transport,
 {

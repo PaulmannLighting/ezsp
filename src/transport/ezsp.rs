@@ -7,7 +7,7 @@ use crate::frame::{parameters::configuration::version, Extended, Legacy};
 
 pub use binding::Binding;
 pub use bootloader::Bootloader;
-pub use cbke::CertificateBasedKeyExchange;
+pub use cbke::Cbke;
 pub use configuration::Configuration;
 pub use green_power::{GreenPower, ProxyTable, SinkTable};
 pub use messaging::Messaging;
@@ -43,7 +43,7 @@ const MIN_NON_LEGACY_VERSION: u8 = 8;
 pub trait Ezsp:
     Binding
     + Bootloader
-    + CertificateBasedKeyExchange
+    + Cbke
     + Configuration
     + GreenPower
     + Messaging
@@ -67,7 +67,7 @@ impl<T> Ezsp for T
 where
     T: Binding
         + Bootloader
-        + CertificateBasedKeyExchange
+        + Cbke
         + Configuration
         + GreenPower
         + Messaging

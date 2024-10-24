@@ -1,4 +1,4 @@
-//! CBKE handler.
+//! CBKE handlers.
 
 use le_stream::derive::FromLeStream;
 

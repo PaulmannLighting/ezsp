@@ -25,6 +25,8 @@ impl Identified for Handler {
     const ID: Self::Id = ID;
 }
 
+/// Converts the handler into a [`PublicKeyData`] or an appropriate error
+/// by evaluating its status field.
 impl TryFrom<Handler> for PublicKeyData {
     type Error = Error;
 

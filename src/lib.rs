@@ -26,8 +26,7 @@ pub use frame::{
 };
 pub use result::Result;
 pub use transport::{
-    Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, GreenPower, Messaging,
-    Mfglib, Networking, ProxyTable, Security, SinkTable, TokenInterface, Transport, TrustCenter,
-    Utilities, Wwah, Zll,
+    Binding, Bootloader, Cbke, Configuration, Ezsp, GreenPower, Messaging, Mfglib, Networking,
+    ProxyTable, Security, SinkTable, TokenInterface, Transport, TrustCenter, Utilities, Wwah, Zll,
 };
 pub use types::SourceRouteDiscoveryMode;

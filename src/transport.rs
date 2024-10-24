@@ -6,9 +6,8 @@ use crate::frame::parsable::Parsable;
 use crate::frame::{Extended, Header, Identified, Parameter};
 use crate::Error;
 pub use ezsp::{
-    Binding, Bootloader, CertificateBasedKeyExchange, Configuration, Ezsp, GreenPower, Messaging,
-    Mfglib, Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities,
-    Wwah, Zll,
+    Binding, Bootloader, Cbke, Configuration, Ezsp, GreenPower, Messaging, Mfglib, Networking,
+    ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
 };
 use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;

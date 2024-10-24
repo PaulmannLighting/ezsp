@@ -1018,6 +1018,42 @@ impl Parsable for Response {
                     security::handler::ZigbeeKeyEstablishment::from_le_stream_exact(stream)?,
                 ))))
             }
+            // Token interface responses
+            <token_interface::get_token_count::Response as Parameter>::ID => {
+                Ok(Self::TokenInterface(token_interface::Response::GetTokenCount(
+                    token_interface::get_token_count::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <token_interface::get_token_data::Response as Parameter>::ID => {
+                Ok(Self::TokenInterface(token_interface::Response::GetTokenData(
+                    token_interface::get_token_data::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <token_interface::get_token_info::Response as Parameter>::ID => {
+                Ok(Self::TokenInterface(token_interface::Response::GetTokenInfo(
+                    token_interface::get_token_info::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <token_interface::gp_security_test_vectors::Response as Parameter>::ID => {
+                Ok(Self::TokenInterface(token_interface::Response::GpSecurityTestVectors(
+                    token_interface::gp_security_test_vectors::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <token_interface::reset_node::Response as Parameter>::ID => {
+                Ok(Self::TokenInterface(token_interface::Response::ResetNode(
+                    token_interface::reset_node::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <token_interface::set_token_data::Response as Parameter>::ID => {
+                Ok(Self::TokenInterface(token_interface::Response::SetTokenData(
+                    token_interface::set_token_data::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <token_interface::token_factory_reset::Response as Parameter>::ID => {
+                Ok(Self::TokenInterface(token_interface::Response::TokenFactoryReset(
+                    token_interface::token_factory_reset::Response::from_le_stream_exact(stream)?,
+                )))
+            }
         }
     }
 }

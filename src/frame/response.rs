@@ -1101,7 +1101,121 @@ impl Parsable for Response {
                     utilities::delay_test::Response::from_le_stream_exact(stream)?,
                 )))
             }
-            _=> todo!()
+            <utilities::echo::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::Echo(
+                    utilities::echo::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::get_eui64::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::GetEui64(
+                    utilities::get_eui64::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::get_library_status::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::GetLibraryStatus(
+                    utilities::get_library_status::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::get_mfg_token::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::GetMfgToken(
+                    utilities::get_mfg_token::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::get_node_id::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::GetNodeId(
+                    utilities::get_node_id::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::get_phy_interface_count::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::GetPhyInterfaceCount(
+                    utilities::get_phy_interface_count::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::get_random_number::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::GetRandomNumber(
+                    utilities::get_random_number::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::get_timer::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::GetTimer(
+                    utilities::get_timer::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::get_token::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::GetToken(
+                    utilities::get_token::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::get_true_random_entropy_source::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::GetTrueRandomEntropySource(
+                    utilities::get_true_random_entropy_source::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::get_xncp_info::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::GetXncpInfo(
+                    utilities::get_xncp_info::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::invalid_command::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::InvalidCommand(
+                    utilities::invalid_command::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::no_callbacks::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::NoCallbacks(
+                    utilities::no_callbacks::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::nop::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::Nop(
+                    utilities::nop::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::read_and_clear_counters::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::ReadAndClearCounters(
+                    utilities::read_and_clear_counters::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::read_counters::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::ReadCounters(
+                    utilities::read_counters::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::set_mfg_token::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::SetMfgToken(
+                    utilities::set_mfg_token::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::set_timer::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::SetTimer(
+                    utilities::set_timer::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::set_token::Response as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::SetToken(
+                    utilities::set_token::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <utilities::handler::CounterRollover as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::Handler(utilities::handler::Handler::CounterRollover(
+                    utilities::handler::CounterRollover::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <utilities::handler::CustomFrame as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::Handler(utilities::handler::Handler::CustomFrame(
+                    utilities::handler::CustomFrame::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <utilities::handler::StackTokenChanged as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::Handler(utilities::handler::Handler::StackTokenChanged(
+                    utilities::handler::StackTokenChanged::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <utilities::handler::Timer as Identified>::ID => {
+                Ok(Self::Utilities(utilities::Response::Handler(utilities::handler::Handler::Timer(
+                    utilities::handler::Timer::from_le_stream_exact(stream)?,
+                ))))
+            }
         }
     }
 }

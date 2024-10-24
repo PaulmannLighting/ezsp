@@ -21,9 +21,9 @@ pub struct Handler {
     binding_index: u8,
     address_index: u8,
     message: ByteSizedVec<u8>,
-    // FIXME: There appears to be one byte more at the end than specified in the docs.
-    // Assume note type for now.
-    node_type: u8,
+    // FIXME: There appears to be one byte more at the end than specified in the docs in most cases.
+    // Assume optional node type for now.
+    node_type: Option<u8>,
 }
 
 impl Handler {
@@ -93,8 +93,9 @@ impl Handler {
     /// # Errors
     ///
     /// Returns an error if the value is not a valid node type.
-    pub fn node_type(&self) -> Result<Type, u8> {
-        Type::from_u8(self.node_type).ok_or(self.node_type)
+    pub fn node_type(&self) -> Option<Type> {
+        self.node_type
+            .and_then(|node_type| Type::from_u8(node_type))
     }
 }
 

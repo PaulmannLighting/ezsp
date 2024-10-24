@@ -111,11 +111,13 @@ impl Parsable for Response {
                     bootloader::launch_standalone_bootloader::Response::from_le_stream_exact(stream)?,
                 )))
             }
+            // FIXME: ID collision with networking::set_radio_ieee802154_cca_mode. Was this removed?
+            /*
             <bootloader::override_current_channel::Response as Parameter>::ID => {
                 Ok(Self::Bootloader(bootloader::Response::OverrideCurrentChannel(
                     bootloader::override_current_channel::Response::from_le_stream_exact(stream)?,
                 )))
-            }
+            }*/
             <bootloader::send_bootload_message::Response as Parameter>::ID => {
                 Ok(Self::Bootloader(bootloader::Response::SendBootloadMessage(
                     bootloader::send_bootload_message::Response::from_le_stream_exact(stream)?,
@@ -609,6 +611,300 @@ impl Parsable for Response {
             <mfglib::handler::Rx as Parameter>::ID => {
                 Ok(Self::MfgLib(mfglib::Response::Handler(mfglib::handler::Handler::Rx(
                     mfglib::handler::Rx::from_le_stream_exact(stream)?,
+                ))))
+            }
+            // Networking responses
+            <networking::child_id::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::ChildId(
+                    networking::child_id::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::clear_stored_beacons::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::ClearStoredBeacons(
+                    networking::clear_stored_beacons::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::energy_scan_request::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::EnergyScanRequest(
+                    networking::energy_scan_request::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::find_and_rejoin_network::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::FindAndRejoinNetwork(
+                    networking::find_and_rejoin_network::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::find_unused_pan_id::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::FindUnusedPanId(
+                    networking::find_unused_pan_id::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::form_network::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::FormNetwork(
+                    networking::form_network::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_child_data::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetChildData(
+                    networking::get_child_data::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_current_duty_cycle::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetCurrentDutyCycle(
+                    networking::get_current_duty_cycle::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_duty_cycle_limits::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetDutyCycleLimits(
+                    networking::get_duty_cycle_limits::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_duty_cycle_state::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetDutyCycleState(
+                    networking::get_duty_cycle_state::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_first_beacon::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetFirstBeacon(
+                    networking::get_first_beacon::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_logical_channel::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetLogicalChannel(
+                    networking::get_logical_channel::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_neighbor::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetNeighbor(
+                    networking::get_neighbor::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_neighbor_frame_counter::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetNeighborFrameCounter(
+                    networking::get_neighbor_frame_counter::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_network_parameters::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetNetworkParameters(
+                    networking::get_network_parameters::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_next_beacon::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetNextBeacon(
+                    networking::get_next_beacon::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_num_stored_beacons::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetNumStoredBeacons(
+                    networking::get_num_stored_beacons::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_parent_child_parameters::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetParentChildParameters(
+                    networking::get_parent_child_parameters::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_radio_channel::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetRadioChannel(
+                    networking::get_radio_channel::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_radio_parameters::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetRadioParameters(
+                    networking::get_radio_parameters::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_route_table_entry::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetRouteTableEntry(
+                    networking::get_route_table_entry::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_routing_shortcut_threshold::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetRoutingShortcutThreshold(
+                    networking::get_routing_shortcut_threshold::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_source_route_table_entry::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetSourceRouteTableEntry(
+                    networking::get_source_route_table_entry::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_source_route_table_filled_size::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetSourceRouteTableFilledSize(
+                    networking::get_source_route_table_filled_size::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::get_source_route_table_total_size::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::GetSourceRouteTableTotalSize(
+                    networking::get_source_route_table_total_size::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::id::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::Id(
+                    networking::id::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::join_network::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::JoinNetwork(
+                    networking::join_network::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::join_network_directly::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::JoinNetworkDirectly(
+                    networking::join_network_directly::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::leave_network::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::LeaveNetwork(
+                    networking::leave_network::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::multi_phy_set_radio_channel::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::MultiPhySetRadioChannel(
+                    networking::multi_phy_set_radio_channel::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::multi_phy_set_radio_power::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::MultiPhySetRadioPower(
+                    networking::multi_phy_set_radio_power::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::multi_phy_start::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::MultiPhyStart(
+                    networking::multi_phy_start::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::multi_phy_stop::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::MultiPhyStop(
+                    networking::multi_phy_stop::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::neighbor_count::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::NeighborCount(
+                    networking::neighbor_count::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::network_init::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::NetworkInit(
+                    networking::network_init::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::network_state::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::NetworkState(
+                    networking::network_state::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::permit_joining::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::PermitJoining(
+                    networking::permit_joining::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::send_link_power_delta_request::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SendLinkPowerDeltaRequest(
+                    networking::send_link_power_delta_request::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::set_broken_route_error_code::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SetBrokenRouteErrorCode(
+                    networking::set_broken_route_error_code::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::set_child_data::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SetChildData(
+                    networking::set_child_data::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::set_concentrator::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SetConcentrator(
+                    networking::set_concentrator::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::set_duty_cycle_limits_in_stack::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SetDutyCycleLimitsInStack(
+                    networking::set_duty_cycle_limits_in_stack::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::set_logical_and_radio_channel::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SetLogicalAndRadioChannel(
+                    networking::set_logical_and_radio_channel::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::set_manufacturer_code::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SetManufacturerCode(networking::set_manufacturer_code::Response::from_le_stream_exact(stream)?)))
+            }
+            <networking::set_neighbor_frame_counter::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SetNeighborFrameCounter(
+                    networking::set_neighbor_frame_counter::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::set_power_descriptor::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SetPowerDescriptor(
+                    networking::set_power_descriptor::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::set_radio_channel::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SetRadioChannel(
+                    networking::set_radio_channel::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::set_radio_ieee802154_cca_mode::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SetRadioIeee802154CcaMode(
+                    networking::set_radio_ieee802154_cca_mode::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::set_radio_power::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SetRadioPower(
+                    networking::set_radio_power::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::set_routing_shortcut_threshold::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::SetRoutingShortcutThreshold(
+                    networking::set_routing_shortcut_threshold::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::start_scan::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::StartScan(
+                    networking::start_scan::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::stop_scan::Response as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::StopScan(
+                    networking::stop_scan::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <networking::handler::ChildJoin as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::Handler(networking::handler::Handler::ChildJoin(
+                    networking::handler::ChildJoin::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <networking::handler::DutyCycle as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::Handler(networking::handler::Handler::DutyCycle(
+                    networking::handler::DutyCycle::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <networking::handler::EnergyScanResult as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::Handler(networking::handler::Handler::EnergyScanResult(
+                    networking::handler::EnergyScanResult::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <networking::handler::NetworkFound as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::Handler(networking::handler::Handler::NetworkFound(
+                    networking::handler::NetworkFound::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <networking::handler::ScanComplete as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::Handler(networking::handler::Handler::ScanComplete(
+                    networking::handler::ScanComplete::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <networking::handler::StackStatus as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::Handler(networking::handler::Handler::StackStatus(
+                    networking::handler::StackStatus::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <networking::handler::UnusedPanIdFound as Parameter>::ID => {
+                Ok(Self::Networking(networking::Response::Handler(networking::handler::Handler::UnusedPanIdFound(
+                    networking::handler::UnusedPanIdFound::from_le_stream_exact(stream)?,
                 ))))
             }
         }

@@ -26,31 +26,6 @@ pub mod set_timer;
 pub mod set_token;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Command {
-    Callback(callback::Command),
-    CustomFrame(custom_frame::Command),
-    DebugWrite(debug_write::Command),
-    DelayTest(delay_test::Command),
-    Echo(echo::Command),
-    GetEui64(get_eui64::Command),
-    GetLibraryStatus(get_library_status::Command),
-    GetMfgToken(get_mfg_token::Command),
-    GetNodeId(get_node_id::Command),
-    GetPhyInterfaceCount(get_phy_interface_count::Command),
-    GetRandomNumber(get_random_number::Command),
-    GetTimer(get_timer::Command),
-    GetToken(get_token::Command),
-    GetTrueRandomEntropySource(get_true_random_entropy_source::Command),
-    GetXncpInfo(get_xncp_info::Command),
-    Nop(nop::Command),
-    ReadAndClearCounters(read_and_clear_counters::Command),
-    ReadCounters(read_counters::Command),
-    SetMfgToken(set_mfg_token::Command),
-    SetTimer(set_timer::Command),
-    SetToken(set_token::Command),
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {
     CustomFrame(custom_frame::Response),
     DebugWrite(debug_write::Response),

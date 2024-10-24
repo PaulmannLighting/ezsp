@@ -16,33 +16,9 @@ pub enum Handler {
     /// The counter has rolled over.
     CounterRollover(CounterRollover),
     /// A custom frame has been received.
-    CustomFrame(CustomFrame),
+    CustomFrame(Box<CustomFrame>),
     /// The stack token has changed.
     StackTokenChanged(StackTokenChanged),
     /// A timer event has occurred.
     Timer(Timer),
-}
-
-impl From<CounterRollover> for Handler {
-    fn from(handler: CounterRollover) -> Self {
-        Self::CounterRollover(handler)
-    }
-}
-
-impl From<CustomFrame> for Handler {
-    fn from(handler: CustomFrame) -> Self {
-        Self::CustomFrame(handler)
-    }
-}
-
-impl From<StackTokenChanged> for Handler {
-    fn from(handler: StackTokenChanged) -> Self {
-        Self::StackTokenChanged(handler)
-    }
-}
-
-impl From<Timer> for Handler {
-    fn from(handler: Timer) -> Self {
-        Self::Timer(handler)
-    }
 }

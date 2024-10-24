@@ -63,7 +63,7 @@ pub enum Response {
     FindUnusedPanId(find_unused_pan_id::Response),
     FormNetwork(form_network::Response),
     GetChildData(get_child_data::Response),
-    GetCurrentDutyCycle(get_current_duty_cycle::Response),
+    GetCurrentDutyCycle(Box<get_current_duty_cycle::Response>),
     GetDutyCycleLimits(get_duty_cycle_limits::Response),
     GetDutyCycleState(get_duty_cycle_state::Response),
     GetFirstBeacon(get_first_beacon::Response),

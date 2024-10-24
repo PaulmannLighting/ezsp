@@ -655,7 +655,7 @@ impl Parsable for Response {
             }
             <networking::get_current_duty_cycle::Response as Identified>::ID => {
                 Ok(Self::Networking(networking::Response::GetCurrentDutyCycle(
-                    networking::get_current_duty_cycle::Response::from_le_stream_exact(stream)?,
+                    networking::get_current_duty_cycle::Response::from_le_stream_exact(stream)?.into(),
                 )))
             }
             <networking::get_duty_cycle_limits::Response as Identified>::ID => {
@@ -1019,7 +1019,7 @@ impl Parsable for Response {
             }
             <security::handler::ZigbeeKeyEstablishment as Identified>::ID => {
                 Ok(Self::Security(security::Response::Handler(security::handler::Handler::ZigbeeKeyEstablishment(
-                    security::handler::ZigbeeKeyEstablishment::from_le_stream_exact(stream)?,
+                    security::handler::ZigbeeKeyEstablishment::from_le_stream_exact(stream)?.into(),
                 ))))
             }
             // Token interface responses
@@ -1030,7 +1030,7 @@ impl Parsable for Response {
             }
             <token_interface::get_token_data::Response as Identified>::ID => {
                 Ok(Self::TokenInterface(token_interface::Response::GetTokenData(
-                    token_interface::get_token_data::Response::from_le_stream_exact(stream)?,
+                    token_interface::get_token_data::Response::from_le_stream_exact(stream)?.into(),
                 )))
             }
             <token_interface::get_token_info::Response as Identified>::ID => {
@@ -1207,7 +1207,7 @@ impl Parsable for Response {
             }
             <utilities::handler::CustomFrame as Identified>::ID => {
                 Ok(Self::Utilities(utilities::Response::Handler(utilities::handler::Handler::CustomFrame(
-                    utilities::handler::CustomFrame::from_le_stream_exact(stream)?,
+                    utilities::handler::CustomFrame::from_le_stream_exact(stream)?.into(),
                 ))))
             }
             <utilities::handler::StackTokenChanged as Identified>::ID => {

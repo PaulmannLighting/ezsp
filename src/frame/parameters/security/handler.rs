@@ -12,17 +12,5 @@ pub enum Handler {
     /// The handler for the switch network key command.
     SwitchNetworkKey(SwitchNetworkKey),
     /// The handler for the Zigbee key establishment command.
-    ZigbeeKeyEstablishment(ZigbeeKeyEstablishment),
-}
-
-impl From<SwitchNetworkKey> for Handler {
-    fn from(handler: SwitchNetworkKey) -> Self {
-        Self::SwitchNetworkKey(handler)
-    }
-}
-
-impl From<ZigbeeKeyEstablishment> for Handler {
-    fn from(handler: ZigbeeKeyEstablishment) -> Self {
-        Self::ZigbeeKeyEstablishment(handler)
-    }
+    ZigbeeKeyEstablishment(Box<ZigbeeKeyEstablishment>),
 }

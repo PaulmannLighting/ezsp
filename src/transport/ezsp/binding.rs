@@ -39,7 +39,7 @@ pub trait Binding {
     fn get_binding_remote_node_id(
         &mut self,
         index: u8,
-    ) -> impl Future<Output = Result<NodeId, Error>> + Send;
+    ) -> impl Future<Output = Result<Option<NodeId>, Error>> + Send;
 
     /// Sets an entry in the binding table.
     fn set_binding(
@@ -85,7 +85,7 @@ where
             .try_into()
     }
 
-    async fn get_binding_remote_node_id(&mut self, index: u8) -> Result<NodeId, Error> {
+    async fn get_binding_remote_node_id(&mut self, index: u8) -> Result<Option<NodeId>, Error> {
         self.communicate::<_, get_binding_remote_node_id::Response>(
             get_binding_remote_node_id::Command::new(index),
         )

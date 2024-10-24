@@ -1,4 +1,6 @@
-use crate::ember::NodeId;
+//! Parameters for the [`Binding::get_binding_remote_node_id`](crate::Binding::get_binding_remote_node_id) command.
+
+use crate::ember::{NodeId, NULL_NODE_ID};
 use crate::frame::Identified;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
@@ -21,15 +23,21 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     node_id: NodeId,
 }
 
 impl Response {
+    /// The short ID of the destination node or `None` if no destination is known.
     #[must_use]
-    pub const fn node_id(&self) -> NodeId {
-        self.node_id
+    pub const fn node_id(&self) -> Option<NodeId> {
+        if self.node_id == NULL_NODE_ID {
+            None
+        } else {
+            Some(self.node_id)
+        }
     }
 }
 

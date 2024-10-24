@@ -907,6 +907,117 @@ impl Parsable for Response {
                     networking::handler::UnusedPanIdFound::from_le_stream_exact(stream)?,
                 ))))
             }
+            // Security responses
+            <security::check_key_context::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::CheckKeyContext(
+                    security::check_key_context::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::clear_key_table::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::ClearKeyTable(
+                    security::clear_key_table::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::clear_transient_link_keys::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::ClearTransientLinkKeys(
+                    security::clear_transient_link_keys::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::erase_key_table_entry::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::EraseKeyTableEntry(
+                    security::erase_key_table_entry::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::export_key::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::ExportKey(
+                    security::export_key::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::export_link_key_by_eui::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::ExportLinkKeyByEui(
+                    security::export_link_key_by_eui::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::export_link_key_by_index::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::ExportLinkKeyByIndex(
+                    security::export_link_key_by_index::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::export_transient_key::by_eui::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::ExportTransientKeyByEui(
+                    security::export_transient_key::by_eui::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::export_transient_key::by_index::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::ExportTransientKeyByIndex(
+                    security::export_transient_key::by_index::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::find_key_table_entry::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::FindKeyTableEntry(
+                    security::find_key_table_entry::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::get_aps_key_info::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::GetApsKeyInfo(
+                    security::get_aps_key_info::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::get_current_security_state::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::GetCurrentSecurityState(
+                    security::get_current_security_state::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::get_network_key_info::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::GetNetworkKeyInfo(
+                    security::get_network_key_info::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::import_key::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::ImportKey(
+                    security::import_key::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::import_link_key::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::ImportLinkKey(
+                    security::import_link_key::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::import_transient_key::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::ImportTransientKey(
+                    security::import_transient_key::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::request_link_key::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::RequestLinkKey(
+                    security::request_link_key::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::send_trust_center_link_key::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::SendTrustCenterLinkKey(
+                    security::send_trust_center_link_key::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::set_initial_security_state::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::SetInitialSecurityState(
+                    security::set_initial_security_state::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::update_tc_link_key::Response as Parameter>::ID => {
+                Ok(Self::Security(security::Response::UpdateTcLinkKey(
+                    security::update_tc_link_key::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <security::handler::SwitchNetworkKey as Parameter>::ID => {
+                Ok(Self::Security(security::Response::Handler(security::handler::Handler::SwitchNetworkKey(
+                    security::handler::SwitchNetworkKey::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <security::handler::ZigbeeKeyEstablishment as Parameter>::ID => {
+                Ok(Self::Security(security::Response::Handler(security::handler::Handler::ZigbeeKeyEstablishment(
+                    security::handler::ZigbeeKeyEstablishment::from_le_stream_exact(stream)?,
+                ))))
+            }
         }
     }
 }

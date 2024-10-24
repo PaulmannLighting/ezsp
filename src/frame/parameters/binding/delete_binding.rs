@@ -1,3 +1,5 @@
+//! Parameters for the [`Binding::delete_binding`](crate::Binding::delete_binding) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -24,6 +26,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
@@ -34,6 +37,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert the response into a result by evaluating its status field.
 impl TryFrom<Response> for () {
     type Error = Error;
 

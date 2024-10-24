@@ -23,12 +23,14 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     active: bool,
 }
 
 impl Response {
+    /// True if the binding table entry is active, false otherwise.
     #[must_use]
     pub const fn active(&self) -> bool {
         self.active

@@ -1,3 +1,5 @@
+//! Parameters for the [`Binding::get_binding`](crate::Binding::get_binding) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -25,6 +27,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
@@ -36,6 +39,8 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert the response into its [`TableEntry`] or an appropriate error
+/// by evaluating its status field.
 impl TryFrom<Response> for TableEntry {
     type Error = Error;
 

@@ -1,8 +1,9 @@
 //! Parameters for the [`Binding::get_binding_remote_node_id`](crate::Binding::get_binding_remote_node_id) command.
 
+use le_stream::derive::{FromLeStream, ToLeStream};
+
 use crate::ember::{NodeId, NULL_NODE_ID};
 use crate::frame::Identified;
-use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x002F;
 

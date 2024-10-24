@@ -37,7 +37,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
-/// Convert the response into a result by evaluating its status field.
+/// Convert the response into a [`Result<()>`](crate::Result) by evaluating its status field.
 impl TryFrom<Response> for () {
     type Error = Error;
 

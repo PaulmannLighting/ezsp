@@ -1,9 +1,10 @@
+use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
+
 use crate::ember::Status;
 use crate::frame::Identified;
 use crate::types::ByteSizedVec;
 use crate::Error;
-use le_stream::derive::FromLeStream;
-use num_traits::FromPrimitive;
 
 const ID: u16 = 0x0093;
 

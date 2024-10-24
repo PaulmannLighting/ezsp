@@ -1,7 +1,10 @@
-//! Parameters for [`Bootloader::get_standalone_bootloader_version_plat_micro_phy()`](crate::Bootloader::get_standalone_bootloader_version_plat_micro_phy).
+//! Parameters for the [`Bootloader::get_standalone_bootloader_version_plat_micro_phy()`](crate::Bootloader::get_standalone_bootloader_version_plat_micro_phy)
+//! command.
 
-use crate::frame::Identified;
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::bootoader::BOOTLOADER_INVALID_VERSION;
+use crate::frame::Identified;
 
 const ID: u16 = 0x0091;
 
@@ -13,7 +16,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
-/// The response to a get standalone bootloader version plat micro phy command.
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     bootloader_version: u16,
@@ -23,12 +26,15 @@ pub struct Response {
 }
 
 impl Response {
-    // TODO: Where is `BOOTLOADER_INVALID_VERSION` defined?
-    /// `BOOTLOADER_INVALID_VERSION` if the standalone bootloader is not present,
+    /// `None` if the standalone bootloader is not present,
     /// or the version of the installed standalone bootloader.
     #[must_use]
-    pub const fn bootloader_version(&self) -> u16 {
-        self.bootloader_version
+    pub const fn bootloader_version(&self) -> Option<u16> {
+        if self.bootloader_version == BOOTLOADER_INVALID_VERSION {
+            None
+        } else {
+            Some(self.bootloader_version)
+        }
     }
 
     /// The value of `PLAT` on the node.

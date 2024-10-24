@@ -1,7 +1,8 @@
 //! Parameters for the [`Binding::binding_is_active`](crate::Binding::binding_is_active) command.
 
-use crate::frame::Identified;
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::frame::Identified;
 
 const ID: u16 = 0x002E;
 

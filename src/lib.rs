@@ -6,6 +6,7 @@
 //! This library is free software and is not affiliated with Silicon Labs.
 #[cfg(feature = "ashv2")]
 pub mod ashv2;
+mod bootoader;
 mod constants;
 pub mod ember;
 mod error;

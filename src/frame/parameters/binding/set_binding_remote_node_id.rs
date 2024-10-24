@@ -1,3 +1,5 @@
+//! Parameters for the [`Binding::set_binding_remote_node_id`](crate::Binding::set_binding_remote_node_id) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::NodeId;
@@ -23,6 +25,7 @@ impl Command {
     }
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response;
 

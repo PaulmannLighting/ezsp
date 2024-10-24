@@ -23,6 +23,8 @@ impl Identified for Handler {
     const ID: Self::Id = ID;
 }
 
+/// Convert the handler into the index or an appropriate error
+/// by evaluating its policy decision field.
 impl TryFrom<Handler> for u8 {
     type Error = Error;
 

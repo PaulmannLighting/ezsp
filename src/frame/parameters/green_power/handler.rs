@@ -16,15 +16,3 @@ pub enum Handler {
     /// Callbacks for sent messages.
     Sent(Sent),
 }
-
-impl From<IncomingMessage> for Handler {
-    fn from(handler: IncomingMessage) -> Self {
-        Self::IncomingMessage(handler)
-    }
-}
-
-impl From<Sent> for Handler {
-    fn from(handler: Sent) -> Self {
-        Self::Sent(handler)
-    }
-}

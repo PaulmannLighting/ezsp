@@ -10,9 +10,3 @@ pub enum Handler {
     /// The handler for the trust center join command.
     TrustCenterJoin(TrustCenterJoin),
 }
-
-impl From<TrustCenterJoin> for Handler {
-    fn from(handler: TrustCenterJoin) -> Self {
-        Self::TrustCenterJoin(handler)
-    }
-}

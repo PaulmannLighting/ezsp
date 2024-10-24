@@ -22,27 +22,3 @@ pub enum Handler {
     /// The handler for the touch link target command.
     TouchLinkTarget(TouchLinkTarget),
 }
-
-impl From<AddressAssignment> for Handler {
-    fn from(handler: AddressAssignment) -> Self {
-        Self::AddressAssignment(handler)
-    }
-}
-
-impl From<NetworkFound> for Handler {
-    fn from(handler: NetworkFound) -> Self {
-        Self::NetworkFound(handler)
-    }
-}
-
-impl From<ScanComplete> for Handler {
-    fn from(handler: ScanComplete) -> Self {
-        Self::ScanComplete(handler)
-    }
-}
-
-impl From<TouchLinkTarget> for Handler {
-    fn from(handler: TouchLinkTarget) -> Self {
-        Self::TouchLinkTarget(handler)
-    }
-}

@@ -138,6 +138,11 @@ impl Parsable for Handler {
                     messaging::handler::IncomingRouteError::from_le_stream_exact(stream)?,
                 ),
             )),
+            messaging::handler::IncomingRouteRecord::ID => Ok(Self::Messaging(
+                messaging::handler::Handler::IncomingRouteRecord(
+                    messaging::handler::IncomingRouteRecord::from_le_stream_exact(stream)?,
+                ),
+            )),
             messaging::handler::IncomingSenderEui64::ID => Ok(Self::Messaging(
                 messaging::handler::Handler::IncomingSenderEui64(
                     messaging::handler::IncomingSenderEui64::from_le_stream_exact(stream)?,

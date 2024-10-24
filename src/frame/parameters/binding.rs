@@ -1,11 +1,5 @@
 //! Binding Frames
 
-use le_stream::FromLeStream;
-
-use crate::error::Decode;
-use crate::frame::parsable::Parsable;
-use crate::frame::Parameter;
-
 pub mod binding_is_active;
 pub mod clear_binding_table;
 pub mod delete_binding;
@@ -34,50 +28,4 @@ pub enum Response {
     SetBindingRemoteNodeId(set_binding_remote_node_id::Response),
     /// Callback handlers.
     Handler(handler::Handler),
-}
-
-impl Parsable for Response {
-    fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, Decode>
-    where
-        T: Iterator<Item = u8>,
-    {
-        match id {
-            <binding_is_active::Response as Parameter>::ID => Ok(Self::BindingIsActive(
-                binding_is_active::Response::from_le_stream_exact(stream)?,
-            )),
-            <clear_binding_table::Response as Parameter>::ID => Ok(Self::ClearBindingTable(
-                clear_binding_table::Response::from_le_stream_exact(stream)?,
-            )),
-            <delete_binding::Response as Parameter>::ID => Ok(Self::DeleteBinding(
-                delete_binding::Response::from_le_stream_exact(stream)?,
-            )),
-            <get_binding::Response as Parameter>::ID => Ok(Self::GetBinding(
-                get_binding::Response::from_le_stream_exact(stream)?,
-            )),
-            <get_binding_remote_node_id::Response as Parameter>::ID => {
-                Ok(Self::GetBindingRemoteNodeId(
-                    get_binding_remote_node_id::Response::from_le_stream_exact(stream)?,
-                ))
-            }
-            <set_binding::Response as Parameter>::ID => Ok(Self::SetBinding(
-                set_binding::Response::from_le_stream_exact(stream)?,
-            )),
-            <set_binding_remote_node_id::Response as Parameter>::ID => {
-                Ok(Self::SetBindingRemoteNodeId(
-                    set_binding_remote_node_id::Response::from_le_stream_exact(stream)?,
-                ))
-            }
-            <handler::RemoteDeleteBinding as Parameter>::ID => {
-                Ok(Self::Handler(handler::Handler::RemoteDeleteBinding(
-                    handler::RemoteDeleteBinding::from_le_stream_exact(stream)?,
-                )))
-            }
-            <handler::RemoteSetBinding as Parameter>::ID => {
-                Ok(Self::Handler(handler::Handler::RemoteSetBinding(
-                    handler::RemoteSetBinding::from_le_stream_exact(stream)?,
-                )))
-            }
-            _ => Err(Decode::InvalidFrameId(id)),
-        }
-    }
 }

@@ -14,7 +14,8 @@ mod header;
 mod parameter;
 pub mod parameters;
 pub mod parsable;
-mod response;
+#[cfg(feature = "responses")]
+pub mod response;
 
 /// A frame that contains a header and parameters.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]

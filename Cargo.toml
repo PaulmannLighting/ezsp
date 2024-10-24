@@ -42,6 +42,7 @@ required-features = ["ashv2"]
 
 [features]
 ashv2 = ["dep:ashv2", "dep:tokio-util", "dep:futures"]
+responses = []
 
 [profile.release]
 opt-level = 3

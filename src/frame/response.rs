@@ -1,3 +1,6 @@
+//! Enumaration containing all possible `EZSP` response parameters.
+#![cfg(feature = "responses")]
+
 use le_stream::FromLeStream;
 
 use crate::error::Decode;
@@ -44,6 +47,7 @@ pub enum Response {
 }
 
 impl Parsable for Response {
+    #[allow(clippy::too_many_lines)]
     fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, Decode>
     where
         T: Iterator<Item = u8>,

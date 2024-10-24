@@ -65,7 +65,7 @@ impl Attribbute {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     status: u8,
     payload: Attribbute,
 }

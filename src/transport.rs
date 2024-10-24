@@ -9,7 +9,7 @@ pub use ezsp::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GreenPower, Messaging, Mfglib, Networking,
     ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
 };
-use le_stream::{FromLeStream, ToLeStream};
+use le_stream::ToLeStream;
 use std::fmt::Debug;
 use std::future::Future;
 use std::hash::Hash;

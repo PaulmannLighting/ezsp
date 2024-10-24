@@ -19,7 +19,7 @@ mod types;
 pub use constants::{MAX_FRAME_SIZE, MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 pub use error::{Error, ValueError};
 #[cfg(feature = "responses")]
-pub use frame::Response;
+pub use frame::response::Response;
 pub use frame::{
     parameters, CallbackType, Extended, FormatVersion, Frame, Handler, Header, HighByte, Legacy,
     LowByte, SleepMode,

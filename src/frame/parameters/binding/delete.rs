@@ -1,25 +1,23 @@
-//! Parameters for the [`Binding::set_binding`](crate::Binding::set_binding) command.
+//! Parameters for the [`Binding::delete_binding`](crate::Binding::delete) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
-use crate::ember::binding::TableEntry;
 use crate::ember::Status;
 use crate::frame::Identified;
 use crate::Error;
 
-const ID: u16 = 0x002B;
+const ID: u16 = 0x002D;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
     index: u8,
-    value: TableEntry,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(index: u8, value: TableEntry) -> Self {
-        Self { index, value }
+    pub const fn new(index: u8) -> Self {
+        Self { index }
     }
 }
 

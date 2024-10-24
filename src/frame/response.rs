@@ -1,5 +1,4 @@
-//! Enumaration containing all possible `EZSP` response parameters.
-#![cfg(feature = "responses")]
+//! Enumeration containing all possible `EZSP` response parameters.
 
 use le_stream::FromLeStream;
 
@@ -54,39 +53,39 @@ impl Parsable for Response {
     {
         match id {
             // Binding responses
-            <binding::binding_is_active::Response as Identified>::ID => {
-                Ok(Self::Binding(binding::Response::BindingIsActive(
-                    binding::binding_is_active::Response::from_le_stream_exact(stream)?,
+            <binding::is_active::Response as Identified>::ID => {
+                Ok(Self::Binding(binding::Response::IsActive(
+                    binding::is_active::Response::from_le_stream_exact(stream)?,
                 )))
             }
-            <binding::clear_binding_table::Response as Identified>::ID => {
-                Ok(Self::Binding(binding::Response::ClearBindingTable(
-                    binding::clear_binding_table::Response::from_le_stream_exact(stream)?,
+            <binding::clear_table::Response as Identified>::ID => {
+                Ok(Self::Binding(binding::Response::ClearTable(
+                    binding::clear_table::Response::from_le_stream_exact(stream)?,
                 )))
             }
-            <binding::delete_binding::Response as Identified>::ID => {
-                Ok(Self::Binding(binding::Response::DeleteBinding(
-                    binding::delete_binding::Response::from_le_stream_exact(stream)?,
+            <binding::delete::Response as Identified>::ID => {
+                Ok(Self::Binding(binding::Response::Delete(
+                    binding::delete::Response::from_le_stream_exact(stream)?,
                 )))
             }
-            <binding::get_binding::Response as Identified>::ID => {
-                Ok(Self::Binding(binding::Response::GetBinding(
-                    binding::get_binding::Response::from_le_stream_exact(stream)?,
+            <binding::get::Response as Identified>::ID => {
+                Ok(Self::Binding(binding::Response::Get(
+                    binding::get::Response::from_le_stream_exact(stream)?,
                 )))
             }
-            <binding::get_binding_remote_node_id::Response as Identified>::ID => {
-                Ok(Self::Binding(binding::Response::GetBindingRemoteNodeId(
-                    binding::get_binding_remote_node_id::Response::from_le_stream_exact(stream)?,
+            <binding::get_remote_node_id::Response as Identified>::ID => {
+                Ok(Self::Binding(binding::Response::GetRemoteNodeId(
+                    binding::get_remote_node_id::Response::from_le_stream_exact(stream)?,
                 )))
             }
-            <binding::set_binding::Response as Identified>::ID => {
-                Ok(Self::Binding(binding::Response::SetBinding(
-                    binding::set_binding::Response::from_le_stream_exact(stream)?,
+            <binding::set::Response as Identified>::ID => {
+                Ok(Self::Binding(binding::Response::Set(
+                    binding::set::Response::from_le_stream_exact(stream)?,
                 )))
             }
-            <binding::set_binding_remote_node_id::Response as Identified>::ID => {
-                Ok(Self::Binding(binding::Response::SetBindingRemoteNodeId(
-                    binding::set_binding_remote_node_id::Response::from_le_stream_exact(stream)?,
+            <binding::set_remote_node_id::Response as Identified>::ID => {
+                Ok(Self::Binding(binding::Response::SetRemoteNodeId(
+                    binding::set_remote_node_id::Response::from_le_stream_exact(stream)?,
                 )))
             }
             <binding::handler::RemoteDeleteBinding as Identified>::ID => {
@@ -96,7 +95,7 @@ impl Parsable for Response {
             }
             <binding::handler::RemoteSetBinding as Identified>::ID => {
                 Ok(Self::Binding(binding::Response::Handler(binding::handler::Handler::RemoteSetBinding(
-                    binding::handler::RemoteSetBinding::from_le_stream_exact(stream)?,
+                    binding::handler::RemoteSetBinding::from_le_stream_exact(stream)?.into(),
                 ))))
             }
             // Bootloader responses
@@ -190,7 +189,7 @@ impl Parsable for Response {
             }
             <cbke::handler::DsaSign as Identified>::ID => {
                 Ok(Self::Cbke(cbke::Response::Handler(cbke::handler::Handler::DsaSign(
-                    cbke::handler::DsaSign::from_le_stream_exact(stream)?,
+                    cbke::handler::DsaSign::from_le_stream_exact(stream)?.into(),
                 ))))
             }
             <cbke::handler::DsaVerify as Identified>::ID => {
@@ -277,7 +276,7 @@ impl Parsable for Response {
             // Green Power responses
             <green_power::proxy_table::get_entry::Response as Identified>::ID => {
                 Ok(Self::GreenPower(green_power::Response::ProxyTable(green_power::proxy_table::Response::GetEntry(
-                    green_power::proxy_table::get_entry::Response::from_le_stream_exact(stream)?,
+                    green_power::proxy_table::get_entry::Response::from_le_stream_exact(stream)?.into(),
                 ))))
             }
             <green_power::proxy_table::lookup::Response as Identified>::ID => {
@@ -312,7 +311,7 @@ impl Parsable for Response {
             }
             <green_power::sink_table::get_entry::Response as Identified>::ID => {
                 Ok(Self::GreenPower(green_power::Response::SinkTable(green_power::sink_table::Response::GetEntry(
-                    green_power::sink_table::get_entry::Response::from_le_stream_exact(stream)?,
+                    green_power::sink_table::get_entry::Response::from_le_stream_exact(stream)?.into(),
                 ))))
             }
             <green_power::sink_table::init::Response as Identified>::ID => {
@@ -343,12 +342,12 @@ impl Parsable for Response {
             <green_power::handler::IncomingMessage as Identified>::ID => {
                 Ok(Self::GreenPower(green_power::Response::Handler(green_power::handler::Handler::IncomingMessage(
                     green_power::handler::IncomingMessage::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             <green_power::handler::Sent as Identified>::ID => {
                 Ok(Self::GreenPower(green_power::Response::Handler(green_power::handler::Handler::Sent(
                     green_power::handler::Sent::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             // Messaging responses
             <messaging::address_table_entry_is_active::Response as Identified>::ID => {
@@ -499,62 +498,62 @@ impl Parsable for Response {
             <messaging::handler::IdConflict as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::IdConflict(
                     messaging::handler::IdConflict::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             <messaging::handler::IncomingManyToOneRouteRequest as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::IncomingManyToOneRouteRequest(
                     messaging::handler::IncomingManyToOneRouteRequest::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             <messaging::handler::IncomingMessage as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::IncomingMessage(
                     messaging::handler::IncomingMessage::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             <messaging::handler::IncomingNetworkStatus as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::IncomingNetworkStatus(
                     messaging::handler::IncomingNetworkStatus::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             <messaging::handler::IncomingRouteError as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::IncomingRouteError(
                     messaging::handler::IncomingRouteError::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             <messaging::handler::IncomingSenderEui64 as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::IncomingSenderEui64(
                     messaging::handler::IncomingSenderEui64::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             <messaging::handler::MacFilterMatchMessage as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::MacFilterMatchMessage(
                     messaging::handler::MacFilterMatchMessage::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             <messaging::handler::MacPassthroughMessage as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::MacPassthroughMessage(
                     messaging::handler::MacPassthroughMessage::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             <messaging::handler::MessageSent as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::MessageSent(
                     messaging::handler::MessageSent::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             <messaging::handler::Poll as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::Poll(
                     messaging::handler::Poll::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             <messaging::handler::PollComplete as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::PollComplete(
                     messaging::handler::PollComplete::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             <messaging::handler::RawTransmitComplete as Identified>::ID => {
                 Ok(Self::Messaging(messaging::Response::Handler(messaging::handler::Handler::RawTransmitComplete(
                     messaging::handler::RawTransmitComplete::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             // MfgLib responses
             <mfglib::end::Response as Identified>::ID => {
@@ -615,7 +614,7 @@ impl Parsable for Response {
             <mfglib::handler::Rx as Identified>::ID => {
                 Ok(Self::MfgLib(mfglib::Response::Handler(mfglib::handler::Handler::Rx(
                     mfglib::handler::Rx::from_le_stream_exact(stream)?,
-                ))))
+                ).into())))
             }
             // Networking responses
             <networking::child_id::Response as Identified>::ID => {

@@ -3,9 +3,10 @@ use std::fmt::Debug;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 pub use handler::Handler;
+#[cfg(feature = "ashv2")]
+pub use header::Command;
 pub use header::{
-    CallbackType, Command, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, Response,
-    SleepMode,
+    CallbackType, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
 };
 pub use parameter::{Identified, Parameter};
 

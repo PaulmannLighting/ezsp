@@ -62,5 +62,5 @@ pub enum Response {
     SetSourceRouteDiscoveryMode(set_source_route_discovery_mode::Response),
     UnicastCurrentNetworkKey(unicast_current_network_key::Response),
     WriteNodeData(write_node_data::Response),
-    Handler(handler::Handler),
+    Handler(Box<handler::Handler>),
 }

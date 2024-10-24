@@ -1,15 +1,19 @@
+use std::fmt::Debug;
+use std::hash::Hash;
+
+use le_stream::{FromLeStream, ToLeStream};
+
+pub use extended::Extended;
+pub use high_byte::{FormatVersion, HighByte};
+pub use legacy::Legacy;
+#[cfg(feature = "ashv2")]
+pub use low_byte::Command;
+pub use low_byte::{CallbackType, LowByte, SleepMode};
+
 mod extended;
 mod high_byte;
 mod legacy;
 mod low_byte;
-
-pub use extended::Extended;
-pub use high_byte::{FormatVersion, HighByte};
-use le_stream::{FromLeStream, ToLeStream};
-pub use legacy::Legacy;
-pub use low_byte::{CallbackType, Command, LowByte, Response, SleepMode};
-use std::fmt::Debug;
-use std::hash::Hash;
 
 /// A trait to represent the header of a frame.
 pub trait Header<T>:

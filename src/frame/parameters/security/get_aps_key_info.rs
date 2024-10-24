@@ -29,7 +29,7 @@ impl Identified for Command {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub(crate) struct Response {
+pub struct Response {
     payload: KeyInfo,
     status: u32,
 }

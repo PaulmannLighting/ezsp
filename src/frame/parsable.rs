@@ -58,7 +58,7 @@ impl Parsable for Handler {
             )),
             binding::handler::RemoteSetBinding::ID => {
                 Ok(Self::Binding(binding::handler::Handler::RemoteSetBinding(
-                    binding::handler::RemoteSetBinding::from_le_stream_exact(stream)?,
+                    binding::handler::RemoteSetBinding::from_le_stream_exact(stream)?.into(),
                 )))
             }
             // Bootloader callbacks.
@@ -84,7 +84,7 @@ impl Parsable for Handler {
                 )))
             }
             cbke::handler::DsaSign::ID => Ok(Self::Cbke(cbke::handler::Handler::DsaSign(
-                cbke::handler::DsaSign::from_le_stream_exact(stream)?,
+                cbke::handler::DsaSign::from_le_stream_exact(stream)?.into(),
             ))),
             cbke::handler::DsaVerify::ID => Ok(Self::Cbke(cbke::handler::Handler::DsaVerify(
                 cbke::handler::DsaVerify::from_le_stream_exact(stream)?,

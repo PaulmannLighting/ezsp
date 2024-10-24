@@ -1,12 +1,12 @@
-//! Parameters for the [`Binding::binding_is_active`](crate::Binding::binding_is_active) command.
+//! Parameters for the [`Binding::get_binding_remote_node_id`](crate::Binding::get_remote_node_id) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 
+use crate::ember::{NodeId, NULL_NODE_ID};
 use crate::frame::Identified;
 
-const ID: u16 = 0x002E;
+const ID: u16 = 0x002F;
 
-/// Command parameters
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
     index: u8,
@@ -27,14 +27,18 @@ impl Identified for Command {
 /// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
-    active: bool,
+    node_id: NodeId,
 }
 
 impl Response {
-    /// True if the binding table entry is active, false otherwise.
+    /// The short ID of the destination node or `None` if no destination is known.
     #[must_use]
-    pub const fn active(&self) -> bool {
-        self.active
+    pub const fn node_id(&self) -> Option<NodeId> {
+        if self.node_id == NULL_NODE_ID {
+            None
+        } else {
+            Some(self.node_id)
+        }
     }
 }
 

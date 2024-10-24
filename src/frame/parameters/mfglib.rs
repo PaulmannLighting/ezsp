@@ -13,6 +13,7 @@ pub mod start_tone;
 pub mod stop_stream;
 pub mod stop_tone;
 
+#[allow(variant_size_differences)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {
     End(end::Response),
@@ -26,5 +27,5 @@ pub enum Response {
     StartTone(start_tone::Response),
     StopStream(stop_stream::Response),
     StopTone(stop_tone::Response),
-    Handler(handler::Handler),
+    Handler(Box<handler::Handler>),
 }

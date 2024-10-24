@@ -18,6 +18,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[must_use]
     pub const fn channel(&self) -> u8 {
         self.channel
     }

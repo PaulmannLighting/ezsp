@@ -1,4 +1,4 @@
-//! Parameters for the [`Binding::get_binding`](crate::Binding::get_binding) command.
+//! Parameters for the [`Binding::get_binding`](crate::Binding::get) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;

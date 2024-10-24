@@ -1,18 +1,18 @@
 //! `ASHv2` transport layer.
 
-use futures::{SinkExt, StreamExt};
-use le_stream::{FromLeStream, ToLeStream};
 use std::fmt::Debug;
-use std::future::Future;
 use std::hash::Hash;
 use std::io::ErrorKind;
+
+use futures::{SinkExt, StreamExt};
+use le_stream::ToLeStream;
 use tokio_util::codec::Framed;
 
 use crate::error::Error;
+use crate::frame::parsable::Parsable;
 use crate::frame::{Command, Frame, Header, Identified, Parameter};
 use crate::transport::Transport;
 
-use crate::frame::parsable::Parsable;
 use ashv2::Stream;
 pub use callbacks::Callbacks;
 use codec::Codec;

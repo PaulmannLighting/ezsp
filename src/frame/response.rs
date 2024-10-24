@@ -1216,6 +1216,36 @@ impl Parsable for Response {
                     utilities::handler::Timer::from_le_stream_exact(stream)?,
                 ))))
             }
+            // WWAH responses
+            <wwah::get_parent_classification_enabled::Response as Identified>::ID => {
+                Ok(Self::Wwah(wwah::Response::GetParentClassificationEnabled(
+                    wwah::get_parent_classification_enabled::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <wwah::is_hub_connected::Response as Identified>::ID => {
+                Ok(Self::Wwah(wwah::Response::IsHubConnected(
+                    wwah::is_hub_connected::Response::from_le_stream_exact(stream)?,
+                )))
+            }<wwah::is_uptime_long::Response as Identified>::ID => {
+                Ok(Self::Wwah(wwah::Response::IsUptimeLong(
+                    wwah::is_uptime_long::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <wwah::set_hub_connectivity::Response as Identified>::ID => {
+                Ok(Self::Wwah(wwah::Response::SetHubConnectivity(
+                    wwah::set_hub_connectivity::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <wwah::set_long_uptime::Response as Identified>::ID => {
+                Ok(Self::Wwah(wwah::Response::SetLongUptime(
+                    wwah::set_long_uptime::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <wwah::set_parent_classification_enabled::Response as Identified>::ID => {
+                Ok(Self::Wwah(wwah::Response::SetParentClassificationEnabled(
+                    wwah::set_parent_classification_enabled::Response::from_le_stream_exact(stream)?,
+                )))
+            }
         }
     }
 }

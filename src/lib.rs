@@ -22,7 +22,7 @@ pub use error::{Error, ValueError};
 pub use frame::response::Response;
 pub use frame::{
     parameters, CallbackType, Extended, FormatVersion, Frame, Handler, Header, HighByte, Legacy,
-    LowByte, SleepMode,
+    LowByte, Parsable, SleepMode,
 };
 pub use result::Result;
 pub use transport::{

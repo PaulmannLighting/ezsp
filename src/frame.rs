@@ -9,6 +9,7 @@ pub use header::{
     CallbackType, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
 };
 pub use parameter::{Identified, Parameter};
+pub use parsable::Parsable;
 
 mod handler;
 mod header;

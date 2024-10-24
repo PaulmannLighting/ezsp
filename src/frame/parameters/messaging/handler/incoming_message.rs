@@ -19,6 +19,8 @@ pub struct Handler {
     binding_index: u8,
     address_index: u8,
     message: ByteSizedVec<u8>,
+    // FIXME: There appears to be one byte more than specified in the docs.
+    tail: Option<u8>,
 }
 
 impl Handler {

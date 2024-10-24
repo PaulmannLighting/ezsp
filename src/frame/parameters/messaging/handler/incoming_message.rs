@@ -1,7 +1,9 @@
 use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
 
 use crate::ember::aps::Frame;
 use crate::ember::message::Incoming;
+use crate::ember::node::Type;
 use crate::ember::NodeId;
 use crate::frame::Identified;
 use crate::types::ByteSizedVec;
@@ -19,8 +21,9 @@ pub struct Handler {
     binding_index: u8,
     address_index: u8,
     message: ByteSizedVec<u8>,
-    // FIXME: There appears to be one byte more than specified in the docs.
-    tail: Option<u8>,
+    // FIXME: There appears to be one byte more at the end than specified in the docs.
+    // Assume note type for now.
+    node_type: u8,
 }
 
 impl Handler {
@@ -83,6 +86,15 @@ impl Handler {
     #[must_use]
     pub fn message(&self) -> &[u8] {
         &self.message
+    }
+
+    /// The type of the sender node.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the value is not a valid node type.
+    pub fn node_type(&self) -> Result<Type, u8> {
+        Type::from_u8(self.node_type).ok_or(self.node_type)
     }
 }
 

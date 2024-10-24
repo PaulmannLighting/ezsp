@@ -32,6 +32,10 @@ env_logger = "0.11"
 serialport = { version = "4.3", default-features = false }
 tokio = { version = "1.40", features = ["rt", "rt-multi-thread", "macros"] }
 
+[features]
+ashv2 = ["dep:ashv2", "dep:tokio-util", "dep:futures"]
+responses = []
+
 [[example]]
 name = "test_diverse_commands"
 required-features = ["ashv2"]
@@ -43,10 +47,6 @@ required-features = ["ashv2"]
 [[example]]
 name = "scan"
 required-features = ["ashv2"]
-
-[features]
-ashv2 = ["dep:ashv2", "dep:tokio-util", "dep:futures"]
-responses = []
 
 [profile.release]
 opt-level = 3

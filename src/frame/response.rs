@@ -1054,6 +1054,37 @@ impl Parsable for Response {
                     token_interface::token_factory_reset::Response::from_le_stream_exact(stream)?,
                 )))
             }
+            // Trust Center responses
+            <trust_center::aes_mmo_hash::Response as Parameter>::ID => {
+                Ok(Self::TrustCenter(trust_center::Response::AesMmoHash(
+                    trust_center::aes_mmo_hash::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <trust_center::broadcast_network_key_switch::Response as Parameter>::ID => {
+                Ok(Self::TrustCenter(trust_center::Response::BroadcastNetworkKeySwitch(
+                    trust_center::broadcast_network_key_switch::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <trust_center::broadcast_next_network_key::Response as Parameter>::ID => {
+                Ok(Self::TrustCenter(trust_center::Response::BroadcastNextNetworkKey(
+                    trust_center::broadcast_next_network_key::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <trust_center::remove_device::Response as Parameter>::ID => {
+                Ok(Self::TrustCenter(trust_center::Response::RemoveDevice(
+                    trust_center::remove_device::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <trust_center::unicast_nwk_key_update::Response as Parameter>::ID => {
+                Ok(Self::TrustCenter(trust_center::Response::UnicastNwkKeyUpdate(
+                    trust_center::unicast_nwk_key_update::Response::from_le_stream_exact(stream)?,
+                )))
+            }
+            <trust_center::handler::TrustCenterJoin as Parameter>::ID => {
+                Ok(Self::TrustCenter(trust_center::Response::Handler(trust_center::handler::Handler::TrustCenterJoin(
+                    trust_center::handler::TrustCenterJoin::from_le_stream_exact(stream)?,
+                ))))
+            }
         }
     }
 }

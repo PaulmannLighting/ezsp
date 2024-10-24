@@ -1,11 +1,11 @@
 //! Trust Center Frames
 
-pub(crate) mod aes_mmo_hash;
-pub(crate) mod broadcast_network_key_switch;
-pub(crate) mod broadcast_next_network_key;
+pub mod aes_mmo_hash;
+pub mod broadcast_network_key_switch;
+pub mod broadcast_next_network_key;
 pub mod handler;
-pub(crate) mod remove_device;
-pub(crate) mod unicast_nwk_key_update;
+pub mod remove_device;
+pub mod unicast_nwk_key_update;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {

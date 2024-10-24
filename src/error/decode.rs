@@ -1,7 +1,6 @@
 use std::fmt::Display;
 
 /// An error that occurs when decoding a frame.
-#[allow(variant_size_differences)]
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Decode {
     /// Too few bytes to decode.

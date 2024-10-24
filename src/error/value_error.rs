@@ -1,7 +1,6 @@
 use std::fmt::Display;
 
 /// Invalid values.
-#[allow(variant_size_differences)]
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum ValueError {
     /// An invalid [`crate::ember::duty_cycle::State`] was received.

@@ -7,7 +7,6 @@ mod remote_delete_binding;
 mod remote_set_binding;
 
 /// The handler for the binding commands.
-#[allow(variant_size_differences, clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     /// The handler for the remote delete binding command.

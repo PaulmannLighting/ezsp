@@ -7,7 +7,6 @@ pub use switch_network_key::Handler as SwitchNetworkKey;
 pub use zigbee_key_establishment::Handler as ZigbeeKeyEstablishment;
 
 /// The handler for the security command.
-#[allow(variant_size_differences, clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     /// The handler for the switch network key command.

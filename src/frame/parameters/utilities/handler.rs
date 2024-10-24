@@ -11,7 +11,6 @@ pub use stack_token_changed::Handler as StackTokenChanged;
 pub use timer::Handler as Timer;
 
 /// Callbacks for the utility parameters.
-#[allow(variant_size_differences, clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     /// The counter has rolled over.

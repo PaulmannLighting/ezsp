@@ -18,7 +18,6 @@ mod generate_cbke_keys;
 mod generate_cbke_keys283k1;
 
 /// Certificate-Based Key Exchange (CBKE) handlers.
-#[allow(variant_size_differences, clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     /// Calculate Secure Message Authentication Codes (SMACs).

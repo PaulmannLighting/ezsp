@@ -1,5 +1,8 @@
-use crate::frame::Identified;
+//! Parameters for the [`Zll::set_additional_state`](crate::Zll::set_additional_state) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::frame::Identified;
 
 const ID: u16 = 0x00D6;
 
@@ -20,6 +23,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response;
 

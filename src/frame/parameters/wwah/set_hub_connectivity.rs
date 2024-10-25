@@ -1,5 +1,8 @@
-use crate::frame::Identified;
+//! Parameters for the [`Wwah::set_hub_connectivity`](crate::Wwah::set_hub_connectivity) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::frame::Identified;
 
 const ID: u16 = 0x00E4;
 
@@ -20,6 +23,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response;
 

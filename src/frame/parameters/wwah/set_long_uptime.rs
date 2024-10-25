@@ -1,5 +1,8 @@
-use crate::frame::Identified;
+//! Parameters for the [`Wwah::set_long_uptime`](crate::Wwah::set_long_uptime) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::frame::Identified;
 
 const ID: u16 = 0x00E3;
 
@@ -20,6 +23,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response;
 

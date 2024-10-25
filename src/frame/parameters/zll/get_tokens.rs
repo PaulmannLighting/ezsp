@@ -1,4 +1,4 @@
-//! Get the ZLL tokens.
+//! Parameters for the [`Zll::get_tokens`](crate::Zll::get_tokens) command.
 
 use crate::ember::zll::{DataToken, SecurityToken};
 use crate::frame::Identified;
@@ -14,7 +14,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
-/// The response to a get tokens command.
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     data: DataToken,

@@ -2,9 +2,9 @@
 
 use ashv2::{make_pair, open, BaudRate, HexSlice};
 use clap::Parser;
-use ezsp::ashv2::Ashv2;
 use ezsp::ember::{CertificateData, Eui64, PublicKeyData};
 use ezsp::ezsp::value::Id;
+use ezsp::uart::Uart;
 use ezsp::{
     Cbke, Configuration, Ezsp, Networking, ProxyTable, Security, SinkTable, Utilities,
     MAX_FRAME_SIZE,
@@ -47,7 +47,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     let running = Arc::new(AtomicBool::new(true));
     let transceiver_running = running.clone();
     let transceiver_thread = spawn(|| transceiver.run(transceiver_running));
-    let mut ezsp = Ashv2::new(ash);
+    let mut ezsp = Uart::new(ash);
 
     // Test version negotiation.
     match ezsp.negotiate_version(args.version).await {
@@ -280,7 +280,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
 }
 
 /// Test getting values.
-async fn get_value_ids<const BUF_SIZE: usize>(ezsp: &mut Ashv2<BUF_SIZE>) {
+async fn get_value_ids<const BUF_SIZE: usize>(ezsp: &mut Uart<BUF_SIZE>) {
     for id in [
         Id::ActiveRadioConfig,
         Id::AntennaMode,

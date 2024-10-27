@@ -22,12 +22,12 @@ mod codec;
 
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
-pub struct Ashv2<const BUF_SIZE: usize> {
+pub struct Uart<const BUF_SIZE: usize> {
     ash: Stream<BUF_SIZE>,
     sequence: u8,
 }
 
-impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
+impl<const BUF_SIZE: usize> Uart<BUF_SIZE> {
     /// Creates an `ASHv2` host.
     #[must_use]
     pub const fn new(ash: Stream<BUF_SIZE>) -> Self {
@@ -43,7 +43,7 @@ impl<const BUF_SIZE: usize> Ashv2<BUF_SIZE> {
     }
 }
 
-impl<const BUF_SIZE: usize> Transport for Ashv2<BUF_SIZE> {
+impl<const BUF_SIZE: usize> Transport for Uart<BUF_SIZE> {
     fn next_header<H, T>(&mut self, id: T) -> H
     where
         H: Header<T>,

@@ -2,7 +2,7 @@
 
 use ashv2::{make_pair, open, BaudRate};
 use clap::Parser;
-use ezsp::ashv2::Ashv2;
+use ezsp::uart::Uart;
 use ezsp::{Ezsp, Utilities, MAX_FRAME_SIZE};
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
@@ -41,7 +41,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     let running = Arc::new(AtomicBool::new(true));
     let transceiver_running = running.clone();
     let transceiver_thread = spawn(|| transceiver.run(transceiver_running));
-    let mut ezsp = Ashv2::new(ash);
+    let mut ezsp = Uart::new(ash);
 
     match ezsp.negotiate_version(args.version).await {
         Ok(version) => {

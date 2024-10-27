@@ -4,8 +4,6 @@
 //! You can find the protocol's definition on [siliconlabs.com](https://www.silabs.com/documents/public/user-guides/ug100-ezsp-reference-guide.pdf).
 //!
 //! This library is free software and is not affiliated with Silicon Labs.
-#[cfg(feature = "ashv2")]
-pub mod ashv2;
 mod bootoader;
 mod constants;
 pub mod ember;
@@ -15,6 +13,8 @@ mod frame;
 mod result;
 mod transport;
 mod types;
+#[cfg(feature = "ashv2")]
+pub mod uart;
 
 pub use constants::{MAX_FRAME_SIZE, MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 pub use error::{Error, ValueError};

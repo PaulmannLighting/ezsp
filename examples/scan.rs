@@ -2,9 +2,9 @@
 
 use ashv2::{make_pair, open, BaudRate, Payload};
 use clap::Parser;
-use ezsp::ashv2::{Ashv2, Callbacks};
 use ezsp::ember::zigbee::Network;
 use ezsp::ezsp::network::scan::Type;
+use ezsp::uart::{Callbacks, Uart};
 use ezsp::{parameters, Ezsp, Handler, Networking, MAX_FRAME_SIZE};
 use log::{error, info, warn};
 use serialport::{FlowControl, SerialPort};
@@ -56,7 +56,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     let running = Arc::new(AtomicBool::new(true));
     let transceiver_running = running.clone();
     let transceiver_thread = spawn(|| transceiver.run(transceiver_running));
-    let mut ezsp = Ashv2::new(ash);
+    let mut ezsp = Uart::new(ash);
 
     let callback_thread = spawn(move || handle_callbacks(&cb_rx, args.keep_listening));
 

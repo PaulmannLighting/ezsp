@@ -1,3 +1,5 @@
+//! Parameters for the [`Utilities::callback`](crate::Utilities::callback) command.
+
 use le_stream::derive::ToLeStream;
 
 use crate::frame::Identified;

@@ -7,7 +7,7 @@ use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x0054;
 
-/// A callback indicating a custom EZSP message has been received.
+/// A callback indicating a custom `EZSP` message has been received.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     payload: ByteSizedVec<u8>,

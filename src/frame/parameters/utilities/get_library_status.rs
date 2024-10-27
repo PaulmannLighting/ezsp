@@ -1,3 +1,5 @@
+//! Parameters for the [`Utilities::get_library_status`](crate::Utilities::get_library_status) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::library::{Id, Status};
@@ -22,6 +24,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: Status,

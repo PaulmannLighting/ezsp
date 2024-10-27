@@ -1,3 +1,5 @@
+//! Parameters for the [`Utilities::echo`](crate::Utilities::echo) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::frame::Identified;
@@ -22,12 +24,14 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     echo: ByteSizedVec<u8>,
 }
 
 impl Response {
+    /// Returns the echoed data.
     #[must_use]
     pub fn echo(self) -> ByteSizedVec<u8> {
         self.echo

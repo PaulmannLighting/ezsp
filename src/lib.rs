@@ -17,7 +17,7 @@ mod types;
 #[cfg(feature = "ashv2")]
 pub mod uart;
 
-pub use constants::{MAX_FRAME_SIZE, MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
+pub use constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 pub use error::{Error, ValueError};
 pub use frame::response::Response;
 pub use frame::{

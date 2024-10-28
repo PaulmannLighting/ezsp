@@ -19,6 +19,3 @@ pub const MAX_HEADER_SIZE: usize = 5;
 /// - `inputClusterList` (255 * 2 = 510 bytes)
 /// - `outputClusterList` (255 * 2 = 510 bytes)
 pub const MAX_PARAMETER_SIZE: usize = 1028;
-
-/// The largest frame size that can be sent or received by the `EZSP` protocol.
-pub const MAX_FRAME_SIZE: usize = MAX_PARAMETER_SIZE + MAX_HEADER_SIZE;

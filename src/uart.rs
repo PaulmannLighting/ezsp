@@ -18,7 +18,7 @@ use crate::error::Error;
 use crate::frame::{Command, Header, Identified};
 use crate::parameters::configuration::version;
 use crate::transport::{Transport, MIN_NON_LEGACY_VERSION};
-use crate::{Configuration, Extended, Handler, Legacy};
+use crate::{Callback, Configuration, Extended, Handler, Legacy};
 use crate::{Parameters, ValueError};
 
 use decoder::Decoder;
@@ -32,9 +32,9 @@ mod splitter;
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
 pub struct Uart {
-    transceiver_handle: std::thread::JoinHandle<()>,
+    transceiver: std::thread::JoinHandle<()>,
     splitter: tokio::task::JoinHandle<()>,
-    callbacks: Receiver<Handler>,
+    handler: tokio::task::JoinHandle<()>,
     responses: Receiver<Parameters>,
     encoder: Encoder,
     legacy: Arc<AtomicBool>,
@@ -44,21 +44,22 @@ pub struct Uart {
 impl Uart {
     /// Creates an `ASHv2` host.
     #[must_use]
-    pub fn new<T>(serial_port: T, channel_size: usize) -> Self
+    pub fn new<S, H>(serial_port: S, handler: H, channel_size: usize) -> Self
     where
-        T: SerialPort + 'static,
+        S: SerialPort + 'static,
+        H: Handler + 'static,
     {
-        let (frames_out, frames_in, transceiver_handle) =
-            Transceiver::spawn(serial_port, channel_size);
+        let (frames_out, frames_in, transceiver) = Transceiver::spawn(serial_port, channel_size);
         let legacy = Arc::new(AtomicBool::new(true));
         let (callbacks_tx, callbacks_rx) = channel(channel_size);
         let (response_tx, response_rx) = channel(channel_size);
         let decoder = Decoder::new(frames_in, legacy.clone());
         let splitter = Splitter::new(decoder, response_tx, callbacks_tx);
+        let handler = spawn(handler.run(callbacks_rx));
         Self {
-            transceiver_handle,
+            transceiver,
             splitter: spawn(splitter.run()),
-            callbacks: callbacks_rx,
+            handler,
             responses: response_rx,
             encoder: Encoder::new(frames_out, legacy.clone()),
             legacy,

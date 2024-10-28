@@ -1,19 +1,15 @@
 //! Test version negotiation.
 
-use ashv2::{make_pair, open, BaudRate, Payload};
+use ashv2::{open, BaudRate};
 use clap::Parser;
 use ezsp::ember::zigbee::Network;
 use ezsp::ezsp::network::scan::Type;
-use ezsp::uart::{Callbacks, Uart};
-use ezsp::{parameters, Ezsp, Handler, Networking, MAX_FRAME_SIZE};
+use ezsp::uart::Uart;
+use ezsp::{parameters, Callback, Ezsp, Handler, Networking, MAX_FRAME_SIZE};
 use log::{error, info, warn};
 use serialport::{FlowControl, SerialPort};
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering::Relaxed;
-use std::sync::mpsc::sync_channel;
-use std::sync::mpsc::Receiver;
-use std::sync::Arc;
-use std::thread::spawn;
+use std::time::Duration;
+use tokio::time::sleep;
 
 #[derive(Debug, Parser)]
 struct Args {
@@ -51,17 +47,10 @@ async fn main() {
 }
 
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
-    let (cb_tx, cb_rx) = sync_channel(32);
-    let (ash, transceiver) = make_pair::<MAX_FRAME_SIZE, _>(serial_port, 4, Some(cb_tx));
-    let running = Arc::new(AtomicBool::new(true));
-    let transceiver_running = running.clone();
-    let transceiver_thread = spawn(|| transceiver.run(transceiver_running));
-    let mut ezsp = Uart::new(ash);
-
-    let callback_thread = spawn(move || handle_callbacks(&cb_rx, args.keep_listening));
+    let mut uart = Uart::new(serial_port, NetworkScanHandler, 8);
 
     // Test version negotiation.
-    match ezsp.negotiate_version(args.version).await {
+    match uart.negotiate_version(args.version).await {
         Ok(version) => {
             info!(
                 "Negotiated protocol version: {:#04X}",
@@ -76,7 +65,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
     }
 
-    match ezsp
+    match uart
         .start_scan(Type::ActiveScan, args.channel_mask, args.scan_duration)
         .await
     {
@@ -88,48 +77,38 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
     }
 
-    callback_thread.join().expect("Callback thread panicked.");
-    running.store(false, Relaxed);
-    transceiver_thread
-        .join()
-        .expect("Transceiver thread panicked.");
+    sleep(Duration::from_secs(15)).await;
 }
 
-fn handle_callbacks(frames: &Receiver<Payload>, keep_listening: bool) {
-    for result in frames.iter().callbacks() {
-        match result {
-            Ok(handler) => match handler {
-                Handler::Networking(parameters::networking::handler::Handler::NetworkFound(
-                    network_found,
-                )) => {
-                    info!(
-                        "Network found: last hop RSSI: {}, last hop LQI: {}",
-                        network_found.last_hop_lqi(),
-                        network_found.last_hop_lqi()
-                    );
-                    print_network(network_found.network_found());
-                }
-                Handler::Networking(parameters::networking::handler::Handler::ScanComplete(
-                    scan_complete,
-                )) => {
-                    info!("Scan completed.");
+struct NetworkScanHandler;
 
-                    if let Some(channel) = scan_complete.channel() {
-                        error!("Scan failed on channel: {:#04X}", channel);
-                    } else {
-                        info!("Scan succeeded.");
-                    }
+impl Handler for NetworkScanHandler {
+    fn handle(&mut self, callback: Callback) {
+        info!("Handling callback.");
+        match callback {
+            Callback::Networking(parameters::networking::handler::Handler::NetworkFound(
+                network_found,
+            )) => {
+                info!(
+                    "Network found: last hop RSSI: {}, last hop LQI: {}",
+                    network_found.last_hop_lqi(),
+                    network_found.last_hop_lqi()
+                );
+                print_network(network_found.network_found());
+            }
+            Callback::Networking(parameters::networking::handler::Handler::ScanComplete(
+                scan_complete,
+            )) => {
+                info!("Scan completed.");
 
-                    if !keep_listening {
-                        return;
-                    }
+                if let Some(channel) = scan_complete.channel() {
+                    error!("Scan failed on channel: {:#04X}", channel);
+                } else {
+                    info!("Scan succeeded.");
                 }
-                other => {
-                    warn!("Received unexpected handler: {other:?}");
-                }
-            },
-            Err(error) => {
-                error!("Error parsing handler: {error}");
+            }
+            other => {
+                warn!("Received unexpected handler: {other:?}");
             }
         }
     }

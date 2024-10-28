@@ -914,14 +914,10 @@ where
         channel_mask: u32,
         duration: u8,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, start_scan::Response>(start_scan::Command::new(
-            scan_type,
-            channel_mask,
-            duration,
-        ))
-        .await?
+        start_scan::Response::try_from(
+            self.communicate(start_scan::Command::new(scan_type, channel_mask, duration))
+                .await?,
+        )?
         .try_into()
     }
 

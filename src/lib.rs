@@ -21,9 +21,10 @@ pub use constants::{MAX_FRAME_SIZE, MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 pub use error::{Error, ValueError};
 pub use frame::response::Response;
 pub use frame::{
-    parameters, CallbackType, Extended, FormatVersion, Frame, Handler, Header, HighByte, Legacy,
+    parameters, Callback, CallbackType, Extended, FormatVersion, Frame, Header, HighByte, Legacy,
     LowByte, Parameters, Parsable, SleepMode,
 };
+pub use handler::Handler;
 pub use result::Result;
 pub use transport::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GreenPower, Messaging, Mfglib, Networking,

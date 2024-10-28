@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-pub use handler::Handler;
+pub use handler::Callback;
 pub use header::{
     CallbackType, Command, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
 };

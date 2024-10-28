@@ -10,7 +10,7 @@ use crate::frame::parameters::utilities::{
     get_true_random_entropy_source, get_xncp_info, nop, read_and_clear_counters, read_counters,
     set_mfg_token, set_timer, set_token,
 };
-use crate::frame::Handler;
+use crate::frame::Callback;
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 
@@ -19,7 +19,7 @@ pub trait Utilities {
     /// Allows the NCP to respond with a pending callback.
     ///
     /// The response to this command can be any of the callback responses.
-    fn callback(&mut self) -> impl Future<Output = Result<Handler, Error>> + Send;
+    fn callback(&mut self) -> impl Future<Output = Result<Callback, Error>> + Send;
 
     /// Provides the customer a custom EZSP frame.
     /// On the NCP, these frames are only handled if the XNCP library is included.
@@ -149,7 +149,7 @@ impl<T> Utilities for T
 where
     T: Transport,
 {
-    async fn callback(&mut self) -> Result<Handler, Error> {
+    async fn callback(&mut self) -> Result<Callback, Error> {
         self.send(callback::Command).await?;
         todo!("Implement decoder for callback responses");
     }

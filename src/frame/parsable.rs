@@ -4,7 +4,7 @@ use crate::parameters::{
     binding, bootloader, cbke, green_power, messaging, mfglib, networking, security, trust_center,
     utilities, zll,
 };
-use crate::Handler;
+use crate::Callback;
 use le_stream::FromLeStream;
 
 /// A trait for parsing parameters from a little-endian stream given their frame ID.
@@ -38,7 +38,7 @@ where
     }
 }
 
-impl Parsable for Handler {
+impl Parsable for Callback {
     /// Parse a handler from a little-endian stream.
     ///
     /// # Errors

@@ -2,20 +2,20 @@ use log::{error, trace};
 use tokio::sync::mpsc::Sender;
 
 use crate::uart::decoder::Decoder;
-use crate::{Frame, Handler, Parameters};
+use crate::{Callback, Frame, Parameters};
 
 #[derive(Debug)]
 pub struct Splitter {
     incoming: Decoder,
     responses: Sender<Parameters>,
-    callbacks: Sender<Handler>,
+    callbacks: Sender<Callback>,
 }
 
 impl Splitter {
-    pub fn new(
+    pub const fn new(
         incoming: Decoder,
         responses: Sender<Parameters>,
-        callbacks: Sender<Handler>,
+        callbacks: Sender<Callback>,
     ) -> Self {
         Self {
             incoming,
@@ -37,7 +37,7 @@ impl Splitter {
         }
     }
 
-    async fn handle_frame(&mut self, frame: Frame) {
+    async fn handle_frame(&self, frame: Frame) {
         let is_async_callback = frame.header().is_async_callback();
 
         match frame.parameters() {
@@ -57,13 +57,13 @@ impl Splitter {
         }
     }
 
-    async fn handle_response(&mut self, parameters: Parameters) {
+    async fn handle_response(&self, parameters: Parameters) {
         if let Err(error) = self.responses.send(parameters).await {
             error!("Failed to send response: {error}");
         }
     }
 
-    async fn handle_callback(&mut self, handler: Handler) {
+    async fn handle_callback(&self, handler: Callback) {
         if let Err(error) = self.callbacks.send(handler).await {
             error!("Failed to send callback: {error}");
         }

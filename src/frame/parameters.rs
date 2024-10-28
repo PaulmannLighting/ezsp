@@ -2,7 +2,7 @@
 
 use le_stream::FromLeStream;
 
-use super::handler::Handler;
+use super::handler::Callback;
 use super::parsable::Parsable;
 use super::response::Response;
 
@@ -27,7 +27,7 @@ pub mod zll;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Parameters {
     Response(Response),
-    Handler(Handler),
+    Handler(Callback),
 }
 
 impl Parsable for Parameters {
@@ -76,12 +76,12 @@ impl Parsable for Parameters {
                 ))))
             }
             <binding::handler::RemoteDeleteBinding as Identified>::ID => {
-                Ok(Self::Handler(Handler::Binding(binding::handler::Handler::RemoteDeleteBinding(
+                Ok(Self::Handler(Callback::Binding(binding::handler::Handler::RemoteDeleteBinding(
                     binding::handler::RemoteDeleteBinding::from_le_stream_exact(stream)?,
                 ))))
             }
             <binding::handler::RemoteSetBinding as Identified>::ID => {
-                Ok(Self::Handler(Handler::Binding(binding::handler::Handler::RemoteSetBinding(
+                Ok(Self::Handler(Callback::Binding(binding::handler::Handler::RemoteSetBinding(
                     binding::handler::RemoteSetBinding::from_le_stream_exact(stream)?.into(),
                 ))))
             }
@@ -114,12 +114,12 @@ impl Parsable for Parameters {
                 ))))
             }
             <bootloader::handler::BootloadTransmitComplete as Identified>::ID => {
-                Ok(Self::Handler(Handler::Bootloader(bootloader::handler::Handler::BootloadTransmitComplete(
+                Ok(Self::Handler(Callback::Bootloader(bootloader::handler::Handler::BootloadTransmitComplete(
                     bootloader::handler::BootloadTransmitComplete::from_le_stream_exact(stream)?,
                 ))))
             }
             <bootloader::handler::IncomingBootloadMessage as Identified>::ID => {
-                Ok(Self::Handler(Handler::Bootloader(bootloader::handler::Handler::IncomingBootloadMessage(
+                Ok(Self::Handler(Callback::Bootloader(bootloader::handler::Handler::IncomingBootloadMessage(
                     bootloader::handler::IncomingBootloadMessage::from_le_stream_exact(stream)?,
                 ))))
             }
@@ -170,32 +170,32 @@ impl Parsable for Parameters {
                 ))))
             }
             <cbke::handler::CalculateSmacs as Identified>::ID => {
-                Ok(Self::Handler(Handler::Cbke(cbke::handler::Handler::CalculateSmacs(
+                Ok(Self::Handler(Callback::Cbke(cbke::handler::Handler::CalculateSmacs(
                     cbke::handler::CalculateSmacs::from_le_stream_exact(stream)?,
                 ))))
             }
             <cbke::handler::CalculateSmacs283k1 as Identified>::ID => {
-                Ok(Self::Handler(Handler::Cbke(cbke::handler::Handler::CalculateSmacs283k1(
+                Ok(Self::Handler(Callback::Cbke(cbke::handler::Handler::CalculateSmacs283k1(
                     cbke::handler::CalculateSmacs283k1::from_le_stream_exact(stream)?,
                 ))))
             }
             <cbke::handler::DsaSign as Identified>::ID => {
-                Ok(Self::Handler(Handler::Cbke(cbke::handler::Handler::DsaSign(
+                Ok(Self::Handler(Callback::Cbke(cbke::handler::Handler::DsaSign(
                     cbke::handler::DsaSign::from_le_stream_exact(stream)?.into(),
                 ))))
             }
             <cbke::handler::DsaVerify as Identified>::ID => {
-                Ok(Self::Handler(Handler::Cbke(cbke::handler::Handler::DsaVerify(
+                Ok(Self::Handler(Callback::Cbke(cbke::handler::Handler::DsaVerify(
                     cbke::handler::DsaVerify::from_le_stream_exact(stream)?,
                 ))))
             }
             <cbke::handler::GenerateCbkeKeys as Identified>::ID => {
-                Ok(Self::Handler(Handler::Cbke(cbke::handler::Handler::GenerateCbkeKeys283k1(
+                Ok(Self::Handler(Callback::Cbke(cbke::handler::Handler::GenerateCbkeKeys283k1(
                     cbke::handler::GenerateCbkeKeys283k1::from_le_stream_exact(stream)?,
                 ))))
             }
             <cbke::handler::GenerateCbkeKeys283k1 as Identified>::ID => {
-                Ok(Self::Handler(Handler::Cbke(cbke::handler::Handler::GenerateCbkeKeys283k1(
+                Ok(Self::Handler(Callback::Cbke(cbke::handler::Handler::GenerateCbkeKeys283k1(
                     cbke::handler::GenerateCbkeKeys283k1::from_le_stream_exact(stream)?,
                 ))))
             }
@@ -332,12 +332,12 @@ impl Parsable for Parameters {
                 )))))
             }
             <green_power::handler::IncomingMessage as Identified>::ID => {
-                Ok(Self::Handler(Handler::GreenPower(green_power::handler::Handler::IncomingMessage(
+                Ok(Self::Handler(Callback::GreenPower(green_power::handler::Handler::IncomingMessage(
                     green_power::handler::IncomingMessage::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <green_power::handler::Sent as Identified>::ID => {
-                Ok(Self::Handler(Handler::GreenPower(green_power::handler::Handler::Sent(
+                Ok(Self::Handler(Callback::GreenPower(green_power::handler::Handler::Sent(
                     green_power::handler::Sent::from_le_stream_exact(stream)?,
                 ).into())))
             }
@@ -488,67 +488,67 @@ impl Parsable for Parameters {
                 ))))
             }
             <messaging::handler::IdConflict as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::IdConflict(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::IdConflict(
                     messaging::handler::IdConflict::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <messaging::handler::IncomingManyToOneRouteRequest as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::IncomingManyToOneRouteRequest(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::IncomingManyToOneRouteRequest(
                     messaging::handler::IncomingManyToOneRouteRequest::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <messaging::handler::IncomingMessage as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::IncomingMessage(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::IncomingMessage(
                     messaging::handler::IncomingMessage::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <messaging::handler::IncomingNetworkStatus as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::IncomingNetworkStatus(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::IncomingNetworkStatus(
                     messaging::handler::IncomingNetworkStatus::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <messaging::handler::IncomingRouteError as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::IncomingRouteError(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::IncomingRouteError(
                     messaging::handler::IncomingRouteError::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <messaging::handler::IncomingRouteRecord as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::IncomingRouteRecord(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::IncomingRouteRecord(
                     messaging::handler::IncomingRouteRecord::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <messaging::handler::IncomingSenderEui64 as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::IncomingSenderEui64(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::IncomingSenderEui64(
                     messaging::handler::IncomingSenderEui64::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <messaging::handler::MacFilterMatchMessage as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::MacFilterMatchMessage(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::MacFilterMatchMessage(
                     messaging::handler::MacFilterMatchMessage::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <messaging::handler::MacPassthroughMessage as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::MacPassthroughMessage(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::MacPassthroughMessage(
                     messaging::handler::MacPassthroughMessage::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <messaging::handler::MessageSent as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::MessageSent(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::MessageSent(
                     messaging::handler::MessageSent::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <messaging::handler::Poll as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::Poll(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::Poll(
                     messaging::handler::Poll::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <messaging::handler::PollComplete as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::PollComplete(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::PollComplete(
                     messaging::handler::PollComplete::from_le_stream_exact(stream)?,
                 ).into())))
             }
             <messaging::handler::RawTransmitComplete as Identified>::ID => {
-                Ok(Self::Handler(Handler::Messaging(messaging::handler::Handler::RawTransmitComplete(
+                Ok(Self::Handler(Callback::Messaging(messaging::handler::Handler::RawTransmitComplete(
                     messaging::handler::RawTransmitComplete::from_le_stream_exact(stream)?,
                 ).into())))
             }
@@ -609,7 +609,7 @@ impl Parsable for Parameters {
                 ))))
             }
             <mfglib::handler::Rx as Identified>::ID => {
-                Ok(Self::Handler(Handler::MfgLib(mfglib::handler::Handler::Rx(
+                Ok(Self::Handler(Callback::MfgLib(mfglib::handler::Handler::Rx(
                     mfglib::handler::Rx::from_le_stream_exact(stream)?,
                 ).into())))
             }
@@ -873,37 +873,37 @@ impl Parsable for Parameters {
                 ))))
             }
             <networking::handler::ChildJoin as Identified>::ID => {
-                Ok(Self::Handler(Handler::Networking(networking::handler::Handler::ChildJoin(
+                Ok(Self::Handler(Callback::Networking(networking::handler::Handler::ChildJoin(
                     networking::handler::ChildJoin::from_le_stream_exact(stream)?,
                 ))))
             }
             <networking::handler::DutyCycle as Identified>::ID => {
-                Ok(Self::Handler(Handler::Networking(networking::handler::Handler::DutyCycle(
+                Ok(Self::Handler(Callback::Networking(networking::handler::Handler::DutyCycle(
                     networking::handler::DutyCycle::from_le_stream_exact(stream)?,
                 ))))
             }
             <networking::handler::EnergyScanResult as Identified>::ID => {
-                Ok(Self::Handler(Handler::Networking(networking::handler::Handler::EnergyScanResult(
+                Ok(Self::Handler(Callback::Networking(networking::handler::Handler::EnergyScanResult(
                     networking::handler::EnergyScanResult::from_le_stream_exact(stream)?,
                 ))))
             }
             <networking::handler::NetworkFound as Identified>::ID => {
-                Ok(Self::Handler(Handler::Networking(networking::handler::Handler::NetworkFound(
+                Ok(Self::Handler(Callback::Networking(networking::handler::Handler::NetworkFound(
                     networking::handler::NetworkFound::from_le_stream_exact(stream)?,
                 ))))
             }
             <networking::handler::ScanComplete as Identified>::ID => {
-                Ok(Self::Handler(Handler::Networking(networking::handler::Handler::ScanComplete(
+                Ok(Self::Handler(Callback::Networking(networking::handler::Handler::ScanComplete(
                     networking::handler::ScanComplete::from_le_stream_exact(stream)?,
                 ))))
             }
             <networking::handler::StackStatus as Identified>::ID => {
-                Ok(Self::Handler(Handler::Networking(networking::handler::Handler::StackStatus(
+                Ok(Self::Handler(Callback::Networking(networking::handler::Handler::StackStatus(
                     networking::handler::StackStatus::from_le_stream_exact(stream)?,
                 ))))
             }
             <networking::handler::UnusedPanIdFound as Identified>::ID => {
-                Ok(Self::Handler(Handler::Networking(networking::handler::Handler::UnusedPanIdFound(
+                Ok(Self::Handler(Callback::Networking(networking::handler::Handler::UnusedPanIdFound(
                     networking::handler::UnusedPanIdFound::from_le_stream_exact(stream)?,
                 ))))
             }
@@ -1009,12 +1009,12 @@ impl Parsable for Parameters {
                 ))))
             }
             <security::handler::SwitchNetworkKey as Identified>::ID => {
-                Ok(Self::Handler(Handler::Security(security::handler::Handler::SwitchNetworkKey(
+                Ok(Self::Handler(Callback::Security(security::handler::Handler::SwitchNetworkKey(
                     security::handler::SwitchNetworkKey::from_le_stream_exact(stream)?,
                 ))))
             }
             <security::handler::ZigbeeKeyEstablishment as Identified>::ID => {
-                Ok(Self::Handler(Handler::Security(security::handler::Handler::ZigbeeKeyEstablishment(
+                Ok(Self::Handler(Callback::Security(security::handler::Handler::ZigbeeKeyEstablishment(
                     security::handler::ZigbeeKeyEstablishment::from_le_stream_exact(stream)?.into(),
                 ))))
             }
@@ -1081,7 +1081,7 @@ impl Parsable for Parameters {
                 ))))
             }
             <trust_center::handler::TrustCenterJoin as Identified>::ID => {
-                Ok(Self::Handler(Handler::TrustCenter(trust_center::handler::Handler::TrustCenterJoin(
+                Ok(Self::Handler(Callback::TrustCenter(trust_center::handler::Handler::TrustCenterJoin(
                     trust_center::handler::TrustCenterJoin::from_le_stream_exact(stream)?,
                 ))))
             }
@@ -1197,23 +1197,23 @@ impl Parsable for Parameters {
                 ))))
             }
             <utilities::handler::CounterRollover as Identified>::ID => {
-                Ok(Self::Handler(Handler::Utilities(utilities::handler::Handler::CounterRollover(
+                Ok(Self::Handler(Callback::Utilities(utilities::handler::Handler::CounterRollover(
                     utilities::handler::CounterRollover::from_le_stream_exact(stream)?,
                 ))))
             }
             <utilities::handler::CustomFrame as Identified>::ID => {
-                Ok(Self::Handler(Handler::Utilities(utilities::handler::Handler::CustomFrame(
+                Ok(Self::Handler(Callback::Utilities(utilities::handler::Handler::CustomFrame(
                     utilities::handler::CustomFrame::from_le_stream_exact(stream)?.into(),
                 ))))
             }
             <utilities::handler::StackTokenChanged as Identified>::ID => {
-                Ok(Self::Handler(Handler::Utilities(
+                Ok(Self::Handler(Callback::Utilities(
                     utilities::handler::Handler::StackTokenChanged(
                         utilities::handler::StackTokenChanged::from_le_stream_exact(stream)?,
                     ))))
             }
             <utilities::handler::Timer as Identified>::ID => {
-                Ok(Self::Handler(Handler::Utilities(utilities::handler::Handler::Timer(
+                Ok(Self::Handler(Callback::Utilities(utilities::handler::Handler::Timer(
                     utilities::handler::Timer::from_le_stream_exact(stream)?,
                 ))))
             }
@@ -1345,22 +1345,22 @@ impl Parsable for Parameters {
                 ))))
             }
             <zll::handler::AddressAssignment as Identified>::ID => {
-                Ok(Self::Handler(Handler::Zll(zll::handler::Handler::AddressAssignment(
+                Ok(Self::Handler(Callback::Zll(zll::handler::Handler::AddressAssignment(
                     zll::handler::AddressAssignment::from_le_stream_exact(stream)?,
                 ))))
             }
             <zll::handler::NetworkFound as Identified>::ID => {
-                Ok(Self::Handler(Handler::Zll(zll::handler::Handler::NetworkFound(
+                Ok(Self::Handler(Callback::Zll(zll::handler::Handler::NetworkFound(
                     zll::handler::NetworkFound::from_le_stream_exact(stream)?,
                 ))))
             }
             <zll::handler::ScanComplete as Identified>::ID => {
-                Ok(Self::Handler(Handler::Zll(zll::handler::Handler::ScanComplete(
+                Ok(Self::Handler(Callback::Zll(zll::handler::Handler::ScanComplete(
                     zll::handler::ScanComplete::from_le_stream_exact(stream)?,
                 ))))
             }
             <zll::handler::TouchLinkTarget as Identified>::ID => {
-                Ok(Self::Handler(Handler::Zll(zll::handler::Handler::TouchLinkTarget(
+                Ok(Self::Handler(Callback::Zll(zll::handler::Handler::TouchLinkTarget(
                     zll::handler::TouchLinkTarget::from_le_stream_exact(stream)?,
                 ))))
             }
@@ -1979,6 +1979,21 @@ impl TryFrom<Parameters> for green_power::sink_table::get_entry::Response {
 }
 
 // TODO: Implement TryFrom for other frames.
+
+// Networking frames
+
+impl TryFrom<Parameters> for networking::start_scan::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(networking::Response::StartScan(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
 
 // Utility responses
 

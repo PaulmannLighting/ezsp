@@ -6,7 +6,7 @@ use crate::frame::parameters::{
 /// Possible callback responses, which are called "handler"s according to the EZSP documentation.
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Handler {
+pub enum Callback {
     /// Binding handlers.
     Binding(binding::handler::Handler),
     /// Bootloader handlers.

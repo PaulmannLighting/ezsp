@@ -1,18 +1,16 @@
 //! Test version negotiation.
 
 use std::process::exit;
-use std::time::Duration;
 
 use ashv2::{open, BaudRate};
 use clap::Parser;
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use serialport::{FlowControl, SerialPort};
-use tokio::time::sleep;
 
 use ezsp::ember::zigbee::Network;
 use ezsp::ezsp::network::scan::Type;
 use ezsp::uart::Uart;
-use ezsp::{parameters, Callback, Handler, Networking};
+use ezsp::{parameters, Callback, Handler, Networking, Utilities};
 
 #[derive(Debug, Parser)]
 struct Args {
@@ -66,6 +64,20 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
     }
 
+    match uart.echo("About to start a scan.".bytes().collect()).await {
+        Ok(echo) => match String::from_utf8(echo.to_vec()) {
+            Ok(echo) => {
+                info!("Got echo: {echo}");
+            }
+            Err(error) => {
+                error!("{error}");
+            }
+        },
+        Err(error) => {
+            error!("Error echoing message: {error}");
+        }
+    }
+
     match uart
         .start_scan(Type::ActiveScan, args.channel_mask, args.scan_duration)
         .await
@@ -77,13 +89,31 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             error!("Error starting scan: {error}");
         }
     }
+
+    match uart
+        .echo("I just performed a scan.".bytes().collect())
+        .await
+    {
+        Ok(echo) => match String::from_utf8(echo.to_vec()) {
+            Ok(echo) => {
+                info!("Got echo: {echo}");
+            }
+            Err(error) => {
+                error!("{error}");
+            }
+        },
+        Err(error) => {
+            error!("Error echoing message: {error}");
+        }
+    }
 }
 
 struct NetworkScanHandler;
 
 impl Handler for NetworkScanHandler {
     fn handle(&mut self, callback: Callback) {
-        info!("Handling callback.");
+        debug!("Handling callback.");
+
         match callback {
             Callback::Networking(parameters::networking::handler::Handler::NetworkFound(
                 network_found,
@@ -105,8 +135,6 @@ impl Handler for NetworkScanHandler {
                 } else {
                     info!("Scan succeeded.");
                 }
-
-                exit(0);
             }
             other => {
                 warn!("Received unexpected handler: {other:?}");

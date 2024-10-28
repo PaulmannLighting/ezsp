@@ -9,15 +9,14 @@ pub use header::{
     CallbackType, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
 };
 pub use parameter::{Identified, Parameter};
+pub use parameters::Parameters;
 pub use parsable::Parsable;
 
-mod frame;
 mod handler;
 mod header;
 mod parameter;
 pub mod parameters;
 pub mod parsable;
-#[cfg(feature = "responses")]
 pub mod response;
 
 /// A frame that contains a header and parameters.

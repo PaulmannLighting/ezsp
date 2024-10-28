@@ -35,7 +35,6 @@ tokio = { version = "1.40", features = ["rt", "rt-multi-thread", "macros"] }
 
 [features]
 ashv2 = ["dep:ashv2", "tokio/sync", "dep:tokio-util", "dep:futures"]
-responses = []
 
 [[example]]
 name = "test_diverse_commands"

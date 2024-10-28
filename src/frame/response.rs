@@ -1,16 +1,9 @@
 //! Enumeration containing all possible `EZSP` response parameters.
 
-use le_stream::FromLeStream;
-
-use crate::error::Decode;
-use crate::frame::parsable::Parsable;
-use crate::frame::Identified;
-use crate::parameters::{
+use super::parameters::{
     binding, bootloader, cbke, configuration, green_power, messaging, mfglib, networking, security,
     token_interface, trust_center, utilities, wwah, zll,
 };
-
-const VERSION_ID: u16 = <configuration::version::Response as Identified>::ID as u16;
 
 /// `EZSP` response parameters.
 #[derive(Clone, Debug, Eq, PartialEq)]

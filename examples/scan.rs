@@ -1,5 +1,6 @@
 //! Test version negotiation.
 
+use std::process::exit;
 use std::time::Duration;
 
 use ashv2::{open, BaudRate};
@@ -33,13 +34,6 @@ struct Args {
         help = "Duration for scan command"
     )]
     scan_duration: u8,
-    #[arg(
-        short,
-        long,
-        value_name = "seconds",
-        help = "Keep listening for callbacks"
-    )]
-    keep_listening: Option<u64>,
 }
 
 #[tokio::main]
@@ -83,10 +77,6 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             error!("Error starting scan: {error}");
         }
     }
-
-    if let Some(seconds) = args.keep_listening {
-        sleep(Duration::from_secs(seconds)).await;
-    }
 }
 
 struct NetworkScanHandler;
@@ -115,6 +105,8 @@ impl Handler for NetworkScanHandler {
                 } else {
                     info!("Scan succeeded.");
                 }
+
+                exit(0);
             }
             other => {
                 warn!("Received unexpected handler: {other:?}");

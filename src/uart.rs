@@ -32,7 +32,8 @@ mod splitter;
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
 pub struct Uart {
-    transceiver: std::thread::JoinHandle<()>,
+    running: Arc<AtomicBool>,
+    transceiver: Option<std::thread::JoinHandle<()>>,
     splitter: tokio::task::JoinHandle<()>,
     handler: tokio::task::JoinHandle<()>,
     responses: Receiver<Parameters>,
@@ -49,7 +50,9 @@ impl Uart {
         S: SerialPort + 'static,
         H: Handler + 'static,
     {
-        let (frames_out, frames_in, transceiver) = Transceiver::spawn(serial_port, channel_size);
+        let running = Arc::new(AtomicBool::new(true));
+        let (frames_out, frames_in, transceiver) =
+            Transceiver::spawn(serial_port, running.clone(), channel_size);
         let legacy = Arc::new(AtomicBool::new(true));
         let (callbacks_tx, callbacks_rx) = channel(channel_size);
         let (response_tx, response_rx) = channel(channel_size);
@@ -57,7 +60,8 @@ impl Uart {
         let splitter = Splitter::new(decoder, response_tx, callbacks_tx);
         let handler = spawn(handler.run(callbacks_rx));
         Self {
-            transceiver,
+            running,
+            transceiver: Some(transceiver),
             splitter: spawn(splitter.run()),
             handler,
             responses: response_rx,
@@ -87,6 +91,20 @@ impl Uart {
                 desired: desired_protocol_version,
                 negotiated: response,
             })
+        }
+    }
+}
+
+impl Drop for Uart {
+    fn drop(&mut self) {
+        self.splitter.abort();
+        self.handler.abort();
+        self.running.store(false, Relaxed);
+
+        if let Some(transceiver) = self.transceiver.take() {
+            transceiver
+                .join()
+                .expect("Failed to join transceiver thread.");
         }
     }
 }

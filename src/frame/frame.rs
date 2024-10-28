@@ -7,6 +7,7 @@ use crate::parameters::{
 use crate::{Handler, Parsable, Response};
 use le_stream::FromLeStream;
 
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Frame {
     Response(Response),
     Handler(Handler),

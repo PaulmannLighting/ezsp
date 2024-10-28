@@ -3,7 +3,7 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 
-use crate::bootoader::BOOTLOADER_INVALID_VERSION;
+use crate::bootloader::BOOTLOADER_INVALID_VERSION;
 use crate::frame::Identified;
 
 const ID: u16 = 0x0091;

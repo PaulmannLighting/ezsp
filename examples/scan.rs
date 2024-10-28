@@ -1,7 +1,5 @@
 //! Test version negotiation.
 
-use std::process::exit;
-
 use ashv2::{open, BaudRate};
 use clap::Parser;
 use log::{debug, error, info, warn};

@@ -11,6 +11,7 @@ pub use header::{
 pub use parameter::{Identified, Parameter};
 pub use parsable::Parsable;
 
+mod frame;
 mod handler;
 mod header;
 mod parameter;

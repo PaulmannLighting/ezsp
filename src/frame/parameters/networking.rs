@@ -108,5 +108,4 @@ pub enum Response {
     SetRoutingShortcutThreshold(set_routing_shortcut_threshold::Response),
     StartScan(start_scan::Response),
     StopScan(stop_scan::Response),
-    Handler(handler::Handler),
 }

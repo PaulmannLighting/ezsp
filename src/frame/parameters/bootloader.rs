@@ -24,6 +24,4 @@ pub enum Response {
     OverrideCurrentChannel(override_current_channel::Response),
     /// Response parameters for [`Bootloader::send_bootload_message()`](crate::Bootloader::send_bootload_message).
     SendBootloadMessage(send_bootload_message::Response),
-    /// Callback handlers.
-    Handler(handler::Handler),
 }

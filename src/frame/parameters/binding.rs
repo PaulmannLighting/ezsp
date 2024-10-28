@@ -26,6 +26,4 @@ pub enum Response {
     Set(set::Response),
     /// Response parameters for [`Binding::set_binding_remote_node_id()`](crate::Binding::set_remote_node_id).
     SetRemoteNodeId(set_remote_node_id::Response),
-    /// Callback handlers.
-    Handler(handler::Handler),
 }

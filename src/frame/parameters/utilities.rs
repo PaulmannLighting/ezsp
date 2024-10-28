@@ -49,5 +49,4 @@ pub enum Response {
     SetMfgToken(set_mfg_token::Response),
     SetTimer(set_timer::Response),
     SetToken(set_token::Response),
-    Handler(handler::Handler),
 }

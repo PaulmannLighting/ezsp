@@ -31,5 +31,4 @@ pub enum Response {
     GetCertificate(get_certificate::Response),
     SavePreinstalledCbkeData283k1(save_preinstalled_cbke_data283k1::Response),
     SetPreinstalledCbkeData(set_preinstalled_cbke_data::Response),
-    Handler(handler::Handler),
 }

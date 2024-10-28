@@ -14,5 +14,4 @@ pub enum Response {
     SinkCommission(sink_commission::Response),
     SinkTable(sink_table::Response),
     TranslationTableClear(translation_table_clear::Response),
-    Handler(Box<handler::Handler>),
 }

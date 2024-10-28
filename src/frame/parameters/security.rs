@@ -43,5 +43,4 @@ pub enum Response {
     SendTrustCenterLinkKey(send_trust_center_link_key::Response),
     SetInitialSecurityState(set_initial_security_state::Response),
     UpdateTcLinkKey(update_tc_link_key::Response),
-    Handler(handler::Handler),
 }

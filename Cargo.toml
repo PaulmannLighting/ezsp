@@ -24,6 +24,7 @@ macaddr = "1.0"
 num-derive = "0.4"
 num-traits = "0.2"
 siliconlabs = { git = "https://github.com/PaulmannLighting/siliconlabs.git", version = "0.3", features = ["le-stream", "num-traits"] }
+tokio = { version = "1.41", features = ["sync"], optional = true }
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
 
 [dev-dependencies]
@@ -33,7 +34,7 @@ serialport = { version = "4.3", default-features = false }
 tokio = { version = "1.40", features = ["rt", "rt-multi-thread", "macros"] }
 
 [features]
-ashv2 = ["dep:ashv2", "dep:tokio-util", "dep:futures"]
+ashv2 = ["dep:ashv2", "tokio/sync", "dep:tokio-util", "dep:futures"]
 responses = []
 
 [[example]]

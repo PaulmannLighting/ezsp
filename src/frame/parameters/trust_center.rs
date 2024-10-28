@@ -14,5 +14,4 @@ pub enum Response {
     BroadcastNextNetworkKey(broadcast_next_network_key::Response),
     RemoveDevice(remove_device::Response),
     UnicastNwkKeyUpdate(unicast_nwk_key_update::Response),
-    Handler(handler::Handler),
 }

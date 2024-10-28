@@ -19,22 +19,23 @@ use codec::Codec;
 
 mod callbacks;
 mod codec;
+mod splitter;
 
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
-pub struct Uart<const BUF_SIZE: usize> {
-    ash: Stream<BUF_SIZE>,
+pub struct Uart {
+    ash: Stream,
     sequence: u8,
 }
 
-impl<const BUF_SIZE: usize> Uart<BUF_SIZE> {
+impl Uart {
     /// Creates an `ASHv2` host.
     #[must_use]
-    pub const fn new(ash: Stream<BUF_SIZE>) -> Self {
+    pub const fn new(ash: Stream) -> Self {
         Self { ash, sequence: 0 }
     }
 
-    fn framed<H, P>(&mut self) -> Framed<&mut Stream<BUF_SIZE>, Codec<H, P>>
+    fn framed<H, P>(&mut self) -> Framed<&mut Stream, Codec<H, P>>
     where
         H: Header<P::Id>,
         P: Parameter,
@@ -43,7 +44,7 @@ impl<const BUF_SIZE: usize> Uart<BUF_SIZE> {
     }
 }
 
-impl<const BUF_SIZE: usize> Transport for Uart<BUF_SIZE> {
+impl Transport for Uart {
     fn next_header<H, T>(&mut self, id: T) -> H
     where
         H: Header<T>,

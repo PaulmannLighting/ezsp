@@ -27,5 +27,4 @@ pub enum Response {
     StartTone(start_tone::Response),
     StopStream(stop_stream::Response),
     StopTone(stop_tone::Response),
-    Handler(Box<handler::Handler>),
 }

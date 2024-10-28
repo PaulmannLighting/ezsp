@@ -62,6 +62,4 @@ pub enum Response {
     SetSecurityStateWithoutKey(set_security_state_without_key::Response),
     /// Start scan response parameters.
     StartScan(start_scan::Response),
-    /// Handler response parameters.
-    Handler(handler::Handler),
 }

@@ -74,6 +74,8 @@ where
         finalize: bool,
         data: ByteSizedVec<u8>,
     ) -> Result<MmoHashContext, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, aes_mmo_hash::Response>(aes_mmo_hash::Command::new(
             context, finalize, data,
         ))
@@ -82,6 +84,8 @@ where
     }
 
     async fn broadcast_network_key_switch(&mut self) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, broadcast_network_key_switch::Response>(
             broadcast_network_key_switch::Command,
         )
@@ -90,6 +94,8 @@ where
     }
 
     async fn broadcast_next_network_key(&mut self, key: Data) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, broadcast_next_network_key::Response>(
             broadcast_next_network_key::Command::new(key),
         )
@@ -103,6 +109,8 @@ where
         dest_long: Eui64,
         target_long: Eui64,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, remove_device::Response>(remove_device::Command::new(
             dest_short,
             dest_long,
@@ -118,6 +126,8 @@ where
         dest_long: Eui64,
         key: Data,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, unicast_nwk_key_update::Response>(
             unicast_nwk_key_update::Command::new(dest_short, dest_long, key),
         )

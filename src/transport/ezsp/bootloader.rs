@@ -63,6 +63,8 @@ where
     T: Transport,
 {
     async fn aes_encrypt(&mut self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, aes_encrypt::Response>(aes_encrypt::Command::new(plaintext, key))
             .await
             .map(|response| response.ciphertext())
@@ -71,6 +73,8 @@ where
     async fn get_standalone_bootloader_version_plat_micro_phy(
         &mut self,
     ) -> Result<get_standalone_bootloader_version_plat_micro_phy::Response, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_standalone_bootloader_version_plat_micro_phy::Response>(
             get_standalone_bootloader_version_plat_micro_phy::Command,
         )
@@ -78,6 +82,8 @@ where
     }
 
     async fn launch_standalone_bootloader(&mut self, mode: u8) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, launch_standalone_bootloader::Response>(
             launch_standalone_bootloader::Command::new(mode),
         )
@@ -86,6 +92,8 @@ where
     }
 
     async fn override_current_channel(&mut self, channel: u8) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, override_current_channel::Response>(
             override_current_channel::Command::new(channel),
         )
@@ -99,6 +107,8 @@ where
         dest_eui64: Eui64,
         message: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send_bootload_message::Response>(send_bootload_message::Command::new(
             broadcast, dest_eui64, message,
         ))

@@ -2,17 +2,17 @@
 
 mod ezsp;
 
-use crate::frame::parsable::Parsable;
-use crate::frame::{Extended, Header, Identified, Parameter};
-use crate::Error;
+use crate::frame::{Header, Identified};
+use crate::{Error, Parameters};
 pub use ezsp::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GreenPower, Messaging, Mfglib, Networking,
     ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
 };
 use le_stream::ToLeStream;
-use std::fmt::Debug;
 use std::future::Future;
-use std::hash::Hash;
+use std::num::TryFromIntError;
+
+pub const MIN_NON_LEGACY_VERSION: u8 = 8;
 
 /// A transport layer to communicate with an NCP that supports the `EZSP` protocol.
 ///
@@ -22,34 +22,29 @@ use std::hash::Hash;
 /// Unless you know what you are doing, you should not use the methods of this trait directly.
 pub trait Transport: Send {
     /// Return the next header.
-    fn next_header<H, T>(&mut self, id: T) -> H
-    where
-        H: Header<T>,
-        T: Copy + Clone + Debug + Eq + Hash + Into<u16> + PartialEq + Send;
+    fn next_header(&mut self, id: u16) -> Result<Header, TryFromIntError>;
 
     /// Send a command to the NCP.
-    fn send<H, P>(&mut self, command: P) -> impl Future<Output = Result<(), Error>> + Send
+    fn send<T>(&mut self, command: T) -> impl Future<Output = Result<(), Error>> + Send
     where
-        H: Header<P::Id>,
-        P: Identified + ToLeStream;
+        T: Identified + ToLeStream;
 
     /// Receive a response from the NCP.
-    fn receive<H, P>(&mut self) -> impl Future<Output = Result<P, Error>> + Send
-    where
-        H: Header<P::Id>,
-        P: Parameter + Parsable;
+    fn receive(&mut self) -> impl Future<Output = Result<Parameters, Error>> + Send;
 
     /// Communicate with the NCP.
     ///
     /// This assumes that `C::ID` and `R::ID` are the same.
-    fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
+    fn communicate<C>(
+        &mut self,
+        command: C,
+    ) -> impl Future<Output = Result<Parameters, Error>> + Send
     where
-        C: Identified<Id = u16> + ToLeStream,
-        R: Clone + Debug + Parameter<Id = u16> + Parsable,
+        C: Identified + ToLeStream,
     {
         async {
-            self.send::<Extended, C>(command).await?;
-            self.receive::<Extended, R>().await
+            self.send::<C>(command).await?;
+            self.receive().await
         }
     }
 }

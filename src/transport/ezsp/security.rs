@@ -166,18 +166,24 @@ where
     T: Transport,
 {
     async fn check_key_context(&mut self, context: ManContext<Eui64>) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, check_key_context::Response>(check_key_context::Command::new(context))
             .await?
             .try_into()
     }
 
     async fn clear_key_table(&mut self) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, clear_key_table::Response>(clear_key_table::Command)
             .await?
             .try_into()
     }
 
     async fn clear_transient_link_keys(&mut self) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, clear_transient_link_keys::Response>(
             clear_transient_link_keys::Command,
         )
@@ -186,6 +192,8 @@ where
     }
 
     async fn erase_key_table_entry(&mut self, index: u8) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, erase_key_table_entry::Response>(erase_key_table_entry::Command::new(
             index,
         ))
@@ -194,6 +202,8 @@ where
     }
 
     async fn export_key(&mut self, man_context: ManContext<Eui64>) -> Result<ManKey, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, export_key::Response>(export_key::Command::new(man_context))
             .await?
             .try_into()
@@ -203,6 +213,8 @@ where
         &mut self,
         eui: Eui64,
     ) -> Result<export_link_key_by_eui::Payload, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, export_link_key_by_eui::Response>(
             export_link_key_by_eui::Command::new(eui),
         )
@@ -214,6 +226,8 @@ where
         &mut self,
         index: u8,
     ) -> Result<export_link_key_by_index::Payload, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, export_link_key_by_index::Response>(
             export_link_key_by_index::Command::new(index),
         )
@@ -225,6 +239,8 @@ where
         &mut self,
         eui: Eui64,
     ) -> Result<export_transient_key::TransientKey, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, export_transient_key::by_eui::Response>(
             export_transient_key::by_eui::Command::new(eui),
         )
@@ -236,6 +252,8 @@ where
         &mut self,
         index: u8,
     ) -> Result<export_transient_key::TransientKey, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, export_transient_key::by_index::Response>(
             export_transient_key::by_index::Command::new(index),
         )
@@ -244,6 +262,8 @@ where
     }
 
     async fn find_key_table_entry(&mut self, address: Eui64, link_key: bool) -> Result<u8, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, find_key_table_entry::Response>(find_key_table_entry::Command::new(
             address, link_key,
         ))
@@ -255,6 +275,8 @@ where
         &mut self,
         context_in: ManContext<Eui64>,
     ) -> Result<get_aps_key_info::KeyInfo, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_aps_key_info::Response>(get_aps_key_info::Command::new(
             context_in,
         ))
@@ -263,6 +285,8 @@ where
     }
 
     async fn get_current_security_state(&mut self) -> Result<security::current::State, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_current_security_state::Response>(
             get_current_security_state::Command,
         )
@@ -273,12 +297,16 @@ where
     async fn get_network_key_info(
         &mut self,
     ) -> Result<siliconlabs::zigbee::security::ManNetworkKeyInfo, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_network_key_info::Response>(get_network_key_info::Command)
             .await?
             .try_into()
     }
 
     async fn import_key(&mut self, context: ManContext<Eui64>, key: ManKey) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, import_key::Response>(import_key::Command::new(context, key))
             .await?
             .try_into()
@@ -290,6 +318,8 @@ where
         address: Eui64,
         plaintext_key: ManKey,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, import_link_key::Response>(import_link_key::Command::new(
             index,
             address,
@@ -306,6 +336,8 @@ where
         plaintext_key: ManKey,
         flags: ManFlags,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, import_transient_key::Response>(import_transient_key::Command::new(
             context,
             eui64,
@@ -317,6 +349,8 @@ where
     }
 
     async fn request_link_key(&mut self, partner: Eui64) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, request_link_key::Response>(request_link_key::Command::new(partner))
             .await?
             .try_into()
@@ -327,6 +361,8 @@ where
         destination_node_id: NodeId,
         destination_eui64: Eui64,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send_trust_center_link_key::Response>(
             send_trust_center_link_key::Command::new(destination_node_id, destination_eui64),
         )
@@ -338,6 +374,8 @@ where
         &mut self,
         state: security::initial::State,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_initial_security_state::Response>(
             set_initial_security_state::Command::new(state),
         )
@@ -346,6 +384,8 @@ where
     }
 
     async fn update_tc_link_key(&mut self, max_attempts: u8) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, update_tc_link_key::Response>(update_tc_link_key::Command::new(
             max_attempts,
         ))

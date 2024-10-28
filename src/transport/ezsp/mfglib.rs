@@ -83,66 +83,88 @@ where
     T: Transport,
 {
     async fn end(&mut self) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, end::Response>(end::Command)
             .await?
             .try_into()
     }
 
     async fn get_channel(&mut self) -> Result<u8, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_channel::Response>(get_channel::Command)
             .await
             .map(|response| response.channel())
     }
 
     async fn get_power(&mut self) -> Result<i8, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_power::Response>(get_power::Command)
             .await
             .map(|response| response.power())
     }
 
     async fn send_packet(&mut self, content: ByteSizedVec<u8>) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send_packet::Response>(send_packet::Command::new(content))
             .await?
             .try_into()
     }
 
     async fn set_channel(&mut self, channel: u8) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_channel::Response>(set_channel::Command::new(channel))
             .await?
             .try_into()
     }
 
     async fn set_power(&mut self, tx_power_mode: u16, power: i8) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_power::Response>(set_power::Command::new(tx_power_mode, power))
             .await?
             .try_into()
     }
 
     async fn start(&mut self, rx_callback: bool) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, start::Response>(start::Command::new(rx_callback))
             .await?
             .try_into()
     }
 
     async fn start_stream(&mut self) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, start_stream::Response>(start_stream::Command)
             .await?
             .try_into()
     }
 
     async fn start_tone(&mut self) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, start_tone::Response>(start_tone::Command)
             .await?
             .try_into()
     }
 
     async fn stop_stream(&mut self) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, stop_stream::Response>(stop_stream::Command)
             .await?
             .try_into()
     }
 
     async fn stop_tone(&mut self) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, stop_tone::Response>(stop_tone::Command)
             .await?
             .try_into()

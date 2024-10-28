@@ -10,7 +10,7 @@ use crate::frame::parameters::utilities::{
     get_true_random_entropy_source, get_xncp_info, nop, read_and_clear_counters, read_counters,
     set_mfg_token, set_timer, set_token,
 };
-use crate::frame::{Extended, Handler};
+use crate::frame::Handler;
 use crate::types::ByteSizedVec;
 use crate::{Error, Transport};
 
@@ -150,11 +150,13 @@ where
     T: Transport,
 {
     async fn callback(&mut self) -> Result<Handler, Error> {
-        self.send::<Extended, _>(callback::Command).await?;
+        self.send(callback::Command).await?;
         todo!("Implement decoder for callback responses");
     }
 
     async fn custom_frame(&mut self, payload: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, custom_frame::Response>(custom_frame::Command::new(payload))
             .await?
             .try_into()
@@ -165,6 +167,8 @@ where
         binary_message: bool,
         message: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, debug_write::Response>(debug_write::Command::new(
             binary_message,
             message,
@@ -174,18 +178,24 @@ where
     }
 
     async fn delay_test(&mut self, delay_millis: u16) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, delay_test::Response>(delay_test::Command::new(delay_millis))
             .await
             .map(drop)
     }
 
     async fn echo(&mut self, data: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, echo::Response>(echo::Command::new(data))
             .await
             .map(echo::Response::echo)
     }
 
     async fn get_eui64(&mut self) -> Result<Eui64, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_eui64::Response>(get_eui64::Command)
             .await
             .map(Into::into)
@@ -195,6 +205,8 @@ where
         &mut self,
         library_id: library::Id,
     ) -> Result<library::Status, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_library_status::Response>(get_library_status::Command::new(
             library_id,
         ))
@@ -203,41 +215,55 @@ where
     }
 
     async fn get_mfg_token(&mut self, token_id: Id) -> Result<ByteSizedVec<u8>, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_mfg_token::Response>(get_mfg_token::Command::new(token_id))
             .await
             .map(Into::into)
     }
 
     async fn get_node_id(&mut self) -> Result<NodeId, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_node_id::Response>(get_node_id::Command)
             .await
             .map(Into::into)
     }
 
     async fn get_phy_interface_count(&mut self) -> Result<u8, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_phy_interface_count::Response>(get_phy_interface_count::Command)
             .await
             .map(Into::into)
     }
 
     async fn get_random_number(&mut self) -> Result<u16, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_random_number::Response>(get_random_number::Command)
             .await?
             .try_into()
     }
 
     async fn get_timer(&mut self, timer_id: u8) -> Result<get_timer::Response, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_timer::Response>(get_timer::Command::new(timer_id))
             .await
     }
 
     async fn get_token(&mut self, token_id: u8) -> Result<[u8; 8], Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_token::Response>(get_token::Command::new(token_id))
             .await?
             .try_into()
     }
 
     async fn get_true_random_entropy_source(&mut self) -> Result<Source, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_true_random_entropy_source::Response>(
             get_true_random_entropy_source::Command,
         )
@@ -246,30 +272,40 @@ where
     }
 
     async fn get_xncp_info(&mut self) -> Result<get_xncp_info::Payload, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_xncp_info::Response>(get_xncp_info::Command)
             .await?
             .try_into()
     }
 
     async fn nop(&mut self) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, nop::Response>(nop::Command)
             .await
             .map(drop)
     }
 
     async fn read_and_clear_counters(&mut self) -> Result<[u16; COUNTER_TYPE_COUNT], Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, read_and_clear_counters::Response>(read_and_clear_counters::Command)
             .await
             .map(Into::into)
     }
 
     async fn read_counters(&mut self) -> Result<[u16; COUNTER_TYPE_COUNT], Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, read_counters::Response>(read_counters::Command)
             .await
             .map(Into::into)
     }
 
     async fn set_mfg_token(&mut self, token_id: Id, token: ByteSizedVec<u8>) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_mfg_token::Response>(set_mfg_token::Command::new(token_id, token))
             .await?
             .try_into()
@@ -281,6 +317,8 @@ where
         duration: event::Duration,
         repeat: bool,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_timer::Response>(set_timer::Command::new(
             timer_id,
             duration.time(),
@@ -292,6 +330,8 @@ where
     }
 
     async fn set_token(&mut self, token_id: u8, token: [u8; 8]) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_token::Response>(set_token::Command::new(token_id, token))
             .await?
             .try_into()

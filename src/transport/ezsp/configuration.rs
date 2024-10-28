@@ -10,7 +10,6 @@ use crate::frame::parameters::configuration::{
     read_attribute, send_pan_id_update, set_configuration_value, set_passive_ack_config,
     set_policy, set_value, version, write_attribute,
 };
-use crate::frame::Header;
 use crate::parameters::configuration::write_attribute::Attribute;
 use crate::transport::Transport;
 use crate::types::ByteSizedVec;
@@ -107,12 +106,10 @@ pub trait Configuration {
     /// The command allows the Host to specify the desired EZSP version and must be sent
     /// before any other command.
     /// The response provides information about the firmware running on the NCP.
-    fn version<H>(
+    fn version(
         &mut self,
         desired_protocol_version: u8,
-    ) -> impl Future<Output = Result<version::Response, Error>> + Send
-    where
-        H: Header<u8>;
+    ) -> impl Future<Output = Result<version::Response, Error>> + Send;
 
     /// Write attribute data on NCP endpoints.
     #[allow(clippy::too_many_arguments)]
@@ -138,6 +135,8 @@ where
         input_clusters: ByteSizedVec<u16>,
         output_clusters: ByteSizedVec<u16>,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, add_endpoint::Response>(add_endpoint::Command::new(
             endpoint,
             profile_id,
@@ -151,6 +150,8 @@ where
     }
 
     async fn get_configuration_value(&mut self, config_id: Id) -> Result<u16, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_configuration_value::Response>(
             get_configuration_value::Command::new(config_id),
         )
@@ -163,6 +164,8 @@ where
         value_id: ExtendedId,
         characteristics: u32,
     ) -> Result<ByteSizedVec<u8>, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_extended_value::Response>(get_extended_value::Command::new(
             value_id,
             characteristics,
@@ -172,12 +175,16 @@ where
     }
 
     async fn get_policy(&mut self, policy_id: policy::Id) -> Result<decision::Id, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_policy::Response>(get_policy::Command::new(policy_id))
             .await?
             .try_into()
     }
 
     async fn get_value(&mut self, value_id: value::Id) -> Result<ByteSizedVec<u8>, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_value::Response>(get_value::Command::new(value_id))
             .await?
             .try_into()
@@ -191,6 +198,8 @@ where
         mask: u8,
         manufacturer_code: u16,
     ) -> Result<read_attribute::Attribbute, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, read_attribute::Response>(read_attribute::Command::new(
             endpoint,
             cluster,
@@ -203,6 +212,8 @@ where
     }
 
     async fn send_pan_id_update(&mut self, new_pan: PanId) -> Result<bool, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send_pan_id_update::Response>(send_pan_id_update::Command::new(
             new_pan,
         ))
@@ -211,6 +222,8 @@ where
     }
 
     async fn set_configuration_value(&mut self, config_id: Id, value: u16) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_configuration_value::Response>(
             set_configuration_value::Command::new(config_id, value),
         )
@@ -223,6 +236,8 @@ where
         config: u8,
         min_acks_needed: u8,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_passive_ack_config::Response>(
             set_passive_ack_config::Command::new(config, min_acks_needed),
         )
@@ -235,6 +250,8 @@ where
         policy_id: policy::Id,
         decision_id: decision::Id,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_policy::Response>(set_policy::Command::new(
             policy_id,
             decision_id,
@@ -248,18 +265,18 @@ where
         value_id: value::Id,
         value: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_value::Response>(set_value::Command::new(value_id, value))
             .await?
             .try_into()
     }
 
-    async fn version<H>(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error>
-    where
-        H: Header<u8>,
-    {
-        self.send::<H, _>(version::Command::new(desired_protocol_version))
-            .await?;
-        self.receive::<H, version::Response>().await
+    async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
+        todo!();
+        #[cfg(any())]
+        self.communicate::<_, version::Response>(version::Command::new(desired_protocol_version))
+            .await
     }
 
     async fn write_attribute(
@@ -269,6 +286,8 @@ where
         attribute: &Attribute,
         just_test: bool,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, write_attribute::Response>(write_attribute::Command::new(
             endpoint, cluster, attribute, just_test,
         ))

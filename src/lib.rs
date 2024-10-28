@@ -10,6 +10,7 @@ pub mod ember;
 mod error;
 pub mod ezsp;
 mod frame;
+mod handler;
 mod result;
 mod transport;
 mod types;

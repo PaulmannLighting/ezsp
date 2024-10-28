@@ -40,11 +40,6 @@ impl Parsable for Parameters {
 
         match id {
             // Binding responses
-            <binding::is_active::Response as Identified>::ID => {
-                Ok(Self::Response(Response::Binding(binding::Response::IsActive(
-                    binding::is_active::Response::from_le_stream_exact(stream)?,
-                ))))
-            }
             <binding::clear_table::Response as Identified>::ID => {
                 Ok(Self::Response(Response::Binding(binding::Response::ClearTable(
                     binding::clear_table::Response::from_le_stream_exact(stream)?,
@@ -63,6 +58,11 @@ impl Parsable for Parameters {
             <binding::get_remote_node_id::Response as Identified>::ID => {
                 Ok(Self::Response(Response::Binding(binding::Response::GetRemoteNodeId(
                     binding::get_remote_node_id::Response::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <binding::is_active::Response as Identified>::ID => {
+                Ok(Self::Response(Response::Binding(binding::Response::IsActive(
+                    binding::is_active::Response::from_le_stream_exact(stream)?,
                 ))))
             }
             <binding::set::Response as Identified>::ID => {
@@ -152,6 +152,11 @@ impl Parsable for Parameters {
             <cbke::get_certificate::Response as Identified>::ID => {
                 Ok(Self::Response(Response::Cbke(cbke::Response::GetCertificate(
                     cbke::get_certificate::Response::from_le_stream_exact(stream)?,
+                ))))
+            }
+            <cbke::get_certificate283k1::Response as Identified>::ID => {
+                Ok(Self::Response(Response::Cbke(cbke::Response::GetCertificate283k1(
+                    cbke::get_certificate283k1::Response::from_le_stream_exact(stream)?,
                 ))))
             }
             <cbke::save_preinstalled_cbke_data283k1::Response as Identified>::ID => {
@@ -1360,6 +1365,615 @@ impl Parsable for Parameters {
                 ))))
             }
             _ => Err(Decode::InvalidFrameId(id))
+        }
+    }
+}
+
+// Destructure into the inner response type.
+
+// Binding responses
+impl TryFrom<Parameters> for binding::clear_table::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Binding(binding::Response::ClearTable(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for binding::delete::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Binding(binding::Response::Delete(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for binding::get::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Binding(binding::Response::Get(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for binding::get_remote_node_id::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Binding(binding::Response::GetRemoteNodeId(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for binding::is_active::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Binding(binding::Response::IsActive(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for binding::set::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Binding(binding::Response::Set(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for binding::set_remote_node_id::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Binding(binding::Response::SetRemoteNodeId(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+// Bootloader responses
+
+impl TryFrom<Parameters> for bootloader::aes_encrypt::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Bootloader(bootloader::Response::AesEncrypt(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters>
+    for bootloader::get_standalone_bootloader_version_plat_micro_phy::Response
+{
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Bootloader(
+                bootloader::Response::GetStandaloneBootloaderVersionPlatMicroPhy(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for bootloader::launch_standalone_bootloader::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Bootloader(
+                bootloader::Response::LaunchStandaloneBootloader(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for bootloader::override_current_channel::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Bootloader(
+                bootloader::Response::OverrideCurrentChannel(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for bootloader::send_bootload_message::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Bootloader(
+                bootloader::Response::SendBootloadMessage(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+// CBKE responses
+
+impl TryFrom<Parameters> for cbke::calculate_smacs::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(cbke::Response::CalculateSmacs(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for cbke::calculate_smacs283k1::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(cbke::Response::CalculateSmacs283k1(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for cbke::clear_temporary_data_maybe_store_link_key::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(
+                cbke::Response::ClearTemporaryDataMaybeStoreLinkKey(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for cbke::clear_temporary_data_maybe_store_link_key283k1::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(
+                cbke::Response::ClearTemporaryDataMaybeStoreLinkKey283k1(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for cbke::dsa_sign::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(cbke::Response::DsaSign(response))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for cbke::dsa_verify::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(cbke::Response::DsaVerify(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for cbke::dsa_verify283k1::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(cbke::Response::DsaVerify283k1(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for cbke::generate_cbke_keys::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(cbke::Response::GenerateCbkeKeys(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for cbke::generate_cbke_keys283k1::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(cbke::Response::GenerateCbkeKeys283k1(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for cbke::get_certificate::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(cbke::Response::GetCertificate(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for cbke::get_certificate283k1::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(cbke::Response::GetCertificate283k1(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for cbke::save_preinstalled_cbke_data283k1::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(
+                cbke::Response::SavePreinstalledCbkeData283k1(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for cbke::set_preinstalled_cbke_data::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Cbke(cbke::Response::SetPreinstalledCbkeData(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+// Configuration frames
+
+impl TryFrom<Parameters> for configuration::add_endpoint::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(
+                configuration::Response::AddEndpoint(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for configuration::get_configuration_value::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(
+                configuration::Response::GetConfigurationValue(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for configuration::get_extended_value::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(
+                configuration::Response::GetExtendedValue(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for configuration::get_policy::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(configuration::Response::GetPolicy(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for configuration::get_value::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(configuration::Response::GetValue(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for configuration::read_attribute::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(
+                configuration::Response::ReadAttribute(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for configuration::send_pan_id_update::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(
+                configuration::Response::SendPanIdUpdate(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for configuration::set_configuration_value::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(
+                configuration::Response::SetConfigurationValue(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for configuration::set_passive_ack_config::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(
+                configuration::Response::SetPassiveAckConfig(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for configuration::set_policy::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(configuration::Response::SetPolicy(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for configuration::set_value::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(configuration::Response::SetValue(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for configuration::version::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(configuration::Response::Version(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for configuration::write_attribute::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Configuration(
+                configuration::Response::WriteAttribute(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+// Green Power responses
+
+impl TryFrom<Parameters> for green_power::proxy_table::get_entry::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::GreenPower(green_power::Response::ProxyTable(
+                green_power::proxy_table::Response::GetEntry(response),
+            ))) => Ok(*response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for green_power::proxy_table::lookup::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::GreenPower(green_power::Response::ProxyTable(
+                green_power::proxy_table::Response::Lookup(response),
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for green_power::proxy_table::process_gp_pairing::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::GreenPower(green_power::Response::ProxyTable(
+                green_power::proxy_table::Response::ProcessGpPairing(response),
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for green_power::send::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::GreenPower(green_power::Response::Send(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for green_power::sink_commission::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::GreenPower(green_power::Response::SinkCommission(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for green_power::sink_table::clear_all::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::GreenPower(green_power::Response::SinkTable(
+                green_power::sink_table::Response::ClearAll(response),
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for green_power::sink_table::find_or_allocate_entry::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::GreenPower(green_power::Response::SinkTable(
+                green_power::sink_table::Response::FindOrAllocateEntry(response),
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for green_power::sink_table::get_entry::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::GreenPower(green_power::Response::SinkTable(
+                green_power::sink_table::Response::GetEntry(response),
+            ))) => Ok(*response),
+            _ => Err(parameters),
         }
     }
 }

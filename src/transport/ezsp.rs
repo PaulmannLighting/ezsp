@@ -1,10 +1,3 @@
-use std::future::Future;
-
-use log::debug;
-
-use crate::error::Error;
-use crate::frame::{parameters::configuration::version, Extended, Legacy};
-
 pub use binding::Binding;
 pub use bootloader::Bootloader;
 pub use cbke::Cbke;
@@ -35,8 +28,6 @@ mod utilities;
 mod wwah;
 mod zll;
 
-const MIN_NON_LEGACY_VERSION: u8 = 8;
-
 /// A trait to represent implementors of the full `EZSP` protocol.
 ///
 /// This trait is a convenience trait that combines all the other EZSP traits.
@@ -56,15 +47,9 @@ pub trait Ezsp:
     + Wwah
     + Zll
 {
-    /// Negotiate the protocol version with the NCP.
-    fn negotiate_version(
-        &mut self,
-        desired_protocol_version: u8,
-    ) -> impl Future<Output = Result<version::Response, Error>> + Send;
 }
 
-impl<T> Ezsp for T
-where
+impl<T> Ezsp for T where
     T: Binding
         + Bootloader
         + Cbke
@@ -79,29 +64,6 @@ where
         + Utilities
         + Wwah
         + Zll
-        + Send,
+        + Send
 {
-    async fn negotiate_version(
-        &mut self,
-        desired_protocol_version: u8,
-    ) -> Result<version::Response, Error> {
-        debug!("Negotiating legacy version");
-        let mut response = self.version::<Legacy>(desired_protocol_version).await?;
-
-        if response.protocol_version() >= MIN_NON_LEGACY_VERSION {
-            debug!("Negotiating  version");
-            response = self
-                .version::<Extended>(response.protocol_version())
-                .await?;
-        }
-
-        if response.protocol_version() == desired_protocol_version {
-            Ok(response)
-        } else {
-            Err(Error::ProtocolVersionMismatch {
-                desired: desired_protocol_version,
-                negotiated: response,
-            })
-        }
-    }
 }

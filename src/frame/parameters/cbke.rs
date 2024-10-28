@@ -29,6 +29,7 @@ pub enum Response {
     GenerateCbkeKeys(generate_cbke_keys::Response),
     GenerateCbkeKeys283k1(generate_cbke_keys283k1::Response),
     GetCertificate(get_certificate::Response),
+    GetCertificate283k1(get_certificate283k1::Response),
     SavePreinstalledCbkeData283k1(save_preinstalled_cbke_data283k1::Response),
     SetPreinstalledCbkeData(set_preinstalled_cbke_data::Response),
 }

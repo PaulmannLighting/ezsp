@@ -338,6 +338,8 @@ where
         &mut self,
         address_table_index: u8,
     ) -> Result<bool, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, address_table_entry_is_active::Response>(
             address_table_entry_is_active::Command::new(address_table_index),
         )
@@ -349,6 +351,8 @@ where
         &mut self,
         address_table_index: u8,
     ) -> Result<Eui64, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_address_table_remote_eui64::Response>(
             get_address_table_remote_eui64::Command::new(address_table_index),
         )
@@ -360,6 +364,8 @@ where
         &mut self,
         address_table_index: u8,
     ) -> Result<NodeId, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_address_table_remote_node_id::Response>(
             get_address_table_remote_node_id::Command::new(address_table_index),
         )
@@ -368,6 +374,8 @@ where
     }
 
     async fn get_beacon_classification_params(&mut self) -> Result<ClassificationParams, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_beacon_classification_params::Response>(
             get_beacon_classification_params::Command,
         )
@@ -376,6 +384,8 @@ where
     }
 
     async fn get_extended_timeout(&mut self, remote_eui64: Eui64) -> Result<bool, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_extended_timeout::Response>(get_extended_timeout::Command::new(
             remote_eui64,
         ))
@@ -384,6 +394,8 @@ where
     }
 
     async fn get_multicast_table_entry(&mut self, index: u8) -> Result<TableEntry, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, get_multicast_table_entry::Response>(
             get_multicast_table_entry::Command::new(index),
         )
@@ -392,6 +404,8 @@ where
     }
 
     async fn lookup_eui64_by_node_id(&mut self, node_id: NodeId) -> Result<Eui64, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, lookup_eui64_by_node_id::Response>(
             lookup_eui64_by_node_id::Command::new(node_id),
         )
@@ -400,6 +414,8 @@ where
     }
 
     async fn lookup_node_id_by_eui64(&mut self, eui64: Eui64) -> Result<NodeId, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, lookup_node_id_by_eui64::Response>(
             lookup_node_id_by_eui64::Command::new(eui64),
         )
@@ -408,6 +424,8 @@ where
     }
 
     async fn maximum_payload_length(&mut self) -> Result<u8, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, maximum_payload_length::Response>(maximum_payload_length::Command)
             .await
             .map(|response| response.aps_length())
@@ -419,6 +437,8 @@ where
         units: Units,
         failure_limit: u8,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, poll_for_data::Response>(poll_for_data::Command::new(
             interval,
             units,
@@ -438,6 +458,8 @@ where
         message_tag: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, proxy_broadcast::Response>(proxy_broadcast::Command::new(
             source,
             destination,
@@ -458,6 +480,8 @@ where
         new_id: NodeId,
         new_extended_timeout: bool,
     ) -> Result<replace_address_table_entry::PreviousEntry, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, replace_address_table_entry::Response>(
             replace_address_table_entry::Command::new(
                 address_table_index,
@@ -478,6 +502,8 @@ where
         message_tag: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send_broadcast::Response>(send_broadcast::Command::new(
             destination,
             aps_frame,
@@ -494,6 +520,8 @@ where
         concentrator_type: u16,
         radius: u8,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send_many_to_one_route_request::Response>(
             send_many_to_one_route_request::Command::new(concentrator_type, radius),
         )
@@ -509,6 +537,8 @@ where
         message_tag: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send_multicast::Response>(send_multicast::Command::new(
             aps_frame,
             hops,
@@ -530,6 +560,8 @@ where
         message_tag: u8,
         message_contents: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send_multicast_with_alias::Response>(
             send_multicast_with_alias::Command::new(
                 aps_frame,
@@ -546,6 +578,8 @@ where
     }
 
     async fn send_raw_message(&mut self, message_contents: ByteSizedVec<u8>) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send_raw_message::Response>(send_raw_message::Command::new(
             message_contents,
         ))
@@ -559,6 +593,8 @@ where
         priority: u8,
         use_cca: bool,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send_raw_message_extended::Response>(
             send_raw_message_extended::Command::new(message, priority, use_cca),
         )
@@ -572,6 +608,8 @@ where
         aps_frame: Frame,
         message: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send_reply::Response>(send_reply::Command::new(
             sender, aps_frame, message,
         ))
@@ -587,6 +625,8 @@ where
         message_tag: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send_unicast::Response>(send_unicast::Command::new(
             typ,
             index_or_destination,
@@ -603,6 +643,8 @@ where
         address_table_index: u8,
         eui64: Eui64,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_address_table_remote_eui64::Response>(
             set_address_table_remote_eui64::Command::new(address_table_index, eui64),
         )
@@ -615,6 +657,8 @@ where
         address_table_index: u8,
         id: NodeId,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_address_table_remote_node_id::Response>(
             set_address_table_remote_node_id::Command::new(address_table_index, id),
         )
@@ -626,6 +670,8 @@ where
         &mut self,
         param: ClassificationParams,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_beacon_classification_params::Response>(
             set_beacon_classification_params::Command::new(param),
         )
@@ -638,6 +684,8 @@ where
         remote_eui64: Eui64,
         extended_timeout: bool,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_extended_timeout::Response>(set_extended_timeout::Command::new(
             remote_eui64,
             extended_timeout,
@@ -650,6 +698,8 @@ where
         &mut self,
         wait_before_retry_interval_ms: u8,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_mac_poll_failure_wait_time::Response>(
             set_mac_poll_failure_wait_time::Command::new(wait_before_retry_interval_ms),
         )
@@ -662,6 +712,8 @@ where
         index: u8,
         value: TableEntry,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_multicast_table_entry::Response>(
             set_multicast_table_entry::Command::new(index, value),
         )
@@ -673,6 +725,8 @@ where
         &mut self,
         mode: SourceRouteDiscoveryMode,
     ) -> Result<u32, Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, set_source_route_discovery_mode::Response>(
             set_source_route_discovery_mode::Command::new(mode),
         )
@@ -686,6 +740,8 @@ where
         target_long: Eui64,
         parent_short_id: NodeId,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, unicast_current_network_key::Response>(
             unicast_current_network_key::Command::new(target_short, target_long, parent_short_id),
         )
@@ -694,6 +750,8 @@ where
     }
 
     async fn write_node_data(&mut self, erase: bool) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, write_node_data::Response>(write_node_data::Command::new(erase))
             .await?
             .try_into()

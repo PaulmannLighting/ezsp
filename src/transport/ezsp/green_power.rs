@@ -53,6 +53,8 @@ where
         gpep_handle: u8,
         gp_tx_queue_entry_lifetime_millis: u16,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, send::Response>(send::Command::new(
             action,
             use_cca,
@@ -73,6 +75,8 @@ where
         gpm_addr_for_pairing: u16,
         sink_endpoint: u8,
     ) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, sink_commission::Response>(sink_commission::Command::new(
             options,
             gpm_addr_for_security,
@@ -84,6 +88,8 @@ where
     }
 
     async fn translation_table_clear(&mut self) -> Result<(), Error> {
+        todo!();
+        #[cfg(any())]
         self.communicate::<_, translation_table_clear::Response>(translation_table_clear::Command)
             .await
             .map(drop)

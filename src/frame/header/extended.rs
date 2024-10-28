@@ -1,6 +1,6 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
 
-use super::{Header, HighByte, LowByte};
+use super::{HighByte, LowByte};
 
 /// An extended header.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
@@ -11,42 +11,9 @@ pub struct Extended {
     id: u16,
 }
 
-impl Header<u8> for Extended {
+impl Extended {
     #[must_use]
-    fn new(sequence: u8, low_byte: LowByte, id: u8) -> Self {
-        Self {
-            sequence,
-            low_byte,
-            high_byte: HighByte::default(),
-            id: u16::from(id),
-        }
-    }
-
-    #[must_use]
-    fn sequence(self) -> u8 {
-        self.sequence
-    }
-
-    #[must_use]
-    fn low_byte(self) -> LowByte {
-        self.low_byte
-    }
-
-    #[must_use]
-    fn high_byte(self) -> Option<HighByte> {
-        Some(self.high_byte)
-    }
-
-    #[must_use]
-    fn id(self) -> u8 {
-        u8::try_from(self.id)
-            .expect("extended frame ID should fir into u8 when used in `Header<u8>`")
-    }
-}
-
-impl Header<u16> for Extended {
-    #[must_use]
-    fn new(sequence: u8, low_byte: LowByte, id: u16) -> Self {
+    pub fn new(sequence: u8, low_byte: LowByte, id: u16) -> Self {
         Self {
             sequence,
             low_byte,
@@ -56,22 +23,22 @@ impl Header<u16> for Extended {
     }
 
     #[must_use]
-    fn sequence(self) -> u8 {
+    pub fn sequence(self) -> u8 {
         self.sequence
     }
 
     #[must_use]
-    fn low_byte(self) -> LowByte {
+    pub fn low_byte(self) -> LowByte {
         self.low_byte
     }
 
     #[must_use]
-    fn high_byte(self) -> Option<HighByte> {
-        Some(self.high_byte)
+    pub fn high_byte(self) -> HighByte {
+        self.high_byte
     }
 
     #[must_use]
-    fn id(self) -> u16 {
+    pub fn id(self) -> u16 {
         self.id
     }
 }

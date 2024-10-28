@@ -1,8 +1,11 @@
 use std::fmt::Display;
+use std::num::TryFromIntError;
 
 /// Invalid values.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ValueError {
+    /// An invalid frame ID for a legacy header was received.
+    InvalidFrameId(TryFromIntError),
     /// An invalid [`crate::ember::duty_cycle::State`] was received.
     EmberDutyCycleState(u8),
     /// An invalid [`crate::ember::network::Status`] was received.
@@ -20,6 +23,9 @@ pub enum ValueError {
 impl Display for ValueError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::InvalidFrameId(error) => {
+                write!(f, "Invalid frame ID for legacy frame format: {error}")
+            }
             Self::EmberDutyCycleState(state) => {
                 write!(f, "Invalid Ember duty cycle state: {state:#04X}")
             }
@@ -34,4 +40,17 @@ impl Display for ValueError {
     }
 }
 
-impl std::error::Error for ValueError {}
+impl std::error::Error for ValueError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::InvalidFrameId(error) => Some(error),
+            _ => None,
+        }
+    }
+}
+
+impl From<TryFromIntError> for ValueError {
+    fn from(error: TryFromIntError) -> Self {
+        Self::InvalidFrameId(error)
+    }
+}

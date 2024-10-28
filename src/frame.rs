@@ -1,12 +1,8 @@
 use std::fmt::Debug;
 
-use le_stream::derive::{FromLeStream, ToLeStream};
-
 pub use handler::Handler;
-#[cfg(feature = "ashv2")]
-pub use header::Command;
 pub use header::{
-    CallbackType, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
+    CallbackType, Command, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
 };
 pub use parameter::{Identified, Parameter};
 pub use parameters::Parameters;
@@ -20,35 +16,27 @@ pub mod parsable;
 pub mod response;
 
 /// A frame that contains a header and parameters.
-#[derive(Clone, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
-pub struct Frame<H, P>
-where
-    H: Header<P::Id>,
-    P: Parameter,
-{
-    header: H,
-    parameters: P,
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Frame {
+    header: Header,
+    parameters: Parameters,
 }
 
-impl<H, P> Frame<H, P>
-where
-    H: Header<P::Id>,
-    P: Parameter,
-{
+impl Frame {
     /// Create a new frame.
     #[must_use]
-    pub const fn new(header: H, parameters: P) -> Self {
+    pub const fn new(header: Header, parameters: Parameters) -> Self {
         Self { header, parameters }
     }
 
     /// Return the header.
     #[must_use]
-    pub const fn header(&self) -> H {
+    pub const fn header(&self) -> Header {
         self.header
     }
 
     /// Return the parameters.
-    pub fn parameters(self) -> P {
+    pub fn parameters(self) -> Parameters {
         self.parameters
     }
 }

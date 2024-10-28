@@ -4,12 +4,14 @@ mod decode;
 mod status;
 mod value_error;
 
+use std::fmt::{Debug, Display, Formatter};
+
 use crate::frame::parameters::configuration::version;
 use crate::frame::parameters::utilities::invalid_command;
-use crate::{ember, ezsp};
+use crate::{ember, ezsp, Parameters, Response};
+
 pub use decode::Decode;
 pub use status::Status;
-use std::fmt::{Debug, Display, Formatter};
 #[allow(clippy::module_name_repetitions)]
 pub use value_error::ValueError;
 
@@ -22,6 +24,8 @@ pub enum Error {
     Decode(Decode),
     /// A status related error.
     Status(Status),
+    /// An unexpected response was returned.
+    UnexpectedResponse(Parameters),
     /// Invalid status
     ValueError(ValueError),
     /// The NCP responded with `invalidCommand` (0x0058).
@@ -41,6 +45,7 @@ impl Display for Error {
             Self::Io(error) => Display::fmt(error, f),
             Self::Decode(decode) => Display::fmt(decode, f),
             Self::Status(status) => Display::fmt(status, f),
+            Self::UnexpectedResponse(response) => write!(f, "Unexpected response: {response:?}"),
             Self::ValueError(status) => Display::fmt(status, f),
             Self::InvalidCommand(response) => write!(f, "Invalid command: {response}"),
             Self::ProtocolVersionMismatch {
@@ -65,7 +70,9 @@ impl std::error::Error for Error {
             Self::Decode(decode) => Some(decode),
             Self::Status(status) => Some(status),
             Self::ValueError(value_error) => Some(value_error),
-            Self::InvalidCommand(_) | Self::ProtocolVersionMismatch { .. } => None,
+            Self::UnexpectedResponse(_)
+            | Self::InvalidCommand(_)
+            | Self::ProtocolVersionMismatch { .. } => None,
         }
     }
 }
@@ -127,6 +134,12 @@ impl From<ember::Status> for Error {
 impl From<siliconlabs::Status> for Error {
     fn from(status: siliconlabs::Status) -> Self {
         Self::Status(status.into())
+    }
+}
+
+impl From<Parameters> for Error {
+    fn from(parameters: Parameters) -> Self {
+        Self::UnexpectedResponse(parameters)
     }
 }
 

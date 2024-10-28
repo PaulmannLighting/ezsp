@@ -23,6 +23,7 @@ log = "0.4"
 macaddr = "1.0"
 num-derive = "0.4"
 num-traits = "0.2"
+serialport = { version = "4.6.0", default-features = false, optional = true }
 siliconlabs = { git = "https://github.com/PaulmannLighting/siliconlabs.git", version = "0.3", features = ["le-stream", "num-traits"] }
 tokio = { version = "1.41", features = ["sync"], optional = true }
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
@@ -34,7 +35,7 @@ serialport = { version = "4.3", default-features = false }
 tokio = { version = "1.40", features = ["rt", "rt-multi-thread", "macros"] }
 
 [features]
-ashv2 = ["dep:ashv2", "tokio/sync", "dep:tokio-util", "dep:futures"]
+ashv2 = ["dep:ashv2", "dep:serialport", "tokio/sync", "dep:tokio-util", "dep:futures"]
 
 [[example]]
 name = "test_diverse_commands"
@@ -51,7 +52,7 @@ required-features = ["ashv2"]
 [profile.release]
 opt-level = 3
 strip = "symbols"
-lto = "fat"
+#lto = "fat"
 panic = "abort"
 
 [lints.rust]

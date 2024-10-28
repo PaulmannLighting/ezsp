@@ -1,15 +1,11 @@
 //! Test version negotiation.
 
-use ashv2::{make_pair, open, BaudRate};
+use ashv2::{open, BaudRate};
 use clap::Parser;
 use ezsp::uart::Uart;
-use ezsp::{Ezsp, Utilities, MAX_FRAME_SIZE};
+use ezsp::Utilities;
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering::Relaxed;
-use std::sync::Arc;
-use std::thread::spawn;
 
 const DEFAULT_VERSION: u8 = 8;
 
@@ -37,13 +33,9 @@ async fn main() {
 }
 
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
-    let (ash, transceiver) = make_pair::<MAX_FRAME_SIZE, _>(serial_port, 8, None);
-    let running = Arc::new(AtomicBool::new(true));
-    let transceiver_running = running.clone();
-    let transceiver_thread = spawn(|| transceiver.run(transceiver_running));
-    let mut ezsp = Uart::new(ash);
+    let mut uart = Uart::new(serial_port, 8);
 
-    match ezsp.negotiate_version(args.version).await {
+    match uart.negotiate_version(args.version).await {
         Ok(version) => {
             info!(
                 "Negotiated protocol version: {:#04X}",
@@ -58,7 +50,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     }
 
     for text in args.texts {
-        match ezsp.echo(text.bytes().collect()).await {
+        match uart.echo(text.bytes().collect()).await {
             Ok(echo) => match String::from_utf8(echo.to_vec()) {
                 Ok(echo) => {
                     info!("Got echo: {echo}");
@@ -72,12 +64,4 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             }
         }
     }
-
-    if !args.keep_listening {
-        running.store(false, Relaxed);
-    }
-
-    transceiver_thread
-        .join()
-        .expect("Transceiver thread panicked");
 }

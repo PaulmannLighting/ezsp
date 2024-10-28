@@ -186,11 +186,10 @@ where
     }
 
     async fn echo(&mut self, data: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, echo::Response>(echo::Command::new(data))
-            .await
-            .map(echo::Response::echo)
+        Ok(
+            echo::Response::try_from(self.communicate(echo::Command::new(data)).await?)
+                .map(echo::Response::echo)?,
+        )
     }
 
     async fn get_eui64(&mut self) -> Result<Eui64, Error> {

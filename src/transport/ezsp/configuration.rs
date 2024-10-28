@@ -273,10 +273,10 @@ where
     }
 
     async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, version::Response>(version::Command::new(desired_protocol_version))
-            .await
+        Ok(version::Response::try_from(
+            self.communicate(version::Command::new(desired_protocol_version))
+                .await?,
+        )?)
     }
 
     async fn write_attribute(

@@ -7,18 +7,18 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::Arc;
 
-use ashv2::Payload;
+use ashv2::Transceiver;
 use le_stream::ToLeStream;
 use log::debug;
+use serialport::SerialPort;
 use tokio::spawn;
-use tokio::sync::mpsc::{channel, Receiver, Sender};
-use tokio::task::JoinHandle;
+use tokio::sync::mpsc::{channel, Receiver};
 
 use crate::error::Error;
 use crate::frame::{Command, Header, Identified};
 use crate::parameters::configuration::version;
 use crate::transport::{Transport, MIN_NON_LEGACY_VERSION};
-use crate::{Configuration, Extended, Handler, Legacy, Response};
+use crate::{Configuration, Extended, Handler, Legacy};
 use crate::{Parameters, ValueError};
 
 use decoder::Decoder;
@@ -32,7 +32,8 @@ mod splitter;
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
 pub struct Uart {
-    splitter: JoinHandle<()>,
+    transceiver_handle: std::thread::JoinHandle<()>,
+    splitter: tokio::task::JoinHandle<()>,
     callbacks: Receiver<Handler>,
     responses: Receiver<Parameters>,
     encoder: Encoder,
@@ -43,17 +44,19 @@ pub struct Uart {
 impl Uart {
     /// Creates an `ASHv2` host.
     #[must_use]
-    pub fn new(
-        frames_in: Receiver<Payload>,
-        frames_out: Sender<Payload>,
-        channel_size: usize,
-    ) -> Self {
+    pub fn new<T>(serial_port: T, channel_size: usize) -> Self
+    where
+        T: SerialPort + 'static,
+    {
+        let (frames_out, frames_in, transceiver_handle) =
+            Transceiver::spawn(serial_port, channel_size);
         let legacy = Arc::new(AtomicBool::new(true));
         let (callbacks_tx, callbacks_rx) = channel(channel_size);
         let (response_tx, response_rx) = channel(channel_size);
         let decoder = Decoder::new(frames_in, legacy.clone());
         let splitter = Splitter::new(decoder, response_tx, callbacks_tx);
         Self {
+            transceiver_handle,
             splitter: spawn(splitter.run()),
             callbacks: callbacks_rx,
             responses: response_rx,

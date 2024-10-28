@@ -1977,3 +1977,20 @@ impl TryFrom<Parameters> for green_power::sink_table::get_entry::Response {
         }
     }
 }
+
+// TODO: Implement TryFrom for other frames.
+
+// Utility responses
+
+impl TryFrom<Parameters> for utilities::echo::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Utilities(utilities::Response::Echo(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}

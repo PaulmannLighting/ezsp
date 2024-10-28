@@ -1,15 +1,17 @@
 //! Test version negotiation.
 
+use std::time::Duration;
+
 use ashv2::{open, BaudRate};
 use clap::Parser;
+use log::{error, info, warn};
+use serialport::{FlowControl, SerialPort};
+use tokio::time::sleep;
+
 use ezsp::ember::zigbee::Network;
 use ezsp::ezsp::network::scan::Type;
 use ezsp::uart::Uart;
-use ezsp::{parameters, Callback, Ezsp, Handler, Networking, MAX_FRAME_SIZE};
-use log::{error, info, warn};
-use serialport::{FlowControl, SerialPort};
-use std::time::Duration;
-use tokio::time::sleep;
+use ezsp::{parameters, Callback, Handler, Networking};
 
 #[derive(Debug, Parser)]
 struct Args {
@@ -31,8 +33,13 @@ struct Args {
         help = "Duration for scan command"
     )]
     scan_duration: u8,
-    #[arg(short, long, help = "Keep listening for incoming messages")]
-    keep_listening: bool,
+    #[arg(
+        short,
+        long,
+        value_name = "seconds",
+        help = "Keep listening for callbacks"
+    )]
+    keep_listening: Option<u64>,
 }
 
 #[tokio::main]
@@ -77,7 +84,9 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
     }
 
-    sleep(Duration::from_secs(15)).await;
+    if let Some(seconds) = args.keep_listening {
+        sleep(Duration::from_secs(seconds)).await;
+    }
 }
 
 struct NetworkScanHandler;

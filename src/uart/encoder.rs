@@ -1,6 +1,4 @@
 use std::io::ErrorKind;
-use std::sync::atomic::AtomicBool;
-use std::sync::Arc;
 
 use ashv2::{Payload, MAX_PAYLOAD_SIZE};
 use le_stream::ToLeStream;
@@ -16,16 +14,14 @@ use crate::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 #[derive(Debug)]
 pub struct Encoder {
     sender: Sender<Payload>,
-    legacy: Arc<AtomicBool>,
     header: heapless::Vec<u8, MAX_HEADER_SIZE>,
     parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
 }
 
 impl Encoder {
-    pub fn new(sender: Sender<Payload>, legacy: Arc<AtomicBool>) -> Self {
+    pub const fn new(sender: Sender<Payload>) -> Self {
         Self {
             sender,
-            legacy,
             header: heapless::Vec::new(),
             parameters: heapless::Vec::new(),
         }
@@ -33,7 +29,7 @@ impl Encoder {
 
     pub async fn send<T>(&mut self, header: Header, parameters: T) -> Result<(), Error>
     where
-        T: ToLeStream,
+        T: ToLeStream + Send,
     {
         self.header.clear();
         self.parameters.clear();

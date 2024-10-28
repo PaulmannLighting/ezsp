@@ -7,37 +7,32 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::Arc;
 
-use ashv2::Transceiver;
 use le_stream::ToLeStream;
 use log::debug;
 use serialport::SerialPort;
-use tokio::spawn;
-use tokio::sync::mpsc::{channel, Receiver};
+use tokio::sync::mpsc::Receiver;
 
 use crate::error::Error;
 use crate::frame::{Command, Header, Identified};
 use crate::parameters::configuration::version;
 use crate::transport::{Transport, MIN_NON_LEGACY_VERSION};
-use crate::{Callback, Configuration, Extended, Handler, Legacy};
+use crate::{Configuration, Extended, Handler, Legacy};
 use crate::{Parameters, ValueError};
 
-use decoder::Decoder;
 use encoder::Encoder;
-use splitter::Splitter;
+use threads::Threads;
 
 mod decoder;
 mod encoder;
 mod splitter;
+mod threads;
 
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
 pub struct Uart {
-    running: Arc<AtomicBool>,
-    transceiver: Option<std::thread::JoinHandle<()>>,
-    splitter: tokio::task::JoinHandle<()>,
-    handler: tokio::task::JoinHandle<()>,
     responses: Receiver<Parameters>,
     encoder: Encoder,
+    threads: Threads,
     legacy: Arc<AtomicBool>,
     sequence: u8,
 }
@@ -50,27 +45,25 @@ impl Uart {
         S: SerialPort + 'static,
         H: Handler + 'static,
     {
-        let running = Arc::new(AtomicBool::new(true));
-        let (frames_out, frames_in, transceiver) =
-            Transceiver::spawn(serial_port, running.clone(), channel_size);
         let legacy = Arc::new(AtomicBool::new(true));
-        let (callbacks_tx, callbacks_rx) = channel(channel_size);
-        let (response_tx, response_rx) = channel(channel_size);
-        let decoder = Decoder::new(frames_in, legacy.clone());
-        let splitter = Splitter::new(decoder, response_tx, callbacks_tx);
-        let handler = spawn(handler.run(callbacks_rx));
+        let (frames_out, responses, threads) =
+            Threads::spawn(serial_port, handler, legacy.clone(), channel_size);
         Self {
-            running,
-            transceiver: Some(transceiver),
-            splitter: spawn(splitter.run()),
-            handler,
-            responses: response_rx,
-            encoder: Encoder::new(frames_out, legacy.clone()),
+            responses,
+            encoder: Encoder::new(frames_out),
+            threads,
             legacy,
             sequence: 0,
         }
     }
 
+    /// Negotiate the `EZSP` protocol version.
+    ///
+    /// A minimum version of `8` is required to support non-legacy commands.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error on I/O errors or if the desired protocol version is not supported.
     pub async fn negotiate_version(
         &mut self,
         desired_protocol_version: u8,
@@ -91,20 +84,6 @@ impl Uart {
                 desired: desired_protocol_version,
                 negotiated: response,
             })
-        }
-    }
-}
-
-impl Drop for Uart {
-    fn drop(&mut self) {
-        self.splitter.abort();
-        self.handler.abort();
-        self.running.store(false, Relaxed);
-
-        if let Some(transceiver) = self.transceiver.take() {
-            transceiver
-                .join()
-                .expect("Failed to join transceiver thread.");
         }
     }
 }

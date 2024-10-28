@@ -3,10 +3,10 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 
-use crate::bootloader::BOOTLOADER_INVALID_VERSION;
 use crate::frame::Identified;
 
 const ID: u16 = 0x0091;
+const BOOTLOADER_INVALID_VERSION: u16 = 0xFFFF;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command;

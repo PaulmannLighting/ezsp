@@ -4,7 +4,7 @@
 //! You can find the protocol's definition on [siliconlabs.com](https://www.silabs.com/documents/public/user-guides/ug100-ezsp-reference-guide.pdf).
 //!
 //! This library is free software and is not affiliated with Silicon Labs.
-mod bootloader;
+
 mod constants;
 pub mod ember;
 mod error;

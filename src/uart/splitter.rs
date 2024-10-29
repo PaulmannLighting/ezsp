@@ -1,4 +1,4 @@
-use log::{error, trace};
+use log::trace;
 use tokio::sync::mpsc::Sender;
 
 use crate::error::Error;

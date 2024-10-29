@@ -2,17 +2,18 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::Arc;
 
-use super::decoder::Decoder;
-use super::splitter::Splitter;
-use crate::error::Error;
 use ashv2::{Payload, Transceiver};
 use serialport::SerialPort;
 use tokio::spawn;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 
+use crate::error::Error;
 use crate::frame::Parameters;
 use crate::handler::Handler;
 use crate::uart::state::State;
+
+use super::decoder::Decoder;
+use super::splitter::Splitter;
 
 /// Threads and async tasks for the UART communication.
 #[derive(Debug)]

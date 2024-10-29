@@ -5,7 +5,7 @@ use std::sync::{Arc, RwLock};
 
 use crate::transport::MIN_NON_LEGACY_VERSION;
 
-/// Shared state of the UART.
+/// Shared state of the `EZSP` UART.
 #[derive(Clone, Debug)]
 pub struct State {
     negotiated_version: Arc<RwLock<Option<u8>>>,
@@ -42,6 +42,10 @@ impl State {
     /// Set the flag that indicates if the UART needs a reset.
     pub fn set_needs_reset(&self, needs_reset: bool) {
         self.needs_reset.store(needs_reset, Relaxed);
+        self.negotiated_version
+            .write()
+            .expect("RwLock poisoned")
+            .take();
     }
 
     /// Returns `true` if the negotiated version is a legacy version.

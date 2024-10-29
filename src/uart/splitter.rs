@@ -15,6 +15,9 @@ pub struct Splitter {
 
 impl Splitter {
     /// Create a new `Splitter`.
+    ///
+    /// Sets the incoming frames decoder as a source for frames
+    /// and the responses and callbacks sinks as destinations.
     #[must_use]
     pub const fn new(
         incoming: Decoder,
@@ -29,6 +32,8 @@ impl Splitter {
     }
 
     /// Run the splitter.
+    ///
+    /// Continuously decodes incoming frames and forwards them as responses or callbacks.
     pub async fn run(mut self) {
         while let Some(frame) = self.incoming.decode().await {
             match frame {

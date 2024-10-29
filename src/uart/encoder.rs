@@ -8,7 +8,7 @@ use crate::frame::Header;
 use crate::Error;
 use crate::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 
-/// Encoder to encode `EZSP` frames into `ASHv2` frames.
+/// Encode `EZSP` frames into `ASHv2` frames.
 #[derive(Debug)]
 pub struct Encoder {
     sender: Sender<Payload>,
@@ -17,6 +17,7 @@ pub struct Encoder {
 }
 
 impl Encoder {
+    /// Create a new `Encoder`.
     pub const fn new(sender: Sender<Payload>) -> Self {
         Self {
             sender,
@@ -25,6 +26,7 @@ impl Encoder {
         }
     }
 
+    /// Encode an `EZSP` header and parameters into a `ASHv2` frames.
     pub async fn send<T>(&mut self, header: Header, parameters: T) -> Result<(), Error>
     where
         T: ToLeStream + Send,
@@ -43,12 +45,13 @@ impl Encoder {
             // If there are no parameters to send, e.g. on `nop`, a call to `.chunks()`
             // would yield an empty iterator, resulting in us not even sending the header.
             let mut payload = heapless::Vec::new();
-            payload.extend_from_slice(&self.header).map_err(|()| {
-                std::io::Error::new(ErrorKind::OutOfMemory, "Payload buffer overflow")
-            })?;
-            self.sender.send(payload).await.map_err(|_| {
-                std::io::Error::new(ErrorKind::BrokenPipe, "Failed to send payload")
-            })?;
+            payload
+                .extend_from_slice(&self.header)
+                .map_err(|()| buffer_overflow())?;
+            self.sender
+                .send(payload)
+                .await
+                .map_err(|_| failed_to_send_payload())?;
             return Ok(());
         }
 
@@ -57,17 +60,26 @@ impl Encoder {
             .chunks(MAX_PAYLOAD_SIZE.saturating_sub(self.header.len()))
         {
             let mut payload = heapless::Vec::new();
-            payload.extend_from_slice(&self.header).map_err(|()| {
-                std::io::Error::new(ErrorKind::OutOfMemory, "Payload buffer overflow")
-            })?;
-            payload.extend_from_slice(chunk).map_err(|()| {
-                std::io::Error::new(ErrorKind::OutOfMemory, "Payload buffer overflow")
-            })?;
-            self.sender.send(payload).await.map_err(|_| {
-                std::io::Error::new(ErrorKind::BrokenPipe, "Failed to send payload")
-            })?;
+            payload
+                .extend_from_slice(&self.header)
+                .map_err(|()| buffer_overflow())?;
+            payload
+                .extend_from_slice(chunk)
+                .map_err(|()| buffer_overflow())?;
+            self.sender
+                .send(payload)
+                .await
+                .map_err(|_| failed_to_send_payload())?;
         }
 
         Ok(())
     }
+}
+
+fn buffer_overflow() -> std::io::Error {
+    std::io::Error::new(ErrorKind::OutOfMemory, "Payload buffer overflow")
+}
+
+fn failed_to_send_payload() -> std::io::Error {
+    std::io::Error::new(ErrorKind::BrokenPipe, "Failed to send payload")
 }

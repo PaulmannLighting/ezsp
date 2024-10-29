@@ -20,6 +20,10 @@ pub struct Decoder {
 }
 
 impl Decoder {
+    /// Create a new `Decoder`.
+    ///
+    /// Sets the source as a receiver for incoming `ASHv2` frames
+    /// and the current state of the `EZSP` UART.
     #[must_use]
     pub const fn new(source: Receiver<std::io::Result<Payload>>, state: State) -> Self {
         Self {
@@ -30,6 +34,7 @@ impl Decoder {
         }
     }
 
+    /// Decode incoming `ASHv2` frames into `EZSP` frames.
     pub async fn decode(&mut self) -> Option<Result<Frame, Error>> {
         self.parameters.clear();
 
@@ -64,13 +69,13 @@ impl Decoder {
     ///
     /// # Returns
     ///
-    /// Returns `Ok(Some(header))` if the frame fragment was successfully parsed.
+    /// Returns `Some(`[`Frame`]`)` if the frame fragment was successfully parsed.
     ///
-    /// Returns `Ok(None)` if the frame is not yet complete.
+    /// Returns `None` if the decoder needs more data to decode the frame.
     ///
     /// # Errors
     ///
-    /// Returns `Err(Decode)` if the frame fragment could not be parsed.
+    /// Returns an [`Error`] if the frame fragment could not be parsed.
     fn try_parse_frame_fragment(&mut self, frame: Payload) -> Result<Option<Frame>, Error> {
         trace!("Decoding ASHv2 frame: {:#04X}", HexSlice::new(&frame));
 

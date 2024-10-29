@@ -14,7 +14,7 @@ use crate::frame::Parameters;
 use crate::handler::Handler;
 use crate::uart::state::State;
 
-/// Threads for the UART communication.
+/// Threads and async tasks for the UART communication.
 #[derive(Debug)]
 pub struct Threads {
     running: Arc<AtomicBool>,
@@ -36,13 +36,20 @@ impl Threads {
         H: Handler + 'static,
     {
         let running = Arc::new(AtomicBool::new(true));
-        let (callbacks_tx, callbacks_rx) = channel(channel_size);
-        let (response_tx, response_rx) = channel(channel_size);
+
+        // `ASHv2` transceiver
         let (frames_out, frames_in, transceiver) =
             Transceiver::spawn(serial_port, running.clone(), channel_size);
+
+        // Callback handler
+        let (callbacks_tx, callbacks_rx) = channel(channel_size);
+        let handler = spawn(handler.run(callbacks_rx));
+
+        // Frame splitter
+        let (response_tx, response_rx) = channel(channel_size);
         let splitter =
             spawn(Splitter::new(Decoder::new(frames_in, state), response_tx, callbacks_tx).run());
-        let handler = spawn(handler.run(callbacks_rx));
+
         let instance = Self {
             running,
             transceiver: Some(transceiver),
@@ -56,6 +63,7 @@ impl Threads {
 /// Tear down the threads for the UART communication.
 impl Drop for Threads {
     fn drop(&mut self) {
+        // First stop the ASHv2 transceiver...
         self.running.store(false, Relaxed);
 
         if let Some(transceiver) = self.transceiver.take() {
@@ -64,8 +72,8 @@ impl Drop for Threads {
                 .expect("Failed to join transceiver thread.");
         }
 
+        // ...then stop the frame splitter and callback handler.
         self.splitter.abort();
         self.handler.abort();
-        self.running.store(false, Relaxed);
     }
 }

@@ -83,90 +83,63 @@ where
     T: Transport,
 {
     async fn end(&mut self) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, end::Response>(end::Command)
-            .await?
-            .try_into()
+        end::Response::try_from(self.communicate(end::Command).await?)?.try_into()
     }
 
     async fn get_channel(&mut self) -> Result<u8, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, get_channel::Response>(get_channel::Command)
-            .await
-            .map(|response| response.channel())
+        Ok(
+            get_channel::Response::try_from(self.communicate(get_channel::Command).await?)
+                .map(|response| response.channel())?,
+        )
     }
 
     async fn get_power(&mut self) -> Result<i8, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, get_power::Response>(get_power::Command)
-            .await
-            .map(|response| response.power())
+        Ok(
+            get_power::Response::try_from(self.communicate(get_power::Command).await?)
+                .map(|response| response.power())?,
+        )
     }
 
     async fn send_packet(&mut self, content: ByteSizedVec<u8>) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, send_packet::Response>(send_packet::Command::new(content))
-            .await?
-            .try_into()
+        send_packet::Response::try_from(
+            self.communicate(send_packet::Command::new(content)).await?,
+        )?
+        .try_into()
     }
 
     async fn set_channel(&mut self, channel: u8) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_channel::Response>(set_channel::Command::new(channel))
-            .await?
-            .try_into()
+        set_channel::Response::try_from(
+            self.communicate(set_channel::Command::new(channel)).await?,
+        )?
+        .try_into()
     }
 
     async fn set_power(&mut self, tx_power_mode: u16, power: i8) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_power::Response>(set_power::Command::new(tx_power_mode, power))
-            .await?
-            .try_into()
+        set_power::Response::try_from(
+            self.communicate(set_power::Command::new(tx_power_mode, power))
+                .await?,
+        )?
+        .try_into()
     }
 
     async fn start(&mut self, rx_callback: bool) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, start::Response>(start::Command::new(rx_callback))
-            .await?
+        start::Response::try_from(self.communicate(start::Command::new(rx_callback)).await?)?
             .try_into()
     }
 
     async fn start_stream(&mut self) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, start_stream::Response>(start_stream::Command)
-            .await?
-            .try_into()
+        start_stream::Response::try_from(self.communicate(start_stream::Command).await?)?.try_into()
     }
 
     async fn start_tone(&mut self) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, start_tone::Response>(start_tone::Command)
-            .await?
-            .try_into()
+        start_tone::Response::try_from(self.communicate(start_tone::Command).await?)?.try_into()
     }
 
     async fn stop_stream(&mut self) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, stop_stream::Response>(stop_stream::Command)
-            .await?
-            .try_into()
+        stop_stream::Response::try_from(self.communicate(stop_stream::Command).await?)?.try_into()
     }
 
     async fn stop_tone(&mut self) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, stop_tone::Response>(stop_tone::Command)
-            .await?
-            .try_into()
+        stop_tone::Response::try_from(self.communicate(stop_tone::Command).await?)?.try_into()
     }
 }

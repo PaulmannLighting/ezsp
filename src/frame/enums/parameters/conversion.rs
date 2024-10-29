@@ -4,5 +4,6 @@ mod cbke;
 mod configuration;
 mod green_power;
 mod messaging;
+mod mfglib;
 mod networking;
 mod utilities;

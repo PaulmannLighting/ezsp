@@ -63,41 +63,37 @@ where
     T: Transport,
 {
     async fn aes_encrypt(&mut self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, aes_encrypt::Response>(aes_encrypt::Command::new(plaintext, key))
-            .await
-            .map(|response| response.ciphertext())
+        Ok(aes_encrypt::Response::try_from(
+            self.communicate(aes_encrypt::Command::new(plaintext, key))
+                .await?,
+        )
+        .map(|response| response.ciphertext())?)
     }
 
     async fn get_standalone_bootloader_version_plat_micro_phy(
         &mut self,
     ) -> Result<get_standalone_bootloader_version_plat_micro_phy::Response, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, get_standalone_bootloader_version_plat_micro_phy::Response>(
-            get_standalone_bootloader_version_plat_micro_phy::Command,
+        Ok(
+            get_standalone_bootloader_version_plat_micro_phy::Response::try_from(
+                self.communicate(get_standalone_bootloader_version_plat_micro_phy::Command)
+                    .await?,
+            )?,
         )
-        .await
     }
 
     async fn launch_standalone_bootloader(&mut self, mode: u8) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, launch_standalone_bootloader::Response>(
-            launch_standalone_bootloader::Command::new(mode),
-        )
-        .await?
+        launch_standalone_bootloader::Response::try_from(
+            self.communicate(launch_standalone_bootloader::Command::new(mode))
+                .await?,
+        )?
         .try_into()
     }
 
     async fn override_current_channel(&mut self, channel: u8) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, override_current_channel::Response>(
-            override_current_channel::Command::new(channel),
-        )
-        .await?
+        override_current_channel::Response::try_from(
+            self.communicate(override_current_channel::Command::new(channel))
+                .await?,
+        )?
         .try_into()
     }
 
@@ -107,12 +103,12 @@ where
         dest_eui64: Eui64,
         message: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, send_bootload_message::Response>(send_bootload_message::Command::new(
-            broadcast, dest_eui64, message,
-        ))
-        .await?
+        send_bootload_message::Response::try_from(
+            self.communicate(send_bootload_message::Command::new(
+                broadcast, dest_eui64, message,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 }

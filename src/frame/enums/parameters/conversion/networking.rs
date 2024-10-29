@@ -443,12 +443,233 @@ impl TryFrom<Parameters> for networking::neighbor_count::Response {
     }
 }
 
+impl TryFrom<Parameters> for networking::network_init::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(networking::Response::NetworkInit(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::network_state::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(networking::Response::NetworkState(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::permit_joining::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(networking::Response::PermitJoining(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::send_link_power_delta_request::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(
+                networking::Response::SendLinkPowerDeltaRequest(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::set_broken_route_error_code::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(
+                networking::Response::SetBrokenRouteErrorCode(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::set_child_data::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(networking::Response::SetChildData(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::set_concentrator::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(networking::Response::SetConcentrator(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::set_duty_cycle_limits_in_stack::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(
+                networking::Response::SetDutyCycleLimitsInStack(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::set_logical_and_radio_channel::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(
+                networking::Response::SetLogicalAndRadioChannel(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::set_manufacturer_code::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(
+                networking::Response::SetManufacturerCode(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::set_neighbor_frame_counter::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(
+                networking::Response::SetNeighborFrameCounter(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::set_power_descriptor::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(
+                networking::Response::SetPowerDescriptor(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::set_radio_channel::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(networking::Response::SetRadioChannel(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::set_radio_ieee802154_cca_mode::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(
+                networking::Response::SetRadioIeee802154CcaMode(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::set_radio_power::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(networking::Response::SetRadioPower(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::set_routing_shortcut_threshold::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(
+                networking::Response::SetRoutingShortcutThreshold(response),
+            )) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
 impl TryFrom<Parameters> for networking::start_scan::Response {
     type Error = Parameters;
 
     fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
         match parameters {
             Parameters::Response(Response::Networking(networking::Response::StartScan(
+                response,
+            ))) => Ok(response),
+            _ => Err(parameters),
+        }
+    }
+}
+
+impl TryFrom<Parameters> for networking::stop_scan::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Networking(networking::Response::StopScan(
                 response,
             ))) => Ok(response),
             _ => Err(parameters),

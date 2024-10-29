@@ -3,9 +3,7 @@
 use std::fmt::Debug;
 use std::io::ErrorKind;
 use std::num::TryFromIntError;
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering::Relaxed;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use le_stream::ToLeStream;
 use log::debug;
@@ -33,7 +31,7 @@ pub struct Uart {
     responses: Receiver<Parameters>,
     encoder: Encoder,
     _threads: Threads,
-    legacy: Arc<AtomicBool>,
+    negotiated_version: Arc<RwLock<Option<u8>>>,
     sequence: u8,
 }
 
@@ -45,14 +43,18 @@ impl Uart {
         S: SerialPort + 'static,
         H: Handler + 'static,
     {
-        let legacy = Arc::new(AtomicBool::new(true));
-        let (frames_out, responses, threads) =
-            Threads::spawn(serial_port, handler, legacy.clone(), channel_size);
+        let negotiated_version = Arc::new(RwLock::new(None));
+        let (frames_out, responses, threads) = Threads::spawn(
+            serial_port,
+            handler,
+            negotiated_version.clone(),
+            channel_size,
+        );
         Self {
             responses,
             encoder: Encoder::new(frames_out),
             _threads: threads,
-            legacy,
+            negotiated_version,
             sequence: 0,
         }
     }
@@ -64,6 +66,10 @@ impl Uart {
     /// # Errors
     ///
     /// Returns an error on I/O errors or if the desired protocol version is not supported.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the read-write lock is poisoned.
     pub async fn negotiate_version(
         &mut self,
         desired_protocol_version: u8,
@@ -72,7 +78,10 @@ impl Uart {
         let mut response = self.version(desired_protocol_version).await?;
 
         if response.protocol_version() >= MIN_NON_LEGACY_VERSION {
-            self.legacy.store(false, Relaxed);
+            self.negotiated_version
+                .write()
+                .expect("RW lock poisoned")
+                .replace(response.protocol_version());
             debug!("Negotiating non-legacy version");
             response = self.version(response.protocol_version()).await?;
         }
@@ -86,11 +95,19 @@ impl Uart {
             })
         }
     }
+
+    fn is_legacy(&self) -> bool {
+        self.negotiated_version
+            .read()
+            .expect("Failed to read lock")
+            .map(|version| version < MIN_NON_LEGACY_VERSION)
+            .unwrap_or(true)
+    }
 }
 
 impl Transport for Uart {
     fn next_header(&mut self, id: u16) -> Result<Header, TryFromIntError> {
-        let header = if self.legacy.load(Relaxed) {
+        let header = if self.is_legacy() {
             Header::Legacy(Legacy::new(
                 self.sequence,
                 Command::default().into(),

@@ -1,6 +1,4 @@
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering::Relaxed;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use ashv2::{HexSlice, Payload};
 use le_stream::FromLeStream;
@@ -10,6 +8,7 @@ use tokio::sync::mpsc::Receiver;
 use crate::error::Decode;
 use crate::frame::{parsable::Parsable, Frame, Header};
 use crate::parameters::utilities::invalid_command;
+use crate::transport::MIN_NON_LEGACY_VERSION;
 use crate::MAX_PARAMETER_SIZE;
 use crate::{Error, Extended, Legacy, Parameters};
 
@@ -17,17 +16,20 @@ use crate::{Error, Extended, Legacy, Parameters};
 #[derive(Debug)]
 pub struct Decoder {
     source: Receiver<Payload>,
-    legacy: Arc<AtomicBool>,
+    negotiated_version: Arc<RwLock<Option<u8>>>,
     header: Option<Header>,
     parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
 }
 
 impl Decoder {
     #[must_use]
-    pub const fn new(source: Receiver<Payload>, legacy: Arc<AtomicBool>) -> Self {
+    pub const fn new(
+        source: Receiver<Payload>,
+        negotiated_version: Arc<RwLock<Option<u8>>>,
+    ) -> Self {
         Self {
             source,
-            legacy,
+            negotiated_version,
             header: None,
             parameters: heapless::Vec::new(),
         }
@@ -53,6 +55,15 @@ impl Decoder {
         }
     }
 
+    /// Returns `true` if the negotiated version is a legacy version.
+    fn is_legacy(&self) -> bool {
+        self.negotiated_version
+            .read()
+            .expect("Failed to read lock")
+            .map(|version| version < MIN_NON_LEGACY_VERSION)
+            .unwrap_or(true)
+    }
+
     /// Try to parse a frame fragment from a chunk of bytes.
     ///
     /// This function will try to parse a frame fragment from a chunk of bytes.
@@ -72,7 +83,8 @@ impl Decoder {
         trace!("Decoding ASHv2 frame: {:#04X}", HexSlice::new(&frame));
 
         let mut stream = frame.into_iter();
-        let next_header = if self.legacy.load(Relaxed) {
+
+        let next_header = if self.is_legacy() {
             Header::Legacy(Legacy::from_le_stream(&mut stream).ok_or(Decode::TooFewBytes)?)
         } else {
             Header::Extended(Extended::from_le_stream(&mut stream).ok_or(Decode::TooFewBytes)?)

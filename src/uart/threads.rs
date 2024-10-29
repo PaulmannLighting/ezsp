@@ -1,6 +1,6 @@
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use ashv2::{Payload, Transceiver};
 use serialport::SerialPort;
@@ -27,7 +27,7 @@ impl Threads {
     pub fn spawn<S, H>(
         serial_port: S,
         handler: H,
-        legacy: Arc<AtomicBool>,
+        negotiated_version: Arc<RwLock<Option<u8>>>,
         channel_size: usize,
     ) -> (Sender<Payload>, Receiver<Parameters>, Self)
     where
@@ -39,8 +39,14 @@ impl Threads {
         let (response_tx, response_rx) = channel(channel_size);
         let (frames_out, frames_in, transceiver) =
             Transceiver::spawn(serial_port, running.clone(), channel_size);
-        let splitter =
-            spawn(Splitter::new(Decoder::new(frames_in, legacy), response_tx, callbacks_tx).run());
+        let splitter = spawn(
+            Splitter::new(
+                Decoder::new(frames_in, negotiated_version),
+                response_tx,
+                callbacks_tx,
+            )
+            .run(),
+        );
         let handler = spawn(handler.run(callbacks_rx));
         let instance = Self {
             running,

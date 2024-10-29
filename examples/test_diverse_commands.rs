@@ -1,22 +1,18 @@
 //! Test version negotiation.
 
-use ashv2::{make_pair, open, BaudRate, HexSlice};
+use ashv2::{open, BaudRate, HexSlice};
 use clap::Parser;
-use ezsp::ember::{CertificateData, Eui64, PublicKeyData};
-use ezsp::ezsp::value::Id;
-use ezsp::uart::Uart;
-use ezsp::{
-    Cbke, Configuration, Ezsp, Networking, ProxyTable, Security, SinkTable, Utilities,
-    MAX_FRAME_SIZE,
-};
 use le_stream::ToLeStream;
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
 use siliconlabs::zigbee::security::{ManContext, ManKey};
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering::Relaxed;
-use std::sync::Arc;
-use std::thread::spawn;
+
+use ezsp::ember::{CertificateData, Eui64, PublicKeyData};
+use ezsp::ezsp::value::Id;
+use ezsp::uart::Uart;
+use ezsp::{
+    Callback, Cbke, Configuration, Handler, Networking, ProxyTable, Security, SinkTable, Utilities,
+};
 
 const TEST_TEXT: &str = "Rust rules! 🦀";
 
@@ -43,27 +39,7 @@ async fn main() {
 
 #[allow(clippy::too_many_lines)]
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
-    let (ash, transceiver) = make_pair::<MAX_FRAME_SIZE, _>(serial_port, 4, None);
-    let running = Arc::new(AtomicBool::new(true));
-    let transceiver_running = running.clone();
-    let transceiver_thread = spawn(|| transceiver.run(transceiver_running));
-    let mut ezsp = Uart::new(ash);
-
-    // Test version negotiation.
-    match ezsp.negotiate_version(args.version).await {
-        Ok(version) => {
-            info!(
-                "Negotiated protocol version: {:#04X}",
-                version.protocol_version()
-            );
-            info!("Negotiated stack type: {:#04X}", version.stack_type());
-            info!("Negotiated stack version: {}", version.stack_version());
-        }
-        Err(error) => {
-            error!("Error negotiating version: {error}");
-            return;
-        }
-    }
+    let mut ezsp = Uart::new(serial_port, StubHandler, args.version, 8);
 
     // Test echo reply. Should be same as sent text.
     match ezsp.echo(TEST_TEXT.bytes().collect()).await {
@@ -268,19 +244,10 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     } else {
         info!("Nop succeeded");
     }
-
-    // Teardonw.
-    if !args.keep_listening {
-        running.store(false, Relaxed);
-    }
-
-    transceiver_thread
-        .join()
-        .expect("Transceiver thread panicked");
 }
 
 /// Test getting values.
-async fn get_value_ids<const BUF_SIZE: usize>(ezsp: &mut Uart<BUF_SIZE>) {
+async fn get_value_ids(ezsp: &mut Uart) {
     for id in [
         Id::ActiveRadioConfig,
         Id::AntennaMode,
@@ -308,5 +275,13 @@ async fn get_value_ids<const BUF_SIZE: usize>(ezsp: &mut Uart<BUF_SIZE>) {
                 error!("Error getting {id:?}: {error}");
             }
         }
+    }
+}
+
+struct StubHandler;
+
+impl Handler for StubHandler {
+    fn handle(&mut self, callback: Callback) {
+        info!("Received callback: {callback:#?}");
     }
 }

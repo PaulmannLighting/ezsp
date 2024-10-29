@@ -25,7 +25,7 @@ pub enum Error {
     /// A status related error.
     Status(Status),
     /// An unexpected response was returned.
-    UnexpectedResponse(Parameters),
+    UnexpectedResponse(Box<Parameters>),
     /// Invalid status
     ValueError(ValueError),
     /// The NCP responded with `invalidCommand` (0x0058).
@@ -139,7 +139,7 @@ impl From<siliconlabs::Status> for Error {
 
 impl From<Parameters> for Error {
     fn from(parameters: Parameters) -> Self {
-        Self::UnexpectedResponse(parameters)
+        Self::UnexpectedResponse(parameters.into())
     }
 }
 

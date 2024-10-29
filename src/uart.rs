@@ -72,17 +72,21 @@ impl Uart {
     /// # Panics
     ///
     /// Panics if the read-write lock is poisoned.
-    async fn negotiate_version(&mut self) -> Result<version::Response, Error> {
+    async fn negotiate_version(&mut self) -> Result<(), Error> {
         debug!("Negotiating legacy version");
         let mut response = self.version(self.protocol_version).await?;
+        self.state
+            .set_negotiated_version(response.protocol_version());
 
         if response.protocol_version() >= MIN_NON_LEGACY_VERSION {
             debug!("Negotiating non-legacy version");
             response = self.version(response.protocol_version()).await?;
+            self.state
+                .set_negotiated_version(response.protocol_version());
         }
 
         if response.protocol_version() == self.protocol_version {
-            Ok(response)
+            Ok(())
         } else {
             self.state.set_needs_reset(true);
             Err(Error::ProtocolVersionMismatch {
@@ -95,9 +99,7 @@ impl Uart {
 
 impl Ezsp for Uart {
     async fn init(&mut self) -> Result<(), Error> {
-        let version = self.negotiate_version().await?;
-        self.state
-            .set_negotiated_version(version.protocol_version());
+        self.negotiate_version().await?;
         self.state.set_needs_reset(false);
         Ok(())
     }

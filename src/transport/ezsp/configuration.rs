@@ -209,8 +209,8 @@ where
         Ok(send_pan_id_update::Response::try_from(
             self.communicate(send_pan_id_update::Command::new(new_pan))
                 .await?,
-        )
-        .map(Into::into)?)
+        )?
+        .into())
     }
 
     async fn set_configuration_value(&mut self, config_id: Id, value: u16) -> Result<(), Error> {

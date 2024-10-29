@@ -67,8 +67,8 @@ where
         Ok(aes_encrypt::Response::try_from(
             self.communicate(aes_encrypt::Command::new(plaintext, key))
                 .await?,
-        )
-        .map(|response| response.ciphertext())?)
+        )?
+        .ciphertext())
     }
 
     async fn get_standalone_bootloader_version_plat_micro_phy(

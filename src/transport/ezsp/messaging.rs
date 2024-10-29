@@ -344,8 +344,8 @@ where
                 address_table_index,
             ))
             .await?,
-        )
-        .map(|response| response.active())?)
+        )?
+        .active())
     }
 
     async fn get_address_table_remote_eui64(
@@ -357,8 +357,8 @@ where
                 address_table_index,
             ))
             .await?,
-        )
-        .map(|response| response.eui64())?)
+        )?
+        .eui64())
     }
 
     async fn get_address_table_remote_node_id(
@@ -370,8 +370,8 @@ where
                 address_table_index,
             ))
             .await?,
-        )
-        .map(|response| response.node_id())?)
+        )?
+        .node_id())
     }
 
     async fn get_beacon_classification_params(&mut self) -> Result<ClassificationParams, Error> {
@@ -386,8 +386,8 @@ where
         Ok(get_extended_timeout::Response::try_from(
             self.communicate(get_extended_timeout::Command::new(remote_eui64))
                 .await?,
-        )
-        .map(|response| response.extended_timeout())?)
+        )?
+        .extended_timeout())
     }
 
     async fn get_multicast_table_entry(&mut self, index: u8) -> Result<TableEntry, Error> {
@@ -410,15 +410,15 @@ where
         Ok(lookup_node_id_by_eui64::Response::try_from(
             self.communicate(lookup_node_id_by_eui64::Command::new(eui64))
                 .await?,
-        )
-        .map(|response| response.node_id())?)
+        )?
+        .node_id())
     }
 
     async fn maximum_payload_length(&mut self) -> Result<u8, Error> {
         Ok(maximum_payload_length::Response::try_from(
             self.communicate(maximum_payload_length::Command).await?,
-        )
-        .map(|response| response.aps_length())?)
+        )?
+        .aps_length())
     }
 
     async fn poll_for_data(
@@ -705,8 +705,8 @@ where
         Ok(set_source_route_discovery_mode::Response::try_from(
             self.communicate(set_source_route_discovery_mode::Command::new(mode))
                 .await?,
-        )
-        .map(|response| response.remaining_time())?)
+        )?
+        .remaining_time())
     }
 
     async fn unicast_current_network_key(

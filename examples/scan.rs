@@ -46,17 +46,6 @@ async fn main() {
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     let mut uart = Uart::new(serial_port, NetworkScanHandler, args.version, 8);
 
-    // Test version negotiation.
-    match uart.init().await {
-        Ok(()) => {
-            info!("UART initialized");
-        }
-        Err(error) => {
-            error!("Error negotiating version: {error}");
-            return;
-        }
-    }
-
     match uart.echo("About to start a scan.".bytes().collect()).await {
         Ok(echo) => match String::from_utf8(echo.to_vec()) {
             Ok(echo) => {

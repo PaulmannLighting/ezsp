@@ -2,6 +2,7 @@ use log::{error, trace};
 use tokio::sync::mpsc::Sender;
 
 use crate::uart::decoder::Decoder;
+use crate::uart::state::State;
 use crate::{Callback, Frame, Parameters};
 
 /// Split incoming `EZSP` frames into responses and asynchronous callbacks.

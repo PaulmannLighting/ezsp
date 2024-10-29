@@ -8,7 +8,7 @@ use serialport::{FlowControl, SerialPort};
 use ezsp::ember::zigbee::Network;
 use ezsp::ezsp::network::scan::Type;
 use ezsp::uart::Uart;
-use ezsp::{parameters, Callback, Handler, Networking, Utilities};
+use ezsp::{parameters, Callback, Ezsp, Handler, Networking, Utilities};
 
 #[derive(Debug, Parser)]
 struct Args {
@@ -44,17 +44,12 @@ async fn main() {
 }
 
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
-    let mut uart = Uart::new(serial_port, NetworkScanHandler, 8);
+    let mut uart = Uart::new(serial_port, NetworkScanHandler, args.version, 8);
 
     // Test version negotiation.
-    match uart.negotiate_version(args.version).await {
-        Ok(version) => {
-            info!(
-                "Negotiated protocol version: {:#04X}",
-                version.protocol_version()
-            );
-            info!("Negotiated stack type: {:#04X}", version.stack_type());
-            info!("Negotiated stack version: {}", version.stack_version());
+    match uart.init().await {
+        Ok(()) => {
+            info!("UART initialized");
         }
         Err(error) => {
             error!("Error negotiating version: {error}");

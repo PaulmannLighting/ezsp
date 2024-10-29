@@ -8,7 +8,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::frame::parameters::configuration::version;
 use crate::frame::parameters::utilities::invalid_command;
-use crate::{ember, ezsp, Parameters, Response};
+use crate::{ember, ezsp, Parameters};
 
 pub use decode::Decode;
 pub use status::Status;

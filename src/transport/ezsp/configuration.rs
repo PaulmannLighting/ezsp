@@ -17,7 +17,9 @@ use crate::types::ByteSizedVec;
 /// The `Configuration` trait provides an interface for the configuration commands.
 pub trait Configuration {
     /// Configures endpoint information on the NCP.
+    ///
     /// The NCP does not remember these settings after a reset.
+    ///
     /// Endpoints can be added by the Host after the NCP has reset.
     /// Once the status of the stack changes to [`Status::NetworkUp`](crate::ember::Status::NetworkUp),
     /// endpoints can no longer be added and this command will respond with [`Error::InvalidCall`](crate::ezsp::Error::InvalidCall).
@@ -259,10 +261,11 @@ where
     }
 
     async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
-        Ok(version::Response::try_from(
-            self.communicate(version::Command::new(desired_protocol_version))
-                .await?,
-        )?)
+        // Send and receive separately to avoid infinite recursion
+        // when checking for established connections in `Self::communicate()`.
+        self.send(version::Command::new(desired_protocol_version))
+            .await?;
+        Ok(version::Response::try_from(self.receive().await?)?)
     }
 
     async fn write_attribute(

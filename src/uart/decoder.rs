@@ -1,5 +1,3 @@
-use std::sync::{Arc, RwLock};
-
 use ashv2::{HexSlice, Payload};
 use le_stream::FromLeStream;
 use log::trace;
@@ -8,28 +6,25 @@ use tokio::sync::mpsc::Receiver;
 use crate::error::Decode;
 use crate::frame::{parsable::Parsable, Frame, Header};
 use crate::parameters::utilities::invalid_command;
-use crate::transport::MIN_NON_LEGACY_VERSION;
+use crate::uart::state::State;
 use crate::MAX_PARAMETER_SIZE;
 use crate::{Error, Extended, Legacy, Parameters};
 
 /// Decode `ASHv2` frames into `EZSP` frames.
 #[derive(Debug)]
 pub struct Decoder {
-    source: Receiver<Payload>,
-    negotiated_version: Arc<RwLock<Option<u8>>>,
+    source: Receiver<std::io::Result<Payload>>,
+    state: State,
     header: Option<Header>,
     parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
 }
 
 impl Decoder {
     #[must_use]
-    pub const fn new(
-        source: Receiver<Payload>,
-        negotiated_version: Arc<RwLock<Option<u8>>>,
-    ) -> Self {
+    pub const fn new(source: Receiver<std::io::Result<Payload>>, state: State) -> Self {
         Self {
             source,
-            negotiated_version,
+            state,
             header: None,
             parameters: heapless::Vec::new(),
         }
@@ -39,29 +34,26 @@ impl Decoder {
         self.parameters.clear();
 
         loop {
-            if let Some(frame) = self.source.recv().await {
-                match self.try_parse_frame_fragment(frame) {
-                    Ok(Some(frame)) => {
-                        return Some(Ok(frame));
-                    }
-                    Ok(None) => continue,
+            if let Some(result) = self.source.recv().await {
+                match result {
+                    Ok(frame) => match self.try_parse_frame_fragment(frame) {
+                        Ok(Some(frame)) => {
+                            return Some(Ok(frame));
+                        }
+                        Ok(None) => continue,
+                        Err(error) => {
+                            return Some(Err(error));
+                        }
+                    },
                     Err(error) => {
-                        return Some(Err(error));
+                        self.state.set_needs_reset(true);
+                        return Some(Err(error.into()));
                     }
                 }
             }
 
             return None;
         }
-    }
-
-    /// Returns `true` if the negotiated version is a legacy version.
-    fn is_legacy(&self) -> bool {
-        self.negotiated_version
-            .read()
-            .expect("Failed to read lock")
-            .map(|version| version < MIN_NON_LEGACY_VERSION)
-            .unwrap_or(true)
     }
 
     /// Try to parse a frame fragment from a chunk of bytes.
@@ -84,7 +76,7 @@ impl Decoder {
 
         let mut stream = frame.into_iter();
 
-        let next_header = if self.is_legacy() {
+        let next_header = if self.state.is_legacy() {
             Header::Legacy(Legacy::from_le_stream(&mut stream).ok_or(Decode::TooFewBytes)?)
         } else {
             Header::Extended(Extended::from_le_stream(&mut stream).ok_or(Decode::TooFewBytes)?)

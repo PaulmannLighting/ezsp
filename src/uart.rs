@@ -3,10 +3,9 @@
 use std::fmt::Debug;
 use std::io::ErrorKind;
 use std::num::TryFromIntError;
-use std::sync::{Arc, RwLock};
 
 use le_stream::ToLeStream;
-use log::debug;
+use log::{debug, warn};
 use serialport::SerialPort;
 use tokio::sync::mpsc::Receiver;
 
@@ -14,47 +13,50 @@ use crate::error::Error;
 use crate::frame::{Command, Header, Identified};
 use crate::parameters::configuration::version;
 use crate::transport::{Transport, MIN_NON_LEGACY_VERSION};
-use crate::{Configuration, Extended, Handler, Legacy};
+use crate::{Configuration, Extended, Ezsp, Handler, Legacy};
 use crate::{Parameters, ValueError};
 
+use crate::uart::state::State;
 use encoder::Encoder;
 use threads::Threads;
 
 mod decoder;
 mod encoder;
 mod splitter;
+mod state;
 mod threads;
 
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
 pub struct Uart {
+    protocol_version: u8,
+    state: State,
     responses: Receiver<Parameters>,
     encoder: Encoder,
     _threads: Threads,
-    negotiated_version: Arc<RwLock<Option<u8>>>,
     sequence: u8,
 }
 
 impl Uart {
     /// Creates an `ASHv2` host.
+    ///
+    /// A minimum protocol version of [`MIN_NON_LEGACY_VERSION`] is required
+    /// to support non-legacy commands.
     #[must_use]
-    pub fn new<S, H>(serial_port: S, handler: H, channel_size: usize) -> Self
+    pub fn new<S, H>(serial_port: S, handler: H, protocol_version: u8, channel_size: usize) -> Self
     where
         S: SerialPort + 'static,
         H: Handler + 'static,
     {
-        let negotiated_version = Arc::new(RwLock::new(None));
-        let (frames_out, responses, threads) = Threads::spawn(
-            serial_port,
-            handler,
-            negotiated_version.clone(),
-            channel_size,
-        );
+        let state = State::default();
+        let (frames_out, responses, threads) =
+            Threads::spawn(serial_port, handler, state.clone(), channel_size);
         Self {
+            protocol_version,
+            state,
             responses,
             encoder: Encoder::new(frames_out),
             _threads: threads,
-            negotiated_version,
             sequence: 0,
         }
     }
@@ -70,44 +72,30 @@ impl Uart {
     /// # Panics
     ///
     /// Panics if the read-write lock is poisoned.
-    pub async fn negotiate_version(
-        &mut self,
-        desired_protocol_version: u8,
-    ) -> Result<version::Response, Error> {
+    async fn negotiate_version(&mut self) -> Result<version::Response, Error> {
         debug!("Negotiating legacy version");
-        let mut response = self.version(desired_protocol_version).await?;
+        let mut response = self.version(self.protocol_version).await?;
 
         if response.protocol_version() >= MIN_NON_LEGACY_VERSION {
-            self.negotiated_version
-                .write()
-                .expect("RW lock poisoned")
-                .replace(response.protocol_version());
             debug!("Negotiating non-legacy version");
             response = self.version(response.protocol_version()).await?;
         }
 
-        if response.protocol_version() == desired_protocol_version {
+        if response.protocol_version() == self.protocol_version {
             Ok(response)
         } else {
+            self.state.set_needs_reset(true);
             Err(Error::ProtocolVersionMismatch {
-                desired: desired_protocol_version,
+                desired: self.protocol_version,
                 negotiated: response,
             })
         }
-    }
-
-    fn is_legacy(&self) -> bool {
-        self.negotiated_version
-            .read()
-            .expect("Failed to read lock")
-            .map(|version| version < MIN_NON_LEGACY_VERSION)
-            .unwrap_or(true)
     }
 }
 
 impl Transport for Uart {
     fn next_header(&mut self, id: u16) -> Result<Header, TryFromIntError> {
-        let header = if self.is_legacy() {
+        let header = if self.state.is_legacy() {
             Header::Legacy(Legacy::new(
                 self.sequence,
                 Command::default().into(),
@@ -118,6 +106,15 @@ impl Transport for Uart {
         };
         self.sequence = self.sequence.wrapping_add(1);
         Ok(header)
+    }
+
+    async fn check_reset(&mut self) -> Result<(), Error> {
+        if self.state.needs_reset() {
+            warn!("UART needs reset, reinitializing");
+            self.init().await?;
+        }
+
+        Ok(())
     }
 
     async fn send<T>(&mut self, command: T) -> Result<(), Error>
@@ -138,5 +135,23 @@ impl Transport for Uart {
         };
 
         Ok(response)
+    }
+}
+
+impl Ezsp for Uart {
+    async fn init(&mut self) -> Result<(), Error> {
+        self.state.set_needs_reset(false);
+
+        let version = self.negotiate_version().await?;
+        self.state
+            .set_negotiated_version(version.protocol_version());
+        debug!(
+            "Negotiated protocol version: {:#04X}",
+            version.protocol_version()
+        );
+        debug!("Negotiated stack type: {:#04X}", version.stack_type());
+        debug!("Negotiated stack version: {}", version.stack_version());
+
+        Ok(())
     }
 }

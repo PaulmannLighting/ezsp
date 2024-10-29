@@ -24,6 +24,9 @@ pub trait Transport: Send {
     /// Return the next header.
     fn next_header(&mut self, id: u16) -> Result<Header, TryFromIntError>;
 
+    /// Check if the `EZSP` connection needs to be reset and reset it if necessary.
+    fn check_reset(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
+
     /// Send a command to the NCP.
     fn send<T>(&mut self, command: T) -> impl Future<Output = Result<(), Error>> + Send
     where
@@ -43,6 +46,7 @@ pub trait Transport: Send {
         C: Identified + ToLeStream,
     {
         async {
+            self.check_reset().await?;
             self.send::<C>(command).await?;
             self.receive().await
         }

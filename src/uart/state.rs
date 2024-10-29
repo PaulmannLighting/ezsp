@@ -45,6 +45,7 @@ impl State {
     }
 
     /// Returns `true` if the negotiated version is a legacy version.
+    #[must_use]
     pub fn is_legacy(&self) -> bool {
         self.negotiated_version()
             .map_or(true, |version| version < MIN_NON_LEGACY_VERSION)

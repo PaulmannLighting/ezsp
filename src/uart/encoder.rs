@@ -8,9 +8,7 @@ use crate::frame::Header;
 use crate::Error;
 use crate::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 
-/// Codec to encode frames to bytes and decode bytes into frames.
-///
-/// This can be used with `tokio::encoder::Framed` to encode and decode frames.
+/// Encoder to encode `EZSP` frames into `ASHv2` frames.
 #[derive(Debug)]
 pub struct Encoder {
     sender: Sender<Payload>,

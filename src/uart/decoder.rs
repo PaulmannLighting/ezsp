@@ -13,9 +13,7 @@ use crate::parameters::utilities::invalid_command;
 use crate::MAX_PARAMETER_SIZE;
 use crate::{Error, Extended, Legacy, Parameters};
 
-/// Codec to encode frames to bytes and decode bytes into frames.
-///
-/// This can be used with `tokio::encoder::Framed` to encode and decode frames.
+/// Decode `ASHv2` frames into `EZSP` frames.
 #[derive(Debug)]
 pub struct Decoder {
     source: Receiver<Payload>,
@@ -25,7 +23,8 @@ pub struct Decoder {
 }
 
 impl Decoder {
-    pub fn new(source: Receiver<Payload>, legacy: Arc<AtomicBool>) -> Self {
+    #[must_use]
+    pub const fn new(source: Receiver<Payload>, legacy: Arc<AtomicBool>) -> Self {
         Self {
             source,
             legacy,
@@ -82,8 +81,8 @@ impl Decoder {
         if let Some(header) = self.header.take() {
             if header != next_header {
                 return Err(Decode::FrameIdMismatch {
-                    expected: header.id().into(),
-                    found: next_header.id().into(),
+                    expected: header.id(),
+                    found: next_header.id(),
                 }
                 .into());
             }
@@ -91,14 +90,11 @@ impl Decoder {
 
         self.parameters.extend(stream);
 
-        match Parameters::parse_from_le_stream(
-            next_header.id().into(),
-            self.parameters.iter().copied(),
-        ) {
+        match Parameters::parse_from_le_stream(next_header.id(), self.parameters.iter().copied()) {
             Ok(parameters) => Ok(Some(Frame::new(next_header, parameters))),
             Err(error) => {
                 if let Ok(invalid_command) = invalid_command::Response::parse_from_le_stream(
-                    next_header.id().into(),
+                    next_header.id(),
                     self.parameters.iter().copied(),
                 ) {
                     return Err(Error::InvalidCommand(invalid_command));

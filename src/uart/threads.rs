@@ -13,6 +13,7 @@ use super::splitter::Splitter;
 use crate::frame::Parameters;
 use crate::handler::Handler;
 
+/// Threads for the UART communication.
 #[derive(Debug)]
 pub struct Threads {
     running: Arc<AtomicBool>,
@@ -22,6 +23,7 @@ pub struct Threads {
 }
 
 impl Threads {
+    /// Spawn the threads for the UART communication.
     pub fn spawn<S, H>(
         serial_port: S,
         handler: H,
@@ -50,6 +52,7 @@ impl Threads {
     }
 }
 
+/// Tear down the threads for the UART communication.
 impl Drop for Threads {
     fn drop(&mut self) {
         self.running.store(false, Relaxed);

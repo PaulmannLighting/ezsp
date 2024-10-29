@@ -4,6 +4,7 @@ use tokio::sync::mpsc::Sender;
 use crate::uart::decoder::Decoder;
 use crate::{Callback, Frame, Parameters};
 
+/// Split incoming `EZSP` frames into responses and asynchronous callbacks.
 #[derive(Debug)]
 pub struct Splitter {
     incoming: Decoder,
@@ -12,6 +13,8 @@ pub struct Splitter {
 }
 
 impl Splitter {
+    /// Create a new `Splitter`.
+    #[must_use]
     pub const fn new(
         incoming: Decoder,
         responses: Sender<Parameters>,
@@ -24,6 +27,7 @@ impl Splitter {
         }
     }
 
+    /// Run the splitter.
     pub async fn run(mut self) {
         while let Some(frame) = self.incoming.decode().await {
             match frame {

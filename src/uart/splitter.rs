@@ -50,13 +50,13 @@ impl Splitter {
                 trace!("Forwarding response.");
                 self.handle_response(Parameters::Response(response)).await;
             }
-            Parameters::Handler(handler) => {
+            Parameters::Callback(callback) => {
                 if is_async_callback {
                     trace!("Forwarding async callback.");
-                    self.handle_callback(handler).await;
+                    self.handle_callback(callback).await;
                 } else {
                     trace!("Forwarding non-async callback as response.");
-                    self.handle_response(Parameters::Handler(handler)).await;
+                    self.handle_response(Parameters::Callback(callback)).await;
                 }
             }
         }

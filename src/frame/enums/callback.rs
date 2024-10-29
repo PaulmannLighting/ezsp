@@ -1,3 +1,4 @@
+use crate::frame::enums::Parameters;
 use crate::frame::parameters::{
     binding, bootloader, cbke, green_power, messaging, mfglib, networking, security, trust_center,
     utilities, zll,
@@ -29,4 +30,15 @@ pub enum Callback {
     Utilities(utilities::handler::Handler),
     /// ZLL handlers.
     Zll(zll::handler::Handler),
+}
+
+impl TryFrom<Parameters> for Callback {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Callback(callback) => Ok(callback),
+            _ => Err(parameters),
+        }
+    }
 }

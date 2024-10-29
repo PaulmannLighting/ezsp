@@ -7,5 +7,5 @@ mod parsing;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Parameters {
     Response(Response),
-    Handler(Callback),
+    Callback(Callback),
 }

@@ -1,9 +1,9 @@
+use crate::transport::MIN_NON_LEGACY_VERSION;
+use log::trace;
 use std::fmt::Debug;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::atomic::{AtomicBool, AtomicUsize};
 use std::sync::{Arc, RwLock};
-
-use crate::transport::MIN_NON_LEGACY_VERSION;
 
 /// Shared state of the `EZSP` UART.
 #[derive(Clone, Debug)]
@@ -41,11 +41,16 @@ impl State {
 
     /// Set the flag that indicates if the UART needs a reset.
     pub fn set_needs_reset(&self, needs_reset: bool) {
+        trace!("Setting needs reset: {}", needs_reset);
         self.needs_reset.store(needs_reset, Relaxed);
-        self.negotiated_version
-            .write()
-            .expect("RwLock poisoned")
-            .take();
+
+        if needs_reset {
+            trace!("Resetting negotiated version.");
+            self.negotiated_version
+                .write()
+                .expect("RwLock poisoned")
+                .take();
+        }
     }
 
     /// Returns `true` if the negotiated version is a legacy version.

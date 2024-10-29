@@ -93,6 +93,16 @@ impl Uart {
     }
 }
 
+impl Ezsp for Uart {
+    async fn init(&mut self) -> Result<(), Error> {
+        let version = self.negotiate_version().await?;
+        self.state
+            .set_negotiated_version(version.protocol_version());
+        self.state.set_needs_reset(false);
+        Ok(())
+    }
+}
+
 impl Transport for Uart {
     fn next_header(&mut self, id: u16) -> Result<Header, TryFromIntError> {
         let header = if self.state.is_legacy() {
@@ -135,23 +145,5 @@ impl Transport for Uart {
         };
 
         Ok(response)
-    }
-}
-
-impl Ezsp for Uart {
-    async fn init(&mut self) -> Result<(), Error> {
-        self.state.set_needs_reset(false);
-
-        let version = self.negotiate_version().await?;
-        self.state
-            .set_negotiated_version(version.protocol_version());
-        debug!(
-            "Negotiated protocol version: {:#04X}",
-            version.protocol_version()
-        );
-        debug!("Negotiated stack type: {:#04X}", version.stack_type());
-        debug!("Negotiated stack version: {}", version.stack_version());
-
-        Ok(())
     }
 }

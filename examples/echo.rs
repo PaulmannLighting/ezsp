@@ -2,10 +2,11 @@
 
 use ashv2::{open, BaudRate};
 use clap::Parser;
-use ezsp::uart::Uart;
-use ezsp::Utilities;
-use log::{error, info};
+use log::{debug, error, info};
 use serialport::{FlowControl, SerialPort};
+
+use ezsp::uart::Uart;
+use ezsp::{Callback, Handler, Utilities};
 
 const DEFAULT_VERSION: u8 = 8;
 
@@ -33,21 +34,7 @@ async fn main() {
 }
 
 async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
-    let mut uart = Uart::new(serial_port, 8);
-
-    match uart.negotiate_version(args.version).await {
-        Ok(version) => {
-            info!(
-                "Negotiated protocol version: {:#04X}",
-                version.protocol_version()
-            );
-            info!("Negotiated stack type: {:#04X}", version.stack_type());
-            info!("Negotiated stack version: {}", version.stack_version());
-        }
-        Err(error) => {
-            error!("{error}");
-        }
-    }
+    let mut uart = Uart::new(serial_port, StubHandler, args.version, 8);
 
     for text in args.texts {
         match uart.echo(text.bytes().collect()).await {
@@ -63,5 +50,13 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
                 error!("{error}");
             }
         }
+    }
+}
+
+struct StubHandler;
+
+impl Handler for StubHandler {
+    fn handle(&mut self, callback: Callback) {
+        debug!("Received callback: {callback:#?}");
     }
 }

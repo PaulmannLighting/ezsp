@@ -338,97 +338,86 @@ where
         &mut self,
         address_table_index: u8,
     ) -> Result<bool, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, address_table_entry_is_active::Response>(
-            address_table_entry_is_active::Command::new(address_table_index),
+        Ok(address_table_entry_is_active::Response::try_from(
+            self.communicate(address_table_entry_is_active::Command::new(
+                address_table_index,
+            ))
+            .await?,
         )
-        .await
-        .map(|response| response.active())
+        .map(|response| response.active())?)
     }
 
     async fn get_address_table_remote_eui64(
         &mut self,
         address_table_index: u8,
     ) -> Result<Eui64, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, get_address_table_remote_eui64::Response>(
-            get_address_table_remote_eui64::Command::new(address_table_index),
+        Ok(get_address_table_remote_eui64::Response::try_from(
+            self.communicate(get_address_table_remote_eui64::Command::new(
+                address_table_index,
+            ))
+            .await?,
         )
-        .await
-        .map(|response| response.eui64())
+        .map(|response| response.eui64())?)
     }
 
     async fn get_address_table_remote_node_id(
         &mut self,
         address_table_index: u8,
     ) -> Result<NodeId, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, get_address_table_remote_node_id::Response>(
-            get_address_table_remote_node_id::Command::new(address_table_index),
+        Ok(get_address_table_remote_node_id::Response::try_from(
+            self.communicate(get_address_table_remote_node_id::Command::new(
+                address_table_index,
+            ))
+            .await?,
         )
-        .await
-        .map(|response| response.node_id())
+        .map(|response| response.node_id())?)
     }
 
     async fn get_beacon_classification_params(&mut self) -> Result<ClassificationParams, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, get_beacon_classification_params::Response>(
-            get_beacon_classification_params::Command,
-        )
-        .await?
+        get_beacon_classification_params::Response::try_from(
+            self.communicate(get_beacon_classification_params::Command)
+                .await?,
+        )?
         .try_into()
     }
 
     async fn get_extended_timeout(&mut self, remote_eui64: Eui64) -> Result<bool, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, get_extended_timeout::Response>(get_extended_timeout::Command::new(
-            remote_eui64,
-        ))
-        .await
-        .map(|response| response.extended_timeout())
+        Ok(get_extended_timeout::Response::try_from(
+            self.communicate(get_extended_timeout::Command::new(remote_eui64))
+                .await?,
+        )
+        .map(|response| response.extended_timeout())?)
     }
 
     async fn get_multicast_table_entry(&mut self, index: u8) -> Result<TableEntry, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, get_multicast_table_entry::Response>(
-            get_multicast_table_entry::Command::new(index),
-        )
-        .await?
+        get_multicast_table_entry::Response::try_from(
+            self.communicate(get_multicast_table_entry::Command::new(index))
+                .await?,
+        )?
         .try_into()
     }
 
     async fn lookup_eui64_by_node_id(&mut self, node_id: NodeId) -> Result<Eui64, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, lookup_eui64_by_node_id::Response>(
-            lookup_eui64_by_node_id::Command::new(node_id),
-        )
-        .await?
+        lookup_eui64_by_node_id::Response::try_from(
+            self.communicate(lookup_eui64_by_node_id::Command::new(node_id))
+                .await?,
+        )?
         .try_into()
     }
 
     async fn lookup_node_id_by_eui64(&mut self, eui64: Eui64) -> Result<NodeId, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, lookup_node_id_by_eui64::Response>(
-            lookup_node_id_by_eui64::Command::new(eui64),
+        Ok(lookup_node_id_by_eui64::Response::try_from(
+            self.communicate(lookup_node_id_by_eui64::Command::new(eui64))
+                .await?,
         )
-        .await
-        .map(|response| response.node_id())
+        .map(|response| response.node_id())?)
     }
 
     async fn maximum_payload_length(&mut self) -> Result<u8, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, maximum_payload_length::Response>(maximum_payload_length::Command)
-            .await
-            .map(|response| response.aps_length())
+        Ok(maximum_payload_length::Response::try_from(
+            self.communicate(maximum_payload_length::Command).await?,
+        )
+        .map(|response| response.aps_length())?)
     }
 
     async fn poll_for_data(
@@ -437,14 +426,10 @@ where
         units: Units,
         failure_limit: u8,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, poll_for_data::Response>(poll_for_data::Command::new(
-            interval,
-            units,
-            failure_limit,
-        ))
-        .await?
+        poll_for_data::Response::try_from(
+            self.communicate(poll_for_data::Command::new(interval, units, failure_limit))
+                .await?,
+        )?
         .try_into()
     }
 
@@ -458,18 +443,18 @@ where
         message_tag: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, proxy_broadcast::Response>(proxy_broadcast::Command::new(
-            source,
-            destination,
-            nwk_sequence,
-            aps_frame,
-            radius,
-            message_tag,
-            message,
-        ))
-        .await?
+        proxy_broadcast::Response::try_from(
+            self.communicate(proxy_broadcast::Command::new(
+                source,
+                destination,
+                nwk_sequence,
+                aps_frame,
+                radius,
+                message_tag,
+                message,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
@@ -480,17 +465,15 @@ where
         new_id: NodeId,
         new_extended_timeout: bool,
     ) -> Result<replace_address_table_entry::PreviousEntry, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, replace_address_table_entry::Response>(
-            replace_address_table_entry::Command::new(
+        replace_address_table_entry::Response::try_from(
+            self.communicate(replace_address_table_entry::Command::new(
                 address_table_index,
                 new_eui64,
                 new_id,
                 new_extended_timeout,
-            ),
-        )
-        .await?
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
@@ -502,16 +485,16 @@ where
         message_tag: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, send_broadcast::Response>(send_broadcast::Command::new(
-            destination,
-            aps_frame,
-            radius,
-            message_tag,
-            message,
-        ))
-        .await?
+        send_broadcast::Response::try_from(
+            self.communicate(send_broadcast::Command::new(
+                destination,
+                aps_frame,
+                radius,
+                message_tag,
+                message,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
@@ -520,12 +503,13 @@ where
         concentrator_type: u16,
         radius: u8,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, send_many_to_one_route_request::Response>(
-            send_many_to_one_route_request::Command::new(concentrator_type, radius),
-        )
-        .await?
+        send_many_to_one_route_request::Response::try_from(
+            self.communicate(send_many_to_one_route_request::Command::new(
+                concentrator_type,
+                radius,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
@@ -537,16 +521,16 @@ where
         message_tag: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, send_multicast::Response>(send_multicast::Command::new(
-            aps_frame,
-            hops,
-            nonmember_radius,
-            message_tag,
-            message,
-        ))
-        .await?
+        send_multicast::Response::try_from(
+            self.communicate(send_multicast::Command::new(
+                aps_frame,
+                hops,
+                nonmember_radius,
+                message_tag,
+                message,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
@@ -560,10 +544,8 @@ where
         message_tag: u8,
         message_contents: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, send_multicast_with_alias::Response>(
-            send_multicast_with_alias::Command::new(
+        send_multicast_with_alias::Response::try_from(
+            self.communicate(send_multicast_with_alias::Command::new(
                 aps_frame,
                 hops,
                 nonmember_radius,
@@ -571,19 +553,17 @@ where
                 nwk_sequence,
                 message_tag,
                 message_contents,
-            ),
-        )
-        .await?
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
     async fn send_raw_message(&mut self, message_contents: ByteSizedVec<u8>) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, send_raw_message::Response>(send_raw_message::Command::new(
-            message_contents,
-        ))
-        .await?
+        send_raw_message::Response::try_from(
+            self.communicate(send_raw_message::Command::new(message_contents))
+                .await?,
+        )?
         .try_into()
     }
 
@@ -593,12 +573,12 @@ where
         priority: u8,
         use_cca: bool,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, send_raw_message_extended::Response>(
-            send_raw_message_extended::Command::new(message, priority, use_cca),
-        )
-        .await?
+        send_raw_message_extended::Response::try_from(
+            self.communicate(send_raw_message_extended::Command::new(
+                message, priority, use_cca,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
@@ -608,12 +588,10 @@ where
         aps_frame: Frame,
         message: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, send_reply::Response>(send_reply::Command::new(
-            sender, aps_frame, message,
-        ))
-        .await?
+        send_reply::Response::try_from(
+            self.communicate(send_reply::Command::new(sender, aps_frame, message))
+                .await?,
+        )?
         .try_into()
     }
 
@@ -625,16 +603,16 @@ where
         message_tag: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, send_unicast::Response>(send_unicast::Command::new(
-            typ,
-            index_or_destination,
-            aps_frame,
-            message_tag,
-            message,
-        ))
-        .await?
+        send_unicast::Response::try_from(
+            self.communicate(send_unicast::Command::new(
+                typ,
+                index_or_destination,
+                aps_frame,
+                message_tag,
+                message,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
@@ -643,12 +621,13 @@ where
         address_table_index: u8,
         eui64: Eui64,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_address_table_remote_eui64::Response>(
-            set_address_table_remote_eui64::Command::new(address_table_index, eui64),
-        )
-        .await?
+        set_address_table_remote_eui64::Response::try_from(
+            self.communicate(set_address_table_remote_eui64::Command::new(
+                address_table_index,
+                eui64,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
@@ -657,25 +636,24 @@ where
         address_table_index: u8,
         id: NodeId,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_address_table_remote_node_id::Response>(
-            set_address_table_remote_node_id::Command::new(address_table_index, id),
+        Ok(set_address_table_remote_node_id::Response::try_from(
+            self.communicate(set_address_table_remote_node_id::Command::new(
+                address_table_index,
+                id,
+            ))
+            .await?,
         )
-        .await
-        .map(drop)
+        .map(drop)?)
     }
 
     async fn set_beacon_classification_params(
         &mut self,
         param: ClassificationParams,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_beacon_classification_params::Response>(
-            set_beacon_classification_params::Command::new(param),
-        )
-        .await?
+        set_beacon_classification_params::Response::try_from(
+            self.communicate(set_beacon_classification_params::Command::new(param))
+                .await?,
+        )?
         .try_into()
     }
 
@@ -684,27 +662,27 @@ where
         remote_eui64: Eui64,
         extended_timeout: bool,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_extended_timeout::Response>(set_extended_timeout::Command::new(
-            remote_eui64,
-            extended_timeout,
-        ))
-        .await
-        .map(drop)
+        Ok(set_extended_timeout::Response::try_from(
+            self.communicate(set_extended_timeout::Command::new(
+                remote_eui64,
+                extended_timeout,
+            ))
+            .await?,
+        )
+        .map(drop)?)
     }
 
     async fn set_mac_poll_failure_wait_time(
         &mut self,
         wait_before_retry_interval_ms: u8,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_mac_poll_failure_wait_time::Response>(
-            set_mac_poll_failure_wait_time::Command::new(wait_before_retry_interval_ms),
+        Ok(set_mac_poll_failure_wait_time::Response::try_from(
+            self.communicate(set_mac_poll_failure_wait_time::Command::new(
+                wait_before_retry_interval_ms,
+            ))
+            .await?,
         )
-        .await
-        .map(drop)
+        .map(drop)?)
     }
 
     async fn set_multicast_table_entry(
@@ -712,12 +690,10 @@ where
         index: u8,
         value: TableEntry,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_multicast_table_entry::Response>(
-            set_multicast_table_entry::Command::new(index, value),
-        )
-        .await?
+        set_multicast_table_entry::Response::try_from(
+            self.communicate(set_multicast_table_entry::Command::new(index, value))
+                .await?,
+        )?
         .try_into()
     }
 
@@ -725,13 +701,11 @@ where
         &mut self,
         mode: SourceRouteDiscoveryMode,
     ) -> Result<u32, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_source_route_discovery_mode::Response>(
-            set_source_route_discovery_mode::Command::new(mode),
+        Ok(set_source_route_discovery_mode::Response::try_from(
+            self.communicate(set_source_route_discovery_mode::Command::new(mode))
+                .await?,
         )
-        .await
-        .map(|response| response.remaining_time())
+        .map(|response| response.remaining_time())?)
     }
 
     async fn unicast_current_network_key(
@@ -740,20 +714,22 @@ where
         target_long: Eui64,
         parent_short_id: NodeId,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, unicast_current_network_key::Response>(
-            unicast_current_network_key::Command::new(target_short, target_long, parent_short_id),
-        )
-        .await?
+        unicast_current_network_key::Response::try_from(
+            self.communicate(unicast_current_network_key::Command::new(
+                target_short,
+                target_long,
+                parent_short_id,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
     async fn write_node_data(&mut self, erase: bool) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, write_node_data::Response>(write_node_data::Command::new(erase))
-            .await?
-            .try_into()
+        write_node_data::Response::try_from(
+            self.communicate(write_node_data::Command::new(erase))
+                .await?,
+        )?
+        .try_into()
     }
 }

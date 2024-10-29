@@ -11,7 +11,6 @@ use tokio::sync::mpsc::Receiver;
 
 use crate::error::Error;
 use crate::frame::{Command, Header, Identified};
-use crate::parameters::configuration::version;
 use crate::transport::{Transport, MIN_NON_LEGACY_VERSION};
 use crate::{Configuration, Extended, Ezsp, Handler, Legacy};
 use crate::{Parameters, ValueError};
@@ -139,13 +138,17 @@ impl Transport for Uart {
         self.encoder.send(header, command).await
     }
 
-    async fn receive(&mut self) -> Result<Parameters, Error> {
+    async fn receive<T>(&mut self) -> Result<T, Error>
+    where
+        T: TryFrom<Parameters>,
+        Error: From<<T as TryFrom<Parameters>>::Error>,
+    {
         let Some(response) = self.responses.recv().await else {
             return Err(
                 std::io::Error::new(ErrorKind::UnexpectedEof, "Empty response from NCP.").into(),
             );
         };
 
-        Ok(response)
+        Ok(response.try_into()?)
     }
 }

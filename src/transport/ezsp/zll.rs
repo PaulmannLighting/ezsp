@@ -1,5 +1,3 @@
-use std::future::Future;
-
 use crate::ember::key::Data;
 use crate::ember::node::Type;
 use crate::ember::radio::PowerMode;
@@ -14,6 +12,7 @@ use crate::frame::parameters::zll::{
     set_security_state_without_key, start_scan,
 };
 use crate::transport::Transport;
+use std::future::Future;
 
 /// The `Zll` trait provides an interface for the Zigbee Light Link (ZLL) protocol.
 pub trait Zll {
@@ -121,24 +120,18 @@ where
     T: Transport,
 {
     async fn clear_tokens(&mut self) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, clear_tokens::Response>(clear_tokens::Command)
             .await
             .map(drop)
     }
 
     async fn get_primary_channel_mask(&mut self) -> Result<u32, Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, get_primary_channel_mask::Response>(get_primary_channel_mask::Command)
             .await
             .map(|response| response.zll_primary_channel_mask())
     }
 
     async fn get_secondary_channel_mask(&mut self) -> Result<u32, Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, get_secondary_channel_mask::Response>(
             get_secondary_channel_mask::Command,
         )
@@ -147,15 +140,11 @@ where
     }
 
     async fn get_tokens(&mut self) -> Result<get_tokens::Response, Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, get_tokens::Response>(get_tokens::Command)
             .await
     }
 
     async fn is_zll_network(&mut self) -> Result<bool, Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, is_zll_network::Response>(is_zll_network::Command)
             .await
             .map(|response| response.is_zll_network())
@@ -167,8 +156,6 @@ where
         op: NetworkOperation,
         radio_tx_power: i8,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, network_ops::Response>(network_ops::Command::new(
             network_info,
             op,
@@ -179,16 +166,12 @@ where
     }
 
     async fn operation_in_progress(&mut self) -> Result<bool, Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, operation_in_progress::Response>(operation_in_progress::Command)
             .await
             .map(|response| response.zll_operation_in_progress())
     }
 
     async fn rx_on_when_idle_get_active(&mut self) -> Result<bool, Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, rx_on_when_idle_get_active::Response>(
             rx_on_when_idle_get_active::Command,
         )
@@ -196,8 +179,6 @@ where
         .map(|response| response.zll_rx_on_when_idle_get_active())
     }
     async fn set_additional_state(&mut self, state: u16) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_additional_state::Response>(set_additional_state::Command::new(
             state,
         ))
@@ -206,8 +187,6 @@ where
     }
 
     async fn set_data_token(&mut self, data: DataToken) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_data_token::Response>(set_data_token::Command::new(data))
             .await
             .map(drop)
@@ -218,8 +197,6 @@ where
         network_key: Data,
         security_state: InitialSecurityState,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_initial_security_state::Response>(
             set_initial_security_state::Command::new(network_key, security_state),
         )
@@ -228,24 +205,18 @@ where
     }
 
     async fn set_node_type(&mut self, node_type: Type) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_node_type::Response>(set_node_type::Command::new(node_type))
             .await
             .map(drop)
     }
 
     async fn set_non_zll_network(&mut self) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_non_zll_network::Response>(set_non_zll_network::Command)
             .await
             .map(drop)
     }
 
     async fn set_primary_channel_mask(&mut self, mask: u32) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_primary_channel_mask::Response>(
             set_primary_channel_mask::Command::new(mask),
         )
@@ -254,8 +225,6 @@ where
     }
 
     async fn set_radio_idle_mode(&mut self, mode: PowerMode) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_radio_idle_mode::Response>(set_radio_idle_mode::Command::new(
             mode,
         ))
@@ -264,8 +233,6 @@ where
     }
 
     async fn set_rx_on_when_idle(&mut self, duration_millis: u32) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_rx_on_when_idle::Response>(set_rx_on_when_idle::Command::new(
             duration_millis,
         ))
@@ -274,8 +241,6 @@ where
     }
 
     async fn set_secondary_channel_mask(&mut self, mask: u32) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_secondary_channel_mask::Response>(
             set_secondary_channel_mask::Command::new(mask),
         )
@@ -287,8 +252,6 @@ where
         &mut self,
         security_state: InitialSecurityState,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_security_state_without_key::Response>(
             set_security_state_without_key::Command::new(security_state),
         )
@@ -302,8 +265,6 @@ where
         radio_power_for_scan: i8,
         node_type: Type,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, start_scan::Response>(start_scan::Command::new(
             channel_mask,
             radio_power_for_scan,

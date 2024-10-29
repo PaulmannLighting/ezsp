@@ -59,64 +59,60 @@ where
     T: Transport,
 {
     async fn clear_all(&mut self) -> Result<(), Error> {
-        Ok(clear_all::Response::try_from(self.communicate(clear_all::Command).await?).map(drop)?)
+        self.communicate::<_, clear_all::Response>(clear_all::Command)
+            .await
+            .map(drop)
     }
 
     async fn find_or_allocate_entry(&mut self, addr: Address) -> Result<u8, Error> {
-        Ok(find_or_allocate_entry::Response::try_from(
-            self.communicate(find_or_allocate_entry::Command::new(addr))
-                .await?,
+        self.communicate::<_, find_or_allocate_entry::Response>(
+            find_or_allocate_entry::Command::new(addr),
         )
-        .map(|response| response.index())?)
+        .await
+        .map(|response| response.index())
     }
 
     async fn get_entry(&mut self, sink_index: u8) -> Result<TableEntry, Error> {
-        get_entry::Response::try_from(
-            self.communicate(get_entry::Command::new(sink_index))
-                .await?,
-        )?
-        .try_into()
+        self.communicate::<_, get_entry::Response>(get_entry::Command::new(sink_index))
+            .await?
+            .try_into()
     }
 
     async fn init(&mut self) -> Result<(), Error> {
-        Ok(init::Response::try_from(self.communicate(init::Command).await?).map(drop)?)
+        self.communicate::<_, init::Response>(init::Command)
+            .await
+            .map(drop)
     }
 
     async fn lookup(&mut self, addr: Address) -> Result<u8, Error> {
-        Ok(
-            lookup::Response::try_from(self.communicate(lookup::Command::new(addr)).await?)
-                .map(|response| response.index())?,
-        )
+        self.communicate::<_, lookup::Response>(lookup::Command::new(addr))
+            .await
+            .map(|response| response.index())
     }
 
     async fn number_of_active_entries(&mut self) -> Result<UintT, Error> {
-        Ok(number_of_active_entries::Response::try_from(
-            self.communicate(number_of_active_entries::Command).await?,
-        )
-        .map(|response| response.number_of_entries())?)
+        self.communicate::<_, number_of_active_entries::Response>(number_of_active_entries::Command)
+            .await
+            .map(|response| response.number_of_entries())
     }
 
     async fn remove_entry(&mut self, sink_index: u8) -> Result<(), Error> {
-        Ok(remove_entry::Response::try_from(
-            self.communicate(remove_entry::Command::new(sink_index))
-                .await?,
-        )
-        .map(drop)?)
+        self.communicate::<_, remove_entry::Response>(remove_entry::Command::new(sink_index))
+            .await
+            .map(drop)
     }
 
     async fn set_entry(&mut self, sink_index: u8, entry: TableEntry) -> Result<(), Error> {
-        set_entry::Response::try_from(
-            self.communicate(set_entry::Command::new(sink_index, entry))
-                .await?,
-        )?
-        .try_into()
+        self.communicate::<_, set_entry::Response>(set_entry::Command::new(sink_index, entry))
+            .await?
+            .try_into()
     }
 
     async fn set_security_frame_counter(&mut self, index: u8, sfc: u32) -> Result<(), Error> {
-        Ok(set_security_frame_counter::Response::try_from(
-            self.communicate(set_security_frame_counter::Command::new(index, sfc))
-                .await?,
+        self.communicate::<_, set_security_frame_counter::Response>(
+            set_security_frame_counter::Command::new(index, sfc),
         )
-        .map(drop)?)
+        .await
+        .map(drop)
     }
 }

@@ -63,42 +63,46 @@ where
     T: Transport,
 {
     async fn is_active(&mut self, index: u8) -> Result<bool, Error> {
-        Ok(
-            is_active::Response::try_from(self.communicate(is_active::Command::new(index)).await?)?
-                .active(),
-        )
+        self.communicate::<_, is_active::Response>(is_active::Command::new(index))
+            .await
+            .map(|response| response.active())
     }
 
     async fn clear_table(&mut self) -> Result<(), Error> {
-        clear_table::Response::try_from(self.communicate(clear_table::Command).await?)?.try_into()
+        self.communicate::<_, clear_table::Response>(clear_table::Command)
+            .await?
+            .try_into()
     }
 
     async fn delete(&mut self, index: u8) -> Result<(), Error> {
-        delete::Response::try_from(self.communicate(delete::Command::new(index)).await?)?.try_into()
+        self.communicate::<_, delete::Response>(delete::Command::new(index))
+            .await?
+            .try_into()
     }
 
     async fn get(&mut self, index: u8) -> Result<TableEntry, Error> {
-        get::Response::try_from(self.communicate(get::Command::new(index)).await?)?.try_into()
+        self.communicate::<_, get::Response>(get::Command::new(index))
+            .await?
+            .try_into()
     }
 
     async fn get_remote_node_id(&mut self, index: u8) -> Result<Option<NodeId>, Error> {
-        Ok(get_remote_node_id::Response::try_from(
-            self.communicate(get_remote_node_id::Command::new(index))
-                .await?,
-        )?
-        .node_id())
+        self.communicate::<_, get_remote_node_id::Response>(get_remote_node_id::Command::new(index))
+            .await
+            .map(|response| response.node_id())
     }
 
     async fn set(&mut self, index: u8, value: TableEntry) -> Result<(), Error> {
-        set::Response::try_from(self.communicate(set::Command::new(index, value)).await?)?
+        self.communicate::<_, set::Response>(set::Command::new(index, value))
+            .await?
             .try_into()
     }
 
     async fn set_remote_node_id(&mut self, index: u8, node_id: NodeId) -> Result<(), Error> {
-        Ok(set_remote_node_id::Response::try_from(
-            self.communicate(set_remote_node_id::Command::new(index, node_id))
-                .await?,
-        )
-        .map(drop)?)
+        self.communicate::<_, set_remote_node_id::Response>(set_remote_node_id::Command::new(
+            index, node_id,
+        ))
+        .await
+        .map(drop)
     }
 }

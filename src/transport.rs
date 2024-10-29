@@ -33,17 +33,19 @@ pub trait Transport: Send {
         T: Identified + ToLeStream;
 
     /// Receive a response from the NCP.
-    fn receive(&mut self) -> impl Future<Output = Result<Parameters, Error>> + Send;
+    fn receive<T>(&mut self) -> impl Future<Output = Result<T, Error>> + Send
+    where
+        T: TryFrom<Parameters>,
+        Error: From<<T as TryFrom<Parameters>>::Error>;
 
     /// Communicate with the NCP.
     ///
     /// This assumes that `C::ID` and `R::ID` are the same.
-    fn communicate<C>(
-        &mut self,
-        command: C,
-    ) -> impl Future<Output = Result<Parameters, Error>> + Send
+    fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
     where
         C: Identified + ToLeStream,
+        R: TryFrom<Parameters>,
+        Error: From<<R as TryFrom<Parameters>>::Error>,
     {
         async {
             self.check_reset().await?;

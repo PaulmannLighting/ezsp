@@ -40,18 +40,15 @@ where
     T: Transport,
 {
     async fn get_entry(&mut self, proxy_index: u8) -> Result<TableEntry, Error> {
-        get_entry::Response::try_from(
-            self.communicate(get_entry::Command::new(proxy_index))
-                .await?,
-        )?
-        .try_into()
+        self.communicate::<_, get_entry::Response>(get_entry::Command::new(proxy_index))
+            .await?
+            .try_into()
     }
 
     async fn lookup(&mut self, addr: Address) -> Result<u8, Error> {
-        Ok(
-            lookup::Response::try_from(self.communicate(lookup::Command::new(addr)).await?)
-                .map(|response| response.index())?,
-        )
+        self.communicate::<_, lookup::Response>(lookup::Command::new(addr))
+            .await
+            .map(|response| response.index())
     }
 
     async fn process_gp_pairing(
@@ -67,21 +64,19 @@ where
         gpd_security_frame_counter: u32,
         forwarding_radius: u8,
     ) -> Result<bool, Error> {
-        Ok(process_gp_pairing::Response::try_from(
-            self.communicate(process_gp_pairing::Command::new(
-                options,
-                addr,
-                comm_mode,
-                sink_network_address,
-                sink_group_id,
-                assigned_alias,
-                sink_ieee_address,
-                gpd_key,
-                gpd_security_frame_counter,
-                forwarding_radius,
-            ))
-            .await?,
-        )
-        .map(|response| response.gp_pairing_added())?)
+        self.communicate::<_, process_gp_pairing::Response>(process_gp_pairing::Command::new(
+            options,
+            addr,
+            comm_mode,
+            sink_network_address,
+            sink_group_id,
+            assigned_alias,
+            sink_ieee_address,
+            gpd_key,
+            gpd_security_frame_counter,
+            forwarding_radius,
+        ))
+        .await
+        .map(|response| response.gp_pairing_added())
     }
 }

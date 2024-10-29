@@ -1,11 +1,10 @@
-use std::future::Future;
-
 use crate::error::Error;
 use crate::frame::parameters::wwah::{
     get_parent_classification_enabled, is_hub_connected, is_uptime_long, set_hub_connectivity,
     set_long_uptime, set_parent_classification_enabled,
 };
 use crate::transport::Transport;
+use std::future::Future;
 
 /// The `Wwah` trait provides an interface for the Work With All Hubs (WWAH) protocol.
 pub trait Wwah {
@@ -45,8 +44,6 @@ where
     T: Transport,
 {
     async fn get_parent_classification_enabled(&mut self) -> Result<bool, Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, get_parent_classification_enabled::Response>(
             get_parent_classification_enabled::Command,
         )
@@ -55,24 +52,18 @@ where
     }
 
     async fn is_hub_connected(&mut self) -> Result<bool, Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, is_hub_connected::Response>(is_hub_connected::Command)
             .await
             .map(Into::into)
     }
 
     async fn is_uptime_long(&mut self) -> Result<bool, Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, is_uptime_long::Response>(is_uptime_long::Command)
             .await
             .map(Into::into)
     }
 
     async fn set_hub_connectivity(&mut self, connected: bool) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_hub_connectivity::Response>(set_hub_connectivity::Command::new(
             connected,
         ))
@@ -81,8 +72,6 @@ where
     }
 
     async fn set_long_uptime(&mut self, has_long_uptime: bool) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_long_uptime::Response>(set_long_uptime::Command::new(
             has_long_uptime,
         ))
@@ -91,8 +80,6 @@ where
     }
 
     async fn set_parent_classification_enabled(&mut self, enabled: bool) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
         self.communicate::<_, set_parent_classification_enabled::Response>(
             set_parent_classification_enabled::Command::new(enabled),
         )

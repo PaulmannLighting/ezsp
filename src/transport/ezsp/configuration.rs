@@ -17,9 +17,7 @@ use crate::types::ByteSizedVec;
 /// The `Configuration` trait provides an interface for the configuration commands.
 pub trait Configuration {
     /// Configures endpoint information on the NCP.
-    ///
     /// The NCP does not remember these settings after a reset.
-    ///
     /// Endpoints can be added by the Host after the NCP has reset.
     /// Once the status of the stack changes to [`Status::NetworkUp`](crate::ember::Status::NetworkUp),
     /// endpoints can no longer be added and this command will respond with [`Error::InvalidCall`](crate::ezsp::Error::InvalidCall).
@@ -137,25 +135,23 @@ where
         input_clusters: ByteSizedVec<u16>,
         output_clusters: ByteSizedVec<u16>,
     ) -> Result<(), Error> {
-        add_endpoint::Response::try_from(
-            self.communicate(add_endpoint::Command::new(
-                endpoint,
-                profile_id,
-                device_id,
-                app_flags,
-                input_clusters,
-                output_clusters,
-            ))
-            .await?,
-        )?
+        self.communicate::<_, add_endpoint::Response>(add_endpoint::Command::new(
+            endpoint,
+            profile_id,
+            device_id,
+            app_flags,
+            input_clusters,
+            output_clusters,
+        ))
+        .await?
         .try_into()
     }
 
     async fn get_configuration_value(&mut self, config_id: Id) -> Result<u16, Error> {
-        get_configuration_value::Response::try_from(
-            self.communicate(get_configuration_value::Command::new(config_id))
-                .await?,
-        )?
+        self.communicate::<_, get_configuration_value::Response>(
+            get_configuration_value::Command::new(config_id),
+        )
+        .await?
         .try_into()
     }
 
@@ -164,23 +160,23 @@ where
         value_id: ExtendedId,
         characteristics: u32,
     ) -> Result<ByteSizedVec<u8>, Error> {
-        get_extended_value::Response::try_from(
-            self.communicate(get_extended_value::Command::new(value_id, characteristics))
-                .await?,
-        )?
+        self.communicate::<_, get_extended_value::Response>(get_extended_value::Command::new(
+            value_id,
+            characteristics,
+        ))
+        .await?
         .try_into()
     }
 
     async fn get_policy(&mut self, policy_id: policy::Id) -> Result<decision::Id, Error> {
-        get_policy::Response::try_from(
-            self.communicate(get_policy::Command::new(policy_id))
-                .await?,
-        )?
-        .try_into()
+        self.communicate::<_, get_policy::Response>(get_policy::Command::new(policy_id))
+            .await?
+            .try_into()
     }
 
     async fn get_value(&mut self, value_id: value::Id) -> Result<ByteSizedVec<u8>, Error> {
-        get_value::Response::try_from(self.communicate(get_value::Command::new(value_id)).await?)?
+        self.communicate::<_, get_value::Response>(get_value::Command::new(value_id))
+            .await?
             .try_into()
     }
 
@@ -192,32 +188,30 @@ where
         mask: u8,
         manufacturer_code: u16,
     ) -> Result<read_attribute::Attribbute, Error> {
-        read_attribute::Response::try_from(
-            self.communicate(read_attribute::Command::new(
-                endpoint,
-                cluster,
-                attribute_id,
-                mask,
-                manufacturer_code,
-            ))
-            .await?,
-        )?
+        self.communicate::<_, read_attribute::Response>(read_attribute::Command::new(
+            endpoint,
+            cluster,
+            attribute_id,
+            mask,
+            manufacturer_code,
+        ))
+        .await?
         .try_into()
     }
 
     async fn send_pan_id_update(&mut self, new_pan: PanId) -> Result<bool, Error> {
-        Ok(send_pan_id_update::Response::try_from(
-            self.communicate(send_pan_id_update::Command::new(new_pan))
-                .await?,
-        )?
-        .into())
+        self.communicate::<_, send_pan_id_update::Response>(send_pan_id_update::Command::new(
+            new_pan,
+        ))
+        .await
+        .map(Into::into)
     }
 
     async fn set_configuration_value(&mut self, config_id: Id, value: u16) -> Result<(), Error> {
-        set_configuration_value::Response::try_from(
-            self.communicate(set_configuration_value::Command::new(config_id, value))
-                .await?,
-        )?
+        self.communicate::<_, set_configuration_value::Response>(
+            set_configuration_value::Command::new(config_id, value),
+        )
+        .await?
         .try_into()
     }
 
@@ -226,13 +220,10 @@ where
         config: u8,
         min_acks_needed: u8,
     ) -> Result<(), Error> {
-        set_passive_ack_config::Response::try_from(
-            self.communicate(set_passive_ack_config::Command::new(
-                config,
-                min_acks_needed,
-            ))
-            .await?,
-        )?
+        self.communicate::<_, set_passive_ack_config::Response>(
+            set_passive_ack_config::Command::new(config, min_acks_needed),
+        )
+        .await?
         .try_into()
     }
 
@@ -241,10 +232,11 @@ where
         policy_id: policy::Id,
         decision_id: decision::Id,
     ) -> Result<(), Error> {
-        set_policy::Response::try_from(
-            self.communicate(set_policy::Command::new(policy_id, decision_id))
-                .await?,
-        )?
+        self.communicate::<_, set_policy::Response>(set_policy::Command::new(
+            policy_id,
+            decision_id,
+        ))
+        .await?
         .try_into()
     }
 
@@ -253,19 +245,17 @@ where
         value_id: value::Id,
         value: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
-        set_value::Response::try_from(
-            self.communicate(set_value::Command::new(value_id, value))
-                .await?,
-        )?
-        .try_into()
+        self.communicate::<_, set_value::Response>(set_value::Command::new(value_id, value))
+            .await?
+            .try_into()
     }
 
     async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
         // Send and receive separately to avoid infinite recursion
-        // when checking for established connections in `Transport::communicate()`.
+        // when checking the connection status in `Transport::communicate()`.
         self.send(version::Command::new(desired_protocol_version))
             .await?;
-        Ok(version::Response::try_from(self.receive().await?)?)
+        self.receive::<version::Response>().await
     }
 
     async fn write_attribute(
@@ -275,12 +265,10 @@ where
         attribute: &Attribute,
         just_test: bool,
     ) -> Result<(), Error> {
-        write_attribute::Response::try_from(
-            self.communicate(write_attribute::Command::new(
-                endpoint, cluster, attribute, just_test,
-            ))
-            .await?,
-        )?
+        self.communicate::<_, write_attribute::Response>(write_attribute::Command::new(
+            endpoint, cluster, attribute, just_test,
+        ))
+        .await?
         .try_into()
     }
 }

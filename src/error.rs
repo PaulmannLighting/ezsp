@@ -8,8 +8,9 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::frame::parameters::configuration::version;
 use crate::frame::parameters::utilities::invalid_command;
-use crate::{ember, ezsp, Parameters};
+use crate::{ember, ezsp, Parameters, Response};
 
+use crate::parameters::utilities;
 pub use decode::Decode;
 pub use status::Status;
 #[allow(clippy::module_name_repetitions)]
@@ -139,7 +140,14 @@ impl From<siliconlabs::Status> for Error {
 
 impl From<Parameters> for Error {
     fn from(parameters: Parameters) -> Self {
-        Self::UnexpectedResponse(parameters.into())
+        if let Parameters::Response(Response::Utilities(utilities::Response::InvalidCommand(
+            invalid_command,
+        ))) = parameters
+        {
+            Self::InvalidCommand(invalid_command)
+        } else {
+            Self::UnexpectedResponse(parameters.into())
+        }
     }
 }
 

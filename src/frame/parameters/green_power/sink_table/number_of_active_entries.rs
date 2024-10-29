@@ -1,5 +1,8 @@
-use crate::frame::Identified;
+//! Parameters for the [`SinkTable::number_of_active_entries`](crate::SinkTable::number_of_active_entries) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::frame::Identified;
 
 const ID: u16 = 0x0118;
 
@@ -11,6 +14,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     // The number of active entries in the sink table.
@@ -19,6 +23,7 @@ pub struct Response {
 }
 
 impl Response {
+    /// The number of active entries in the sink table.
     #[must_use]
     pub const fn number_of_entries(&self) -> u8 {
         self.number_of_entries

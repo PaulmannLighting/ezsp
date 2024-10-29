@@ -254,6 +254,16 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             error!("Error getting callback: {error}");
         }
     }
+
+    // Test read counters
+    match ezsp.read_counters().await {
+        Ok(counters) => {
+            info!("Counters: {counters:#06X?}");
+        }
+        Err(error) => {
+            error!("Error getting counters: {error}");
+        }
+    }
 }
 
 /// Test getting values.

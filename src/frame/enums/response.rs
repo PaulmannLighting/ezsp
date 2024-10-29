@@ -1,6 +1,6 @@
 //! Enumeration containing all possible `EZSP` response parameters.
 
-use super::parameters::{
+use crate::parameters::{
     binding, bootloader, cbke, configuration, green_power, messaging, mfglib, networking, security,
     token_interface, trust_center, utilities, wwah, zll,
 };

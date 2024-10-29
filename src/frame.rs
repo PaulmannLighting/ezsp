@@ -1,19 +1,17 @@
 use std::fmt::Debug;
 
-pub use handler::Callback;
+pub use enums::{Callback, Parameters, Response};
 pub use header::{
     CallbackType, Command, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
 };
 pub use parameter::{Identified, Parameter};
-pub use parameters::Parameters;
 pub use parsable::Parsable;
 
-mod handler;
+mod enums;
 mod header;
 mod parameter;
 pub mod parameters;
 pub mod parsable;
-pub mod response;
 
 /// A frame that contains a header and parameters.
 #[derive(Clone, Debug, Eq, PartialEq)]

@@ -19,10 +19,9 @@ pub mod uart;
 
 pub use constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 pub use error::{Error, ValueError};
-pub use frame::response::Response;
 pub use frame::{
     parameters, Callback, CallbackType, Extended, FormatVersion, Frame, Header, HighByte, Legacy,
-    LowByte, Parameters, Parsable, SleepMode,
+    LowByte, Parameters, Parsable, Response, SleepMode,
 };
 pub use handler::Handler;
 pub use result::Result;

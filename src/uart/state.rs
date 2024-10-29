@@ -49,6 +49,12 @@ impl State {
         self.negotiated_version()
             .map_or(true, |version| version < MIN_NON_LEGACY_VERSION)
     }
+
+    /// Returns whether requests are pending.
+    #[must_use]
+    pub fn requests_pending(&self) -> bool {
+        self.pending_requests.load(Relaxed) > 0
+    }
 }
 
 impl Default for State {

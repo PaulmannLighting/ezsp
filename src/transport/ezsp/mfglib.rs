@@ -1,11 +1,12 @@
 use std::future::Future;
 
+use crate::error::Error;
 use crate::frame::parameters::mfglib::{
     end, get_channel, get_power, send_packet, set_channel, set_power, start, start_stream,
     start_tone, stop_stream, stop_tone,
 };
+use crate::transport::Transport;
 use crate::types::ByteSizedVec;
-use crate::{Error, Transport};
 
 /// The `Mfglib` trait provides an interface for the
 /// Manufacturing and Functional Test Library (`MfgLib`) test routines.

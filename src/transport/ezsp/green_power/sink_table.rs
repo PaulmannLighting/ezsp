@@ -2,12 +2,13 @@ use std::future::Future;
 
 use crate::ember::gp::sink::TableEntry;
 use crate::ember::gp::Address;
+use crate::error::Error;
 use crate::frame::parameters::green_power::sink_table::{
     clear_all, find_or_allocate_entry, get_entry, init, lookup, number_of_active_entries,
     remove_entry, set_entry, set_security_frame_counter,
 };
+use crate::transport::Transport;
 use crate::types::UintT;
-use crate::{Error, Transport};
 
 /// The `SinkTable` trait provides an interface for the sink table.
 pub trait SinkTable {

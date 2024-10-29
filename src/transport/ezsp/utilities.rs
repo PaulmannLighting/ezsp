@@ -3,6 +3,7 @@ use std::future::Future;
 use crate::ember::constants::COUNTER_TYPE_COUNT;
 use crate::ember::entropy::Source;
 use crate::ember::{event, library, Eui64, NodeId};
+use crate::error::Error;
 use crate::ezsp::mfg_token::Id;
 use crate::frame::parameters::utilities::{
     callback, custom_frame, debug_write, delay_test, echo, get_eui64, get_library_status,
@@ -11,8 +12,8 @@ use crate::frame::parameters::utilities::{
     set_mfg_token, set_timer, set_token,
 };
 use crate::frame::Callback;
+use crate::transport::Transport;
 use crate::types::ByteSizedVec;
-use crate::{Error, Transport};
 
 /// The `Utilities` trait provides an interface for the utilities.
 pub trait Utilities {

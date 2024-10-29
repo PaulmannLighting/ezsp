@@ -1,9 +1,11 @@
+use std::future::Future;
+
+use crate::error::Error;
 use crate::frame::parameters::wwah::{
     get_parent_classification_enabled, is_hub_connected, is_uptime_long, set_hub_connectivity,
     set_long_uptime, set_parent_classification_enabled,
 };
-use crate::{Error, Transport};
-use std::future::Future;
+use crate::transport::Transport;
 
 /// The `Wwah` trait provides an interface for the Work With All Hubs (WWAH) protocol.
 pub trait Wwah {

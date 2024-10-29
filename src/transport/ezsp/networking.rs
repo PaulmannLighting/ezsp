@@ -5,6 +5,7 @@ use crate::ember::{
     multi_phy::{nwk, radio},
     neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
 };
+use crate::error::Error;
 use crate::ezsp::network::{scan, InitBitmask};
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
@@ -22,7 +23,7 @@ use crate::frame::parameters::networking::{
     set_radio_ieee802154_cca_mode, set_radio_power, set_routing_shortcut_threshold, start_scan,
     stop_scan,
 };
-use crate::{Error, Transport};
+use crate::transport::Transport;
 
 /// The `Networking` trait provides an interface for the networking features.
 pub trait Networking {

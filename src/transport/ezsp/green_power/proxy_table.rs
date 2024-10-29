@@ -3,8 +3,9 @@ use std::future::Future;
 use crate::ember::gp::proxy::TableEntry;
 use crate::ember::gp::Address;
 use crate::ember::key::Data;
+use crate::error::Error;
 use crate::frame::parameters::green_power::proxy_table::{get_entry, lookup, process_gp_pairing};
-use crate::{Error, Transport};
+use crate::transport::Transport;
 
 /// The `ProxyTable` trait provides an interface for the proxy table.
 pub trait ProxyTable {

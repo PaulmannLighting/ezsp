@@ -3,12 +3,13 @@ use std::future::Future;
 use crate::ember::aes::MmoHashContext;
 use crate::ember::key::Data;
 use crate::ember::{Eui64, NodeId};
+use crate::error::Error;
 use crate::frame::parameters::trust_center::{
     aes_mmo_hash, broadcast_network_key_switch, broadcast_next_network_key, remove_device,
     unicast_nwk_key_update,
 };
+use crate::transport::Transport;
 use crate::types::ByteSizedVec;
-use crate::{Error, Transport};
 
 /// The `TrustCenter` trait provides an interface for the Trust Center features.
 pub trait TrustCenter {

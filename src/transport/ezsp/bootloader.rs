@@ -1,12 +1,13 @@
 use std::future::Future;
 
 use crate::ember::Eui64;
+use crate::error::Error;
 use crate::frame::parameters::bootloader::{
     aes_encrypt, get_standalone_bootloader_version_plat_micro_phy, launch_standalone_bootloader,
     override_current_channel, send_bootload_message,
 };
+use crate::transport::Transport;
 use crate::types::ByteSizedVec;
-use crate::{Error, Transport};
 
 /// The `Bootloader` trait provides an interface for the bootloader features.
 pub trait Bootloader {

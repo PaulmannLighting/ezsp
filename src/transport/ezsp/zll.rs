@@ -1,7 +1,10 @@
+use std::future::Future;
+
 use crate::ember::key::Data;
 use crate::ember::node::Type;
 use crate::ember::radio::PowerMode;
 use crate::ember::zll::{DataToken, InitialSecurityState, Network};
+use crate::error::Error;
 use crate::ezsp::zll::NetworkOperation;
 use crate::frame::parameters::zll::{
     clear_tokens, get_primary_channel_mask, get_secondary_channel_mask, get_tokens, is_zll_network,
@@ -10,8 +13,7 @@ use crate::frame::parameters::zll::{
     set_primary_channel_mask, set_radio_idle_mode, set_rx_on_when_idle, set_secondary_channel_mask,
     set_security_state_without_key, start_scan,
 };
-use crate::{Error, Transport};
-use std::future::Future;
+use crate::transport::Transport;
 
 /// The `Zll` trait provides an interface for the Zigbee Light Link (ZLL) protocol.
 pub trait Zll {

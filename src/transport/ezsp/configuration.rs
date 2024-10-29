@@ -262,7 +262,7 @@ where
 
     async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
         // Send and receive separately to avoid infinite recursion
-        // when checking for established connections in `Self::communicate()`.
+        // when checking for established connections in `Transport::communicate()`.
         self.send(version::Command::new(desired_protocol_version))
             .await?;
         Ok(version::Response::try_from(self.receive().await?)?)

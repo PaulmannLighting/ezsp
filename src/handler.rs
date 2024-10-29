@@ -1,5 +1,6 @@
-use log::trace;
 use std::future::Future;
+
+use log::trace;
 use tokio::sync::mpsc::Receiver;
 
 use crate::frame::Callback;

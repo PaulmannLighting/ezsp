@@ -93,9 +93,9 @@ impl Handler {
     /// # Errors
     ///
     /// Returns an error if the value is not a valid node type.
+    #[must_use]
     pub fn node_type(&self) -> Option<Type> {
-        self.node_type
-            .and_then(|node_type| Type::from_u8(node_type))
+        self.node_type.and_then(Type::from_u8)
     }
 }
 

@@ -8,7 +8,7 @@ use serialport::{FlowControl, SerialPort};
 use ezsp::ember::zigbee::Network;
 use ezsp::ezsp::network::scan::Type;
 use ezsp::uart::Uart;
-use ezsp::{parameters, Callback, Ezsp, Handler, Networking, Utilities};
+use ezsp::{parameters, Callback, Handler, Networking, Utilities};
 
 #[derive(Debug, Parser)]
 struct Args {

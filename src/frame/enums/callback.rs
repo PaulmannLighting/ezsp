@@ -38,7 +38,7 @@ impl TryFrom<Parameters> for Callback {
     fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
         match parameters {
             Parameters::Callback(callback) => Ok(callback),
-            _ => Err(parameters),
+            Parameters::Response(_) => Err(parameters),
         }
     }
 }

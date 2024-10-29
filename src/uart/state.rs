@@ -56,6 +56,16 @@ impl State {
     pub fn requests_pending(&self) -> bool {
         self.pending_requests.load(Relaxed) > 0
     }
+
+    /// Increment the number of pending requests.
+    pub fn increment_requests(&self) {
+        self.pending_requests.fetch_add(1, Relaxed);
+    }
+
+    /// Decrement the number of pending requests.
+    pub fn decrement_requests(&self) {
+        self.pending_requests.fetch_sub(1, Relaxed);
+    }
 }
 
 impl Default for State {

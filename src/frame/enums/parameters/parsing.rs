@@ -30,7 +30,7 @@ impl Parsable for super::Parameters {
             }
             <binding::get::Response as Identified>::ID => {
                 Ok(Self::Response(Response::Binding(binding::Response::Get(
-                    binding::get::Response::from_le_stream_exact(stream)?,
+                    binding::get::Response::from_le_stream_exact(stream)?.into(),
                 ))))
             }
             <binding::get_remote_node_id::Response as Identified>::ID => {
@@ -312,12 +312,12 @@ impl Parsable for super::Parameters {
             <green_power::handler::IncomingMessage as Identified>::ID => {
                 Ok(Self::Callback(Callback::GreenPower(green_power::handler::Handler::IncomingMessage(
                     green_power::handler::IncomingMessage::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <green_power::handler::Sent as Identified>::ID => {
                 Ok(Self::Callback(Callback::GreenPower(green_power::handler::Handler::Sent(
                     green_power::handler::Sent::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             // Messaging responses
             <messaging::address_table_entry_is_active::Response as Identified>::ID => {
@@ -468,67 +468,67 @@ impl Parsable for super::Parameters {
             <messaging::handler::IdConflict as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::IdConflict(
                     messaging::handler::IdConflict::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <messaging::handler::IncomingManyToOneRouteRequest as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::IncomingManyToOneRouteRequest(
                     messaging::handler::IncomingManyToOneRouteRequest::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <messaging::handler::IncomingMessage as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::IncomingMessage(
                     messaging::handler::IncomingMessage::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <messaging::handler::IncomingNetworkStatus as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::IncomingNetworkStatus(
                     messaging::handler::IncomingNetworkStatus::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <messaging::handler::IncomingRouteError as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::IncomingRouteError(
                     messaging::handler::IncomingRouteError::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <messaging::handler::IncomingRouteRecord as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::IncomingRouteRecord(
                     messaging::handler::IncomingRouteRecord::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <messaging::handler::IncomingSenderEui64 as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::IncomingSenderEui64(
                     messaging::handler::IncomingSenderEui64::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <messaging::handler::MacFilterMatchMessage as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::MacFilterMatchMessage(
                     messaging::handler::MacFilterMatchMessage::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <messaging::handler::MacPassthroughMessage as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::MacPassthroughMessage(
                     messaging::handler::MacPassthroughMessage::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <messaging::handler::MessageSent as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::MessageSent(
                     messaging::handler::MessageSent::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <messaging::handler::Poll as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::Poll(
                     messaging::handler::Poll::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <messaging::handler::PollComplete as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::PollComplete(
                     messaging::handler::PollComplete::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             <messaging::handler::RawTransmitComplete as Identified>::ID => {
                 Ok(Self::Callback(Callback::Messaging(messaging::handler::Handler::RawTransmitComplete(
                     messaging::handler::RawTransmitComplete::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             // MfgLib responses
             <mfglib::end::Response as Identified>::ID => {
@@ -589,7 +589,7 @@ impl Parsable for super::Parameters {
             <mfglib::handler::Rx as Identified>::ID => {
                 Ok(Self::Callback(Callback::MfgLib(mfglib::handler::Handler::Rx(
                     mfglib::handler::Rx::from_le_stream_exact(stream)?,
-                ).into())))
+                ))))
             }
             // Networking responses
             <networking::child_id::Response as Identified>::ID => {
@@ -1035,7 +1035,7 @@ impl Parsable for super::Parameters {
             // Trust Center responses
             <trust_center::aes_mmo_hash::Response as Identified>::ID => {
                 Ok(Self::Response(Response::TrustCenter(trust_center::Response::AesMmoHash(
-                    trust_center::aes_mmo_hash::Response::from_le_stream_exact(stream)?,
+                    trust_center::aes_mmo_hash::Response::from_le_stream_exact(stream)?.into(),
                 ))))
             }
             <trust_center::broadcast_network_key_switch::Response as Identified>::ID => {
@@ -1244,7 +1244,7 @@ impl Parsable for super::Parameters {
             }
             <zll::get_tokens::Response as Identified>::ID => {
                 Ok(Self::Response(Response::Zll(zll::Response::GetTokens(
-                    zll::get_tokens::Response::from_le_stream_exact(stream)?,
+                    zll::get_tokens::Response::from_le_stream_exact(stream)?.into(),
                 ))))
             }
             <zll::is_zll_network::Response as Identified>::ID => {

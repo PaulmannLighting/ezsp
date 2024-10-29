@@ -2,13 +2,13 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::Arc;
 
+use super::decoder::Decoder;
+use super::splitter::Splitter;
+use crate::error::Error;
 use ashv2::{Payload, Transceiver};
 use serialport::SerialPort;
 use tokio::spawn;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
-
-use super::decoder::Decoder;
-use super::splitter::Splitter;
 
 use crate::frame::Parameters;
 use crate::handler::Handler;
@@ -30,7 +30,7 @@ impl Threads {
         handler: H,
         state: State,
         channel_size: usize,
-    ) -> (Sender<Payload>, Receiver<Parameters>, Self)
+    ) -> (Sender<Payload>, Receiver<Result<Parameters, Error>>, Self)
     where
         S: SerialPort + 'static,
         H: Handler + 'static,

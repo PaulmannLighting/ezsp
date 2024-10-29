@@ -34,6 +34,7 @@ impl Frame {
     }
 
     /// Return the parameters.
+    #[must_use]
     pub fn parameters(self) -> Parameters {
         self.parameters
     }

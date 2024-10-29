@@ -45,7 +45,9 @@ impl TryFrom<Parameters> for zll::get_tokens::Response {
 
     fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
         match parameters {
-            Parameters::Response(Response::Zll(zll::Response::GetTokens(response))) => Ok(response),
+            Parameters::Response(Response::Zll(zll::Response::GetTokens(response))) => {
+                Ok(*response)
+            }
             _ => Err(parameters),
         }
     }

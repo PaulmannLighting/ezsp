@@ -33,7 +33,7 @@ impl TryFrom<Parameters> for binding::get::Response {
     fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
         match parameters {
             Parameters::Response(Response::Binding(binding::Response::Get(response))) => {
-                Ok(response)
+                Ok(*response)
             }
             _ => Err(parameters),
         }

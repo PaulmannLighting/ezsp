@@ -30,7 +30,7 @@ mod threads;
 pub struct Uart {
     protocol_version: u8,
     state: State,
-    responses: Receiver<Parameters>,
+    responses: Receiver<Result<Parameters, Error>>,
     encoder: Encoder,
     _threads: Threads,
     sequence: u8,
@@ -135,7 +135,9 @@ impl Transport for Uart {
         let header = self
             .next_header(T::ID.into())
             .map_err(ValueError::InvalidFrameId)?;
-        self.encoder.send(header, command).await
+        self.encoder.send(header, command).await?;
+        self.state.increment_requests();
+        Ok(())
     }
 
     async fn receive<T>(&mut self) -> Result<T, Error>
@@ -149,6 +151,7 @@ impl Transport for Uart {
             );
         };
 
-        Ok(response.try_into()?)
+        self.state.decrement_requests();
+        Ok(response?.try_into()?)
     }
 }

@@ -85,7 +85,7 @@ impl TryFrom<Option<std::time::Duration>> for Duration {
 
         let millis = duration.as_millis();
 
-        if millis < Self::MAX_TIME as u128 {
+        if millis < u128::from(Self::MAX_TIME) {
             return Ok(Self {
                 time: millis as u16,
                 units: Units::MsTime,
@@ -94,7 +94,7 @@ impl TryFrom<Option<std::time::Duration>> for Duration {
 
         let binary_quarter_secs = millis / MILLIS_PER_BINARY_QUARTER_SEC;
 
-        if binary_quarter_secs < Self::MAX_TIME as u128 {
+        if binary_quarter_secs < u128::from(Self::MAX_TIME) {
             return Ok(Self {
                 time: binary_quarter_secs as u16,
                 units: Units::QsTime,
@@ -103,7 +103,7 @@ impl TryFrom<Option<std::time::Duration>> for Duration {
 
         let binary_minutes = millis / MILLIS_PER_BINARY_MINUTE;
 
-        if binary_minutes < Self::MAX_TIME as u128 {
+        if binary_minutes < u128::from(Self::MAX_TIME) {
             return Ok(Self {
                 time: binary_minutes as u16,
                 units: Units::MinuteTime,

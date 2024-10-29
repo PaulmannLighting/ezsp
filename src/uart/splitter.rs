@@ -1,14 +1,15 @@
 use log::{error, trace};
 use tokio::sync::mpsc::Sender;
 
+use crate::error::Error;
+use crate::frame::{Callback, Frame, Parameters};
 use crate::uart::decoder::Decoder;
-use crate::{Callback, Frame, Parameters};
 
 /// Split incoming `EZSP` frames into responses and asynchronous callbacks.
 #[derive(Debug)]
 pub struct Splitter {
     incoming: Decoder,
-    responses: Sender<Parameters>,
+    responses: Sender<Result<Parameters, Error>>,
     callbacks: Sender<Callback>,
 }
 
@@ -17,7 +18,7 @@ impl Splitter {
     #[must_use]
     pub const fn new(
         incoming: Decoder,
-        responses: Sender<Parameters>,
+        responses: Sender<Result<Parameters, Error>>,
         callbacks: Sender<Callback>,
     ) -> Self {
         Self {
@@ -36,6 +37,12 @@ impl Splitter {
                 }
                 Err(error) => {
                     error!("Failed to decode frame: {error}");
+
+                    if self.incoming.state.requests_pending() {
+                        if let Err(error) = self.responses.send(Err(error)).await {
+                            error!("Failed to send error: {error}");
+                        }
+                    }
                 }
             }
         }
@@ -62,7 +69,7 @@ impl Splitter {
     }
 
     async fn handle_response(&self, parameters: Parameters) {
-        if let Err(error) = self.responses.send(parameters).await {
+        if let Err(error) = self.responses.send(Ok(parameters)).await {
             error!("Failed to send response: {error}");
         }
     }

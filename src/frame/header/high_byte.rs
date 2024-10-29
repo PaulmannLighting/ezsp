@@ -47,9 +47,3 @@ impl HighByte {
         }
     }
 }
-
-impl Default for HighByte {
-    fn default() -> Self {
-        Self::FRAME_FORMAT_VERSION_0
-    }
-}

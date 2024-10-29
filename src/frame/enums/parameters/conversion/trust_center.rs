@@ -8,7 +8,7 @@ impl TryFrom<Parameters> for trust_center::aes_mmo_hash::Response {
         match parameters {
             Parameters::Response(Response::TrustCenter(trust_center::Response::AesMmoHash(
                 response,
-            ))) => Ok(response),
+            ))) => Ok(*response),
             _ => Err(parameters),
         }
     }

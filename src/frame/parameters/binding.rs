@@ -10,6 +10,7 @@ pub mod set;
 pub mod set_remote_node_id;
 
 /// Response parameters for binding frames.
+#[allow(variant_size_differences)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {
     /// Response parameters for [`Binding::clear_binding_table()`](crate::Binding::clear_table).
@@ -17,7 +18,7 @@ pub enum Response {
     /// Response parameters for [`Binding::delete_binding()`](crate::Binding::delete).
     Delete(delete::Response),
     /// Response parameters for [`Binding::get_binding()`](crate::Binding::get).
-    Get(get::Response),
+    Get(Box<get::Response>),
     /// Response parameters for [`Binding::get_binding_remote_node_id()`](crate::Binding::get_remote_node_id).
     GetRemoteNodeId(get_remote_node_id::Response),
     /// Response parameters for [`Binding::binding_is_active()`](crate::Binding::is_active).

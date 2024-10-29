@@ -31,7 +31,7 @@ pub enum Response {
     /// Get secondary channel mask response parameters.
     GetSecondaryChannelMask(get_secondary_channel_mask::Response),
     /// Get tokens response parameters.
-    GetTokens(get_tokens::Response),
+    GetTokens(Box<get_tokens::Response>),
     /// Is ZLL network response parameters.
     IsZllNetwork(is_zll_network::Response),
     /// Network operations response parameters.

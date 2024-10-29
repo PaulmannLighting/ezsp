@@ -7,9 +7,10 @@ pub mod handler;
 pub mod remove_device;
 pub mod unicast_nwk_key_update;
 
+#[allow(variant_size_differences)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {
-    AesMmoHash(aes_mmo_hash::Response),
+    AesMmoHash(Box<aes_mmo_hash::Response>),
     BroadcastNetworkKeySwitch(broadcast_network_key_switch::Response),
     BroadcastNextNetworkKey(broadcast_next_network_key::Response),
     RemoveDevice(remove_device::Response),

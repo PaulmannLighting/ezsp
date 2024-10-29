@@ -13,32 +13,32 @@ pub struct Extended {
 
 impl Extended {
     #[must_use]
-    pub fn new(sequence: u8, low_byte: LowByte, id: u16) -> Self {
+    pub const fn new(sequence: u8, low_byte: LowByte, id: u16) -> Self {
         Self {
             sequence,
             low_byte,
-            high_byte: HighByte::default(),
+            high_byte: HighByte::FRAME_FORMAT_VERSION_0,
             id,
         }
     }
 
     #[must_use]
-    pub fn sequence(self) -> u8 {
+    pub const fn sequence(self) -> u8 {
         self.sequence
     }
 
     #[must_use]
-    pub fn low_byte(self) -> LowByte {
+    pub const fn low_byte(self) -> LowByte {
         self.low_byte
     }
 
     #[must_use]
-    pub fn high_byte(self) -> HighByte {
+    pub const fn high_byte(self) -> HighByte {
         self.high_byte
     }
 
     #[must_use]
-    pub fn id(self) -> u16 {
+    pub const fn id(self) -> u16 {
         self.id
     }
 }

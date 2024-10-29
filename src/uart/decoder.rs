@@ -14,7 +14,7 @@ use crate::{Error, Extended, Legacy, Parameters};
 #[derive(Debug)]
 pub struct Decoder {
     source: Receiver<std::io::Result<Payload>>,
-    state: State,
+    pub state: State,
     header: Option<Header>,
     parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
 }

@@ -32,7 +32,7 @@ mod threads;
 pub struct Uart {
     responses: Receiver<Parameters>,
     encoder: Encoder,
-    threads: Threads,
+    _threads: Threads,
     legacy: Arc<AtomicBool>,
     sequence: u8,
 }
@@ -51,7 +51,7 @@ impl Uart {
         Self {
             responses,
             encoder: Encoder::new(frames_out),
-            threads,
+            _threads: threads,
             legacy,
             sequence: 0,
         }
@@ -59,7 +59,7 @@ impl Uart {
 
     /// Negotiate the `EZSP` protocol version.
     ///
-    /// A minimum version of `8` is required to support non-legacy commands.
+    /// A minimum version of [`MIN_NON_LEGACY_VERSION`] is required to support non-legacy commands.
     ///
     /// # Errors
     ///

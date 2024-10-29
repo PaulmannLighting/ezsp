@@ -264,6 +264,17 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             error!("Error getting counters: {error}");
         }
     }
+
+    // Test get network parameters
+    match ezsp.get_network_parameters().await {
+        Ok((typ, parameters)) => {
+            info!("Network type: {typ}");
+            info!("Network parameters: {parameters:?}");
+        }
+        Err(error) => {
+            error!("Error getting network parameters: {error}");
+        }
+    }
 }
 
 /// Test getting values.

@@ -1,6 +1,7 @@
 //! Ember node type.
 
 use num_derive::FromPrimitive;
+use std::fmt::Display;
 
 /// Ember node type.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
@@ -18,6 +19,18 @@ pub enum Type {
     ///
     /// The application must poll to receive messages.
     SleepyEndDevice = 0x04,
+}
+
+impl Display for Type {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::UnknownDevice => write!(f, "Unknown Device"),
+            Self::Coordinator => write!(f, "Coordinator"),
+            Self::Router => write!(f, "Router"),
+            Self::EndDevice => write!(f, "End Device"),
+            Self::SleepyEndDevice => write!(f, "Sleepy End Device"),
+        }
+    }
 }
 
 impl From<Type> for u8 {

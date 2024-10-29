@@ -5,11 +5,6 @@ use le_stream::derive::FromLeStream;
 /// A stack-allocated vector with a maximum size of 255 elements.
 pub type ByteSizedVec<T> = heapless::Vec<T, { u8::MAX as usize }>;
 
-/// A type alias for a 16-bit unsigned integer.
-///
-/// See p. 129, `gpSinkTableGetNumberOfActiveEntries` of the `EZSP` specification.
-pub type UintT = u16; // TODO: is this the correct type?
-
 /// Discovery mode for source routes.
 ///
 /// See p. 88 `setSourceRouteDiscoveryMode` of the `EZSP` specification.

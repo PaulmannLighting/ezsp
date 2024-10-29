@@ -8,7 +8,6 @@ use crate::frame::parameters::green_power::sink_table::{
     remove_entry, set_entry, set_security_frame_counter,
 };
 use crate::transport::Transport;
-use crate::types::UintT;
 
 /// The `SinkTable` trait provides an interface for the sink table.
 pub trait SinkTable {
@@ -34,7 +33,7 @@ pub trait SinkTable {
     fn lookup(&mut self, addr: Address) -> impl Future<Output = Result<u8, Error>> + Send;
 
     /// Return number of active entries in sink table.
-    fn number_of_active_entries(&mut self) -> impl Future<Output = Result<UintT, Error>> + Send;
+    fn number_of_active_entries(&mut self) -> impl Future<Output = Result<u8, Error>> + Send;
 
     /// Removes the sink table entry stored at the passed index.
     fn remove_entry(&mut self, sink_index: u8) -> impl Future<Output = Result<(), Error>> + Send;
@@ -90,7 +89,7 @@ where
             .map(|response| response.index())
     }
 
-    async fn number_of_active_entries(&mut self) -> Result<UintT, Error> {
+    async fn number_of_active_entries(&mut self) -> Result<u8, Error> {
         self.communicate::<_, number_of_active_entries::Response>(number_of_active_entries::Command)
             .await
             .map(|response| response.number_of_entries())

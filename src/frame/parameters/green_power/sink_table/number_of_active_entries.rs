@@ -1,5 +1,4 @@
 use crate::frame::Identified;
-use crate::types::UintT;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0118;
@@ -14,12 +13,14 @@ impl Identified for Command {
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
-    number_of_entries: UintT,
+    // The number of active entries in the sink table.
+    // The documentation specifies `Uint_t`, but the actual type is `u8`.
+    number_of_entries: u8,
 }
 
 impl Response {
     #[must_use]
-    pub const fn number_of_entries(&self) -> UintT {
+    pub const fn number_of_entries(&self) -> u8 {
         self.number_of_entries
     }
 }

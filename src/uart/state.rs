@@ -1,6 +1,6 @@
 use std::fmt::Debug;
-use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
+use std::sync::atomic::{AtomicBool, AtomicUsize};
 use std::sync::{Arc, RwLock};
 
 use crate::transport::MIN_NON_LEGACY_VERSION;
@@ -10,6 +10,7 @@ use crate::transport::MIN_NON_LEGACY_VERSION;
 pub struct State {
     negotiated_version: Arc<RwLock<Option<u8>>>,
     needs_reset: Arc<AtomicBool>,
+    pending_requests: Arc<AtomicUsize>,
 }
 
 impl State {
@@ -56,6 +57,7 @@ impl Default for State {
         Self {
             negotiated_version: Arc::new(RwLock::new(None)),
             needs_reset: Arc::new(AtomicBool::new(true)),
+            pending_requests: Arc::new(AtomicUsize::new(0)),
         }
     }
 }

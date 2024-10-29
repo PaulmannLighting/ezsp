@@ -135,27 +135,25 @@ where
         input_clusters: ByteSizedVec<u16>,
         output_clusters: ByteSizedVec<u16>,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, add_endpoint::Response>(add_endpoint::Command::new(
-            endpoint,
-            profile_id,
-            device_id,
-            app_flags,
-            input_clusters,
-            output_clusters,
-        ))
-        .await?
+        add_endpoint::Response::try_from(
+            self.communicate(add_endpoint::Command::new(
+                endpoint,
+                profile_id,
+                device_id,
+                app_flags,
+                input_clusters,
+                output_clusters,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
     async fn get_configuration_value(&mut self, config_id: Id) -> Result<u16, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, get_configuration_value::Response>(
-            get_configuration_value::Command::new(config_id),
-        )
-        .await?
+        get_configuration_value::Response::try_from(
+            self.communicate(get_configuration_value::Command::new(config_id))
+                .await?,
+        )?
         .try_into()
     }
 
@@ -164,29 +162,23 @@ where
         value_id: ExtendedId,
         characteristics: u32,
     ) -> Result<ByteSizedVec<u8>, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, get_extended_value::Response>(get_extended_value::Command::new(
-            value_id,
-            characteristics,
-        ))
-        .await?
+        get_extended_value::Response::try_from(
+            self.communicate(get_extended_value::Command::new(value_id, characteristics))
+                .await?,
+        )?
         .try_into()
     }
 
     async fn get_policy(&mut self, policy_id: policy::Id) -> Result<decision::Id, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, get_policy::Response>(get_policy::Command::new(policy_id))
-            .await?
-            .try_into()
+        get_policy::Response::try_from(
+            self.communicate(get_policy::Command::new(policy_id))
+                .await?,
+        )?
+        .try_into()
     }
 
     async fn get_value(&mut self, value_id: value::Id) -> Result<ByteSizedVec<u8>, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, get_value::Response>(get_value::Command::new(value_id))
-            .await?
+        get_value::Response::try_from(self.communicate(get_value::Command::new(value_id)).await?)?
             .try_into()
     }
 
@@ -198,36 +190,32 @@ where
         mask: u8,
         manufacturer_code: u16,
     ) -> Result<read_attribute::Attribbute, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, read_attribute::Response>(read_attribute::Command::new(
-            endpoint,
-            cluster,
-            attribute_id,
-            mask,
-            manufacturer_code,
-        ))
-        .await?
+        read_attribute::Response::try_from(
+            self.communicate(read_attribute::Command::new(
+                endpoint,
+                cluster,
+                attribute_id,
+                mask,
+                manufacturer_code,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
     async fn send_pan_id_update(&mut self, new_pan: PanId) -> Result<bool, Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, send_pan_id_update::Response>(send_pan_id_update::Command::new(
-            new_pan,
-        ))
-        .await
-        .map(Into::into)
+        Ok(send_pan_id_update::Response::try_from(
+            self.communicate(send_pan_id_update::Command::new(new_pan))
+                .await?,
+        )
+        .map(Into::into)?)
     }
 
     async fn set_configuration_value(&mut self, config_id: Id, value: u16) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_configuration_value::Response>(
-            set_configuration_value::Command::new(config_id, value),
-        )
-        .await?
+        set_configuration_value::Response::try_from(
+            self.communicate(set_configuration_value::Command::new(config_id, value))
+                .await?,
+        )?
         .try_into()
     }
 
@@ -236,12 +224,13 @@ where
         config: u8,
         min_acks_needed: u8,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_passive_ack_config::Response>(
-            set_passive_ack_config::Command::new(config, min_acks_needed),
-        )
-        .await?
+        set_passive_ack_config::Response::try_from(
+            self.communicate(set_passive_ack_config::Command::new(
+                config,
+                min_acks_needed,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 
@@ -250,13 +239,10 @@ where
         policy_id: policy::Id,
         decision_id: decision::Id,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_policy::Response>(set_policy::Command::new(
-            policy_id,
-            decision_id,
-        ))
-        .await?
+        set_policy::Response::try_from(
+            self.communicate(set_policy::Command::new(policy_id, decision_id))
+                .await?,
+        )?
         .try_into()
     }
 
@@ -265,11 +251,11 @@ where
         value_id: value::Id,
         value: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, set_value::Response>(set_value::Command::new(value_id, value))
-            .await?
-            .try_into()
+        set_value::Response::try_from(
+            self.communicate(set_value::Command::new(value_id, value))
+                .await?,
+        )?
+        .try_into()
     }
 
     async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
@@ -286,12 +272,12 @@ where
         attribute: &Attribute,
         just_test: bool,
     ) -> Result<(), Error> {
-        todo!();
-        #[cfg(any())]
-        self.communicate::<_, write_attribute::Response>(write_attribute::Command::new(
-            endpoint, cluster, attribute, just_test,
-        ))
-        .await?
+        write_attribute::Response::try_from(
+            self.communicate(write_attribute::Command::new(
+                endpoint, cluster, attribute, just_test,
+            ))
+            .await?,
+        )?
         .try_into()
     }
 }

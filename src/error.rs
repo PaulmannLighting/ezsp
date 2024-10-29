@@ -4,6 +4,7 @@ mod decode;
 mod status;
 mod value_error;
 
+use std::convert::Infallible;
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::frame::parameters::configuration::version;
@@ -160,5 +161,11 @@ impl From<ValueError> for Error {
 impl From<invalid_command::Response> for Error {
     fn from(response: invalid_command::Response) -> Self {
         Self::InvalidCommand(response)
+    }
+}
+
+impl From<Infallible> for Error {
+    fn from(infallible: Infallible) -> Self {
+        match infallible {}
     }
 }

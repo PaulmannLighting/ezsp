@@ -12,15 +12,17 @@ use crate::frame::parameters::utilities::{
     set_mfg_token, set_timer, set_token,
 };
 use crate::frame::Callback;
+use crate::parameters::utilities;
 use crate::transport::Transport;
 use crate::types::ByteSizedVec;
+use crate::{Parameters, Response};
 
 /// The `Utilities` trait provides an interface for the utilities.
 pub trait Utilities {
     /// Allows the NCP to respond with a pending callback.
     ///
     /// The response to this command can be any of the callback responses.
-    fn callback(&mut self) -> impl Future<Output = Result<Callback, Error>> + Send;
+    fn callback(&mut self) -> impl Future<Output = Result<Option<Callback>, Error>> + Send;
 
     /// Provides the customer a custom EZSP frame.
     /// On the NCP, these frames are only handled if the XNCP library is included.
@@ -150,8 +152,14 @@ impl<T> Utilities for T
 where
     T: Transport,
 {
-    async fn callback(&mut self) -> Result<Callback, Error> {
-        self.communicate::<_, Callback>(callback::Command).await
+    async fn callback(&mut self) -> Result<Option<Callback>, Error> {
+        match self.communicate::<_, Parameters>(callback::Command).await? {
+            Parameters::Callback(callback) => Ok(Some(callback)),
+            Parameters::Response(Response::Utilities(utilities::Response::NoCallbacks(_))) => {
+                Ok(None)
+            }
+            Parameters::Response(response) => Err(Parameters::Response(response).into()),
+        }
     }
 
     async fn custom_frame(&mut self, payload: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {

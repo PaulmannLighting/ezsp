@@ -244,6 +244,16 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     } else {
         info!("Nop succeeded");
     }
+
+    // Test getting callbacks
+    match ezsp.callback().await {
+        Ok(callback) => {
+            info!("Callback: {callback:?}");
+        }
+        Err(error) => {
+            error!("Error getting callback: {error}");
+        }
+    }
 }
 
 /// Test getting values.

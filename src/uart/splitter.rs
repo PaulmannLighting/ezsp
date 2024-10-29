@@ -36,12 +36,11 @@ impl Splitter {
                     self.handle_frame(frame).await;
                 }
                 Err(error) => {
-                    error!("Failed to decode frame: {error}");
-
                     if self.incoming.state.requests_pending() {
-                        if let Err(error) = self.responses.send(Err(error)).await {
-                            error!("Failed to send error: {error}");
-                        }
+                        self.responses
+                            .send(Err(error))
+                            .await
+                            .expect("Failed to send response.");
                     }
                 }
             }
@@ -69,14 +68,16 @@ impl Splitter {
     }
 
     async fn handle_response(&self, parameters: Parameters) {
-        if let Err(error) = self.responses.send(Ok(parameters)).await {
-            error!("Failed to send response: {error}");
-        }
+        self.responses
+            .send(Ok(parameters))
+            .await
+            .expect("Failed to send response.");
     }
 
     async fn handle_callback(&self, handler: Callback) {
-        if let Err(error) = self.callbacks.send(handler).await {
-            error!("Failed to send callback: {error}");
-        }
+        self.callbacks
+            .send(handler)
+            .await
+            .expect("Failed to send callback.");
     }
 }

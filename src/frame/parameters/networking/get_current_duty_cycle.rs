@@ -28,6 +28,8 @@ impl Identified for Command {
 pub struct Response {
     status: u8,
     device_duty_cycles: DeviceDutyCycles,
+    // FIXME: The docs specify 33 * 4 + 1 bytes = 134 bytes, but that doesn't make sense.
+    tail: u16,
 }
 
 impl Identified for Response {

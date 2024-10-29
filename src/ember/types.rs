@@ -1,3 +1,5 @@
+use crate::ember::constants::MAX_END_DEVICE_CHILDREN;
+use crate::ember::per_device_duty_cycle::PerDeviceDutyCycle;
 use macaddr::MacAddr8;
 
 /// 16-bit Zigbee network address.
@@ -46,4 +48,6 @@ pub type MessageDigest = [u8; 16];
 ///
 /// When the number of children that are being monitored is less than maxDevices,
 /// the `EmberNodeId` element in the `EmberPerDeviceDutyCycle` will be `0xFFFF`.
-pub type DeviceDutyCycles = [u8; 134];
+///
+/// `MAX_END_DEVICE_CHILDREN` + 1 local device.
+pub type DeviceDutyCycles = [PerDeviceDutyCycle; MAX_END_DEVICE_CHILDREN + 1];

@@ -23,6 +23,7 @@ pub mod multicast;
 pub mod neighbor;
 pub mod network;
 pub mod node;
+mod per_device_duty_cycle;
 pub mod radio;
 pub mod route;
 pub mod security;
@@ -35,6 +36,7 @@ pub mod zll;
 
 pub use constants::NULL_NODE_ID;
 pub use key::Bitmask;
+pub use per_device_duty_cycle::PerDeviceDutyCycle;
 pub use status::{
     Adc, Application, Bootloader, Eeprom, Err, Flash, Mac, Phy, Serial, SimEeprom, Status,
 };

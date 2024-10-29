@@ -275,6 +275,16 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
             error!("Error getting network parameters: {error}");
         }
     }
+
+    // Test getting the current duty cycles.
+    match ezsp.get_current_duty_cycle(10).await {
+        Ok(duty_cycles) => {
+            info!("Current duty cycles: {duty_cycles:?}");
+        }
+        Err(error) => {
+            error!("Error getting current duty cycles: {error}");
+        }
+    }
 }
 
 /// Test getting values.

@@ -13,7 +13,8 @@ exclude = [".gitignore"]
 publish = false
 
 [dependencies]
-ashv2 = { git = "https://github.com/PaulmannLighting/ashv2.git", version = "0.2", optional = true }
+#ashv2 = { git = "https://github.com/PaulmannLighting/ashv2.git", version = "0.2", optional = true }
+ashv2 = { path = "../ashv2", version = "0.2", optional = true }
 bitflags = "2.6"
 futures = { version = "0.3", optional = true }
 heapless = "0.8"

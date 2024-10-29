@@ -5,7 +5,7 @@ use std::io::ErrorKind;
 use std::num::TryFromIntError;
 
 use le_stream::ToLeStream;
-use log::{debug, warn};
+use log::{debug, info, warn};
 use serialport::SerialPort;
 use tokio::sync::mpsc::Receiver;
 
@@ -85,6 +85,10 @@ impl Uart {
         }
 
         if response.protocol_version() == self.protocol_version {
+            info!(
+                "Negotiated protocol version: {:#04X}",
+                response.protocol_version()
+            );
             Ok(())
         } else {
             self.state.set_needs_reset(true);

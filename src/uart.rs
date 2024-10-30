@@ -1,7 +1,6 @@
 //! `ASHv2` transport layer.
 
 use std::fmt::Debug;
-use std::io::ErrorKind;
 use std::num::TryFromIntError;
 
 use le_stream::ToLeStream;
@@ -159,12 +158,11 @@ impl Transport for Uart {
         T: TryFrom<Parameters>,
         Error: From<<T as TryFrom<Parameters>>::Error>,
     {
-        let Some(response) = self.responses.recv().await else {
-            return Err(
-                std::io::Error::new(ErrorKind::UnexpectedEof, "Empty response from NCP.").into(),
-            );
-        };
-
+        let response = self
+            .responses
+            .recv()
+            .await
+            .expect("Response channel closed.");
         self.state.decrement_requests();
         Ok(response?.try_into()?)
     }

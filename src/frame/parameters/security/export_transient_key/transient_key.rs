@@ -1,3 +1,5 @@
+//! Transient key structure definitions.
+
 use le_stream::derive::FromLeStream;
 use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManContext, ManKey};
 

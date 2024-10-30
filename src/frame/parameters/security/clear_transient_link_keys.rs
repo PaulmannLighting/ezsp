@@ -1,3 +1,5 @@
+//! Parameters for the [`Security::clear_transient_link_keys`](crate::Security::clear_transient_link_keys) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::frame::Identified;
@@ -12,6 +14,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response;
 

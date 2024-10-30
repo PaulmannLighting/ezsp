@@ -1,3 +1,5 @@
+//! Parameters for the [`Security::export_key`](crate::Security::export_key) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use siliconlabs::zigbee::security::{ManContext, ManKey};
@@ -26,6 +28,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     key: ManKey,
@@ -37,6 +40,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert the response into [`ManKey`] or an appropriate error depending on its status.
 impl TryFrom<Response> for ManKey {
     type Error = Error;
 

@@ -1,3 +1,5 @@
+//! Parameters for the [`Security::export_transient_key`](crate::Security::export_transient_key) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use siliconlabs::Status;
@@ -25,6 +27,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     payload: TransientKey,
@@ -36,6 +39,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert the response into [`TransientKey`] or an appropriate error depending on its status.
 impl TryFrom<Response> for TransientKey {
     type Error = Error;
 

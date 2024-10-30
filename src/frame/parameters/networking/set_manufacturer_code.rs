@@ -1,3 +1,5 @@
+//! Parameters for the [`Networking::set_manufacturer_code`](crate::Networking::set_manufacturer_code) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::frame::Identified;
@@ -21,6 +23,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response;
 

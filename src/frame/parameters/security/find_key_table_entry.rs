@@ -1,3 +1,5 @@
+//! Parameters for the [`Security::find_key_table_entry`](crate::Security::find_key_table_entry) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::Eui64;
@@ -23,6 +25,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     index: u8,
@@ -33,6 +36,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert the response into the index of the key table entry.
 impl From<Response> for u8 {
     fn from(response: Response) -> Self {
         response.index

@@ -1,3 +1,5 @@
+//! Parameters for the [`Security::export_link_key_by_eui`](crate::Security::export_link_key_by_eui) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManKey};
@@ -26,6 +28,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     payload: Payload,
@@ -37,6 +40,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert the response into [`Payload`] or an appropriate error depending on its status.
 impl TryFrom<Response> for Payload {
     type Error = Error;
 

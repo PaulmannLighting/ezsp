@@ -1,4 +1,4 @@
-//! Retrieve metadata about an APS link key. Does not retrieve contents.
+//! Parameters for the [`Security::get_aps_key_info`](crate::Security::get_aps_key_info) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
@@ -28,6 +28,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     payload: KeyInfo,
@@ -39,6 +40,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert the response into [`KeyInfo`] or an appropriate error depending on its status.
 impl TryFrom<Response> for KeyInfo {
     type Error = Error;
 

@@ -1,5 +1,8 @@
-use crate::frame::Identified;
+//! No callbacks response frame.
+
 use le_stream::derive::FromLeStream;
+
+use crate::frame::Identified;
 
 const ID: u16 = 0x0007;
 

@@ -1,3 +1,5 @@
+//! Parameters for the [`TokenInterface::token_factory_reset`](crate::TokenInterface::token_factory_reset) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::frame::Identified;
@@ -25,6 +27,7 @@ impl Command {
     }
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response;
 

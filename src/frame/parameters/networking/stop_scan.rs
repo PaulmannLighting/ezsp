@@ -1,3 +1,5 @@
+//! Parameters for the [`Networking::stop_scan`](crate::Networking::stop_scan) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -15,6 +17,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
@@ -25,6 +28,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert the response into `()` or an appropriate error depending on its status.
 impl TryFrom<Response> for () {
     type Error = Error;
 

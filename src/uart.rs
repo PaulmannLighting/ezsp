@@ -5,7 +5,7 @@ use std::io::ErrorKind;
 use std::num::TryFromIntError;
 
 use le_stream::ToLeStream;
-use log::{debug, info, warn};
+use log::{debug, info, trace, warn};
 use serialport::SerialPort;
 use tokio::sync::mpsc::Receiver;
 
@@ -15,10 +15,12 @@ use crate::transport::{Transport, MIN_NON_LEGACY_VERSION};
 use crate::{Configuration, Extended, Ezsp, Handler, Legacy};
 use crate::{Parameters, ValueError};
 
+use crate::uart::connection::Connection;
 use crate::uart::state::State;
 use encoder::Encoder;
 use threads::Threads;
 
+mod connection;
 mod decoder;
 mod encoder;
 mod splitter;
@@ -91,7 +93,7 @@ impl Uart {
             );
             Ok(())
         } else {
-            self.state.set_needs_reset(true);
+            self.state.set_connection(Connection::Failed);
             Err(Error::ProtocolVersionMismatch {
                 desired: self.protocol_version,
                 negotiated: response,
@@ -103,7 +105,7 @@ impl Uart {
 impl Ezsp for Uart {
     async fn init(&mut self) -> Result<(), Error> {
         self.negotiate_version().await?;
-        self.state.set_needs_reset(false);
+        self.state.set_connection(Connection::Connected);
         Ok(())
     }
 }
@@ -124,9 +126,18 @@ impl Transport for Uart {
     }
 
     async fn check_reset(&mut self) -> Result<(), Error> {
-        if self.state.needs_reset() {
-            warn!("UART needs reset, reinitializing");
-            self.init().await?;
+        match self.state.connection() {
+            Connection::Disconnected => {
+                info!("Initializing UART connection");
+                self.init().await?;
+            }
+            Connection::Connected => {
+                trace!("UART is connected");
+            }
+            Connection::Failed => {
+                warn!("UART connection failed, reinitializing");
+                self.init().await?;
+            }
         }
 
         Ok(())

@@ -6,6 +6,7 @@ use tokio::sync::mpsc::Receiver;
 use crate::error::Decode;
 use crate::frame::{parsable::Parsable, Frame, Header};
 use crate::parameters::utilities::invalid_command;
+use crate::uart::connection::Connection;
 use crate::uart::state::State;
 use crate::MAX_PARAMETER_SIZE;
 use crate::{Error, Extended, Legacy, Parameters};
@@ -51,7 +52,7 @@ impl Decoder {
                         }
                     },
                     Err(error) => {
-                        self.state.set_needs_reset(true);
+                        self.state.set_connection(Connection::Failed);
                         return Some(Err(error.into()));
                     }
                 }

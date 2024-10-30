@@ -1,15 +1,19 @@
-use crate::transport::MIN_NON_LEGACY_VERSION;
-use log::trace;
 use std::fmt::Debug;
+use std::ops::DerefMut;
+use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::Relaxed;
-use std::sync::atomic::{AtomicBool, AtomicUsize};
 use std::sync::{Arc, RwLock};
+
+use log::trace;
+
+use crate::transport::MIN_NON_LEGACY_VERSION;
+use crate::uart::connection::Connection;
 
 /// Shared state of the `EZSP` UART.
 #[derive(Clone, Debug)]
 pub struct State {
     negotiated_version: Arc<RwLock<Option<u8>>>,
-    needs_reset: Arc<AtomicBool>,
+    connection: Arc<RwLock<Connection>>,
     pending_requests: Arc<AtomicUsize>,
 }
 
@@ -31,20 +35,22 @@ impl State {
             .replace(version);
     }
 
-    /// Returns `true` if the UART needs a reset.
-    ///
-    /// This may be due to a lower-level communication error, e.g. on the `ASHv2` level.
+    /// Returns the connection state of the UART.
     #[must_use]
-    pub fn needs_reset(&self) -> bool {
-        self.needs_reset.load(Relaxed)
+    pub fn connection(&self) -> Connection {
+        *self.connection.read().expect("RwLock poisoned")
     }
 
-    /// Set the flag that indicates if the UART needs a reset.
-    pub fn set_needs_reset(&self, needs_reset: bool) {
-        trace!("Setting needs reset: {}", needs_reset);
-        self.needs_reset.store(needs_reset, Relaxed);
+    /// Set the connection state of the UART.
+    pub fn set_connection(&self, connection: Connection) {
+        trace!("Setting connection state to: {connection:?}");
+        *self
+            .connection
+            .write()
+            .expect("RwLock poisoned")
+            .deref_mut() = connection;
 
-        if needs_reset {
+        if connection != Connection::Connected {
             trace!("Resetting negotiated version.");
             self.negotiated_version
                 .write()
@@ -81,7 +87,7 @@ impl Default for State {
     fn default() -> Self {
         Self {
             negotiated_version: Arc::new(RwLock::new(None)),
-            needs_reset: Arc::new(AtomicBool::new(true)),
+            connection: Arc::new(RwLock::new(Connection::default())),
             pending_requests: Arc::new(AtomicUsize::new(0)),
         }
     }

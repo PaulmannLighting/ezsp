@@ -1,9 +1,10 @@
 use std::future::Future;
 
+use crate::ember::MAX_END_DEVICE_CHILDREN;
 use crate::ember::{
     beacon, child, concentrator, duty_cycle,
     multi_phy::{nwk, radio},
-    neighbor, network, node, route, DeviceDutyCycles, Eui64, NodeId,
+    neighbor, network, node, route, Eui64, NodeId, PerDeviceDutyCycle,
 };
 use crate::error::Error;
 use crate::ezsp::network::{scan, InitBitmask};
@@ -91,7 +92,9 @@ pub trait Networking {
     fn get_current_duty_cycle(
         &mut self,
         max_devices: u8,
-    ) -> impl Future<Output = Result<DeviceDutyCycles, Error>> + Send;
+    ) -> impl Future<
+        Output = Result<heapless::Vec<PerDeviceDutyCycle, MAX_END_DEVICE_CHILDREN>, Error>,
+    > + Send;
 
     /// Obtains the current duty cycle limits that were previously set by a call to
     /// [`set_duty_cycle_limits_in_stack()`](Self::set_duty_cycle_limits_in_stack),
@@ -462,7 +465,10 @@ where
             .try_into()
     }
 
-    async fn get_current_duty_cycle(&mut self, max_devices: u8) -> Result<DeviceDutyCycles, Error> {
+    async fn get_current_duty_cycle(
+        &mut self,
+        max_devices: u8,
+    ) -> Result<heapless::Vec<PerDeviceDutyCycle, MAX_END_DEVICE_CHILDREN>, Error> {
         self.communicate::<_, get_current_duty_cycle::Response>(
             get_current_duty_cycle::Command::new(max_devices),
         )

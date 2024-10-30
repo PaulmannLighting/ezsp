@@ -34,7 +34,10 @@ pub mod zdo;
 pub mod zigbee;
 pub mod zll;
 
-pub use constants::{MAX_END_DEVICE_CHILDREN, NULL_NODE_ID};
+pub use constants::{
+    INDIRECT_TRANSMISSION_TIMEOUT, MAX_END_DEVICE_CHILDREN, MAX_INDIRECT_TRANSMISSION_TIMEOUT,
+    NULL_NODE_ID,
+};
 pub use key::Bitmask;
 pub use per_device_duty_cycle::PerDeviceDutyCycle;
 pub use status::{

@@ -26,8 +26,10 @@ use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 /// The `Messaging` trait provides an interface for the messaging features.
 pub trait Messaging {
     /// Indicates whether any messages are currently being sent using this address table entry.
+    ///
     /// Note that this function does not indicate whether the address table entry is unused.
     /// To determine whether an address table entry is unused, check the remote node ID.
+    ///
     /// The remote node ID will have the value `EMBER_TABLE_ENTRY_UNUSED_NODE_ID`
     /// when the address table entry is not in use.
     fn address_table_entry_is_active(
@@ -53,7 +55,7 @@ pub trait Messaging {
     ) -> impl Future<Output = Result<ClassificationParams, Error>> + Send;
 
     /// Indicates whether the stack will extend the normal interval between retransmissions
-    /// of a retried unicast message by `EMBER_INDIRECT_TRANSMISSION_TIMEOUT`.
+    /// of a retried unicast message by [`INDIRECT_TRANSMISSION_TIMEOUT`](crate::ember::INDIRECT_TRANSMISSION_TIMEOUT).
     fn get_extended_timeout(
         &mut self,
         remote_eui64: Eui64,

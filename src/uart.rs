@@ -14,9 +14,9 @@ use crate::transport::{Transport, MIN_NON_LEGACY_VERSION};
 use crate::{Configuration, Extended, Ezsp, Handler, Legacy};
 use crate::{Parameters, ValueError};
 
-use crate::uart::connection::Connection;
-use crate::uart::state::State;
+use connection::Connection;
 use encoder::Encoder;
+use state::State;
 use threads::Threads;
 
 mod connection;

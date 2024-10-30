@@ -1,3 +1,5 @@
+//! Parameters for the [`Mfglib::send_packet`](crate::Mfglib::send_packet) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -25,6 +27,7 @@ impl Command {
     }
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
@@ -35,6 +38,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Converts the response into `()` or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for () {
     type Error = Error;
 

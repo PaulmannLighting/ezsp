@@ -30,7 +30,7 @@ impl Identified for Response {
 }
 
 /// Converts the response into [`CertificateData`]
-/// or an appropriate error by evaluating its status field.
+/// or an appropriate [`Error`] by evaluating its status field.
 impl TryFrom<Response> for CertificateData {
     type Error = Error;
 

@@ -37,7 +37,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
-/// Convert the response into `()` or an appropriate error depending on its status.
+/// Convert the response into `()` or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for () {
     type Error = Error;
 

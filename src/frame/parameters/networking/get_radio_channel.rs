@@ -1,3 +1,5 @@
+//! Parameters for the [`Networking::get_radio_channel`](crate::Networking::get_radio_channel) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::frame::Identified;
@@ -12,12 +14,14 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     channel: u8,
 }
 
 impl Response {
+    /// Returns the radio channel.
     #[must_use]
     pub const fn channel(&self) -> u8 {
         self.channel

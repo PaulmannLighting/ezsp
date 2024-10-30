@@ -1,4 +1,4 @@
-//! Returns information about a source route table entry.
+//! Parameters for the [`Networking::get_source_route_table_entry`](crate::Networking::get_source_route_table_entry) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
@@ -26,6 +26,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
@@ -37,6 +38,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert a response into an [`Entry`] or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for Entry {
     type Error = Error;
 

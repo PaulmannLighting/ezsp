@@ -30,7 +30,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
-/// Convert the response into [`ManNetworkKeyInfo`] or an appropriate error depending on its status.
+/// Convert the response into [`ManNetworkKeyInfo`] or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for ManNetworkKeyInfo {
     type Error = Error;
 

@@ -1,9 +1,11 @@
-use crate::ember::Status;
-use crate::frame::Identified;
-use crate::Error;
+//! Parameters for the [`Networking::multi_phy_set_radio_power`](crate::Networking::multi_phy_set_radio_power) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
+
+use crate::ember::Status;
+use crate::frame::Identified;
+use crate::Error;
 
 const ID: u16 = 0x00FA;
 
@@ -25,6 +27,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
@@ -35,6 +38,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert a response into `()` or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for () {
     type Error = Error;
 

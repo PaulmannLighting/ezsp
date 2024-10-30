@@ -1,3 +1,5 @@
+//! Parameters for the [`Networking::get_routing_shortcut_threshold`](crate::Networking::get_routing_shortcut_threshold) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::frame::Identified;
@@ -12,12 +14,14 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     routing_shortcut_thresh: u8,
 }
 
 impl Response {
+    /// Returns the routing shortcut threshold.
     #[must_use]
     pub const fn routing_shortcut_thresh(&self) -> u8 {
         self.routing_shortcut_thresh

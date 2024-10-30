@@ -25,7 +25,7 @@ impl Identified for Handler {
 }
 
 /// Converts the handler into a [`ByteSizedVec<u8>`](ByteSizedVec)
-/// or an appropriate error by evaluating its status field.
+/// or an appropriate [`Error`] by evaluating its status field.
 impl TryFrom<Handler> for ByteSizedVec<u8> {
     type Error = Error;
 

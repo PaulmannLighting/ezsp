@@ -39,7 +39,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
-/// Convert the response into its [`TableEntry`] or an appropriate error
+/// Convert the response into its [`TableEntry`] or an appropriate [`Error`]
 /// by evaluating its status field.
 impl TryFrom<Response> for TableEntry {
     type Error = Error;

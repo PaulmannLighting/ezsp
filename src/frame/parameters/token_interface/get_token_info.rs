@@ -39,7 +39,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
-/// Convert the response into [`Info`] or an appropriate error depending on its status.
+/// Convert the response into [`Info`] or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for Info {
     type Error = Error;
 

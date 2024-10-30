@@ -28,7 +28,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
-/// Convert the response into a [`Source`] or an appropriate error
+/// Convert the response into a [`Source`] or an appropriate [`Error`]
 /// depending on the validity of its entropy source data.
 impl TryFrom<Response> for Source {
     type Error = Error;

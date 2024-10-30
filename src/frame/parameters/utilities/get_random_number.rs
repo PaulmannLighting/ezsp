@@ -30,7 +30,7 @@ impl Identified for Response {
 }
 
 /// Convert the response into the generated random number
-/// or an appropriate error depending on its status.
+/// or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for u16 {
     type Error = Error;
 

@@ -129,18 +129,17 @@ impl Transport for Uart {
         match self.state.connection() {
             Connection::Disconnected => {
                 info!("Initializing UART connection");
-                self.init().await?;
+                self.init().await
             }
             Connection::Connected => {
                 trace!("UART is connected");
+                Ok(())
             }
             Connection::Failed => {
                 warn!("UART connection failed, reinitializing");
-                self.init().await?;
+                self.init().await
             }
         }
-
-        Ok(())
     }
 
     async fn send<T>(&mut self, command: T) -> Result<(), Error>

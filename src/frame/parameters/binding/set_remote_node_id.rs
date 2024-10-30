@@ -25,7 +25,7 @@ impl Command {
     }
 }
 
-/// Response parameters
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response;
 

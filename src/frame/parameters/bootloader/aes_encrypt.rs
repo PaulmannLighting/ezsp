@@ -24,7 +24,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
-/// Response parameters
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     ciphertext: [u8; 16],

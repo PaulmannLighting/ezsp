@@ -1,4 +1,7 @@
+//! Parameters for the [`Messaging::set_source_route_discovery_mode`](crate::Messaging::set_source_route_discovery_mode) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
+use std::time::Duration;
 
 use crate::frame::Identified;
 use crate::types::SourceRouteDiscoveryMode;
@@ -22,15 +25,21 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     remaining_time: u32,
 }
 
 impl Response {
+    /// Remaining time until next `MTORR` broadcast if the mode is on, else `None`.
     #[must_use]
-    pub const fn remaining_time(&self) -> u32 {
-        self.remaining_time
+    pub const fn remaining_time(&self) -> Option<Duration> {
+        if self.remaining_time == u32::MAX {
+            None
+        } else {
+            Some(Duration::from_millis(self.remaining_time as u64))
+        }
     }
 }
 

@@ -1,4 +1,5 @@
 use std::future::Future;
+use std::time::Duration;
 
 use crate::ember::aps::Frame;
 use crate::ember::beacon::ClassificationParams;
@@ -317,7 +318,7 @@ pub trait Messaging {
     fn set_source_route_discovery_mode(
         &mut self,
         mode: SourceRouteDiscoveryMode,
-    ) -> impl Future<Output = Result<u32, Error>> + Send;
+    ) -> impl Future<Output = Result<Option<Duration>, Error>> + Send;
 
     /// Send the network key to a destination.
     fn unicast_current_network_key(
@@ -673,7 +674,7 @@ where
     async fn set_source_route_discovery_mode(
         &mut self,
         mode: SourceRouteDiscoveryMode,
-    ) -> Result<u32, Error> {
+    ) -> Result<Option<Duration>, Error> {
         self.communicate::<_, set_source_route_discovery_mode::Response>(
             set_source_route_discovery_mode::Command::new(mode),
         )

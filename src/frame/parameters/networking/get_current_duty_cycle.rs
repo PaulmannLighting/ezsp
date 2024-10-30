@@ -1,3 +1,5 @@
+//! Parameters for the [`Networking::get_current_duty_cycle`](crate::Networking::get_current_duty_cycle) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use le_stream::FromLeStream;
 use log::error;
@@ -27,6 +29,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
@@ -57,6 +60,8 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Converts the response into a [`heapless::Vec`] of [`PerDeviceDutyCycle`]
+/// or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for heapless::Vec<PerDeviceDutyCycle, MAX_END_DEVICE_CHILDREN> {
     type Error = Error;
 

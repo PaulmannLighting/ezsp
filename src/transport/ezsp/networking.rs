@@ -29,7 +29,10 @@ use crate::transport::Transport;
 /// The `Networking` trait provides an interface for the networking features.
 pub trait Networking {
     /// Convert a child index to a node ID.
-    fn child_id(&mut self, child_index: u8) -> impl Future<Output = Result<NodeId, Error>> + Send;
+    fn child_id(
+        &mut self,
+        child_index: u8,
+    ) -> impl Future<Output = Result<Option<NodeId>, Error>> + Send;
 
     /// Clears all cached beacons that have been collected from a scan.
     fn clear_stored_beacons(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
@@ -403,7 +406,7 @@ impl<T> Networking for T
 where
     T: Transport,
 {
-    async fn child_id(&mut self, child_index: u8) -> Result<NodeId, Error> {
+    async fn child_id(&mut self, child_index: u8) -> Result<Option<NodeId>, Error> {
         self.communicate::<_, child_id::Response>(child_id::Command::new(child_index))
             .await
             .map(|response| response.child_id())

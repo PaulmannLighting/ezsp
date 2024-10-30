@@ -1,3 +1,5 @@
+//! Parameters for the [`Utilities::get_true_random_entropy_source`](crate::Utilities::get_true_random_entropy_source) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -15,6 +17,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     entropy_source: u8,
@@ -25,6 +28,8 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert the response into a [`Source`] or an appropriate error
+/// depending on the validity of its entropy source data.
 impl TryFrom<Response> for Source {
     type Error = Error;
 

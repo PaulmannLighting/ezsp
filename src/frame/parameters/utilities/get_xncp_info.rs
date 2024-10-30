@@ -1,3 +1,5 @@
+//! Parameters for the [`Utilities::get_xncp_info`](crate::Utilities::get_xncp_info) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -15,6 +17,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
@@ -26,6 +29,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert the response into a [`Payload`] or an appropriate error depending on its status.
 impl TryFrom<Response> for Payload {
     type Error = Error;
 

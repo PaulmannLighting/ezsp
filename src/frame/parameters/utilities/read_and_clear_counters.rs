@@ -1,6 +1,9 @@
+//! Parameters for the [`Utilities::read_counters`](crate::Utilities::read_counters) command.
+
+use le_stream::derive::{FromLeStream, ToLeStream};
+
 use crate::ember::constants::COUNTER_TYPE_COUNT;
 use crate::frame::Identified;
-use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x0065;
 
@@ -12,6 +15,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     values: [u16; COUNTER_TYPE_COUNT],
@@ -22,6 +26,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Convert the response into an array of counter values.
 impl From<Response> for [u16; COUNTER_TYPE_COUNT] {
     fn from(response: Response) -> Self {
         response.values

@@ -1,4 +1,4 @@
-//! Read attribute data on NCP endpoints.
+//! Parameters for the [`Configuration::read_attribute`](crate::Configuration::read_attribute) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
@@ -64,6 +64,7 @@ impl Attribbute {
     }
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
@@ -75,6 +76,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Converts the response into an [`Attribbute`] or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for Attribbute {
     type Error = Error;
 

@@ -1,3 +1,5 @@
+//! Parameters for the [`GreenPower::proxy_table_get_entry`](crate::GreenPower::proxy_table_get_entry) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -25,6 +27,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
@@ -36,6 +39,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Converts the response into a [`TableEntry`] or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for TableEntry {
     type Error = Error;
 

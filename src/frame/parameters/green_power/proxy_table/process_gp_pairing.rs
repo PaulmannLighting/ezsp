@@ -1,7 +1,10 @@
+//! Parameters for the [`GreenPower::proxy_table_process_gp_pairing`](crate::GreenPower::proxy_table_process_gp_pairing) command.
+
+use le_stream::derive::{FromLeStream, ToLeStream};
+
 use crate::ember::gp::Address;
 use crate::ember::key::Data;
 use crate::frame::Identified;
-use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x00C9;
 
@@ -54,12 +57,14 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     gp_pairing_added: bool,
 }
 
 impl Response {
+    /// Returns whether the GP pairing was added.
     #[must_use]
     pub const fn gp_pairing_added(&self) -> bool {
         self.gp_pairing_added

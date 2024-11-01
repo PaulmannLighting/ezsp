@@ -1,3 +1,5 @@
+//! Sink table parameters.
+
 pub mod clear_all;
 pub mod find_or_allocate_entry;
 pub mod get_entry;

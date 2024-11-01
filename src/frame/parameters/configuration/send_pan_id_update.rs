@@ -1,3 +1,5 @@
+//! Parameters for the [`Configuration::send_pan_id_update`](crate::Configuration::send_pan_id_update) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::PanId;
@@ -22,6 +24,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: bool,
@@ -32,6 +35,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Converts the response into a [`bool`] indicating whether the command was successful.
 impl From<Response> for bool {
     fn from(response: Response) -> Self {
         response.status

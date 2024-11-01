@@ -45,12 +45,12 @@ impl Identified for Command {
 
 /// Read attribute data.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Attribbute {
+pub struct Attribute {
     data_type: u8,
     data: ByteSizedVec<u8>,
 }
 
-impl Attribbute {
+impl Attribute {
     /// Attribute data type.
     #[must_use]
     pub const fn data_type(&self) -> u8 {
@@ -68,7 +68,7 @@ impl Attribbute {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
-    payload: Attribbute,
+    payload: Attribute,
 }
 
 impl Identified for Response {
@@ -76,8 +76,8 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
-/// Converts the response into an [`Attribbute`] or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for Attribbute {
+/// Converts the response into an [`Attribute`] or an appropriate [`Error`] depending on its status.
+impl TryFrom<Response> for Attribute {
     type Error = Error;
 
     fn try_from(response: Response) -> Result<Self, Self::Error> {

@@ -6,6 +6,7 @@ use crate::ezsp::Status;
 use crate::ezsp::{decision, policy};
 use crate::frame::Identified;
 use crate::Error;
+
 const ID: u16 = 0x0056;
 
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

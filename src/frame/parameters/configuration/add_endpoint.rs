@@ -1,3 +1,5 @@
+//! Parameters for the [`Configuration::add_endpoint`](crate::Configuration::add_endpoint) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use le_stream::ToLeStream;
 use num_traits::FromPrimitive;
@@ -51,7 +53,7 @@ pub struct Clusters {
 }
 
 /// Manual implementation of `ToLeStream` because the length hints of both `input_clusters`
-/// and `output_clusters` must be output before their actual elements:
+/// and `output_clusters` must be output before the actual elements of both:
 ///
 /// I.e. the order of output bytes is:
 ///
@@ -93,6 +95,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
@@ -103,6 +106,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Converts the response into `()` or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for () {
     type Error = Error;
 

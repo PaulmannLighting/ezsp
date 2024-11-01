@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-use std::ops::DerefMut;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{Arc, RwLock};
@@ -44,11 +43,7 @@ impl State {
     /// Set the connection state of the UART.
     pub fn set_connection(&self, connection: Connection) {
         trace!("Setting connection state to: {connection:?}");
-        *self
-            .connection
-            .write()
-            .expect("RwLock poisoned")
-            .deref_mut() = connection;
+        *self.connection.write().expect("RwLock poisoned") = connection;
 
         if connection != Connection::Connected {
             trace!("Resetting negotiated version.");

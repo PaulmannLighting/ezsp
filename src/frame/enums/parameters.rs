@@ -3,9 +3,11 @@ use super::{Callback, Response};
 mod conversion;
 mod parsing;
 
-/// This enum represents the parameters of `EZSP` frames.
+/// Parameter types of `EZSP` frames.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Parameters {
+    /// A response.
     Response(Response),
+    /// A callback.
     Callback(Callback),
 }

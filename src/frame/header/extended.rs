@@ -12,6 +12,7 @@ pub struct Extended {
 }
 
 impl Extended {
+    /// Creates a new extended header.
     #[must_use]
     pub const fn new(sequence: u8, low_byte: LowByte, id: u16) -> Self {
         Self {
@@ -22,21 +23,25 @@ impl Extended {
         }
     }
 
+    /// Returns the sequence number.
     #[must_use]
     pub const fn sequence(self) -> u8 {
         self.sequence
     }
 
+    /// Returns the low byte.
     #[must_use]
     pub const fn low_byte(self) -> LowByte {
         self.low_byte
     }
 
+    /// Returns the high byte.
     #[must_use]
     pub const fn high_byte(self) -> HighByte {
         self.high_byte
     }
 
+    /// Returns the ID.
     #[must_use]
     pub const fn id(self) -> u16 {
         self.id

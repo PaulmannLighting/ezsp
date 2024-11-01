@@ -11,10 +11,12 @@ mod high_byte;
 mod legacy;
 mod low_byte;
 
-/// A trait to represent the header of a frame.
+/// Available header types.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Header {
+    /// A legacy header.
     Legacy(Legacy),
+    /// An extended header.
     Extended(Extended),
 }
 
@@ -28,6 +30,7 @@ impl Header {
         }
     }
 
+    /// Returns `true` if the header indicates an asynchronous callback.
     #[must_use]
     pub fn is_async_callback(self) -> bool {
         if let Self::Extended(header) = self {

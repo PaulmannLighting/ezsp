@@ -1,5 +1,8 @@
-use crate::frame::Identified;
+//! Parameters for the [`GreenPower::sink_table_set_security_frame_counter`](crate::GreenPower::sink_table_set_security_frame_counter) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::frame::Identified;
 
 const ID: u16 = 0x00F5;
 
@@ -21,6 +24,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response;
 

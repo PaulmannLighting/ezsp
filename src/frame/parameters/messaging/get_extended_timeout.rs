@@ -1,3 +1,5 @@
+//! Parameters for the [`Messaging::get_extended_timeout`](crate::Messaging::get_extended_timeout) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::Eui64;
@@ -22,12 +24,14 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     extended_timeout: bool,
 }
 
 impl Response {
+    /// Returns whether the extended timeout is enabled.
     #[must_use]
     pub const fn extended_timeout(&self) -> bool {
         self.extended_timeout

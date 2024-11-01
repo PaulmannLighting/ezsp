@@ -41,6 +41,7 @@ pub enum Handler {
     IncomingNetworkStatus(IncomingNetworkStatus),
     /// An incoming route error handler.
     IncomingRouteError(IncomingRouteError),
+    /// An incoming route record handler.
     IncomingRouteRecord(IncomingRouteRecord),
     /// An incoming sender EUI64 handler.
     IncomingSenderEui64(IncomingSenderEui64),

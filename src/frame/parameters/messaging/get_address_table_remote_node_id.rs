@@ -1,3 +1,5 @@
+//! Parameters for the [`Messaging::get_address_table_remote_node_id`](crate::Messaging::get_address_table_remote_node_id) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::NodeId;
@@ -24,12 +26,14 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     node_id: NodeId,
 }
 
 impl Response {
+    /// Returns the node ID.
     #[must_use]
     pub const fn node_id(&self) -> NodeId {
         self.node_id

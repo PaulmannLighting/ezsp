@@ -1,3 +1,5 @@
+//! Parameters for the [`Messaging::address_table_entry_is_active`](crate::Messaging::address_table_entry_is_active) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::frame::Identified;
@@ -23,12 +25,14 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     active: bool,
 }
 
 impl Response {
+    /// Returns whether the entry is active.
     #[must_use]
     pub const fn active(&self) -> bool {
         self.active

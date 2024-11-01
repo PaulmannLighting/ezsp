@@ -1,3 +1,5 @@
+//! Parameters for the [`Messaging::lookup_eui64_by_node_id`](crate::Messaging::lookup_eui64_by_node_id) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -24,6 +26,7 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
@@ -35,6 +38,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
+/// Converts the response into the [`Eui64`] or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for Eui64 {
     type Error = Error;
 

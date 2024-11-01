@@ -1,3 +1,5 @@
+//! Parameters for the [`Messaging::lookup_node_id_by_eui64`](crate::Messaging::lookup_node_id_by_eui64) command.
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::ember::{Eui64, NodeId};
@@ -22,12 +24,14 @@ impl Identified for Command {
     const ID: Self::Id = ID;
 }
 
+/// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     node_id: NodeId,
 }
 
 impl Response {
+    /// Returns the node ID.
     #[must_use]
     pub const fn node_id(&self) -> NodeId {
         self.node_id

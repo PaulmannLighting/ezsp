@@ -13,7 +13,7 @@ pub trait Parsable: Sized {
     ///
     /// # Errors
     ///
-    /// Returns an [`Error`] if the parsing of the parameter failed.
+    /// Returns an [`Error`](crate::error::Error) if the parsing of the parameter failed.
     fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, Decode>
     where
         T: Iterator<Item = u8>;

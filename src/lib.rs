@@ -29,5 +29,6 @@ pub use result::Result;
 pub use transport::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GreenPower, Messaging, Mfglib, Networking,
     ProxyTable, Security, SinkTable, TokenInterface, Transport, TrustCenter, Utilities, Wwah, Zll,
+    MIN_NON_LEGACY_VERSION,
 };
 pub use types::SourceRouteDiscoveryMode;

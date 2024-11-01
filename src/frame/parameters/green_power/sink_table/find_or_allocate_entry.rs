@@ -1,4 +1,4 @@
-//! Parameters for the [`GreenPower::sink_table_find_or_allocate_entry`](crate::GreenPower::sink_table_find_or_allocate_entry) command.
+//! Parameters for the [`SinkTable::find_or_allocate_entry`](crate::SinkTable::find_or_allocate_entry) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 

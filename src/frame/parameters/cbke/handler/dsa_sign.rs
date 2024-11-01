@@ -24,8 +24,8 @@ impl Identified for Handler {
     const ID: Self::Id = ID;
 }
 
-/// Converts the handler into a [`ByteSizedVec<u8>`](ByteSizedVec)
-/// or an appropriate [`Error`] by evaluating its status field.
+/// Converts the handler into an array of bytes or an
+/// appropriate [`Error`] by evaluating its status field.
 impl TryFrom<Handler> for ByteSizedVec<u8> {
     type Error = Error;
 

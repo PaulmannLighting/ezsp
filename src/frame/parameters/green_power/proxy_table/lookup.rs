@@ -1,4 +1,4 @@
-//! Parameters for the [`GreenPower::proxy_table_lookup`](crate::GreenPower::proxy_table_lookup) command.
+//! Parameters for the [`ProxyTable::lookup`](crate::ProxyTable::lookup) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 

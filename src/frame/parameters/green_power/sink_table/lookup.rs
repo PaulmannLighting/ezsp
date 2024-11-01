@@ -1,4 +1,4 @@
-//! Parameters for the [`GreenPower::sink_table_lookup`](crate::GreenPower::sink_table_lookup) command.
+//! Parameters for the [`SinkTable::lookup`](crate::SinkTable::lookup) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 

@@ -1,4 +1,4 @@
-//! Parameters for the [`Networking::get_child_id`](crate::Networking::get_child_id) command.
+//! Parameters for the [`Networking::child_id`](crate::Networking::child_id) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 

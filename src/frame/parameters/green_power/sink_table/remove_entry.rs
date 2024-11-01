@@ -1,4 +1,4 @@
-//! Parameters for the [`GreenPower::sink_table_remove_entry`](crate::GreenPower::sink_table_remove_entry) command.
+//! Parameters for the [`SinkTable::remove_entry`](crate::SinkTable::remove_entry) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 

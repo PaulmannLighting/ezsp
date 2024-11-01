@@ -1,4 +1,4 @@
-//! Parameters for the [`Security::export_transient_key`](crate::Security::export_transient_key) command.
+//! Parameters for the [`Security::export_transient_key_by_index`](crate::Security::export_transient_key_by_index) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;

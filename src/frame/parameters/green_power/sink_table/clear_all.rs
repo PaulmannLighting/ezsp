@@ -1,4 +1,4 @@
-//! Parameters for the [`GreenPower::sink_table_clear_all`](crate::GreenPower::sink_table_clear_all) command.
+//! Parameters for the [`SinkTable::clear_all`](crate::SinkTable::clear_all) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 

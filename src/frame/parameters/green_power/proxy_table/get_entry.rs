@@ -1,4 +1,4 @@
-//! Parameters for the [`GreenPower::proxy_table_get_entry`](crate::GreenPower::proxy_table_get_entry) command.
+//! Parameters for the [`ProxyTable::get_entry`](crate::ProxyTable::get_entry) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;

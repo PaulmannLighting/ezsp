@@ -1,4 +1,4 @@
-//! Parameters for the [`GreenPower::sink_table_set_security_frame_counter`](crate::GreenPower::sink_table_set_security_frame_counter) command.
+//! Parameters for the [`SinkTable::set_security_frame_counter`](crate::SinkTable::set_security_frame_counter) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 

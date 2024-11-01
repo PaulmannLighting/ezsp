@@ -1,4 +1,4 @@
-//! Parameters for the [`GetRadioParameters`](crate::frame::networking::GetRadioParameters) command.
+//! Parameters for the [`Networking::get_radio_parameters`](crate::Networking::get_radio_parameters) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;

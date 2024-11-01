@@ -42,7 +42,7 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
-/// Converts the response into a [`ByteSizedVec`] or an appropriate [`Error`] depending on its status.
+/// Converts the response into an array of bytes or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for ByteSizedVec<u8> {
     type Error = Error;
 

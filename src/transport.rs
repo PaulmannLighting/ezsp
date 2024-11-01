@@ -12,6 +12,7 @@ use le_stream::ToLeStream;
 use std::future::Future;
 use std::num::TryFromIntError;
 
+/// The minimum protocol version that supports non-legacy commands.
 pub const MIN_NON_LEGACY_VERSION: u8 = 8;
 
 /// A transport layer to communicate with an NCP that supports the `EZSP` protocol.

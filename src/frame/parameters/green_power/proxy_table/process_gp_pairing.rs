@@ -1,4 +1,4 @@
-//! Parameters for the [`GreenPower::proxy_table_process_gp_pairing`](crate::GreenPower::proxy_table_process_gp_pairing) command.
+//! Parameters for the [`ProxyTable::process_gp_pairing`](crate::ProxyTable::process_gp_pairing) command.
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 

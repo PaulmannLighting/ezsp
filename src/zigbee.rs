@@ -5,7 +5,7 @@ mod state;
 use crate::zigbee::state::State;
 use crate::Transport;
 
-/// Zigbee network manager using the UART.
+/// Zigbee network manager using an arbitrary `Transport` implementation.
 #[derive(Debug)]
 pub struct EzspNetworkManager<T>
 where

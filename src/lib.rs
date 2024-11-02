@@ -17,6 +17,7 @@ mod transport;
 mod types;
 #[cfg(feature = "ashv2")]
 pub mod uart;
+mod zigbee;
 
 pub use constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 pub use error::{Error, ValueError};

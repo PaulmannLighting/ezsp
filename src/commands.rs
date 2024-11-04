@@ -1,4 +1,7 @@
+use std::future::Future;
+
 use crate::Error;
+
 pub use binding::Binding;
 pub use bootloader::Bootloader;
 pub use cbke::Cbke;
@@ -8,7 +11,6 @@ pub use messaging::Messaging;
 pub use mfglib::Mfglib;
 pub use networking::Networking;
 pub use security::Security;
-use std::future::Future;
 pub use token_interface::TokenInterface;
 pub use trust_center::TrustCenter;
 pub use utilities::Utilities;

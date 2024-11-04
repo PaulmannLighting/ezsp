@@ -6,6 +6,7 @@
 //! This library is free software and is not affiliated with Silicon Labs.
 #![deny(unsafe_code)]
 
+mod commands;
 mod constants;
 pub mod ember;
 mod error;
@@ -19,6 +20,10 @@ mod types;
 pub mod uart;
 mod zigbee;
 
+pub use commands::{
+    Binding, Bootloader, Cbke, Configuration, Ezsp, GreenPower, Messaging, Mfglib, Networking,
+    ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
+};
 pub use constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 pub use error::{Error, ValueError};
 pub use frame::{
@@ -27,9 +32,5 @@ pub use frame::{
 };
 pub use handler::Handler;
 pub use result::Result;
-pub use transport::{
-    Binding, Bootloader, Cbke, Configuration, Ezsp, GreenPower, Messaging, Mfglib, Networking,
-    ProxyTable, Security, SinkTable, TokenInterface, Transport, TrustCenter, Utilities, Wwah, Zll,
-    MIN_NON_LEGACY_VERSION,
-};
+pub use transport::{Transport, MIN_NON_LEGACY_VERSION};
 pub use types::SourceRouteDiscoveryMode;

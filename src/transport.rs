@@ -1,16 +1,12 @@
 //! Transport layer to communicate with an NCP that supports the `EZSP` protocol.
 
-mod ezsp;
+use std::future::Future;
+use std::num::TryFromIntError;
+
+use le_stream::ToLeStream;
 
 use crate::frame::{Header, Identified};
 use crate::{Error, Parameters};
-pub use ezsp::{
-    Binding, Bootloader, Cbke, Configuration, Ezsp, GreenPower, Messaging, Mfglib, Networking,
-    ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
-};
-use le_stream::ToLeStream;
-use std::future::Future;
-use std::num::TryFromIntError;
 
 /// The minimum protocol version that supports non-legacy commands.
 pub const MIN_NON_LEGACY_VERSION: u8 = 8;

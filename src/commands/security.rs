@@ -86,6 +86,10 @@ pub trait Security {
     ) -> impl Future<Output = Result<security::current::State, Error>> + Send;
 
     /// Retrieve a key from the key table.
+    ///
+    /// # Deprecated
+    ///
+    /// This command has been removed in revision 5.1 of the `EZSP` specification.
     #[deprecated]
     fn get_key(&mut self, key: Type) -> impl Future<Output = Result<Struct, Error>> + Send;
 

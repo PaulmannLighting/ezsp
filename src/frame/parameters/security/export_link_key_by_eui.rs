@@ -57,7 +57,7 @@ impl TryFrom<Response> for Payload {
 pub struct Payload {
     plaintext_key: Key,
     index: u8,
-    key_data: ApsKeyMetadata<u16>,
+    key_data: ApsKeyMetadata,
 }
 
 impl Payload {
@@ -75,7 +75,7 @@ impl Payload {
 
     /// Returns the key metadata.
     #[must_use]
-    pub const fn key_data(&self) -> &ApsKeyMetadata<u16> {
+    pub const fn key_data(&self) -> &ApsKeyMetadata {
         &self.key_data
     }
 }

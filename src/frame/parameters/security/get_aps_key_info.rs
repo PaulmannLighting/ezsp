@@ -13,12 +13,12 @@ const ID: u16 = 0x010C;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
-    context_in: Context<Eui64>,
+    context_in: Context,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(context_in: Context<Eui64>) -> Self {
+    pub const fn new(context_in: Context) -> Self {
         Self { context_in }
     }
 }
@@ -56,7 +56,7 @@ impl TryFrom<Response> for KeyInfo {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct KeyInfo {
     eui: Eui64,
-    key_data: ApsKeyMetadata<u16>,
+    key_data: ApsKeyMetadata,
 }
 
 impl KeyInfo {
@@ -68,7 +68,7 @@ impl KeyInfo {
 
     /// Returns the key data.
     #[must_use]
-    pub const fn key_data(&self) -> &ApsKeyMetadata<u16> {
+    pub const fn key_data(&self) -> &ApsKeyMetadata {
         &self.key_data
     }
 }

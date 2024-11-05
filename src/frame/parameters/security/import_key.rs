@@ -5,7 +5,6 @@ use num_traits::FromPrimitive;
 use siliconlabs::zigbee::security::man::{Context, Key};
 use siliconlabs::Status;
 
-use crate::ember::Eui64;
 use crate::frame::Identified;
 use crate::Error;
 
@@ -13,13 +12,13 @@ const ID: u16 = 0x0115;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
-    context: Context<Eui64>,
+    context: Context,
     key: Key,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(context: Context<Eui64>, key: Key) -> Self {
+    pub const fn new(context: Context, key: Key) -> Self {
         Self { context, key }
     }
 }

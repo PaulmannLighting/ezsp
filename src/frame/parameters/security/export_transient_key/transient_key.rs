@@ -3,20 +3,18 @@
 use le_stream::derive::FromLeStream;
 use siliconlabs::zigbee::security::man::{ApsKeyMetadata, Context, Key};
 
-use crate::ember::Eui64;
-
 /// The exported transient key.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct TransientKey {
-    context: Context<Eui64>,
+    context: Context,
     plaintext_key: Key,
-    key_data: ApsKeyMetadata<u16>,
+    key_data: ApsKeyMetadata,
 }
 
 impl TransientKey {
     /// Returns the context.
     #[must_use]
-    pub const fn context(&self) -> &Context<Eui64> {
+    pub const fn context(&self) -> &Context {
         &self.context
     }
 
@@ -28,7 +26,7 @@ impl TransientKey {
 
     /// Returns the key metadata.
     #[must_use]
-    pub const fn key_data(&self) -> &ApsKeyMetadata<u16> {
+    pub const fn key_data(&self) -> &ApsKeyMetadata {
         &self.key_data
     }
 }

@@ -20,7 +20,7 @@ pub trait Security {
     /// Check whether a key context can be used to load a valid key.
     fn check_key_context(
         &mut self,
-        context: man::Context<Eui64>,
+        context: man::Context,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This function clears the key table of the current network.
@@ -39,7 +39,7 @@ pub trait Security {
     /// Exports a key from security manager based on passed context.
     fn export_key(
         &mut self,
-        man_context: man::Context<Eui64>,
+        man_context: man::Context,
     ) -> impl Future<Output = Result<man::Key, Error>> + Send;
 
     /// Export the link key associated with the given EUI from the key table.
@@ -77,7 +77,7 @@ pub trait Security {
     /// Retrieve metadata about an APS link key. Does not retrieve contents.
     fn get_aps_key_info(
         &mut self,
-        context_in: man::Context<Eui64>,
+        context_in: man::Context,
     ) -> impl Future<Output = Result<get_aps_key_info::KeyInfo, Error>> + Send;
 
     /// Gets the current security state that is being used by a device that is joined in the network.
@@ -101,7 +101,7 @@ pub trait Security {
     /// Imports a key into security manager based on passed context.
     fn import_key(
         &mut self,
-        context: man::Context<Eui64>,
+        context: man::Context,
         key: man::Key,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
@@ -116,7 +116,7 @@ pub trait Security {
     /// Import a transient link key.
     fn import_transient_key(
         &mut self,
-        context: man::Context<Eui64>,
+        context: man::Context,
         eui64: Eui64,
         plaintext_key: man::Key,
         flags: man::Flags,
@@ -176,7 +176,7 @@ impl<T> Security for T
 where
     T: Transport,
 {
-    async fn check_key_context(&mut self, context: man::Context<Eui64>) -> Result<(), Error> {
+    async fn check_key_context(&mut self, context: man::Context) -> Result<(), Error> {
         self.communicate::<_, check_key_context::Response>(check_key_context::Command::new(context))
             .await?
             .try_into()
@@ -204,7 +204,7 @@ where
         .map(drop)
     }
 
-    async fn export_key(&mut self, man_context: man::Context<Eui64>) -> Result<man::Key, Error> {
+    async fn export_key(&mut self, man_context: man::Context) -> Result<man::Key, Error> {
         self.communicate::<_, export_key::Response>(export_key::Command::new(man_context))
             .await?
             .try_into()
@@ -264,7 +264,7 @@ where
 
     async fn get_aps_key_info(
         &mut self,
-        context_in: man::Context<Eui64>,
+        context_in: man::Context,
     ) -> Result<get_aps_key_info::KeyInfo, Error> {
         self.communicate::<_, get_aps_key_info::Response>(get_aps_key_info::Command::new(
             context_in,
@@ -293,11 +293,7 @@ where
             .try_into()
     }
 
-    async fn import_key(
-        &mut self,
-        context: man::Context<Eui64>,
-        key: man::Key,
-    ) -> Result<(), Error> {
+    async fn import_key(&mut self, context: man::Context, key: man::Key) -> Result<(), Error> {
         self.communicate::<_, import_key::Response>(import_key::Command::new(context, key))
             .await?
             .try_into()
@@ -320,7 +316,7 @@ where
 
     async fn import_transient_key(
         &mut self,
-        context: man::Context<Eui64>,
+        context: man::Context,
         eui64: Eui64,
         plaintext_key: man::Key,
         flags: man::Flags,

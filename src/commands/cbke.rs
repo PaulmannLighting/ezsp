@@ -75,8 +75,10 @@ pub trait Cbke {
     /// The dsaSignHandler response is still called when `EMBER_APS_OPTION_DSA_SIGN` is used.
     /// However, this function is still supported.
     ///
+    /// # Usage
+    ///
     /// This function begins the process of signing the passed message contained within the
-    /// `messageContents` array.
+    /// `message` array.
     /// If no other ECC operation is going on, it will immediately return with
     /// [`Status::OperationInProgress`](crate::ember::Status::OperationInProgress) to indicate the
     /// start of ECC operation.
@@ -85,8 +87,9 @@ pub trait Cbke {
     /// This may take up to 1 second. The signed message will be returned in the dsaSignHandler
     /// response.
     ///
-    /// Note that the last byte of the messageContents passed to this function has special
-    /// significance.
+    /// # Note
+    ///
+    /// Note that the last byte of the `message` passed to this function has special significance.
     ///
     /// As the typical use case for DSA signing is to sign the ZCL payload of a `DRLC` Report Event
     /// Status message in SE 1.0, there is often both a signed portion (ZCL payload) and an unsigned

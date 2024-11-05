@@ -946,6 +946,11 @@ impl Parsable for super::Parameters {
                     security::get_current_security_state::Response::from_le_stream_exact(stream)?,
                 ))))
             }
+            <security::get_key::Response as Identified>::ID => {
+                Ok(Self::Response(Response::Security(security::Response::GetKey(
+                    security::get_key::Response::from_le_stream_exact(stream)?,
+                ))))
+            }
             <security::get_network_key_info::Response as Identified>::ID => {
                 Ok(Self::Response(Response::Security(security::Response::GetNetworkKeyInfo(
                     security::get_network_key_info::Response::from_le_stream_exact(stream)?,

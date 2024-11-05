@@ -63,6 +63,10 @@ pub trait Cbke {
         store_link_key: bool,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
+    /// Calculate the Digital Signature Algorithm (DSA) signature of the passed message.
+    ///
+    /// # Deprecated
+    ///
     /// This functionality has been replaced by a single bit in the `EmberApsFrame`,
     /// `EMBER_APS_OPTION_DSA_SIGN`.
     ///

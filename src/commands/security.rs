@@ -1,6 +1,6 @@
 use std::future::Future;
 
-use siliconlabs::zigbee::security::{ManContext, ManFlags, ManKey};
+use siliconlabs::zigbee::security::man;
 
 use crate::ember::{security, Eui64, NodeId};
 use crate::error::Error;
@@ -18,7 +18,7 @@ pub trait Security {
     /// Check whether a key context can be used to load a valid key.
     fn check_key_context(
         &mut self,
-        context: ManContext<Eui64>,
+        context: man::Context<Eui64>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This function clears the key table of the current network.
@@ -37,8 +37,8 @@ pub trait Security {
     /// Exports a key from security manager based on passed context.
     fn export_key(
         &mut self,
-        man_context: ManContext<Eui64>,
-    ) -> impl Future<Output = Result<ManKey, Error>> + Send;
+        man_context: man::Context<Eui64>,
+    ) -> impl Future<Output = Result<man::Key, Error>> + Send;
 
     /// Export the link key associated with the given EUI from the key table.
     fn export_link_key_by_eui(
@@ -75,7 +75,7 @@ pub trait Security {
     /// Retrieve metadata about an APS link key. Does not retrieve contents.
     fn get_aps_key_info(
         &mut self,
-        context_in: ManContext<Eui64>,
+        context_in: man::Context<Eui64>,
     ) -> impl Future<Output = Result<get_aps_key_info::KeyInfo, Error>> + Send;
 
     /// Gets the current security state that is being used by a device that is joined in the network.
@@ -86,13 +86,13 @@ pub trait Security {
     /// Retrieve information about the current and alternate network key, excluding their contents.
     fn get_network_key_info(
         &mut self,
-    ) -> impl Future<Output = Result<siliconlabs::zigbee::security::ManNetworkKeyInfo, Error>> + Send;
+    ) -> impl Future<Output = Result<man::NetworkKeyInfo, Error>> + Send;
 
     /// Imports a key into security manager based on passed context.
     fn import_key(
         &mut self,
-        context: ManContext<Eui64>,
-        key: ManKey,
+        context: man::Context<Eui64>,
+        key: man::Key,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Import an application link key into the key table.
@@ -100,16 +100,16 @@ pub trait Security {
         &mut self,
         index: u8,
         address: Eui64,
-        plaintext_key: ManKey,
+        plaintext_key: man::Key,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Import a transient link key.
     fn import_transient_key(
         &mut self,
-        context: ManContext<Eui64>,
+        context: man::Context<Eui64>,
         eui64: Eui64,
-        plaintext_key: ManKey,
-        flags: ManFlags,
+        plaintext_key: man::Key,
+        flags: man::Flags,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// A function to request a Link Key from the Trust Center with another device on the Network
@@ -166,7 +166,7 @@ impl<T> Security for T
 where
     T: Transport,
 {
-    async fn check_key_context(&mut self, context: ManContext<Eui64>) -> Result<(), Error> {
+    async fn check_key_context(&mut self, context: man::Context<Eui64>) -> Result<(), Error> {
         self.communicate::<_, check_key_context::Response>(check_key_context::Command::new(context))
             .await?
             .try_into()
@@ -194,7 +194,7 @@ where
         .map(drop)
     }
 
-    async fn export_key(&mut self, man_context: ManContext<Eui64>) -> Result<ManKey, Error> {
+    async fn export_key(&mut self, man_context: man::Context<Eui64>) -> Result<man::Key, Error> {
         self.communicate::<_, export_key::Response>(export_key::Command::new(man_context))
             .await?
             .try_into()
@@ -254,7 +254,7 @@ where
 
     async fn get_aps_key_info(
         &mut self,
-        context_in: ManContext<Eui64>,
+        context_in: man::Context<Eui64>,
     ) -> Result<get_aps_key_info::KeyInfo, Error> {
         self.communicate::<_, get_aps_key_info::Response>(get_aps_key_info::Command::new(
             context_in,
@@ -271,15 +271,17 @@ where
         .try_into()
     }
 
-    async fn get_network_key_info(
-        &mut self,
-    ) -> Result<siliconlabs::zigbee::security::ManNetworkKeyInfo, Error> {
+    async fn get_network_key_info(&mut self) -> Result<man::NetworkKeyInfo, Error> {
         self.communicate::<_, get_network_key_info::Response>(get_network_key_info::Command)
             .await?
             .try_into()
     }
 
-    async fn import_key(&mut self, context: ManContext<Eui64>, key: ManKey) -> Result<(), Error> {
+    async fn import_key(
+        &mut self,
+        context: man::Context<Eui64>,
+        key: man::Key,
+    ) -> Result<(), Error> {
         self.communicate::<_, import_key::Response>(import_key::Command::new(context, key))
             .await?
             .try_into()
@@ -289,7 +291,7 @@ where
         &mut self,
         index: u8,
         address: Eui64,
-        plaintext_key: ManKey,
+        plaintext_key: man::Key,
     ) -> Result<(), Error> {
         self.communicate::<_, import_link_key::Response>(import_link_key::Command::new(
             index,
@@ -302,10 +304,10 @@ where
 
     async fn import_transient_key(
         &mut self,
-        context: ManContext<Eui64>,
+        context: man::Context<Eui64>,
         eui64: Eui64,
-        plaintext_key: ManKey,
-        flags: ManFlags,
+        plaintext_key: man::Key,
+        flags: man::Flags,
     ) -> Result<(), Error> {
         self.communicate::<_, import_transient_key::Response>(import_transient_key::Command::new(
             context,

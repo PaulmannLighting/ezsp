@@ -2,7 +2,7 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
-use siliconlabs::zigbee::security::ManNetworkKeyInfo;
+use siliconlabs::zigbee::security::man::NetworkKeyInfo;
 use siliconlabs::Status;
 
 use crate::frame::Identified;
@@ -22,7 +22,7 @@ impl Identified for Command {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u32,
-    network_key_info: ManNetworkKeyInfo,
+    network_key_info: NetworkKeyInfo,
 }
 
 impl Identified for Response {
@@ -30,8 +30,8 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
-/// Convert the response into [`ManNetworkKeyInfo`] or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for ManNetworkKeyInfo {
+/// Convert the response into [`NetworkKeyInfo`] or an appropriate [`Error`] depending on its status.
+impl TryFrom<Response> for NetworkKeyInfo {
     type Error = Error;
 
     fn try_from(response: Response) -> Result<Self, Self::Error> {

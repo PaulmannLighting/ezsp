@@ -5,9 +5,9 @@ use clap::Parser;
 use le_stream::ToLeStream;
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
-use siliconlabs::zigbee::security::{ManContext, ManKey};
+use siliconlabs::zigbee::security::man::{Context, DerivedKeyType, Flags, KeyType};
 
-use ezsp::ember::{CertificateData, Eui64, PublicKeyData};
+use ezsp::ember::{CertificateData, PublicKeyData};
 use ezsp::ezsp::value::Id;
 use ezsp::uart::Uart;
 use ezsp::{
@@ -78,14 +78,16 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     }
 
     // Test getting EUI64
-    match ezsp.get_eui64().await {
+    let eui64 = match ezsp.get_eui64().await {
         Ok(eui64) => {
             info!("EUI64: {eui64}");
+            eui64
         }
         Err(error) => {
             error!("Error getting EUI64: {error}");
+            return;
         }
-    }
+    };
 
     // Test getting node ID
     match ezsp.get_node_id().await {
@@ -220,13 +222,13 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     }
 
     // Test key export.
-    let context = ManContext::new(
-        ManKey::default(),
+    let context = Context::new(
+        KeyType::Network,
         0,
+        DerivedKeyType::LoadKey,
+        eui64,
         0,
-        Eui64::new(1, 2, 3, 4, 5, 6, 7, 8),
-        0,
-        0,
+        Flags::empty(),
         0,
     );
     match ezsp.export_key(context).await {

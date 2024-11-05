@@ -2,7 +2,7 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
-use siliconlabs::zigbee::security::{ManApsKeyMetadata, ManKey};
+use siliconlabs::zigbee::security::man::{ApsKeyMetadata, Key};
 use siliconlabs::Status;
 
 use crate::ember::Eui64;
@@ -55,15 +55,15 @@ impl TryFrom<Response> for Payload {
 /// Payload of the export link key by EUI64 command.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Payload {
-    plaintext_key: ManKey,
+    plaintext_key: Key,
     index: u8,
-    key_data: ManApsKeyMetadata<u16>,
+    key_data: ApsKeyMetadata<u16>,
 }
 
 impl Payload {
     /// Returns the plain text key.
     #[must_use]
-    pub const fn plaintext_key(&self) -> &ManKey {
+    pub const fn plaintext_key(&self) -> &Key {
         &self.plaintext_key
     }
 
@@ -75,7 +75,7 @@ impl Payload {
 
     /// Returns the key metadata.
     #[must_use]
-    pub const fn key_data(&self) -> &ManApsKeyMetadata<u16> {
+    pub const fn key_data(&self) -> &ApsKeyMetadata<u16> {
         &self.key_data
     }
 }

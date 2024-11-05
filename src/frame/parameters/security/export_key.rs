@@ -2,7 +2,7 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
-use siliconlabs::zigbee::security::{ManContext, ManKey};
+use siliconlabs::zigbee::security::man::{Context, Key};
 use siliconlabs::Status;
 
 use crate::ember::Eui64;
@@ -13,12 +13,12 @@ const ID: u16 = 0x0114;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
-    context: ManContext<Eui64>,
+    context: Context<Eui64>,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(context: ManContext<Eui64>) -> Self {
+    pub const fn new(context: Context<Eui64>) -> Self {
         Self { context }
     }
 }
@@ -31,7 +31,7 @@ impl Identified for Command {
 /// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
-    key: ManKey,
+    key: Key,
     status: u32,
 }
 
@@ -40,8 +40,8 @@ impl Identified for Response {
     const ID: Self::Id = ID;
 }
 
-/// Convert the response into [`ManKey`] or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for ManKey {
+/// Convert the response into [`Key`] or an appropriate [`Error`] depending on its status.
+impl TryFrom<Response> for Key {
     type Error = Error;
 
     fn try_from(response: Response) -> Result<Self, Self::Error> {

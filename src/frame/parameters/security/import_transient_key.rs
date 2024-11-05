@@ -2,7 +2,7 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
-use siliconlabs::zigbee::security::{ManContext, ManFlags, ManKey};
+use siliconlabs::zigbee::security::man::{Context, Flags, Key};
 use siliconlabs::Status;
 
 use crate::ember::Eui64;
@@ -13,25 +13,25 @@ const ID: u16 = 0x0111;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
-    context: ManContext<Eui64>,
+    context: Context<Eui64>,
     eui64: Eui64,
-    plaintext_key: ManKey,
+    plaintext_key: Key,
     flags: u8,
 }
 
 impl Command {
     #[must_use]
     pub const fn new(
-        context: ManContext<Eui64>,
+        context: Context<Eui64>,
         eui64: Eui64,
-        plaintext_key: ManKey,
-        flags: ManFlags,
+        plaintext_key: Key,
+        flags: Flags,
     ) -> Self {
         Self {
             context,
             eui64,
             plaintext_key,
-            flags: flags as u8,
+            flags: flags.bits(),
         }
     }
 }

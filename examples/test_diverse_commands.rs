@@ -7,6 +7,7 @@ use log::{error, info};
 use serialport::{FlowControl, SerialPort};
 use siliconlabs::zigbee::security::man::{Context, DerivedKeyType, Flags, KeyType};
 
+use ezsp::ember::key::Type;
 use ezsp::ember::{CertificateData, PublicKeyData};
 use ezsp::ezsp::value::Id;
 use ezsp::uart::Uart;
@@ -237,6 +238,26 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
         Err(error) => {
             error!("Error exporting key: {error}");
+        }
+    }
+
+    // Test getting current network key.
+    match ezsp.get_key(Type::CurrentNetworkKey).await {
+        Ok(key) => {
+            info!("Current network key: {key:?}");
+        }
+        Err(error) => {
+            error!("Error getting current network key: {error}");
+        }
+    }
+
+    // Test getting trust center link key.
+    match ezsp.get_key(Type::TrustCenterLinkKey).await {
+        Ok(key) => {
+            info!("Current trust center link key: {key:?}");
+        }
+        Err(error) => {
+            error!("Error getting trust center link key: {error}");
         }
     }
 

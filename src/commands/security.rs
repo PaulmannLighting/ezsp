@@ -2,6 +2,7 @@ use std::future::Future;
 
 use siliconlabs::zigbee::security::man;
 
+use crate::ember::key::{Struct, Type};
 use crate::ember::{security, Eui64, NodeId};
 use crate::error::Error;
 use crate::frame::parameters::security::{
@@ -11,6 +12,7 @@ use crate::frame::parameters::security::{
     import_key, import_link_key, import_transient_key, request_link_key,
     send_trust_center_link_key, set_initial_security_state, update_tc_link_key,
 };
+use crate::parameters::security::get_key;
 use crate::transport::Transport;
 
 /// The `Security` trait provides an interface for the security features.
@@ -82,6 +84,9 @@ pub trait Security {
     fn get_current_security_state(
         &mut self,
     ) -> impl Future<Output = Result<security::current::State, Error>> + Send;
+
+    /// Retrieve a key from the key table.
+    fn get_key(&mut self, key: Type) -> impl Future<Output = Result<Struct, Error>> + Send;
 
     /// Retrieve information about the current and alternate network key, excluding their contents.
     fn get_network_key_info(
@@ -269,6 +274,12 @@ where
         )
         .await?
         .try_into()
+    }
+
+    async fn get_key(&mut self, key: Type) -> Result<Struct, Error> {
+        self.communicate::<_, get_key::Response>(get_key::Command::new(key))
+            .await?
+            .try_into()
     }
 
     async fn get_network_key_info(&mut self) -> Result<man::NetworkKeyInfo, Error> {

@@ -11,6 +11,7 @@ pub mod export_transient_key;
 pub mod find_key_table_entry;
 pub mod get_aps_key_info;
 pub mod get_current_security_state;
+pub mod get_key;
 pub mod get_network_key_info;
 pub mod handler;
 pub mod import_key;
@@ -48,6 +49,8 @@ pub enum Response {
     GetApsKeyInfo(get_aps_key_info::Response),
     /// Response parameters of the `get_current_security_state` command.
     GetCurrentSecurityState(get_current_security_state::Response),
+    /// Response parameters of the `get_key` command.
+    GetKey(get_key::Response),
     /// Response parameters of the `get_network_key_info` command.
     GetNetworkKeyInfo(get_network_key_info::Response),
     /// Response parameters of the `handler` command.

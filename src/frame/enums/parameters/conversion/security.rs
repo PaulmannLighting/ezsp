@@ -157,6 +157,19 @@ impl TryFrom<Parameters> for security::get_current_security_state::Response {
     }
 }
 
+impl TryFrom<Parameters> for security::get_key::Response {
+    type Error = Parameters;
+
+    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
+        match parameters {
+            Parameters::Response(Response::Security(security::Response::GetKey(response))) => {
+                Ok(response)
+            }
+            _ => Err(parameters),
+        }
+    }
+}
+
 impl TryFrom<Parameters> for security::get_network_key_info::Response {
     type Error = Parameters;
 

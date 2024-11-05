@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Display, LowerHex, UpperHex};
 use std::hash::Hash;
 
+use crate::frame::disambiguation::Disambiguation;
 use le_stream::{FromLeStream, ToLeStream};
 
 pub trait Identified: Debug + Send
@@ -19,6 +20,8 @@ where
 {
     type Id;
     const ID: Self::Id;
+    const DISAMBIGUATION: Option<Disambiguation> = None;
+    const UNIQUE_ID: (Self::Id, Option<Disambiguation>) = (Self::ID, Self::DISAMBIGUATION);
 }
 
 pub trait Parameter: Debug + Send

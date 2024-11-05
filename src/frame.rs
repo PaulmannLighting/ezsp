@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+pub use disambiguation::Disambiguation;
 pub use enums::{Callback, Parameters, Response};
 pub use header::{
     CallbackType, Command, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
@@ -7,6 +8,7 @@ pub use header::{
 pub use parameter::Identified;
 pub use parsable::Parsable;
 
+mod disambiguation;
 mod enums;
 mod header;
 mod parameter;

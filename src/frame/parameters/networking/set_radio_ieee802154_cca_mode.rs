@@ -4,6 +4,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::ember::Status;
+use crate::frame::disambiguation::Disambiguation;
 use crate::frame::Identified;
 use crate::Error;
 
@@ -24,6 +25,7 @@ impl Command {
 impl Identified for Command {
     type Id = u16;
     const ID: Self::Id = ID;
+    const DISAMBIGUATION: Option<Disambiguation> = Some(Disambiguation::SetRadioIeee802154CcaMode);
 }
 
 /// Response parameters.
@@ -35,6 +37,7 @@ pub struct Response {
 impl Identified for Response {
     type Id = u16;
     const ID: Self::Id = ID;
+    const DISAMBIGUATION: Option<Disambiguation> = Some(Disambiguation::SetRadioIeee802154CcaMode);
 }
 
 /// Convert the response into `()` or an appropriate [`Error`] depending on its status.

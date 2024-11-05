@@ -150,6 +150,7 @@ impl Transport for Uart {
             .map_err(ValueError::InvalidFrameId)?;
         self.encoder.send(header, command).await?;
         self.state.increment_requests();
+        self.state.set_disambiguation(T::DISAMBIGUATION);
         Ok(())
     }
 

@@ -3,10 +3,10 @@ use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{Arc, RwLock};
 
-use log::trace;
-
+use crate::frame::Disambiguation;
 use crate::transport::MIN_NON_LEGACY_VERSION;
 use crate::uart::connection::Connection;
+use log::trace;
 
 /// Shared state of the `EZSP` UART.
 #[derive(Clone, Debug)]
@@ -14,6 +14,7 @@ pub struct State {
     negotiated_version: Arc<RwLock<Option<u8>>>,
     connection: Arc<RwLock<Connection>>,
     pending_requests: Arc<AtomicUsize>,
+    disambiguation: Arc<RwLock<Option<Disambiguation>>>,
 }
 
 impl State {
@@ -67,6 +68,18 @@ impl State {
         self.pending_requests.load(Relaxed) > 0
     }
 
+    /// Returns the disambiguation.
+    #[allow(clippy::unwrap_in_result)]
+    #[must_use]
+    pub fn disambiguation(&self) -> Option<Disambiguation> {
+        *self.disambiguation.read().expect("RwLock poisoned")
+    }
+
+    /// Set the disambiguation.
+    pub fn set_disambiguation(&self, disambiguation: Option<Disambiguation>) {
+        *self.disambiguation.write().expect("RwLock poisoned") = disambiguation;
+    }
+
     /// Increment the number of pending requests.
     pub fn increment_requests(&self) {
         self.pending_requests.fetch_add(1, Relaxed);
@@ -84,6 +97,7 @@ impl Default for State {
             negotiated_version: Arc::new(RwLock::new(None)),
             connection: Arc::new(RwLock::new(Connection::default())),
             pending_requests: Arc::new(AtomicUsize::new(0)),
+            disambiguation: Arc::new(RwLock::new(None)),
         }
     }
 }

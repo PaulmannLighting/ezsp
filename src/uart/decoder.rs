@@ -100,11 +100,16 @@ impl Decoder {
 
         self.parameters.extend(stream);
 
-        match Parameters::parse_from_le_stream(next_header.id(), self.parameters.iter().copied()) {
+        match Parameters::parse_from_le_stream(
+            next_header.id(),
+            self.state.disambiguation(),
+            self.parameters.iter().copied(),
+        ) {
             Ok(parameters) => Ok(Some(Frame::new(next_header, parameters))),
             Err(error) => {
                 if let Ok(invalid_command) = invalid_command::Response::parse_from_le_stream(
                     next_header.id(),
+                    None,
                     self.parameters.iter().copied(),
                 ) {
                     return Err(Error::InvalidCommand(invalid_command));

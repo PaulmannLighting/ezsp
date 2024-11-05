@@ -116,6 +116,10 @@ pub enum Status {
     /// An attempt was made to join a Secured Network without a pre-configured key,
     /// but the Trust Center sent encrypted data using a pre-configured key.
     PreconfiguredKeyRequired,
+    /// The passed key data is not valid.
+    ///
+    /// A key of all zeros or all F's are reserved values and cannot be used.
+    KeyInvalid,
     /// A message cannot be sent because the network is currently overloaded.
     NetworkBusy,
     /// The application tried to send a message using an endpoint that it has not defined.
@@ -255,6 +259,7 @@ impl From<Status> for Values {
             Status::NoNetworkKeyReceived => Self::NoNetworkKeyReceived,
             Status::NoLinkKeyReceived => Self::NoLinkKeyReceived,
             Status::PreconfiguredKeyRequired => Self::PreconfiguredKeyRequired,
+            Status::KeyInvalid => Self::KeyInvalid,
             Status::NetworkBusy => Self::NetworkBusy,
             Status::InvalidEndpoint => Self::InvalidEndpoint,
             Status::BindingHasChanged => Self::BindingHasChanged,
@@ -364,6 +369,7 @@ impl From<Values> for Status {
             Values::NoNetworkKeyReceived => Self::NoNetworkKeyReceived,
             Values::NoLinkKeyReceived => Self::NoLinkKeyReceived,
             Values::PreconfiguredKeyRequired => Self::PreconfiguredKeyRequired,
+            Values::KeyInvalid => Self::KeyInvalid,
             Values::NetworkBusy => Self::NetworkBusy,
             Values::InvalidEndpoint => Self::InvalidEndpoint,
             Values::BindingHasChanged => Self::BindingHasChanged,

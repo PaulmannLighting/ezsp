@@ -82,6 +82,7 @@ pub enum Values {
     NoNetworkKeyReceived = 0xAD,
     NoLinkKeyReceived = 0xAE,
     PreconfiguredKeyRequired = 0xAF,
+    KeyInvalid = 0xB2,
     NetworkBusy = 0xA1,
     InvalidEndpoint = 0xA3,
     BindingHasChanged = 0xA4,

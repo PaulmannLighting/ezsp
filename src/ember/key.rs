@@ -18,12 +18,16 @@ pub type Data = [u8; 16];
 pub enum Type {
     /// A shared key between the Trust Center and a device.
     TrustCenterLinkKey = 0x01,
+    /// A shared secret used for deriving keys between the Trust Center and a device.
+    TrustCenterMasterKey = 0x02,
     /// The current active Network Key used by all devices in the network.
     CurrentNetworkKey = 0x03,
     /// The alternate Network Key that was previously in use, or the newer key that will be switched to.
     NextNetworkKey = 0x04,
     /// An Application Link Key shared with another (non-Trust Center) device.
     ApplicationLinkKey = 0x05,
+    /// An Application Master Key shared secret used to derive an Application Link Key.
+    ApplicationMasterKey = 0x06,
 }
 
 impl From<Type> for u8 {

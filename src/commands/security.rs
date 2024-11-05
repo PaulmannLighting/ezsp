@@ -30,7 +30,7 @@ pub trait Security {
     fn clear_transient_link_keys(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This function erases the data in the key table entry at the specified index.
-    ///If the index is invalid, false is returned.
+    /// If the index is invalid, false is returned.
     fn erase_key_table_entry(
         &mut self,
         index: u8,

@@ -10,7 +10,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use crate::ezsp::StackVersion;
 use crate::frame::Parameter;
 
-const ID: u8 = 0x00;
+const ID: u16 = 0x0000;
 
 /// The response provides information about the firmware running on the NCP.
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
@@ -28,8 +28,7 @@ impl Command {
 }
 
 impl Parameter for Command {
-    type Id = u8;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }
 
 /// The response provides information about the firmware running on the NCP.
@@ -61,6 +60,5 @@ impl Response {
 }
 
 impl Parameter for Response {
-    type Id = u8;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }

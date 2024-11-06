@@ -39,6 +39,5 @@ impl Display for Response {
 }
 
 impl Parameter for Response {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }

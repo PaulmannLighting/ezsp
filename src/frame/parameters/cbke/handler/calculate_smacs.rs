@@ -20,8 +20,7 @@ pub struct Handler {
 }
 
 impl Parameter for Handler {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }
 
 /// Converts the handler into a [`Payload`] or an appropriate [`Error`] by evaluating its status field.

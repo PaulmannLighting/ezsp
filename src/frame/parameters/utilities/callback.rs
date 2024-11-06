@@ -10,6 +10,5 @@ const ID: u16 = 0x0006;
 pub(crate) struct Command;
 
 impl Parameter for Command {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }

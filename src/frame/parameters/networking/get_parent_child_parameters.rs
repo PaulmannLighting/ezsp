@@ -11,8 +11,7 @@ const ID: u16 = 0x0029;
 pub(crate) struct Command;
 
 impl Parameter for Command {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }
 
 /// The response to a get parent child parameters command.
@@ -44,6 +43,5 @@ impl Response {
 }
 
 impl Parameter for Response {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }

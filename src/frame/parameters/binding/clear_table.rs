@@ -13,8 +13,7 @@ const ID: u16 = 0x002A;
 pub(crate) struct Command;
 
 impl Parameter for Command {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }
 
 /// Response parameters.
@@ -24,8 +23,7 @@ pub struct Response {
 }
 
 impl Parameter for Response {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }
 
 /// Convert the response into a [`Result<()>`](crate::Result) by evaluating its status field.

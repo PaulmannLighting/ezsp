@@ -11,8 +11,7 @@ const ID: u16 = 0x0026;
 pub(crate) struct Command;
 
 impl Parameter for Command {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }
 
 /// Response parameters.
@@ -30,8 +29,7 @@ impl Response {
 }
 
 impl Parameter for Response {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }
 
 /// Converts a [`Response`] into an [`Eui64`].

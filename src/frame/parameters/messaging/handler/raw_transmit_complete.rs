@@ -14,8 +14,7 @@ pub struct Handler {
 }
 
 impl Parameter for Handler {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }
 
 impl TryFrom<Handler> for () {

@@ -19,8 +19,6 @@ impl Parsable for super::Parameters {
     where
         T: Iterator<Item = u8>,
     {
-        const VERSION_ID: u16 = configuration::version::Response::ID as u16;
-
         match (id, disambiguation) {
             // Binding responses
             <binding::clear_table::Response as Parameter>::UNIQUE_ID => {
@@ -236,7 +234,7 @@ impl Parsable for super::Parameters {
                     configuration::set_value::Response::from_le_stream_exact(stream)?,
                 ))))
             }
-            (VERSION_ID, None) => {
+            <configuration::version::Response as Parameter>::UNIQUE_ID => {
                 Ok(Self::Response(Response::Configuration(configuration::Response::Version(
                     configuration::version::Response::from_le_stream_exact(stream)?,
                 ))))

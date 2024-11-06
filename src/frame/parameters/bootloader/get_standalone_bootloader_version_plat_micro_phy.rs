@@ -12,8 +12,7 @@ const BOOTLOADER_INVALID_VERSION: u16 = 0xFFFF;
 pub(crate) struct Command;
 
 impl Parameter for Command {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }
 
 /// Response parameters.
@@ -57,6 +56,5 @@ impl Response {
 }
 
 impl Parameter for Response {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }

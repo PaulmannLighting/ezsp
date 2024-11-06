@@ -22,8 +22,7 @@ impl Command {
 }
 
 impl Parameter for Command {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }
 
 /// Response parameters.
@@ -34,8 +33,7 @@ pub struct Response {
 }
 
 impl Parameter for Response {
-    type Id = u16;
-    const ID: Self::Id = ID;
+    const ID: u16 = ID;
 }
 
 /// Convert a response into an [`Entry`] or an appropriate [`Error`] depending on its status.

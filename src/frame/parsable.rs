@@ -36,9 +36,9 @@ where
     where
         S: Iterator<Item = u8>,
     {
-        if Self::ID.into() != id && Self::DISAMBIGUATION != disambiguation {
+        if Self::ID != id && Self::DISAMBIGUATION != disambiguation {
             return Err(Decode::FrameIdMismatch {
-                expected: Self::ID.into(),
+                expected: Self::ID,
                 found: id,
             });
         }

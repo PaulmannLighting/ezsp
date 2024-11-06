@@ -3,7 +3,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::binding::TableEntry;
 use crate::ember::Status;
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::Error;
 
 const ID: u16 = 0x0031;
@@ -46,7 +46,7 @@ impl Handler {
     }
 }
 
-impl Identified for Handler {
+impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

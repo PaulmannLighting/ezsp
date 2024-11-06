@@ -7,7 +7,7 @@ use std::array::IntoIter;
 use std::iter::{Chain, FlatMap};
 
 use crate::ezsp::Status;
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 use crate::Error;
 
@@ -90,7 +90,7 @@ impl ToLeStream for Clusters {
     }
 }
 
-impl Identified for Command {
+impl Parameter for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -101,7 +101,7 @@ pub struct Response {
     status: u8,
 }
 
-impl Identified for Response {
+impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

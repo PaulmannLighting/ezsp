@@ -9,7 +9,7 @@ use serialport::SerialPort;
 use tokio::sync::mpsc::Receiver;
 
 use crate::error::Error;
-use crate::frame::{Command, Header, Identified};
+use crate::frame::{Command, Header, Parameter};
 use crate::transport::{Transport, MIN_NON_LEGACY_VERSION};
 use crate::{Configuration, Extended, Ezsp, Handler, Legacy};
 use crate::{Parameters, ValueError};
@@ -143,7 +143,7 @@ impl Transport for Uart {
 
     async fn send<T>(&mut self, command: T) -> Result<(), Error>
     where
-        T: Identified + ToLeStream,
+        T: Parameter + ToLeStream,
     {
         let header = self
             .next_header(T::ID.into())

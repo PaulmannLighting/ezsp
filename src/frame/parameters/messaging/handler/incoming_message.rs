@@ -5,7 +5,7 @@ use crate::ember::aps::Frame;
 use crate::ember::message::Incoming;
 use crate::ember::node::Type;
 use crate::ember::NodeId;
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x0045;
@@ -99,7 +99,7 @@ impl Handler {
     }
 }
 
-impl Identified for Handler {
+impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

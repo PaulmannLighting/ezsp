@@ -5,7 +5,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::duty_cycle::Limits;
 use crate::ember::Status;
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::Error;
 
 const ID: u16 = 0x0040;
@@ -21,7 +21,7 @@ impl From<Limits> for Command {
     }
 }
 
-impl Identified for Command {
+impl Parameter for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -32,7 +32,7 @@ pub struct Response {
     status: u8,
 }
 
-impl Identified for Response {
+impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

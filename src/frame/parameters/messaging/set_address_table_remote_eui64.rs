@@ -4,7 +4,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::ember::{Eui64, Status};
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::Error;
 
 const ID: u16 = 0x005C;
@@ -25,7 +25,7 @@ impl Command {
     }
 }
 
-impl Identified for Command {
+impl Parameter for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -36,7 +36,7 @@ pub struct Response {
     status: u8,
 }
 
-impl Identified for Response {
+impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

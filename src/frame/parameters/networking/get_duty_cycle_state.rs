@@ -6,7 +6,7 @@ use num_traits::FromPrimitive;
 use crate::ember::duty_cycle::State;
 use crate::ember::Status;
 use crate::error::ValueError;
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::Error;
 
 const ID: u16 = 0x0035;
@@ -14,7 +14,7 @@ const ID: u16 = 0x0035;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command;
 
-impl Identified for Command {
+impl Parameter for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -26,7 +26,7 @@ pub struct Response {
     returned_state: u8,
 }
 
-impl Identified for Response {
+impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

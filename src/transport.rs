@@ -5,7 +5,7 @@ use std::num::TryFromIntError;
 
 use le_stream::ToLeStream;
 
-use crate::frame::{Header, Identified};
+use crate::frame::{Header, Parameter};
 use crate::{Error, Parameters};
 
 /// The minimum protocol version that supports non-legacy commands.
@@ -36,7 +36,7 @@ pub trait Transport: Send {
     /// Send a command to the NCP.
     fn send<T>(&mut self, command: T) -> impl Future<Output = Result<(), Error>> + Send
     where
-        T: Identified + ToLeStream;
+        T: Parameter + ToLeStream;
 
     /// Receive a response from the NCP.
     fn receive<T>(&mut self) -> impl Future<Output = Result<T, Error>> + Send
@@ -49,7 +49,7 @@ pub trait Transport: Send {
     /// This assumes that `C::ID` and `R::ID` are the same.
     fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
     where
-        C: Identified + ToLeStream,
+        C: Parameter + ToLeStream,
         R: TryFrom<Parameters>,
         Error: From<<R as TryFrom<Parameters>>::Error>,
     {

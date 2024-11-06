@@ -1,7 +1,7 @@
 use le_stream::derive::FromLeStream;
 
 use crate::ember::zll::{DeviceInfoRecord, Network};
-use crate::frame::Identified;
+use crate::frame::Parameter;
 
 const ID: u16 = 0x00B6;
 
@@ -46,7 +46,7 @@ impl Handler {
     }
 }
 
-impl Identified for Handler {
+impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

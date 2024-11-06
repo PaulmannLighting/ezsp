@@ -5,7 +5,7 @@ use num_traits::FromPrimitive;
 
 use crate::ezsp::value::ExtendedId;
 use crate::ezsp::Status;
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 use crate::Error;
 
@@ -27,7 +27,7 @@ impl Command {
     }
 }
 
-impl Identified for Command {
+impl Parameter for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -39,7 +39,7 @@ pub struct Response {
     value: ByteSizedVec<u8>,
 }
 
-impl Identified for Response {
+impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

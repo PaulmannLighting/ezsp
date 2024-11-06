@@ -6,7 +6,7 @@ use num_traits::FromPrimitive;
 use crate::error::ValueError;
 use crate::ezsp::Status;
 use crate::ezsp::{decision, policy};
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::Error;
 
 const ID: u16 = 0x0056;
@@ -25,7 +25,7 @@ impl Command {
     }
 }
 
-impl Identified for Command {
+impl Parameter for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -37,7 +37,7 @@ pub struct Response {
     decision_id: u8,
 }
 
-impl Identified for Response {
+impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

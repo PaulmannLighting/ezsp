@@ -3,7 +3,7 @@ use num_traits::FromPrimitive;
 
 use super::Payload;
 use crate::ember::Status;
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::Error;
 
 const ID: u16 = 0x00EB;
@@ -20,7 +20,7 @@ pub struct Handler {
     payload: Payload,
 }
 
-impl Identified for Handler {
+impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

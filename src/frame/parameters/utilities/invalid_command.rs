@@ -5,7 +5,7 @@ use num_traits::FromPrimitive;
 use std::fmt::Display;
 
 use crate::ezsp::Status;
-use crate::frame::Identified;
+use crate::frame::Parameter;
 
 const ID: u16 = 0x0058;
 
@@ -38,7 +38,7 @@ impl Display for Response {
     }
 }
 
-impl Identified for Response {
+impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

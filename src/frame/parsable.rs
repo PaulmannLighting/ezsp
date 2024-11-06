@@ -1,6 +1,6 @@
 use crate::error::Decode;
 use crate::frame::disambiguation::Disambiguation;
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::parameters::{
     binding, bootloader, cbke, green_power, messaging, mfglib, networking, security, trust_center,
     utilities, zll,
@@ -26,7 +26,7 @@ pub trait Parsable: Sized {
 
 impl<T> Parsable for T
 where
-    T: Identified + FromLeStream,
+    T: Parameter + FromLeStream,
 {
     fn parse_from_le_stream<S>(
         id: u16,

@@ -4,7 +4,7 @@
 //! before a previously set timer will generate a callback.
 
 use crate::ember::event::{Duration, Units};
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 const ID: u16 = 0x004E;
@@ -21,7 +21,7 @@ impl Command {
     }
 }
 
-impl Identified for Command {
+impl Parameter for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -65,7 +65,7 @@ impl Response {
     }
 }
 
-impl Identified for Response {
+impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

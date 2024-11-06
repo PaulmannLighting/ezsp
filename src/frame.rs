@@ -5,7 +5,7 @@ pub use enums::{Callback, Parameters, Response};
 pub use header::{
     CallbackType, Command, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
 };
-pub use parameter::Identified;
+pub use parameter::Parameter;
 pub use parsable::Parsable;
 
 mod disambiguation;

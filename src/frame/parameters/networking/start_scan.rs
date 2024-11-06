@@ -5,7 +5,7 @@ use num_traits::FromPrimitive;
 use siliconlabs::Status;
 
 use crate::ezsp::network::scan::Type;
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::types::VariableLengthU32;
 use crate::Error;
 
@@ -29,7 +29,7 @@ impl Command {
     }
 }
 
-impl Identified for Command {
+impl Parameter for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -40,7 +40,7 @@ pub struct Response {
     status: VariableLengthU32,
 }
 
-impl Identified for Response {
+impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

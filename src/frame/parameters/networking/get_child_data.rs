@@ -5,7 +5,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::child::Data;
 use crate::ember::Status;
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::Error;
 
 const ID: u16 = 0x004A;
@@ -22,7 +22,7 @@ impl Command {
     }
 }
 
-impl Identified for Command {
+impl Parameter for Command {
     type Id = u16;
     const ID: Self::Id = ID;
 }
@@ -34,7 +34,7 @@ pub struct Response {
     child_data: Data,
 }
 
-impl Identified for Response {
+impl Parameter for Response {
     type Id = u16;
     const ID: Self::Id = ID;
 }

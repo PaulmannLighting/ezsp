@@ -2,7 +2,7 @@ use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 
 use crate::ember::{PublicKey283k1Data, Status};
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::Error;
 
 const ID: u16 = 0x00E9;
@@ -20,7 +20,7 @@ pub struct Handler {
     ephemeral_public_key: PublicKey283k1Data,
 }
 
-impl Identified for Handler {
+impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

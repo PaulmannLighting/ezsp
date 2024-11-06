@@ -2,7 +2,7 @@ use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 
 use crate::ember::Status;
-use crate::frame::Identified;
+use crate::frame::Parameter;
 use crate::Error;
 
 const ID: u16 = 0x00C7;
@@ -14,7 +14,7 @@ pub struct Handler {
     gpep_handle: u8,
 }
 
-impl Identified for Handler {
+impl Parameter for Handler {
     type Id = u16;
     const ID: Self::Id = ID;
 }

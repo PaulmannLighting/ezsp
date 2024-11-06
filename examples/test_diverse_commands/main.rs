@@ -7,13 +7,18 @@ use log::{error, info};
 use serialport::{FlowControl, SerialPort};
 use siliconlabs::zigbee::security::man::{Context, DerivedKeyType, Flags, KeyType};
 
-use ezsp::ember::key::Type;
 use ezsp::ember::{CertificateData, PublicKeyData};
 use ezsp::ezsp::value::Id;
 use ezsp::uart::Uart;
 use ezsp::{
     Callback, Cbke, Configuration, Handler, Networking, ProxyTable, Security, SinkTable, Utilities,
 };
+
+use duty_cycle::get_duty_cycle_info;
+use get_keys::get_keys;
+
+mod duty_cycle;
+mod get_keys;
 
 const TEST_TEXT: &str = "Rust rules! 🦀";
 
@@ -184,26 +189,8 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
     }
 
-    // Test getting duty cycle limits.
-    match ezsp.get_duty_cycle_limits().await {
-        Ok(limits) => {
-            info!("Duty cycle limits: {limits:#04X?}");
-            info!("Duty cycle limits size: {}", limits.to_le_stream().count());
-        }
-        Err(error) => {
-            error!("Error getting duty cycle limits: {error}");
-        }
-    }
-
-    // Test getting duty cycle state.
-    match ezsp.get_duty_cycle_state().await {
-        Ok(state) => {
-            info!("Duty cycle state: {state:#04X?}");
-        }
-        Err(error) => {
-            error!("Error getting duty cycle state: {error}");
-        }
-    }
+    // Test duty-cycle-related commands.
+    get_duty_cycle_info(&mut ezsp).await;
 
     // Test calculate SMACS.
     match ezsp
@@ -241,25 +228,8 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
     }
 
-    // Test getting current network key.
-    match ezsp.get_key(Type::CurrentNetworkKey).await {
-        Ok(key) => {
-            info!("Current network key: {key:?}");
-        }
-        Err(error) => {
-            error!("Error getting current network key: {error}");
-        }
-    }
-
-    // Test getting trust center link key.
-    match ezsp.get_key(Type::TrustCenterLinkKey).await {
-        Ok(key) => {
-            info!("Current trust center link key: {key:?}");
-        }
-        Err(error) => {
-            error!("Error getting trust center link key: {error}");
-        }
-    }
+    // Test getting keys.
+    get_keys(&mut ezsp).await;
 
     // Test nop.
     if let Err(error) = ezsp.nop().await {
@@ -296,16 +266,6 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
         Err(error) => {
             error!("Error getting network parameters: {error}");
-        }
-    }
-
-    // Test getting the current duty cycles.
-    match ezsp.get_current_duty_cycle(10).await {
-        Ok(duty_cycles) => {
-            info!("Current duty cycles: {duty_cycles:?}");
-        }
-        Err(error) => {
-            error!("Error getting current duty cycles: {error}");
         }
     }
 }

@@ -52,6 +52,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         Ok(bytes) => match String::from_utf8(bytes.to_vec()) {
             Ok(text) => {
                 info!("Got echo: {text}");
+                assert_eq!(text, TEST_TEXT);
             }
             Err(error) => {
                 error!("{error}");

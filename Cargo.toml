@@ -38,6 +38,10 @@ tokio = { version = "1.40", features = ["rt", "rt-multi-thread", "macros"] }
 ashv2 = ["dep:ashv2", "dep:serialport", "tokio/rt", "tokio/time", "dep:tokio-util", "dep:futures"]
 
 [[example]]
+name = "console"
+required-features = ["ashv2"]
+
+[[example]]
 name = "test_diverse_commands"
 required-features = ["ashv2"]
 

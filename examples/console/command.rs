@@ -56,6 +56,6 @@ impl FromStr for Command {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Self::try_parse_from(once("EZSP interactive shell").chain(s.split_whitespace()))
+        Self::try_parse_from(once("").chain(s.split_whitespace()))
     }
 }

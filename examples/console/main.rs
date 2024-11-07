@@ -48,9 +48,14 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         };
 
         if line.is_empty() {
-            if let Err(error) = uart.nop().await {
-                error!("{error}");
-                return;
+            match uart.nop().await {
+                Ok(()) => {
+                    continue;
+                }
+                Err(error) => {
+                    println!("{error}");
+                    break;
+                }
             }
         }
 

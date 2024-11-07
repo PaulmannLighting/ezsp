@@ -16,7 +16,7 @@ mod scan;
 pub enum Command {
     Echo {
         #[arg(help = "Message to send")]
-        message: String,
+        message: Vec<String>,
     },
     Scan {
         #[arg(
@@ -40,7 +40,7 @@ impl Command {
     pub async fn run(self, uart: &mut Uart) {
         match self {
             Self::Echo { message } => {
-                echo(uart, message).await;
+                echo(uart, message.join(" ")).await;
             }
             Self::Scan {
                 channel_mask,

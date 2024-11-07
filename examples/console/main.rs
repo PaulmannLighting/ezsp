@@ -8,7 +8,7 @@ use std::io::{stdin, stdout, Write};
 use std::str::FromStr;
 
 use ezsp::uart::Uart;
-use ezsp::Ezsp;
+use ezsp::{Ezsp, Utilities};
 
 use args::Args;
 use command::Command;
@@ -48,7 +48,10 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         };
 
         if line.is_empty() {
-            continue;
+            if let Err(error) = uart.nop().await {
+                error!("{error}");
+                return;
+            }
         }
 
         match Command::from_str(&line) {

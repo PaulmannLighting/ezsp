@@ -1,4 +1,4 @@
-//! Test version negotiation.
+//! Interactive console.
 
 use std::io::{stdin, stdout, Write};
 use std::str::FromStr;

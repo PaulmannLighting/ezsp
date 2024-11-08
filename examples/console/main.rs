@@ -70,6 +70,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     }
 }
 
+/// Print the command line prompt.
 fn prompt(message: impl AsRef<[u8]>) -> std::io::Result<()> {
     stdout().write_all(message.as_ref())?;
     stdout().flush()

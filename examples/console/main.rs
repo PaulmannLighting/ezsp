@@ -70,7 +70,7 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
     }
 }
 
-fn prompt(message: impl AsRef<str>) -> std::io::Result<()> {
-    stdout().write_all(message.as_ref().as_bytes())?;
+fn prompt(message: impl AsRef<[u8]>) -> std::io::Result<()> {
+    stdout().write_all(message.as_ref())?;
     stdout().flush()
 }

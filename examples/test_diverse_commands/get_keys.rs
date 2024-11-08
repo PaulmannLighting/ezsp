@@ -7,6 +7,7 @@ use ezsp::uart::Uart;
 use ezsp::Security;
 
 /// Get diverse keys from the device.
+#[allow(deprecated)]
 pub async fn get_keys(ezsp: &mut Uart) {
     match ezsp.get_key(Type::TrustCenterLinkKey).await {
         Ok(key) => {

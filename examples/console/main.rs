@@ -44,6 +44,7 @@ async fn run(mut uart: Uart) {
         prompt("EZSP> ").expect("STDOUT should be available.");
 
         let Some(line) = lines.next() else {
+            drop(lines);
             break;
         };
 

@@ -1,4 +1,4 @@
-//! Test version negotiation.
+//! Test `scan` command.
 
 use ashv2::{open, BaudRate};
 use clap::Parser;

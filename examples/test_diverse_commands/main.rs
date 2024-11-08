@@ -1,4 +1,4 @@
-//! Test version negotiation.
+//! Test diverse `EZSP` commands.
 
 use ashv2::{open, BaudRate, HexSlice};
 use clap::Parser;

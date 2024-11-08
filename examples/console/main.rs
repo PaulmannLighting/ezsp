@@ -1,11 +1,12 @@
 //! Test version negotiation.
 
+use std::io::{stdin, stdout, Write};
+use std::str::FromStr;
+
 use ashv2::{open, BaudRate};
 use clap::Parser;
 use log::error;
-use serialport::{FlowControl, SerialPort};
-use std::io::{stdin, stdout, Write};
-use std::str::FromStr;
+use serialport::FlowControl;
 
 use ezsp::uart::Uart;
 use ezsp::{Ezsp, Utilities};
@@ -25,14 +26,13 @@ async fn main() {
     let args = Args::parse();
 
     match open(args.tty.clone(), BaudRate::RstCts, FlowControl::Software) {
-        Ok(serial_port) => run(serial_port, args).await,
+        Ok(serial_port) => run(Uart::new(serial_port, Handler, args.version, 8)).await,
         Err(error) => error!("{error}"),
     }
 }
 
-async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
-    let mut uart = Uart::new(serial_port, Handler, args.version, 8);
-
+#[allow(clippy::future_not_send)]
+async fn run(mut uart: Uart) {
     if let Err(error) = uart.init().await {
         error!("{error}");
         return;

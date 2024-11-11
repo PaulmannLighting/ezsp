@@ -48,7 +48,7 @@ impl Header {
         }
     }
 
-    /// Returns `true` if the header indicates an asynchronous callback.
+    /// Returns `true` if the header indicates an asynchronous callback else `false`.
     #[must_use]
     pub fn is_async_callback(self) -> bool {
         if let LowByte::Response(response) = self.low_byte() {

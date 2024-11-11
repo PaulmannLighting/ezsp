@@ -53,15 +53,15 @@ impl Splitter {
     }
 
     async fn handle_frame(&self, frame: Frame) {
-        let is_async_callback = frame.header().is_async_callback();
+        let (header, parameters) = frame.into();
 
-        match frame.parameters() {
+        match parameters {
             Parameters::Response(response) => {
                 trace!("Forwarding response.");
                 self.handle_response(Parameters::Response(response)).await;
             }
             Parameters::Callback(callback) => {
-                if is_async_callback {
+                if header.is_async_callback() {
                     trace!("Forwarding async callback.");
                     self.handle_callback(callback).await;
                 } else {

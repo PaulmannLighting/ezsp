@@ -28,16 +28,16 @@ impl Frame {
     pub const fn new(header: Header, parameters: Parameters) -> Self {
         Self { header, parameters }
     }
+}
 
-    /// Return the header.
-    #[must_use]
-    pub const fn header(&self) -> Header {
-        self.header
+impl From<(Header, Parameters)> for Frame {
+    fn from((header, parameters): (Header, Parameters)) -> Self {
+        Self { header, parameters }
     }
+}
 
-    /// Return the parameters.
-    #[must_use]
-    pub fn parameters(self) -> Parameters {
-        self.parameters
+impl From<Frame> for (Header, Parameters) {
+    fn from(frame: Frame) -> Self {
+        (frame.header, frame.parameters)
     }
 }

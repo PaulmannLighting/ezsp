@@ -39,7 +39,7 @@ impl Header {
         }
     }
 
-    /// Returns the header's frame ID as an `u16`,
+    /// Returns the header's frame ID as a `u16`,
     #[must_use]
     pub fn id(self) -> u16 {
         match self {

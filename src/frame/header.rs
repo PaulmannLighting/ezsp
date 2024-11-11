@@ -21,6 +21,24 @@ pub enum Header {
 }
 
 impl Header {
+    /// Returns the header's sequence number.
+    #[must_use]
+    pub const fn sequence(self) -> u8 {
+        match self {
+            Self::Legacy(legacy) => legacy.sequence(),
+            Self::Extended(extended) => extended.sequence(),
+        }
+    }
+
+    /// Returns the low byte.
+    #[must_use]
+    pub const fn low_byte(self) -> LowByte {
+        match self {
+            Self::Legacy(legacy) => legacy.low_byte(),
+            Self::Extended(extended) => extended.low_byte(),
+        }
+    }
+
     /// Returns the header's frame ID as an `u16`,
     #[must_use]
     pub fn id(self) -> u16 {
@@ -33,10 +51,7 @@ impl Header {
     /// Returns `true` if the header indicates an asynchronous callback.
     #[must_use]
     pub fn is_async_callback(self) -> bool {
-        if let LowByte::Response(response) = match self {
-            Self::Legacy(legacy) => legacy.low_byte(),
-            Self::Extended(extended) => extended.low_byte(),
-        } {
+        if let LowByte::Response(response) = self.low_byte() {
             response.callback_type() == Some(CallbackType::Async)
         } else {
             false

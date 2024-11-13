@@ -41,7 +41,7 @@ async fn run(mut uart: Uart) {
     let mut lines = stdin().lines().map_while(Result::ok);
 
     loop {
-        prompt("EZSP> ").expect("STDOUT should be available.");
+        prompt("EZSP> ").expect("STDOUT should be available. This is a bug.");
 
         let Some(line) = lines.next() else {
             drop(lines);

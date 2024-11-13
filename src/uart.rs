@@ -163,7 +163,7 @@ impl Transport for Uart {
             .responses
             .recv()
             .await
-            .expect("Response channel closed.");
+            .expect("Response channel should be open. This is a bug");
         self.state.decrement_requests();
         Ok(response?.try_into()?)
     }

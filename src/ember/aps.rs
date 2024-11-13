@@ -132,25 +132,25 @@ impl Frame {
         if Option::Retry as u16 & self.options != 0 {
             options
                 .push(Option::Retry)
-                .expect("Options buffer should have sufficient capacity.");
+                .expect("Options buffer should have sufficient capacity. This is a bug.");
         }
 
         if Option::EnableRouteDiscovery as u16 & self.options != 0 {
             options
                 .push(Option::EnableRouteDiscovery)
-                .expect("Options buffer should have sufficient capacity.");
+                .expect("Options buffer should have sufficient capacity. This is a bug.");
         }
 
         if Option::ForceRouteDiscovery as u16 & self.options != 0 {
             options
                 .push(Option::ForceRouteDiscovery)
-                .expect("Options buffer should have sufficient capacity.");
+                .expect("Options buffer should have sufficient capacity. This is a bug.");
         }
 
         if Option::SourceEui64 as u16 & self.options != 0 {
             options
                 .push(Option::SourceEui64)
-                .expect("Options buffer should have sufficient capacity.");
+                .expect("Options buffer should have sufficient capacity. This is a bug.");
         }
 
         options

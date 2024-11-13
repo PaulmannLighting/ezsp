@@ -45,7 +45,7 @@ impl Splitter {
                         self.responses
                             .send(Err(error))
                             .await
-                            .expect("Failed to send response.");
+                            .expect("Response channel should be open. This is a bug");
                     }
                 }
             }
@@ -76,13 +76,13 @@ impl Splitter {
         self.responses
             .send(Ok(parameters))
             .await
-            .expect("Failed to send response.");
+            .expect("Response channel should be open. This is a bug.");
     }
 
     async fn handle_callback(&self, handler: Callback) {
         self.callbacks
             .send(handler)
             .await
-            .expect("Failed to send callback.");
+            .expect("Callback channel should be open. This is a bug");
     }
 }

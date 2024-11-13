@@ -70,7 +70,7 @@ impl Drop for Threads {
         if let Some(transceiver) = self.transceiver.take() {
             transceiver
                 .join()
-                .expect("Failed to join transceiver thread.");
+                .expect("Transceiver thread should be able to join. This is a bug.");
         }
 
         // ...then stop the frame splitter and callback handler.

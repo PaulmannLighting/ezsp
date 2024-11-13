@@ -146,7 +146,7 @@ impl Transport for Uart {
         T: Parameter + ToLeStream,
     {
         let header = self
-            .next_header(T::ID.into())
+            .next_header(T::ID)
             .map_err(ValueError::InvalidFrameId)?;
         self.encoder.send(header, command).await?;
         self.state.increment_requests();

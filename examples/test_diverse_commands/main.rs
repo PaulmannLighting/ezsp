@@ -11,8 +11,7 @@ use ezsp::ember::{CertificateData, PublicKeyData};
 use ezsp::ezsp::value::Id;
 use ezsp::uart::Uart;
 use ezsp::{
-    Callback, Cbke, Configuration, Handler, Networking, ProxyTable, Security, SinkTable,
-    TokenInterface, Utilities,
+    Callback, Cbke, Configuration, Handler, Networking, ProxyTable, Security, SinkTable, Utilities,
 };
 
 use duty_cycle::get_duty_cycle_info;
@@ -268,16 +267,6 @@ async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
         }
         Err(error) => {
             error!("Error getting network parameters: {error}");
-        }
-    }
-
-    // Test token factory reset.
-    match ezsp.token_factory_reset(false, true).await {
-        Ok(()) => {
-            info!("Token factory reset succeeded");
-        }
-        Err(error) => {
-            error!("Token factory reset error: {error}");
         }
     }
 }

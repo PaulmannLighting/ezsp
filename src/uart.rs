@@ -2,6 +2,7 @@
 
 use std::fmt::Debug;
 use std::num::TryFromIntError;
+use std::sync::Arc;
 
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
@@ -30,7 +31,7 @@ mod threads;
 #[derive(Debug)]
 pub struct Uart {
     protocol_version: u8,
-    state: State,
+    state: Arc<State>,
     responses: Receiver<Result<Parameters, Error>>,
     encoder: Encoder,
     _threads: Threads,
@@ -48,7 +49,7 @@ impl Uart {
         S: SerialPort + 'static,
         H: Handler + 'static,
     {
-        let state = State::default();
+        let state = Arc::new(State::default());
         let (frames_out, responses, threads) =
             Threads::spawn(serial_port, handler, state.clone(), channel_size);
         Self {

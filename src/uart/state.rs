@@ -1,20 +1,21 @@
 use std::fmt::Debug;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::Relaxed;
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
+
+use log::trace;
 
 use crate::frame::Disambiguation;
 use crate::transport::MIN_NON_LEGACY_VERSION;
 use crate::uart::connection::Connection;
-use log::trace;
 
 /// Shared state of the `EZSP` UART.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct State {
-    negotiated_version: Arc<RwLock<Option<u8>>>,
-    connection: Arc<RwLock<Connection>>,
-    pending_requests: Arc<AtomicUsize>,
-    disambiguation: Arc<RwLock<Option<Disambiguation>>>,
+    negotiated_version: RwLock<Option<u8>>,
+    connection: RwLock<Connection>,
+    pending_requests: AtomicUsize,
+    disambiguation: RwLock<Option<Disambiguation>>,
 }
 
 impl State {
@@ -109,10 +110,10 @@ impl State {
 impl Default for State {
     fn default() -> Self {
         Self {
-            negotiated_version: Arc::new(RwLock::new(None)),
-            connection: Arc::new(RwLock::new(Connection::default())),
-            pending_requests: Arc::new(AtomicUsize::new(0)),
-            disambiguation: Arc::new(RwLock::new(None)),
+            negotiated_version: RwLock::new(None),
+            connection: RwLock::new(Connection::default()),
+            pending_requests: AtomicUsize::new(0),
+            disambiguation: RwLock::new(None),
         }
     }
 }

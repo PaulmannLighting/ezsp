@@ -29,7 +29,7 @@ impl Threads {
     pub fn spawn<S, H>(
         serial_port: S,
         handler: H,
-        state: State,
+        state: Arc<State>,
         channel_size: usize,
     ) -> (Sender<Payload>, Receiver<Result<Parameters, Error>>, Self)
     where

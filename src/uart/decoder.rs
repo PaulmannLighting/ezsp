@@ -106,7 +106,7 @@ impl Decoder {
 
         match Parameters::parse_from_le_stream(
             next_header.id(),
-            self.state.disambiguation(),
+            self.state.disambiguation().unwrap_or(None),
             self.parameters.iter().copied(),
         ) {
             Ok(parameters) => Ok(Some(Frame::new(next_header, parameters))),

@@ -41,7 +41,7 @@ impl Splitter {
                     self.handle_frame(frame).await;
                 }
                 Err(error) => {
-                    if self.incoming.state.requests_pending() {
+                    if self.incoming.state.disambiguation().is_some() {
                         self.responses
                             .send(Err(error))
                             .await

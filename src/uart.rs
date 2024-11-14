@@ -150,7 +150,6 @@ impl Transport for Uart {
             .next_header(T::ID)
             .map_err(ValueError::InvalidFrameId)?;
         self.encoder.send(header, command).await?;
-        self.state.increment_requests();
         self.state.set_disambiguation(T::DISAMBIGUATION);
         Ok(())
     }
@@ -165,7 +164,6 @@ impl Transport for Uart {
             .recv()
             .await
             .expect("Response channel should be open. This is a bug");
-        self.state.decrement_requests();
         Ok(response?.try_into()?)
     }
 }

@@ -1,6 +1,4 @@
 use std::fmt::Debug;
-use std::sync::atomic::AtomicUsize;
-use std::sync::atomic::Ordering::Relaxed;
 use std::sync::RwLock;
 
 use log::trace;
@@ -14,8 +12,7 @@ use crate::uart::connection::Connection;
 pub struct State {
     negotiated_version: RwLock<Option<u8>>,
     connection: RwLock<Connection>,
-    pending_requests: AtomicUsize,
-    disambiguation: RwLock<Option<Disambiguation>>,
+    disambiguation: RwLock<Option<Option<Disambiguation>>>,
 }
 
 impl State {
@@ -72,16 +69,10 @@ impl State {
             .map_or(true, |version| version < MIN_NON_LEGACY_VERSION)
     }
 
-    /// Returns whether requests are pending.
-    #[must_use]
-    pub fn requests_pending(&self) -> bool {
-        self.pending_requests.load(Relaxed) > 0
-    }
-
     /// Returns the disambiguation.
     #[allow(clippy::unwrap_in_result)]
     #[must_use]
-    pub fn disambiguation(&self) -> Option<Disambiguation> {
+    pub fn disambiguation(&self) -> Option<Option<Disambiguation>> {
         *self
             .disambiguation
             .read()
@@ -90,20 +81,10 @@ impl State {
 
     /// Set the disambiguation.
     pub fn set_disambiguation(&self, disambiguation: Option<Disambiguation>) {
-        *self
-            .disambiguation
+        self.disambiguation
             .write()
-            .expect("RwLock should never be poisoned. This is a bug.") = disambiguation;
-    }
-
-    /// Increment the number of pending requests.
-    pub fn increment_requests(&self) {
-        self.pending_requests.fetch_add(1, Relaxed);
-    }
-
-    /// Decrement the number of pending requests.
-    pub fn decrement_requests(&self) {
-        self.pending_requests.fetch_sub(1, Relaxed);
+            .expect("RwLock should never be poisoned. This is a bug.")
+            .replace(disambiguation);
     }
 }
 
@@ -112,7 +93,6 @@ impl Default for State {
         Self {
             negotiated_version: RwLock::new(None),
             connection: RwLock::new(Connection::default()),
-            pending_requests: AtomicUsize::new(0),
             disambiguation: RwLock::new(None),
         }
     }

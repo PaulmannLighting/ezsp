@@ -37,9 +37,9 @@ pub enum Command {
         scan_duration: u8,
     },
     TokenFactoryReset {
-        #[arg(index = 1, help = "Exclude the outgoing frame counter")]
+        #[arg(short = 'f', long, help = "Exclude the outgoing frame counter")]
         exclude_outgoing_frame_counter: bool,
-        #[arg(index = 2, help = "Exclude the boot counter")]
+        #[arg(short = 'b', long, help = "Exclude the boot counter")]
         exclude_boot_counter: bool,
     },
 }

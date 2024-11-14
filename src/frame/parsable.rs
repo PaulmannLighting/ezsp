@@ -17,7 +17,7 @@ pub trait Parsable: Sized {
     /// Returns an [`Error`](crate::error::Error) if the parsing of the parameter failed.
     fn parse_from_le_stream<T>(
         id: u16,
-        disambiguation: Option<Disambiguation>,
+        disambiguation: Disambiguation,
         stream: T,
     ) -> Result<Self, Decode>
     where
@@ -30,7 +30,7 @@ where
 {
     fn parse_from_le_stream<S>(
         id: u16,
-        disambiguation: Option<Disambiguation>,
+        disambiguation: Disambiguation,
         stream: S,
     ) -> Result<Self, Decode>
     where
@@ -54,11 +54,7 @@ impl Parsable for Callback {
     ///
     /// Returns an error if the frame ID is not recognized.
     #[allow(clippy::too_many_lines)]
-    fn parse_from_le_stream<T>(
-        id: u16,
-        _: Option<Disambiguation>,
-        stream: T,
-    ) -> Result<Self, Decode>
+    fn parse_from_le_stream<T>(id: u16, _: Disambiguation, stream: T) -> Result<Self, Decode>
     where
         T: Iterator<Item = u8>,
     {

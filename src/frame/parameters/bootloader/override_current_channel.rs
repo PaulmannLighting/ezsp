@@ -24,7 +24,7 @@ impl Command {
 
 impl Parameter for Command {
     const ID: u16 = ID;
-    const DISAMBIGUATION: Option<Disambiguation> = Some(Disambiguation::OverrideCurrentChannel);
+    const DISAMBIGUATION: Disambiguation = Disambiguation::OverrideCurrentChannel;
 }
 
 /// Response parameters.
@@ -35,7 +35,7 @@ pub struct Response {
 
 impl Parameter for Response {
     const ID: u16 = ID;
-    const DISAMBIGUATION: Option<Disambiguation> = Some(Disambiguation::OverrideCurrentChannel);
+    const DISAMBIGUATION: Disambiguation = Disambiguation::OverrideCurrentChannel;
 }
 
 /// Convert the response into a [`Result<()>`](crate::Result) by evaluating its status field.

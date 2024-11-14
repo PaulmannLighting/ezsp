@@ -12,7 +12,7 @@ use crate::uart::connection::Connection;
 pub struct State {
     negotiated_version: RwLock<Option<u8>>,
     connection: RwLock<Connection>,
-    disambiguation: RwLock<Option<Option<Disambiguation>>>,
+    disambiguation: RwLock<Option<Disambiguation>>,
 }
 
 impl State {
@@ -72,7 +72,7 @@ impl State {
     /// Returns the disambiguation.
     #[allow(clippy::unwrap_in_result)]
     #[must_use]
-    pub fn disambiguation(&self) -> Option<Option<Disambiguation>> {
+    pub fn disambiguation(&self) -> Option<Disambiguation> {
         *self
             .disambiguation
             .read()
@@ -80,7 +80,7 @@ impl State {
     }
 
     /// Set the disambiguation.
-    pub fn set_disambiguation(&self, disambiguation: Option<Disambiguation>) {
+    pub fn set_disambiguation(&self, disambiguation: Disambiguation) {
         self.disambiguation
             .write()
             .expect("RwLock should never be poisoned. This is a bug.")

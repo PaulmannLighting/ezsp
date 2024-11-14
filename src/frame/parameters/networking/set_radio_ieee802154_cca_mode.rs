@@ -24,7 +24,7 @@ impl Command {
 
 impl Parameter for Command {
     const ID: u16 = ID;
-    const DISAMBIGUATION: Option<Disambiguation> = Some(Disambiguation::SetRadioIeee802154CcaMode);
+    const DISAMBIGUATION: Disambiguation = Disambiguation::SetRadioIeee802154CcaMode;
 }
 
 /// Response parameters.
@@ -35,7 +35,7 @@ pub struct Response {
 
 impl Parameter for Response {
     const ID: u16 = ID;
-    const DISAMBIGUATION: Option<Disambiguation> = Some(Disambiguation::SetRadioIeee802154CcaMode);
+    const DISAMBIGUATION: Disambiguation = Disambiguation::SetRadioIeee802154CcaMode;
 }
 
 /// Convert the response into `()` or an appropriate [`Error`] depending on its status.

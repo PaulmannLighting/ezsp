@@ -8,7 +8,7 @@ use log::trace;
 use tokio::sync::mpsc::Receiver;
 
 use crate::error::Decode;
-use crate::frame::{parsable::Parsable, Frame, Header};
+use crate::frame::{parsable::Parsable, Disambiguation, Frame, Header};
 use crate::parameters::utilities::invalid_command;
 use crate::uart::connection::Connection;
 use crate::uart::state::State;
@@ -106,14 +106,14 @@ impl Decoder {
 
         match Parameters::parse_from_le_stream(
             next_header.id(),
-            self.state.disambiguation().unwrap_or(None),
+            self.state.disambiguation().unwrap_or_default(),
             self.parameters.iter().copied(),
         ) {
             Ok(parameters) => Ok(Some(Frame::new(next_header, parameters))),
             Err(error) => {
                 if let Ok(invalid_command) = invalid_command::Response::parse_from_le_stream(
                     next_header.id(),
-                    None,
+                    Disambiguation::None,
                     self.parameters.iter().copied(),
                 ) {
                     return Err(Error::InvalidCommand(invalid_command));

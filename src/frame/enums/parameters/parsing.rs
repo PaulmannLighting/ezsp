@@ -13,7 +13,7 @@ impl Parsable for super::Parameters {
     #[allow(clippy::too_many_lines)]
     fn parse_from_le_stream<T>(
         id: u16,
-        disambiguation: Option<Disambiguation>,
+        disambiguation: Disambiguation,
         stream: T,
     ) -> Result<Self, Decode>
     where

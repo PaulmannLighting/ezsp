@@ -86,6 +86,11 @@ impl State {
             .expect("RwLock should never be poisoned. This is a bug.")
             .replace(disambiguation);
     }
+
+    /// Returns `true` if a response is pending else `false`.
+    pub fn is_response_pending(&self) -> bool {
+        self.disambiguation().is_some()
+    }
 }
 
 impl Default for State {

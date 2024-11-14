@@ -48,8 +48,15 @@ impl Threads {
 
         // Frame splitter
         let (response_tx, response_rx) = channel(channel_size);
-        let splitter =
-            spawn(Splitter::new(Decoder::new(frames_in, state), response_tx, callbacks_tx).run());
+        let splitter = spawn(
+            Splitter::new(
+                Decoder::new(frames_in, state.clone()),
+                response_tx,
+                callbacks_tx,
+                state,
+            )
+            .run(),
+        );
 
         let instance = Self {
             running,

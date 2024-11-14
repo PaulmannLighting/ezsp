@@ -1,9 +1,12 @@
+use std::sync::Arc;
+
 use log::trace;
 use tokio::sync::mpsc::Sender;
 
 use crate::error::Error;
 use crate::frame::{Callback, Frame, Parameters};
 use crate::uart::decoder::Decoder;
+use crate::uart::state::State;
 
 /// Split incoming `EZSP` frames into responses and asynchronous callbacks.
 #[derive(Debug)]
@@ -11,6 +14,7 @@ pub struct Splitter {
     incoming: Decoder,
     responses: Sender<Result<Parameters, Error>>,
     callbacks: Sender<Callback>,
+    state: Arc<State>,
 }
 
 impl Splitter {
@@ -23,11 +27,13 @@ impl Splitter {
         incoming: Decoder,
         responses: Sender<Result<Parameters, Error>>,
         callbacks: Sender<Callback>,
+        state: Arc<State>,
     ) -> Self {
         Self {
             incoming,
             responses,
             callbacks,
+            state,
         }
     }
 
@@ -41,7 +47,7 @@ impl Splitter {
                     self.handle_frame(frame).await;
                 }
                 Err(error) => {
-                    if self.incoming.state.disambiguation().is_some() {
+                    if self.state.is_response_pending() {
                         self.responses
                             .send(Err(error))
                             .await

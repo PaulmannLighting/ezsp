@@ -7,9 +7,11 @@ use std::str::FromStr;
 
 use echo::echo;
 use scan::scan;
+use token_factory_reset::token_factory_reset;
 
 mod echo;
 mod scan;
+mod token_factory_reset;
 
 /// Available subcommands.
 #[derive(Debug, Parser)]
@@ -34,6 +36,12 @@ pub enum Command {
         )]
         scan_duration: u8,
     },
+    TokenFactoryReset {
+        #[arg(short, long, help = "Exclude the outgoing frame counter")]
+        exclude_outgoing_frame_counter: bool,
+        #[arg(short, long, help = "Exclude the boot counter")]
+        exclude_boot_counter: bool,
+    },
 }
 
 impl Command {
@@ -47,6 +55,13 @@ impl Command {
                 scan_duration,
             } => {
                 scan(uart, channel_mask, scan_duration).await;
+            }
+            Self::TokenFactoryReset {
+                exclude_outgoing_frame_counter,
+                exclude_boot_counter,
+            } => {
+                token_factory_reset(uart, exclude_outgoing_frame_counter, exclude_boot_counter)
+                    .await;
             }
         }
     }

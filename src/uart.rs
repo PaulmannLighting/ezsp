@@ -15,6 +15,7 @@ use crate::transport::{Transport, MIN_NON_LEGACY_VERSION};
 use crate::{Configuration, Extended, Ezsp, Handler, Legacy};
 use crate::{Parameters, ValueError};
 
+use crate::util::NpNwLock;
 use connection::Connection;
 use encoder::Encoder;
 use state::State;
@@ -31,7 +32,7 @@ mod threads;
 #[derive(Debug)]
 pub struct Uart {
     protocol_version: u8,
-    state: Arc<State>,
+    state: Arc<NpNwLock<State>>,
     responses: Receiver<Result<Parameters, Error>>,
     encoder: Encoder,
     _threads: Threads,
@@ -49,7 +50,7 @@ impl Uart {
         S: SerialPort + 'static,
         H: Handler + 'static,
     {
-        let state = Arc::new(State::default());
+        let state = Arc::new(NpNwLock::new(State::default()));
         let (frames_out, responses, threads) =
             Threads::spawn(serial_port, handler, state.clone(), channel_size);
         Self {
@@ -77,12 +78,14 @@ impl Uart {
         debug!("Negotiating legacy version");
         let mut response = self.version(self.protocol_version).await?;
         self.state
+            .write()
             .set_negotiated_version(response.protocol_version());
 
         if response.protocol_version() >= MIN_NON_LEGACY_VERSION {
             debug!("Negotiating non-legacy version");
             response = self.version(response.protocol_version()).await?;
             self.state
+                .write()
                 .set_negotiated_version(response.protocol_version());
         }
 
@@ -93,7 +96,7 @@ impl Uart {
             );
             Ok(())
         } else {
-            self.state.set_connection(Connection::Failed);
+            self.state.write().set_connection(Connection::Failed);
             Err(Error::ProtocolVersionMismatch {
                 desired: self.protocol_version,
                 negotiated: response,
@@ -105,14 +108,14 @@ impl Uart {
 impl Ezsp for Uart {
     async fn init(&mut self) -> Result<(), Error> {
         self.negotiate_version().await?;
-        self.state.set_connection(Connection::Connected);
+        self.state.write().set_connection(Connection::Connected);
         Ok(())
     }
 }
 
 impl Transport for Uart {
     fn next_header(&mut self, id: u16) -> Result<Header, TryFromIntError> {
-        let header = if self.state.is_legacy() {
+        let header = if self.state.read().is_legacy() {
             Header::Legacy(Legacy::new(
                 self.sequence,
                 Command::default().into(),
@@ -126,7 +129,9 @@ impl Transport for Uart {
     }
 
     async fn check_reset(&mut self) -> Result<(), Error> {
-        match self.state.connection() {
+        let connection = self.state.read().connection();
+
+        match connection {
             Connection::Disconnected => {
                 info!("Initializing UART connection");
                 self.init().await
@@ -150,7 +155,7 @@ impl Transport for Uart {
             .next_header(T::ID)
             .map_err(ValueError::InvalidFrameId)?;
         self.encoder.send(header, command).await?;
-        self.state.set_disambiguation(T::DISAMBIGUATION);
+        self.state.write().set_disambiguation(T::DISAMBIGUATION);
         Ok(())
     }
 

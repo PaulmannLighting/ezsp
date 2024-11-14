@@ -18,6 +18,7 @@ mod transport;
 mod types;
 #[cfg(feature = "ashv2")]
 pub mod uart;
+mod util;
 mod zigbee;
 
 pub use commands::{

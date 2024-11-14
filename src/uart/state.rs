@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-use std::sync::RwLock;
 
 use log::trace;
 
@@ -8,11 +7,11 @@ use crate::transport::MIN_NON_LEGACY_VERSION;
 use crate::uart::connection::Connection;
 
 /// Shared state of the `EZSP` UART.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct State {
-    negotiated_version: RwLock<Option<u8>>,
-    connection: RwLock<Connection>,
-    disambiguation: RwLock<Option<Disambiguation>>,
+    negotiated_version: Option<u8>,
+    connection: Connection,
+    disambiguation: Option<Disambiguation>,
 }
 
 impl State {
@@ -22,50 +21,35 @@ impl State {
     #[allow(clippy::unwrap_in_result)]
     #[must_use]
     pub fn negotiated_version(&self) -> Option<u8> {
-        *self
-            .negotiated_version
-            .read()
-            .expect("RwLock should never be poisoned. This is a bug.")
+        self.negotiated_version
     }
 
     /// Set the negotiated version.
-    pub fn set_negotiated_version(&self, version: u8) {
-        self.negotiated_version
-            .write()
-            .expect("RwLock should never be poisoned. This is a bug.")
-            .replace(version);
+    pub fn set_negotiated_version(&mut self, version: u8) {
+        self.negotiated_version.replace(version);
     }
 
     /// Returns the connection state of the UART.
     #[must_use]
     pub fn connection(&self) -> Connection {
-        *self
-            .connection
-            .read()
-            .expect("RwLock should never be poisoned. This is a bug.")
+        self.connection
     }
 
     /// Set the connection state of the UART.
-    pub fn set_connection(&self, connection: Connection) {
+    pub fn set_connection(&mut self, connection: Connection) {
         trace!("Setting connection state to: {connection:?}");
-        *self
-            .connection
-            .write()
-            .expect("RwLock should never be poisoned. This is a bug.") = connection;
+        self.connection = connection;
 
         if connection != Connection::Connected {
             trace!("Resetting negotiated version.");
-            self.negotiated_version
-                .write()
-                .expect("RwLock should never be poisoned. This is a bug.")
-                .take();
+            self.negotiated_version.take();
         }
     }
 
     /// Returns `true` if the negotiated version is a legacy version.
     #[must_use]
     pub fn is_legacy(&self) -> bool {
-        self.negotiated_version()
+        self.negotiated_version
             .map_or(true, |version| version < MIN_NON_LEGACY_VERSION)
     }
 
@@ -73,32 +57,16 @@ impl State {
     #[allow(clippy::unwrap_in_result)]
     #[must_use]
     pub fn disambiguation(&self) -> Option<Disambiguation> {
-        *self
-            .disambiguation
-            .read()
-            .expect("RwLock should never be poisoned. This is a bug.")
+        self.disambiguation
     }
 
     /// Set the disambiguation.
-    pub fn set_disambiguation(&self, disambiguation: Disambiguation) {
-        self.disambiguation
-            .write()
-            .expect("RwLock should never be poisoned. This is a bug.")
-            .replace(disambiguation);
+    pub fn set_disambiguation(&mut self, disambiguation: Disambiguation) {
+        self.disambiguation.replace(disambiguation);
     }
 
     /// Returns `true` if a response is pending else `false`.
     pub fn is_response_pending(&self) -> bool {
         self.disambiguation().is_some()
-    }
-}
-
-impl Default for State {
-    fn default() -> Self {
-        Self {
-            negotiated_version: RwLock::new(None),
-            connection: RwLock::new(Connection::default()),
-            disambiguation: RwLock::new(None),
-        }
     }
 }

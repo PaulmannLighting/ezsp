@@ -7,13 +7,13 @@ use serialport::SerialPort;
 use tokio::spawn;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 
+use super::decoder::Decoder;
+use super::splitter::Splitter;
 use crate::error::Error;
 use crate::frame::Parameters;
 use crate::handler::Handler;
 use crate::uart::state::State;
-
-use super::decoder::Decoder;
-use super::splitter::Splitter;
+use crate::util::NpNwLock;
 
 /// Threads and async tasks for the UART communication.
 #[derive(Debug)]
@@ -29,7 +29,7 @@ impl Threads {
     pub fn spawn<S, H>(
         serial_port: S,
         handler: H,
-        state: Arc<State>,
+        state: Arc<NpNwLock<State>>,
         channel_size: usize,
     ) -> (Sender<Payload>, Receiver<Result<Parameters, Error>>, Self)
     where

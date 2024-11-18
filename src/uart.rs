@@ -12,10 +12,10 @@ use tokio::sync::mpsc::Receiver;
 use crate::error::Error;
 use crate::frame::{Command, Header, Parameter};
 use crate::transport::{Transport, MIN_NON_LEGACY_VERSION};
+use crate::util::NpNwLock;
 use crate::{Configuration, Extended, Ezsp, Handler, Legacy};
 use crate::{Parameters, ValueError};
 
-use crate::util::NpNwLock;
 use connection::Connection;
 use encoder::Encoder;
 use state::State;

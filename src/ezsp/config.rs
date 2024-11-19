@@ -1,10 +1,11 @@
 //! Configuration values that can be set using the `EZSP` API.
 
+use enum_iterator::Sequence;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 /// Identifies a configuration value.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, Sequence)]
 #[repr(u8)]
 pub enum Id {
     /// The NCP no longer supports configuration of packet buffer count at runtime

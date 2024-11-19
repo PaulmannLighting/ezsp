@@ -1,9 +1,10 @@
 //! Policy configuration.
 
+use enum_iterator::Sequence;
 use num_derive::FromPrimitive;
 
 /// Identifies a policy.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, Sequence)]
 #[repr(u8)]
 pub enum Id {
     /// Controls trust center behavior.

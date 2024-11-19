@@ -16,7 +16,7 @@ pub struct EzspNetworkManager<T>
 where
     T: Ezsp,
 {
-    transport: T,
+    ezsp: T,
     state: Option<State>,
 }
 
@@ -26,11 +26,8 @@ where
 {
     /// Creates a new network manager.
     #[must_use]
-    pub const fn new(transport: T) -> Self {
-        Self {
-            transport,
-            state: None,
-        }
+    pub const fn new(ezsp: T) -> Self {
+        Self { ezsp, state: None }
     }
 
     /// Initializes the network manager.
@@ -39,9 +36,9 @@ where
     ///
     /// Returns an [`Error`] if the initialization fails.
     pub async fn init(&mut self) -> Result<(), Error> {
-        Ezsp::init(&mut self.transport).await?;
+        Ezsp::init(&mut self.ezsp).await?;
         let bootloader_version = self
-            .transport
+            .ezsp
             .get_standalone_bootloader_version_plat_micro_phy()
             .await?;
         let configuration = self.get_configuration_values().await?;
@@ -55,7 +52,7 @@ where
         let mut configuration = HashMap::default();
 
         for id in all::<config::Id>() {
-            configuration.insert(id, self.transport.get_configuration_value(id).await?);
+            configuration.insert(id, self.ezsp.get_configuration_value(id).await?);
         }
 
         Ok(configuration)
@@ -65,7 +62,7 @@ where
         let mut policies = HashMap::default();
 
         for id in all::<policy::Id>() {
-            policies.insert(id, self.transport.get_policy(id).await?);
+            policies.insert(id, self.ezsp.get_policy(id).await?);
         }
 
         Ok(policies)
@@ -76,7 +73,7 @@ impl<T> From<T> for EzspNetworkManager<T>
 where
     T: Ezsp + Send,
 {
-    fn from(transport: T) -> Self {
-        Self::new(transport)
+    fn from(ezsp: T) -> Self {
+        Self::new(ezsp)
     }
 }

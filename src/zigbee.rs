@@ -1,6 +1,7 @@
 //! Zigbee network manager implementation.
 
 use std::collections::HashMap;
+use std::future::Future;
 
 use enum_iterator::all;
 
@@ -9,6 +10,16 @@ use crate::zigbee::state::State;
 use crate::{Error, Ezsp};
 
 mod state;
+
+/// A Zigbee network manager.
+pub trait ZigbeeNetworkManager {
+    /// Initializes the network manager.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if the initialization fails.
+    fn init(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
+}
 
 /// Zigbee network manager using an arbitrary `Ezsp` implementation.
 #[derive(Debug)]
@@ -28,24 +39,6 @@ where
     #[must_use]
     pub const fn new(ezsp: T) -> Self {
         Self { ezsp, state: None }
-    }
-
-    /// Initializes the network manager.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] if the initialization fails.
-    pub async fn init(&mut self) -> Result<(), Error> {
-        Ezsp::init(&mut self.ezsp).await?;
-        let bootloader_version = self
-            .ezsp
-            .get_standalone_bootloader_version_plat_micro_phy()
-            .await?;
-        let configuration = self.get_configuration_values().await?;
-        let policies = self.get_policies().await?;
-        self.state
-            .replace(State::new(bootloader_version, configuration, policies));
-        Ok(())
     }
 
     async fn get_configuration_values(&mut self) -> Result<HashMap<config::Id, u16>, Error> {
@@ -75,5 +68,21 @@ where
 {
     fn from(ezsp: T) -> Self {
         Self::new(ezsp)
+    }
+}
+
+impl<T> ZigbeeNetworkManager for EzspNetworkManager<T>
+where
+    T: Ezsp + Send,
+{
+    async fn init(&mut self) -> Result<(), Error> {
+        let bootloader_version = self
+            .ezsp
+            .get_standalone_bootloader_version_plat_micro_phy()
+            .await?;
+        let configuration = self.get_configuration_values().await?;
+        let policies = self.get_policies().await?;
+        self.state = Some(State::new(bootloader_version, configuration, policies));
+        Ok(())
     }
 }

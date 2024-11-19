@@ -10,7 +10,7 @@ use crate::{Error, Ezsp};
 
 mod state;
 
-/// Zigbee network manager using an arbitrary `Transport` implementation.
+/// Zigbee network manager using an arbitrary `Ezsp` implementation.
 #[derive(Debug)]
 pub struct EzspNetworkManager<T>
 where

@@ -6,8 +6,13 @@ use num_traits::FromPrimitive;
 /// Indicates the type of scan to be performed.
 ///
 /// Possible values are: [`Type::EnergyScan`] and [`Type::ActiveScan`].
-/// For each type, the respective callback for reporting results is: energyScanResultHandler and networkFoundHandler.
-/// The energy scan and active scan report errors and completion via the scanCompleteHandler.
+/// For each type, the respective callback for reporting results is:
+///
+/// * [`EnergyScanResult`](crate::parameters::networking::handler::Handler::EnergyScanResult) and
+/// * [`NetworkFound`](crate::parameters::networking::handler::Handler::NetworkFound).
+///
+/// The energy scan and active scan report errors and completion via
+/// [`ScanComplete`](crate::parameters::networking::handler::Handler::ScanComplete).
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]
 pub enum Type {

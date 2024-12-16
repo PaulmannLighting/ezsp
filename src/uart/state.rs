@@ -15,15 +15,6 @@ pub struct State {
 }
 
 impl State {
-    /// Return the negotiated version.
-    ///
-    /// Returns `None` if the version has not been negotiated yet.
-    #[allow(clippy::unwrap_in_result)]
-    #[must_use]
-    pub const fn negotiated_version(&self) -> Option<u8> {
-        self.negotiated_version
-    }
-
     /// Set the negotiated version.
     pub fn set_negotiated_version(&mut self, version: u8) {
         self.negotiated_version.replace(version);

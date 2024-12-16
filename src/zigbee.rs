@@ -23,10 +23,7 @@ pub trait ZigbeeNetworkManager {
 
 /// Zigbee network manager using an arbitrary `Ezsp` implementation.
 #[derive(Debug)]
-pub struct EzspNetworkManager<T>
-where
-    T: Ezsp,
-{
+pub struct EzspNetworkManager<T> {
     ezsp: T,
     state: Option<State>,
 }

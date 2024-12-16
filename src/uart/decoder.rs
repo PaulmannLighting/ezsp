@@ -107,10 +107,11 @@ impl Decoder {
         }
 
         self.parameters.extend(stream);
+        let disambiguation = self.state.read().disambiguation();
 
         match Parameters::parse_from_le_stream(
             next_header.id(),
-            self.state.read().disambiguation().unwrap_or_default(),
+            disambiguation.unwrap_or_default(),
             self.parameters.iter().copied(),
         ) {
             Ok(parameters) => Ok(Some(Frame::new(next_header, parameters))),

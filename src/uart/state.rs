@@ -20,7 +20,7 @@ impl State {
     /// Returns `None` if the version has not been negotiated yet.
     #[allow(clippy::unwrap_in_result)]
     #[must_use]
-    pub fn negotiated_version(&self) -> Option<u8> {
+    pub const fn negotiated_version(&self) -> Option<u8> {
         self.negotiated_version
     }
 
@@ -31,7 +31,7 @@ impl State {
 
     /// Returns the connection state of the UART.
     #[must_use]
-    pub fn connection(&self) -> Connection {
+    pub const fn connection(&self) -> Connection {
         self.connection
     }
 
@@ -56,7 +56,7 @@ impl State {
     /// Returns the disambiguation.
     #[allow(clippy::unwrap_in_result)]
     #[must_use]
-    pub fn disambiguation(&self) -> Option<Disambiguation> {
+    pub const fn disambiguation(&self) -> Option<Disambiguation> {
         self.disambiguation
     }
 
@@ -66,7 +66,8 @@ impl State {
     }
 
     /// Returns `true` if a response is pending else `false`.
-    pub fn is_response_pending(&self) -> bool {
+    #[must_use]
+    pub const fn is_response_pending(&self) -> bool {
         self.disambiguation().is_some()
     }
 }

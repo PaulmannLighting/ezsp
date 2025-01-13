@@ -12,7 +12,7 @@ use tokio::sync::mpsc::Receiver;
 use crate::error::Error;
 use crate::frame::{Command, Header, Parameter};
 use crate::transport::{Transport, MIN_NON_LEGACY_VERSION};
-use crate::util::NpNwLock;
+use crate::util::NpRwLock;
 use crate::{Configuration, Extended, Ezsp, Handler, Legacy};
 use crate::{Parameters, ValueError};
 
@@ -32,7 +32,7 @@ mod threads;
 #[derive(Debug)]
 pub struct Uart {
     protocol_version: u8,
-    state: Arc<NpNwLock<State>>,
+    state: Arc<NpRwLock<State>>,
     responses: Receiver<Result<Parameters, Error>>,
     encoder: Encoder,
     _threads: Threads,
@@ -50,7 +50,7 @@ impl Uart {
         S: SerialPort + 'static,
         H: Handler + 'static,
     {
-        let state = Arc::new(NpNwLock::new(State::default()));
+        let state = Arc::new(NpRwLock::new(State::default()));
         let (frames_out, responses, threads) =
             Threads::spawn(serial_port, handler, state.clone(), channel_size);
         Self {

@@ -13,7 +13,7 @@ use crate::error::Error;
 use crate::frame::Parameters;
 use crate::handler::Handler;
 use crate::uart::state::State;
-use crate::util::NpNwLock;
+use crate::util::NpRwLock;
 
 /// Threads and async tasks for the UART communication.
 #[derive(Debug)]
@@ -29,7 +29,7 @@ impl Threads {
     pub fn spawn<S, H>(
         serial_port: S,
         handler: H,
-        state: Arc<NpNwLock<State>>,
+        state: Arc<NpRwLock<State>>,
         channel_size: usize,
     ) -> (Sender<Payload>, Receiver<Result<Parameters, Error>>, Self)
     where

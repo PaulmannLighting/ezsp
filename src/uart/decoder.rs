@@ -12,7 +12,7 @@ use crate::frame::{parsable::Parsable, Disambiguation, Frame, Header};
 use crate::parameters::utilities::invalid_command;
 use crate::uart::connection::Connection;
 use crate::uart::state::State;
-use crate::util::NpNwLock;
+use crate::util::NpRwLock;
 use crate::MAX_PARAMETER_SIZE;
 use crate::{Error, Extended, Legacy, Parameters};
 
@@ -20,7 +20,7 @@ use crate::{Error, Extended, Legacy, Parameters};
 #[derive(Debug)]
 pub struct Decoder {
     source: Receiver<std::io::Result<Payload>>,
-    state: Arc<NpNwLock<State>>,
+    state: Arc<NpRwLock<State>>,
     header: Option<Header>,
     parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
 }
@@ -33,7 +33,7 @@ impl Decoder {
     #[must_use]
     pub const fn new(
         source: Receiver<std::io::Result<Payload>>,
-        state: Arc<NpNwLock<State>>,
+        state: Arc<NpRwLock<State>>,
     ) -> Self {
         Self {
             source,

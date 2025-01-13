@@ -7,7 +7,7 @@ use crate::error::Error;
 use crate::frame::{Callback, Frame, Parameters};
 use crate::uart::decoder::Decoder;
 use crate::uart::state::State;
-use crate::util::NpNwLock;
+use crate::util::NpRwLock;
 
 /// Split incoming `EZSP` frames into responses and asynchronous callbacks.
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub struct Splitter {
     incoming: Decoder,
     responses: Sender<Result<Parameters, Error>>,
     callbacks: Sender<Callback>,
-    state: Arc<NpNwLock<State>>,
+    state: Arc<NpRwLock<State>>,
 }
 
 impl Splitter {
@@ -28,7 +28,7 @@ impl Splitter {
         incoming: Decoder,
         responses: Sender<Result<Parameters, Error>>,
         callbacks: Sender<Callback>,
-        state: Arc<NpNwLock<State>>,
+        state: Arc<NpRwLock<State>>,
     ) -> Self {
         Self {
             incoming,

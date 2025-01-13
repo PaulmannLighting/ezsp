@@ -4,9 +4,9 @@ use std::sync::{PoisonError, RwLock};
 
 /// A non-poisoning `RwLock`.
 #[derive(Debug)]
-pub struct NpNwLock<T>(RwLock<T>);
+pub struct NpRwLock<T>(RwLock<T>);
 
-impl<T> NpNwLock<T> {
+impl<T> NpRwLock<T> {
     /// Crate a new `NpRwLock` with the given value.
     pub const fn new(value: T) -> Self {
         Self(RwLock::new(value))

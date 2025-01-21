@@ -43,7 +43,10 @@ async fn main() {
     }
 }
 
-async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
+async fn run<S>(serial_port: S, args: Args)
+where
+    S: SerialPort + 'static,
+{
     let mut uart = Uart::new(serial_port, NetworkScanHandler, args.version, 8);
 
     match uart.echo("About to start a scan.".bytes().collect()).await {

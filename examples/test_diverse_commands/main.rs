@@ -44,7 +44,10 @@ async fn main() {
 }
 
 #[allow(clippy::too_many_lines)]
-async fn run(serial_port: impl SerialPort + Sized + 'static, args: Args) {
+async fn run<S>(serial_port: S, args: Args)
+where
+    S: SerialPort + 'static,
+{
     let mut ezsp = Uart::new(serial_port, StubHandler, args.version, 8);
 
     // Test echo reply. Should be same as sent text.

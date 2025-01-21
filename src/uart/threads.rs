@@ -34,7 +34,7 @@ impl Threads {
     ) -> (Sender<Payload>, Receiver<Result<Parameters, Error>>, Self)
     where
         S: SerialPort + 'static,
-        H: Handler + 'static,
+        H: Handler,
     {
         let running = Arc::new(AtomicBool::new(true));
 

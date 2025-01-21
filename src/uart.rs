@@ -48,7 +48,7 @@ impl Uart {
     pub fn new<S, H>(serial_port: S, handler: H, protocol_version: u8, channel_size: usize) -> Self
     where
         S: SerialPort + 'static,
-        H: Handler + 'static,
+        H: Handler,
     {
         let state = Arc::new(NpRwLock::new(State::default()));
         let (frames_out, responses, threads) =

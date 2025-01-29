@@ -1,7 +1,7 @@
 //! Transient key structure definitions.
 
 use le_stream::derive::FromLeStream;
-use siliconlabs::zigbee::security::man::{ApsKeyMetadata, Context, Key};
+use silizium::zigbee::security::man::{ApsKeyMetadata, Context, Key};
 
 /// The exported transient key.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]

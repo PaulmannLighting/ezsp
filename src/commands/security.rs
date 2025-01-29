@@ -1,6 +1,6 @@
 use std::future::Future;
 
-use siliconlabs::zigbee::security::man;
+use silizium::zigbee::security::man;
 
 use crate::ember::key::{Struct, Type};
 use crate::ember::{security, Eui64, NodeId};

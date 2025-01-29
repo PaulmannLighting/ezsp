@@ -2,8 +2,8 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
-use siliconlabs::zigbee::security::man::Context;
-use siliconlabs::Status;
+use silizium::zigbee::security::man::Context;
+use silizium::Status;
 
 use crate::frame::Parameter;
 use crate::Error;

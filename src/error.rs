@@ -115,8 +115,8 @@ impl From<Result<ember::Status, u8>> for Error {
     }
 }
 
-impl From<Result<siliconlabs::Status, u32>> for Error {
-    fn from(status: Result<siliconlabs::Status, u32>) -> Self {
+impl From<Result<silizium::Status, u32>> for Error {
+    fn from(status: Result<silizium::Status, u32>) -> Self {
         Self::Status(status.into())
     }
 }
@@ -133,8 +133,8 @@ impl From<ember::Status> for Error {
     }
 }
 
-impl From<siliconlabs::Status> for Error {
-    fn from(status: siliconlabs::Status) -> Self {
+impl From<silizium::Status> for Error {
+    fn from(status: silizium::Status) -> Self {
         Self::Status(status.into())
     }
 }

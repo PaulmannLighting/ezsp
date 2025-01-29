@@ -5,7 +5,7 @@ use clap::Parser;
 use le_stream::ToLeStream;
 use log::{error, info};
 use serialport::{FlowControl, SerialPort};
-use siliconlabs::zigbee::security::man::{Context, DerivedKeyType, Flags, KeyType};
+use silizium::zigbee::security::man::{Context, DerivedKeyType, Flags, KeyType};
 
 use ezsp::ember::{CertificateData, PublicKeyData};
 use ezsp::ezsp::value::Id;

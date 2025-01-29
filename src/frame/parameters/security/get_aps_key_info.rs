@@ -2,8 +2,8 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
-use siliconlabs::zigbee::security::man::{ApsKeyMetadata, Context};
-use siliconlabs::Status;
+use silizium::zigbee::security::man::{ApsKeyMetadata, Context};
+use silizium::Status;
 
 use crate::ember::Eui64;
 use crate::frame::Parameter;

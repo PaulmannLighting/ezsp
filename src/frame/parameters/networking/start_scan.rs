@@ -2,7 +2,7 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
-use siliconlabs::Status;
+use silizium::Status;
 
 use crate::ezsp::network::scan::Type;
 use crate::frame::Parameter;

@@ -25,7 +25,7 @@ macaddr = "1.0"
 num-derive = "0.4"
 num-traits = "0.2"
 serialport = { version = "4.6.0", default-features = false, optional = true }
-siliconlabs = { git = "https://github.com/PaulmannLighting/siliconlabs.git", version = "0.5", features = ["le-stream"] }
+silizium = { git = "https://github.com/PaulmannLighting/silizium.git", version = "0.5", features = ["le-stream"] }
 tokio = { version = "1.41", features = ["sync"] }
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
 

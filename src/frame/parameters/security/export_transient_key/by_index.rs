@@ -2,7 +2,7 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
-use siliconlabs::Status;
+use silizium::Status;
 
 use super::transient_key::TransientKey;
 use crate::frame::Parameter;

@@ -10,8 +10,8 @@ pub enum Status {
     Ezsp(Result<ezsp::Status, u8>),
     /// The received [`ember::Status`] indicates an error.
     Ember(Result<ember::Status, u8>),
-    /// The received [`siliconlabs::Status`] indicates an error.
-    Siliconlabs(Result<siliconlabs::Status, u32>),
+    /// The received [`silizium::Status`] indicates an error.
+    Siliconlabs(Result<silizium::Status, u32>),
 }
 
 impl Display for Status {
@@ -47,8 +47,8 @@ impl From<Result<ember::Status, u8>> for Status {
     }
 }
 
-impl From<Result<siliconlabs::Status, u32>> for Status {
-    fn from(result: Result<siliconlabs::Status, u32>) -> Self {
+impl From<Result<silizium::Status, u32>> for Status {
+    fn from(result: Result<silizium::Status, u32>) -> Self {
         Self::Siliconlabs(result)
     }
 }
@@ -65,8 +65,8 @@ impl From<ember::Status> for Status {
     }
 }
 
-impl From<siliconlabs::Status> for Status {
-    fn from(status: siliconlabs::Status) -> Self {
+impl From<silizium::Status> for Status {
+    fn from(status: silizium::Status) -> Self {
         Self::Siliconlabs(Ok(status))
     }
 }

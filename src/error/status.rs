@@ -11,7 +11,7 @@ pub enum Status {
     /// The received [`ember::Status`] indicates an error.
     Ember(Result<ember::Status, u8>),
     /// The received [`silizium::Status`] indicates an error.
-    Siliconlabs(Result<silizium::Status, u32>),
+    Sl(Result<silizium::Status, u32>),
 }
 
 impl Display for Status {
@@ -25,7 +25,7 @@ impl Display for Status {
                 Ok(status) => write!(f, "{status} ({status:#04X})"),
                 Err(invalid) => write!(f, "Invalid Ember status: {invalid:#04X}"),
             },
-            Self::Siliconlabs(result) => match result {
+            Self::Sl(result) => match result {
                 Ok(status) => write!(f, "{status} ({status:#010X})"),
                 Err(invalid) => write!(f, "Invalid Siliconlabs status: {invalid:#010X}"),
             },
@@ -49,7 +49,7 @@ impl From<Result<ember::Status, u8>> for Status {
 
 impl From<Result<silizium::Status, u32>> for Status {
     fn from(result: Result<silizium::Status, u32>) -> Self {
-        Self::Siliconlabs(result)
+        Self::Sl(result)
     }
 }
 
@@ -67,6 +67,6 @@ impl From<ember::Status> for Status {
 
 impl From<silizium::Status> for Status {
     fn from(status: silizium::Status) -> Self {
-        Self::Siliconlabs(Ok(status))
+        Self::Sl(Ok(status))
     }
 }

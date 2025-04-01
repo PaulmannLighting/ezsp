@@ -1,6 +1,6 @@
 //! Test `scan` command.
 
-use ashv2::{open, BaudRate};
+use ashv2::{BaudRate, open};
 use clap::Parser;
 use log::{debug, error, info, warn};
 use serialport::{FlowControl, SerialPort};
@@ -8,7 +8,7 @@ use serialport::{FlowControl, SerialPort};
 use ezsp::ember::zigbee::Network;
 use ezsp::ezsp::network::scan::Type;
 use ezsp::uart::Uart;
-use ezsp::{parameters, Callback, Handler, Networking, Utilities};
+use ezsp::{Callback, Handler, Networking, Utilities, parameters};
 
 #[derive(Debug, Parser)]
 struct Args {

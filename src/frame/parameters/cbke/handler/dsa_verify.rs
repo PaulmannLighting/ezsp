@@ -1,6 +1,6 @@
+use crate::Error;
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::Error;
 use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 

@@ -7,13 +7,13 @@ use le_stream::FromLeStream;
 use log::trace;
 use tokio::sync::mpsc::Receiver;
 
+use crate::MAX_PARAMETER_SIZE;
 use crate::error::Decode;
-use crate::frame::{parsable::Parsable, Disambiguation, Frame, Header};
+use crate::frame::{Disambiguation, Frame, Header, parsable::Parsable};
 use crate::parameters::utilities::invalid_command;
 use crate::uart::connection::Connection;
 use crate::uart::state::State;
 use crate::util::NpRwLock;
-use crate::MAX_PARAMETER_SIZE;
 use crate::{Error, Extended, Legacy, Parameters};
 
 /// Decode `ASHv2` frames into `EZSP` frames.

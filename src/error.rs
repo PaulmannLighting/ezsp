@@ -9,7 +9,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::frame::parameters::configuration::version;
 use crate::frame::parameters::utilities::invalid_command;
-use crate::{ember, ezsp, Parameters, Response};
+use crate::{Parameters, Response, ember, ezsp};
 
 use crate::parameters::utilities;
 pub use decode::Decode;

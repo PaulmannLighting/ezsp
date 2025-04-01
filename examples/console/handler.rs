@@ -1,6 +1,6 @@
 //! Callback handler implementation.
 
-use ezsp::{parameters, Callback};
+use ezsp::{Callback, parameters};
 use log::{debug, warn};
 
 use handle_network_found::handle_network_found;

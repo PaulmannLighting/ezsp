@@ -3,11 +3,11 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
+use crate::Error;
 use crate::ember::aps::Frame;
 use crate::ember::{NodeId, Status};
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use crate::Error;
 
 const ID: u16 = 0x0039;
 

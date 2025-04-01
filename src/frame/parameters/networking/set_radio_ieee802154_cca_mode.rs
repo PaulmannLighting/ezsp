@@ -3,10 +3,10 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
-use crate::ember::Status;
-use crate::frame::disambiguation::Disambiguation;
-use crate::frame::Parameter;
 use crate::Error;
+use crate::ember::Status;
+use crate::frame::Parameter;
+use crate::frame::disambiguation::Disambiguation;
 
 const ID: u16 = 0x0095;
 

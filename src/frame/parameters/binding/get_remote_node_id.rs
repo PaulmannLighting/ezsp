@@ -2,7 +2,7 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 
-use crate::ember::{NodeId, NULL_NODE_ID};
+use crate::ember::{NULL_NODE_ID, NodeId};
 use crate::frame::Parameter;
 
 const ID: u16 = 0x002F;

@@ -3,9 +3,9 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
-use crate::ezsp::{decision, policy, Status};
-use crate::frame::Parameter;
 use crate::Error;
+use crate::ezsp::{Status, decision, policy};
+use crate::frame::Parameter;
 
 const ID: u16 = 0x0055;
 

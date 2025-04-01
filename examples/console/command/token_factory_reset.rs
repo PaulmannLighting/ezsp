@@ -2,8 +2,8 @@
 
 use log::{error, info};
 
-use ezsp::uart::Uart;
 use ezsp::TokenInterface;
+use ezsp::uart::Uart;
 
 /// Perform a token factory reset.
 pub async fn token_factory_reset(

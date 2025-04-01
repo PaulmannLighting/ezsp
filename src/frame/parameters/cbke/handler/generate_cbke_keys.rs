@@ -1,9 +1,9 @@
 use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 
+use crate::Error;
 use crate::ember::{PublicKeyData, Status};
 use crate::frame::Parameter;
-use crate::Error;
 
 const ID: u16 = 0x009E;
 

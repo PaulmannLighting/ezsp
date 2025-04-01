@@ -1,14 +1,14 @@
 //! Ember GP sink structs.
 //!
 //! For details, see <https://docs.silabs.com/d/zigbee-stack-api/7.2.2/gp-types-h>
-use le_stream::derive::{FromLeStream, ToLeStream};
 use le_stream::FromLeStream;
+use le_stream::derive::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::ember::gp::security::FrameCounter;
 use crate::ember::key::Data;
-use crate::ember::{gp, Eui64, NodeId};
+use crate::ember::{Eui64, NodeId, gp};
 
 /// Amount of entries in a sink list.
 pub const LIST_ENTRIES: usize = 2;

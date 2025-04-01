@@ -2,12 +2,12 @@ use std::future::Future;
 
 use crate::ember::MAX_END_DEVICE_CHILDREN;
 use crate::ember::{
-    beacon, child, concentrator, duty_cycle,
+    Eui64, NodeId, PerDeviceDutyCycle, beacon, child, concentrator, duty_cycle,
     multi_phy::{nwk, radio},
-    neighbor, network, node, route, Eui64, NodeId, PerDeviceDutyCycle,
+    neighbor, network, node, route,
 };
 use crate::error::Error;
-use crate::ezsp::network::{scan, InitBitmask};
+use crate::ezsp::network::{InitBitmask, scan};
 use crate::frame::parameters::networking::{
     child_id, clear_stored_beacons, energy_scan_request, find_and_rejoin_network,
     find_unused_pan_id, form_network, get_child_data, get_current_duty_cycle,

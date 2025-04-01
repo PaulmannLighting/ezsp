@@ -55,7 +55,7 @@ pub trait Zll {
 
     /// Set the ZLL data token.
     fn set_data_token(&mut self, data: DataToken)
-        -> impl Future<Output = Result<(), Error>> + Send;
+    -> impl Future<Output = Result<(), Error>> + Send;
 
     /// This call will cause the device to setup the security information used in its network.
     ///

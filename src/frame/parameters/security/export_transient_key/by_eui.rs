@@ -5,9 +5,9 @@ use num_traits::FromPrimitive;
 use silizium::Status;
 
 use super::transient_key::TransientKey;
+use crate::Error;
 use crate::ember::Eui64;
 use crate::frame::Parameter;
-use crate::Error;
 
 const ID: u16 = 0x0113;
 

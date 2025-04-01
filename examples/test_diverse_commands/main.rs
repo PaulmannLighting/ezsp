@@ -1,6 +1,6 @@
 //! Test diverse `EZSP` commands.
 
-use ashv2::{open, BaudRate, HexSlice};
+use ashv2::{BaudRate, HexSlice, open};
 use clap::Parser;
 use le_stream::ToLeStream;
 use log::{error, info};

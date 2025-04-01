@@ -4,8 +4,8 @@ use log::{error, info};
 
 use le_stream::ToLeStream;
 
-use ezsp::uart::Uart;
 use ezsp::Networking;
+use ezsp::uart::Uart;
 
 /// Test duty-cycle-related commands.
 pub async fn get_duty_cycle_info(ezsp: &mut Uart) {

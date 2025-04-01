@@ -3,9 +3,9 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
-use crate::ember::{child, Status};
-use crate::frame::Parameter;
 use crate::Error;
+use crate::ember::{Status, child};
+use crate::frame::Parameter;
 
 const ID: u16 = 0x00AC;
 

@@ -1,9 +1,9 @@
+use crate::Transport;
 use crate::ember::token::{Data, Info};
 use crate::frame::parameters::token_interface::{
     get_token_count, get_token_data, get_token_info, gp_security_test_vectors, reset_node,
     set_token_data, token_factory_reset,
 };
-use crate::Transport;
 use std::future::Future;
 
 /// The `TokenInterface` trait provides an interface for the token interface.
@@ -26,7 +26,7 @@ pub trait TokenInterface {
 
     /// Run GP security test vectors.
     fn gp_security_test_vectors(&mut self)
-        -> impl Future<Output = Result<(), crate::Error>> + Send;
+    -> impl Future<Output = Result<(), crate::Error>> + Send;
 
     /// Reset the node by calling `halReboot`.
     fn reset_node(&mut self) -> impl Future<Output = Result<(), crate::Error>> + Send;

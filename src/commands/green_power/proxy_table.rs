@@ -1,7 +1,7 @@
 use std::future::Future;
 
-use crate::ember::gp::proxy::TableEntry;
 use crate::ember::gp::Address;
+use crate::ember::gp::proxy::TableEntry;
 use crate::ember::key::Data;
 use crate::error::Error;
 use crate::frame::parameters::green_power::proxy_table::{get_entry, lookup, process_gp_pairing};

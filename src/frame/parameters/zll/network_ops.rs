@@ -3,11 +3,11 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
-use crate::ember::zll::Network;
+use crate::Error;
 use crate::ember::Status;
+use crate::ember::zll::Network;
 use crate::ezsp::zll::NetworkOperation;
 use crate::frame::Parameter;
-use crate::Error;
 
 const ID: u16 = 0x00B2;
 

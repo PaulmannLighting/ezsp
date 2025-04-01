@@ -5,8 +5,8 @@ use num_traits::FromPrimitive;
 use silizium::Status;
 
 use super::transient_key::TransientKey;
-use crate::frame::Parameter;
 use crate::Error;
+use crate::frame::Parameter;
 
 const ID: u16 = 0x0112;
 

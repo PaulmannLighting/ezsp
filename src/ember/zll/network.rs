@@ -3,7 +3,7 @@ use num_traits::FromPrimitive;
 
 use crate::ember::node::Type;
 use crate::ember::zll::{SecurityAlgorithmData, State};
-use crate::ember::{zigbee, Eui64, NodeId};
+use crate::ember::{Eui64, NodeId, zigbee};
 
 /// The parameters of a ZLL network.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

@@ -1,11 +1,11 @@
+use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
-use std::sync::Arc;
 
 use ashv2::{Payload, Transceiver};
 use serialport::SerialPort;
 use tokio::spawn;
-use tokio::sync::mpsc::{channel, Receiver, Sender};
+use tokio::sync::mpsc::{Receiver, Sender, channel};
 
 use super::decoder::Decoder;
 use super::splitter::Splitter;

@@ -3,7 +3,7 @@ use std::future::Future;
 use silizium::zigbee::security::man;
 
 use crate::ember::key::{Struct, Type};
-use crate::ember::{security, Eui64, NodeId};
+use crate::ember::{Eui64, NodeId, security};
 use crate::error::Error;
 use crate::frame::parameters::security::{
     check_key_context, clear_key_table, clear_transient_link_keys, erase_key_table_entry,

@@ -2,16 +2,16 @@ use std::future::Future;
 
 use crate::ember::constants::COUNTER_TYPE_COUNT;
 use crate::ember::entropy::Source;
-use crate::ember::{event, library, Eui64, NodeId};
+use crate::ember::{Eui64, NodeId, event, library};
 use crate::error::Error;
 use crate::ezsp::mfg_token::Id;
+use crate::frame::Callback;
 use crate::frame::parameters::utilities::{
     callback, custom_frame, debug_write, delay_test, echo, get_eui64, get_library_status,
     get_mfg_token, get_node_id, get_phy_interface_count, get_random_number, get_timer, get_token,
     get_true_random_entropy_source, get_xncp_info, nop, read_and_clear_counters, read_counters,
     set_mfg_token, set_timer, set_token,
 };
-use crate::frame::Callback;
 use crate::parameters::utilities;
 use crate::transport::Transport;
 use crate::types::ByteSizedVec;

@@ -51,7 +51,9 @@ impl Handler {
     /// and thus the total aggregate duty cycle for the device.
     #[must_use]
     pub fn array_of_device_duty_cycles(&self) -> &[u8] {
-        todo!("https://community.silabs.com/s/question/0D5Vm00000OKBVFKA5/ambiguities-in-ezsp-protocol-definition")
+        todo!(
+            "https://community.silabs.com/s/question/0D5Vm00000OKBVFKA5/ambiguities-in-ezsp-protocol-definition"
+        )
     }
 }
 

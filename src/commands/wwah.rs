@@ -27,7 +27,7 @@ pub trait Wwah {
 
     /// Sets the device uptime to be long or short.
     fn set_long_uptime(&mut self, has_long_uptime: bool)
-        -> impl Future<Output = Result<(), Error>>;
+    -> impl Future<Output = Result<(), Error>>;
 
     /// Sets whether to use parent classification when processing beacons during a join or rejoin.
     ///

@@ -3,12 +3,12 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
+use crate::Error;
+use crate::ember::Status;
 use crate::ember::network::Parameters;
 use crate::ember::node::Type;
-use crate::ember::Status;
 use crate::error::ValueError;
 use crate::frame::Parameter;
-use crate::Error;
 
 const ID: u16 = 0x0028;
 

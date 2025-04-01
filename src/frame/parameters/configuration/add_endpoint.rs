@@ -1,15 +1,15 @@
 //! Parameters for the [`Configuration::add_endpoint`](crate::Configuration::add_endpoint) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
 use le_stream::ToLeStream;
+use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use std::array::IntoIter;
 use std::iter::{Chain, FlatMap};
 
+use crate::Error;
 use crate::ezsp::Status;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use crate::Error;
 
 const ID: u16 = 0x0002;
 

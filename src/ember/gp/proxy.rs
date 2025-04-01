@@ -2,11 +2,11 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 
-use crate::ember::gp::security::FrameCounter;
-use crate::ember::gp::sink::{ListEntry, LIST_ENTRIES};
-use crate::ember::gp::Address;
-use crate::ember::key::Data;
 use crate::ember::NodeId;
+use crate::ember::gp::Address;
+use crate::ember::gp::security::FrameCounter;
+use crate::ember::gp::sink::{LIST_ENTRIES, ListEntry};
+use crate::ember::key::Data;
 
 type Status = u8;
 

@@ -4,10 +4,10 @@ use itertools::Itertools;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
+use crate::Error;
 use crate::ember::Status;
 use crate::ezsp::network::InitBitmask;
 use crate::frame::Parameter;
-use crate::Error;
 
 const ID: u16 = 0x0017;
 

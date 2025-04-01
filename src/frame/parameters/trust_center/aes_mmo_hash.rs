@@ -3,11 +3,11 @@
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
-use crate::ember::aes::MmoHashContext;
+use crate::Error;
 use crate::ember::Status;
+use crate::ember::aes::MmoHashContext;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use crate::Error;
 
 const ID: u16 = 0x006F;
 

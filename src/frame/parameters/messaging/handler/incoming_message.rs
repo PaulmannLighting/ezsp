@@ -1,10 +1,10 @@
 use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 
+use crate::ember::NodeId;
 use crate::ember::aps::Frame;
 use crate::ember::message::Incoming;
 use crate::ember::node::Type;
-use crate::ember::NodeId;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 

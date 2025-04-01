@@ -4,8 +4,8 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use crate::ember::key::Data;
 use crate::ember::Eui64;
+use crate::ember::key::Data;
 
 /// Ember initial security bitmask.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]

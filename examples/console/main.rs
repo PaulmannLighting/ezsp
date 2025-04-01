@@ -1,9 +1,9 @@
 //! Interactive console.
 
-use std::io::{stdin, stdout, Write};
+use std::io::{Write, stdin, stdout};
 use std::str::FromStr;
 
-use ashv2::{open, BaudRate};
+use ashv2::{BaudRate, open};
 use clap::Parser;
 use log::error;
 use serialport::FlowControl;

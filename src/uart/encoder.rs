@@ -1,11 +1,11 @@
 use std::io::ErrorKind;
 
-use ashv2::{Payload, MAX_PAYLOAD_SIZE};
+use ashv2::{MAX_PAYLOAD_SIZE, Payload};
 use le_stream::ToLeStream;
 use tokio::sync::mpsc::Sender;
 
-use crate::frame::Header;
 use crate::Error;
+use crate::frame::Header;
 use crate::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 
 /// Encode `EZSP` frames into `ASHv2` frames.

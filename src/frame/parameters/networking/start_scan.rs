@@ -4,10 +4,10 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use silizium::Status;
 
+use crate::Error;
 use crate::ezsp::network::scan::Type;
 use crate::frame::Parameter;
 use crate::types::VariableLengthU32;
-use crate::Error;
 
 const ID: u16 = 0x001A;
 

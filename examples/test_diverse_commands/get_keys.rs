@@ -2,9 +2,9 @@
 
 use log::{error, info};
 
+use ezsp::Security;
 use ezsp::ember::key::Type;
 use ezsp::uart::Uart;
-use ezsp::Security;
 
 /// Get diverse keys from the device.
 #[allow(deprecated)]

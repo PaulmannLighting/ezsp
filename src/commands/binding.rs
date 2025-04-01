@@ -1,7 +1,7 @@
 use std::future::Future;
 
-use crate::ember::binding::TableEntry;
 use crate::ember::NodeId;
+use crate::ember::binding::TableEntry;
 use crate::error::Error;
 use crate::frame::parameters::binding::{
     clear_table, delete, get, get_remote_node_id, is_active, set, set_remote_node_id,

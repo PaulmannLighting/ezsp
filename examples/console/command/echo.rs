@@ -2,8 +2,8 @@
 
 use log::error;
 
-use ezsp::uart::Uart;
 use ezsp::Utilities;
+use ezsp::uart::Uart;
 
 /// Echoes a message.
 pub async fn echo(uart: &mut Uart, message: String) {

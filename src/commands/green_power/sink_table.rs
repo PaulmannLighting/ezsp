@@ -1,7 +1,7 @@
 use std::future::Future;
 
-use crate::ember::gp::sink::TableEntry;
 use crate::ember::gp::Address;
+use crate::ember::gp::sink::TableEntry;
 use crate::error::Error;
 use crate::frame::parameters::green_power::sink_table::{
     clear_all, find_or_allocate_entry, get_entry, init, lookup, number_of_active_entries,

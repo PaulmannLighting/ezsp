@@ -28,10 +28,10 @@ pub use commands::{
 pub use constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 pub use error::{Error, ValueError};
 pub use frame::{
-    parameters, Callback, CallbackType, Extended, FormatVersion, Frame, Header, HighByte, Legacy,
-    LowByte, Parameters, Parsable, Response, SleepMode,
+    Callback, CallbackType, Extended, FormatVersion, Frame, Header, HighByte, Legacy, LowByte,
+    Parameters, Parsable, Response, SleepMode, parameters,
 };
 pub use handler::Handler;
 pub use result::Result;
-pub use transport::{Transport, MIN_NON_LEGACY_VERSION};
+pub use transport::{MIN_NON_LEGACY_VERSION, Transport};
 pub use types::SourceRouteDiscoveryMode;

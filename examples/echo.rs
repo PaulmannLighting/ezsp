@@ -1,6 +1,6 @@
 //! Test `echo` command.
 
-use ashv2::{open, BaudRate};
+use ashv2::{BaudRate, open};
 use clap::Parser;
 use log::{debug, error, info};
 use serialport::{FlowControl, SerialPort};

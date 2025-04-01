@@ -2,11 +2,11 @@
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
-use silizium::zigbee::security::man::NetworkKeyInfo;
 use silizium::Status;
+use silizium::zigbee::security::man::NetworkKeyInfo;
 
-use crate::frame::Parameter;
 use crate::Error;
+use crate::frame::Parameter;
 
 const ID: u16 = 0x0116;
 

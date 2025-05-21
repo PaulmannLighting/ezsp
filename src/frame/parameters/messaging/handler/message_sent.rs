@@ -75,7 +75,7 @@ impl Handler {
     /// `messageContentsInCallback` policy is `messageTagAndContentsInCallback`.
     #[must_use]
     pub fn message(&self) -> &[u8] {
-        &self.message
+        self.message.as_slice()
     }
 }
 

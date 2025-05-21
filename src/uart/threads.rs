@@ -12,8 +12,8 @@ use super::splitter::Splitter;
 use crate::error::Error;
 use crate::frame::Parameters;
 use crate::handler::Handler;
+use crate::uart::np_rw_lock::NpRwLock;
 use crate::uart::state::State;
-use crate::util::NpRwLock;
 
 /// Threads and async tasks for the UART communication.
 #[derive(Debug)]

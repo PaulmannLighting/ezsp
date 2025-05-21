@@ -56,8 +56,7 @@ impl Display for Error {
             } => {
                 write!(
                     f,
-                    "Protocol negotiation failed: {:#04X} (desired) != {:#04X} (negotiated)",
-                    desired,
+                    "Protocol negotiation failed: {desired:#04X} (desired) != {:#04X} (negotiated)",
                     negotiated.protocol_version()
                 )
             }

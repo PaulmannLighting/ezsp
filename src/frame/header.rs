@@ -4,7 +4,9 @@ use std::hash::Hash;
 pub use extended::Extended;
 pub use high_byte::{FormatVersion, HighByte};
 pub use legacy::Legacy;
-pub use low_byte::{CallbackType, Command, LowByte, SleepMode};
+#[cfg(feature = "ashv2")]
+pub use low_byte::Command;
+pub use low_byte::{CallbackType, LowByte, SleepMode};
 
 mod extended;
 mod high_byte;

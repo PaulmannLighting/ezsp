@@ -85,7 +85,7 @@ impl Handler {
     /// The incoming message.
     #[must_use]
     pub fn message(&self) -> &[u8] {
-        &self.message
+        self.message.as_slice()
     }
 
     /// The type of the sender node.

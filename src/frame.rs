@@ -1,9 +1,12 @@
 use std::fmt::Debug;
 
+#[cfg(feature = "ashv2")]
 pub use disambiguation::Disambiguation;
 pub use enums::{Callback, Parameters, Response};
+#[cfg(feature = "ashv2")]
+pub use header::Command;
 pub use header::{
-    CallbackType, Command, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
+    CallbackType, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
 };
 pub use parameter::Parameter;
 pub use parsable::Parsable;

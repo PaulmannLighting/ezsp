@@ -33,7 +33,7 @@ impl Handler {
     /// The message that was sent.
     #[must_use]
     pub fn message(&self) -> &[u8] {
-        &self.message
+        self.message.as_slice()
     }
 }
 

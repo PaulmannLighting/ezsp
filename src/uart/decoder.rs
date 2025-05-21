@@ -12,8 +12,8 @@ use crate::error::Decode;
 use crate::frame::{Disambiguation, Frame, Header, parsable::Parsable};
 use crate::parameters::utilities::invalid_command;
 use crate::uart::connection::Connection;
+use crate::uart::np_rw_lock::NpRwLock;
 use crate::uart::state::State;
-use crate::util::NpRwLock;
 use crate::{Error, Extended, Legacy, Parameters};
 
 /// Decode `ASHv2` frames into `EZSP` frames.

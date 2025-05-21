@@ -3,11 +3,11 @@ use std::sync::Arc;
 use log::trace;
 use tokio::sync::mpsc::Sender;
 
+use super::decoder::Decoder;
+use super::np_rw_lock::NpRwLock;
+use super::state::State;
 use crate::error::Error;
 use crate::frame::{Callback, Frame, Parameters};
-use crate::uart::decoder::Decoder;
-use crate::uart::state::State;
-use crate::util::NpRwLock;
 
 /// Split incoming `EZSP` frames into responses and asynchronous callbacks.
 #[derive(Debug)]

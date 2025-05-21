@@ -12,9 +12,9 @@ use tokio::sync::mpsc::Receiver;
 use crate::error::Error;
 use crate::frame::{Command, Header, Parameter};
 use crate::transport::{MIN_NON_LEGACY_VERSION, Transport};
-use crate::util::NpRwLock;
 use crate::{Configuration, Extended, Ezsp, Handler, Legacy};
 use crate::{Parameters, ValueError};
+use np_rw_lock::NpRwLock;
 
 use connection::Connection;
 use encoder::Encoder;
@@ -24,6 +24,7 @@ use threads::Threads;
 mod connection;
 mod decoder;
 mod encoder;
+mod np_rw_lock;
 mod splitter;
 mod state;
 mod threads;

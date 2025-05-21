@@ -17,7 +17,7 @@ impl Handler {
     /// The payload of the custom frame.
     #[must_use]
     pub fn payload(&self) -> &[u8] {
-        &self.payload
+        self.payload.as_slice()
     }
 }
 

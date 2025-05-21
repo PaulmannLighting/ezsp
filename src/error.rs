@@ -28,7 +28,7 @@ pub enum Error {
     Status(Status),
     /// An unexpected response was returned.
     UnexpectedResponse(Box<Parameters>),
-    /// Invalid status
+    /// An invalid value was received.
     ValueError(ValueError),
     /// The NCP responded with `invalidCommand` (0x0058).
     InvalidCommand(invalid_command::Response),

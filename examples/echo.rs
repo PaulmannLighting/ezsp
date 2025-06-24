@@ -41,7 +41,7 @@ where
 
     tokio::spawn(async move {
         loop {
-            if let Some(callback) = callbacks_rx.blocking_recv() {
+            if let Some(callback) = callbacks_rx.recv().await {
                 debug!("Received callback: {callback:#?}");
             }
         }

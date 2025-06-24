@@ -7,12 +7,12 @@ use std::sync::Arc;
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
 use serialport::SerialPort;
-use tokio::sync::mpsc::Receiver;
+use tokio::sync::mpsc::{Receiver, Sender};
 
 use crate::error::Error;
 use crate::frame::{Command, Header, Parameter};
 use crate::transport::{MIN_NON_LEGACY_VERSION, Transport};
-use crate::{Configuration, Extended, Ezsp, Handler, Legacy};
+use crate::{Callback, Configuration, Extended, Ezsp, Legacy};
 use crate::{Parameters, ValueError};
 use np_rw_lock::NpRwLock;
 
@@ -46,14 +46,18 @@ impl Uart {
     /// A minimum protocol version of [`MIN_NON_LEGACY_VERSION`] is required
     /// to support non-legacy commands.
     #[must_use]
-    pub fn new<S, H>(serial_port: S, handler: H, protocol_version: u8, channel_size: usize) -> Self
+    pub fn new<S>(
+        serial_port: S,
+        callbacks: Sender<Callback>,
+        protocol_version: u8,
+        channel_size: usize,
+    ) -> Self
     where
         S: SerialPort + 'static,
-        H: Handler,
     {
         let state = Arc::new(NpRwLock::new(State::default()));
         let (frames_out, responses, threads) =
-            Threads::spawn(serial_port, handler, state.clone(), channel_size);
+            Threads::spawn(serial_port, callbacks, state.clone(), channel_size);
         Self {
             protocol_version,
             state,

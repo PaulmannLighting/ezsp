@@ -2,17 +2,15 @@
 
 use ashv2::{BaudRate, HexSlice, open};
 use clap::Parser;
-use le_stream::ToLeStream;
-use log::{error, info};
-use serialport::{FlowControl, SerialPort};
-use silizium::zigbee::security::man::{Context, DerivedKeyType, Flags, KeyType};
-
 use ezsp::ember::{CertificateData, PublicKeyData};
 use ezsp::ezsp::value::Id;
 use ezsp::uart::Uart;
-use ezsp::{
-    Callback, Cbke, Configuration, Handler, Networking, ProxyTable, Security, SinkTable, Utilities,
-};
+use ezsp::{Callback, Cbke, Configuration, Networking, ProxyTable, Security, SinkTable, Utilities};
+use le_stream::ToLeStream;
+use log::{debug, error, info};
+use serialport::{FlowControl, SerialPort};
+use silizium::zigbee::security::man::{Context, DerivedKeyType, Flags, KeyType};
+use tokio::sync::mpsc::channel;
 
 use duty_cycle::get_duty_cycle_info;
 use get_keys::get_keys;
@@ -48,7 +46,17 @@ async fn run<S>(serial_port: S, args: Args)
 where
     S: SerialPort + 'static,
 {
-    let mut ezsp = Uart::new(serial_port, StubHandler, args.version, 8);
+    let (callbacks_tx, mut callbacks_rx) = channel::<Callback>(8);
+
+    tokio::spawn(async move {
+        loop {
+            if let Some(callback) = callbacks_rx.blocking_recv() {
+                debug!("Received callback: {callback:#?}");
+            }
+        }
+    });
+
+    let mut ezsp = Uart::new(serial_port, callbacks_tx, args.version, 8);
 
     // Test echo reply. Should be same as sent text.
     match ezsp.echo(TEST_TEXT.bytes().collect()).await {
@@ -303,13 +311,5 @@ async fn get_value_ids(ezsp: &mut Uart) {
                 error!("Error getting {id:?}: {error}");
             }
         }
-    }
-}
-
-struct StubHandler;
-
-impl Handler for StubHandler {
-    fn handle(&mut self, callback: Callback) {
-        info!("Received callback: {callback:#?}");
     }
 }

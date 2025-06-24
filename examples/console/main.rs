@@ -7,13 +7,14 @@ use ashv2::{BaudRate, open};
 use clap::Parser;
 use log::error;
 use serialport::FlowControl;
+use tokio::sync::mpsc::channel;
 
 use ezsp::uart::Uart;
-use ezsp::{Ezsp, Utilities};
+use ezsp::{Callback, Ezsp, Utilities};
 
+use crate::handler::handle_callback;
 use args::Args;
 use command::Command;
-use handler::Handler;
 
 mod args;
 mod command;
@@ -25,8 +26,18 @@ async fn main() {
     env_logger::init();
     let args = Args::parse();
 
+    let (callbacks_tx, mut callbacks_rx) = channel::<Callback>(8);
+
+    tokio::spawn(async move {
+        loop {
+            if let Some(callback) = callbacks_rx.blocking_recv() {
+                handle_callback(callback);
+            }
+        }
+    });
+
     match open(args.tty.clone(), BaudRate::RstCts, FlowControl::Software) {
-        Ok(serial_port) => run(Uart::new(serial_port, Handler, args.version, 8)).await,
+        Ok(serial_port) => run(Uart::new(serial_port, callbacks_tx, args.version, 8)).await,
         Err(error) => error!("{error}"),
     }
 }

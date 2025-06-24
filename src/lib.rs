@@ -12,7 +12,6 @@ pub mod ember;
 mod error;
 pub mod ezsp;
 mod frame;
-mod handler;
 mod result;
 mod transport;
 mod types;
@@ -30,7 +29,6 @@ pub use frame::{
     Callback, CallbackType, Extended, FormatVersion, Frame, Header, HighByte, Legacy, LowByte,
     Parameters, Parsable, Response, SleepMode, parameters,
 };
-pub use handler::Handler;
 pub use result::Result;
 pub use transport::{MIN_NON_LEGACY_VERSION, Transport};
 pub use types::SourceRouteDiscoveryMode;

@@ -2,11 +2,11 @@
 
 use ashv2::{BaudRate, open};
 use clap::Parser;
+use ezsp::uart::Uart;
+use ezsp::{Callback, Utilities};
 use log::{debug, error, info};
 use serialport::{FlowControl, SerialPort};
-
-use ezsp::uart::Uart;
-use ezsp::{Callback, Handler, Utilities};
+use tokio::sync::mpsc::channel;
 
 const DEFAULT_VERSION: u8 = 8;
 
@@ -37,7 +37,17 @@ async fn run<S>(serial_port: S, args: Args)
 where
     S: SerialPort + 'static,
 {
-    let mut uart = Uart::new(serial_port, StubHandler, args.version, 8);
+    let (callbacks_tx, mut callbacks_rx) = channel::<Callback>(8);
+
+    tokio::spawn(async move {
+        loop {
+            if let Some(callback) = callbacks_rx.blocking_recv() {
+                debug!("Received callback: {callback:#?}");
+            }
+        }
+    });
+
+    let mut uart = Uart::new(serial_port, callbacks_tx, args.version, 8);
 
     for text in args.texts {
         match uart.echo(text.bytes().collect()).await {
@@ -54,13 +64,5 @@ where
                 error!("{error}");
             }
         }
-    }
-}
-
-struct StubHandler;
-
-impl Handler for StubHandler {
-    fn handle(&mut self, callback: Callback) {
-        debug!("Received callback: {callback:#?}");
     }
 }

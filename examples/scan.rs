@@ -8,7 +8,8 @@ use serialport::{FlowControl, SerialPort};
 use ezsp::ember::zigbee::Network;
 use ezsp::ezsp::network::scan::Type;
 use ezsp::uart::Uart;
-use ezsp::{Callback, Handler, Networking, Utilities, parameters};
+use ezsp::{Callback, Networking, Utilities, parameters};
+use tokio::sync::mpsc::channel;
 
 #[derive(Debug, Parser)]
 struct Args {
@@ -47,7 +48,17 @@ async fn run<S>(serial_port: S, args: Args)
 where
     S: SerialPort + 'static,
 {
-    let mut uart = Uart::new(serial_port, NetworkScanHandler, args.version, 8);
+    let (callbacks_tx, mut callbacks_rx) = channel::<Callback>(8);
+
+    tokio::spawn(async move {
+        loop {
+            if let Some(callback) = callbacks_rx.recv().await {
+                handle_callback(callback);
+            }
+        }
+    });
+
+    let mut uart = Uart::new(serial_port, callbacks_tx, args.version, 8);
 
     match uart.echo("About to start a scan.".bytes().collect()).await {
         Ok(echo) => match String::from_utf8(echo.to_vec()) {
@@ -93,37 +104,33 @@ where
     }
 }
 
-struct NetworkScanHandler;
+fn handle_callback(callback: Callback) {
+    debug!("Handling callback.");
 
-impl Handler for NetworkScanHandler {
-    fn handle(&mut self, callback: Callback) {
-        debug!("Handling callback.");
+    match callback {
+        Callback::Networking(parameters::networking::handler::Handler::NetworkFound(
+            network_found,
+        )) => {
+            info!(
+                "Network found: last hop RSSI: {}, last hop LQI: {}",
+                network_found.last_hop_lqi(),
+                network_found.last_hop_lqi()
+            );
+            print_network(network_found.network_found());
+        }
+        Callback::Networking(parameters::networking::handler::Handler::ScanComplete(
+            scan_complete,
+        )) => {
+            info!("Scan completed.");
 
-        match callback {
-            Callback::Networking(parameters::networking::handler::Handler::NetworkFound(
-                network_found,
-            )) => {
-                info!(
-                    "Network found: last hop RSSI: {}, last hop LQI: {}",
-                    network_found.last_hop_lqi(),
-                    network_found.last_hop_lqi()
-                );
-                print_network(network_found.network_found());
+            if let Some(channel) = scan_complete.channel() {
+                error!("Scan failed on channel: {:#04X}", channel);
+            } else {
+                info!("Scan succeeded.");
             }
-            Callback::Networking(parameters::networking::handler::Handler::ScanComplete(
-                scan_complete,
-            )) => {
-                info!("Scan completed.");
-
-                if let Some(channel) = scan_complete.channel() {
-                    error!("Scan failed on channel: {:#04X}", channel);
-                } else {
-                    info!("Scan succeeded.");
-                }
-            }
-            other => {
-                warn!("Received unexpected handler: {other:?}");
-            }
+        }
+        other => {
+            warn!("Received unexpected handler: {other:?}");
         }
     }
 }

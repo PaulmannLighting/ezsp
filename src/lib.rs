@@ -29,6 +29,8 @@ pub use frame::{
     Callback, CallbackType, Extended, FormatVersion, Frame, Header, HighByte, Legacy, LowByte,
     Parameters, Parsable, Response, SleepMode, parameters,
 };
+#[cfg(feature = "ashv2")]
+pub use frame::{Command, Disambiguation};
 pub use result::Result;
 pub use transport::{MIN_NON_LEGACY_VERSION, Transport};
 pub use types::SourceRouteDiscoveryMode;

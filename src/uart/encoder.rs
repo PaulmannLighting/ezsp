@@ -44,35 +44,35 @@ impl Encoder {
         if self.parameters.is_empty() {
             // If there are no parameters to send, e.g. on `nop`, a call to `.chunks()`
             // would yield an empty iterator, resulting in us not even sending the header.
-            let mut payload = heapless::Vec::new();
-            payload
-                .extend_from_slice(&self.header)
-                .map_err(|()| buffer_overflow())?;
-            self.sender
-                .send(payload)
-                .await
-                .map_err(|_| failed_to_send_payload())?;
-            return Ok(());
+            self.send_chunk(None).await?;
         }
 
         for chunk in self
             .parameters
             .chunks(MAX_PAYLOAD_SIZE.saturating_sub(self.header.len()))
         {
-            let mut payload = heapless::Vec::new();
-            payload
-                .extend_from_slice(&self.header)
-                .map_err(|()| buffer_overflow())?;
-            payload
-                .extend_from_slice(chunk)
-                .map_err(|()| buffer_overflow())?;
-            self.sender
-                .send(payload)
-                .await
-                .map_err(|_| failed_to_send_payload())?;
+            self.send_chunk(Some(chunk)).await?;
         }
 
         Ok(())
+    }
+
+    async fn send_chunk(&self, chunk: Option<&[u8]>) -> std::io::Result<()> {
+        let mut payload = heapless::Vec::new();
+        payload
+            .extend_from_slice(&self.header)
+            .map_err(|()| buffer_overflow())?;
+
+        if let Some(chunk) = chunk {
+            payload
+                .extend_from_slice(chunk)
+                .map_err(|()| buffer_overflow())?;
+        }
+
+        self.sender
+            .send(payload)
+            .await
+            .map_err(|_| failed_to_send_payload())
     }
 }
 

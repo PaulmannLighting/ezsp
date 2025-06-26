@@ -16,7 +16,7 @@ pub struct State {
 
 impl State {
     /// Set the negotiated version.
-    pub fn set_negotiated_version(&mut self, version: u8) {
+    pub const fn set_negotiated_version(&mut self, version: u8) {
         self.negotiated_version.replace(version);
     }
 
@@ -41,7 +41,7 @@ impl State {
     #[must_use]
     pub fn is_legacy(&self) -> bool {
         self.negotiated_version
-            .map_or(true, |version| version < MIN_NON_LEGACY_VERSION)
+            .is_none_or(|version| version < MIN_NON_LEGACY_VERSION)
     }
 
     /// Returns the disambiguation.
@@ -52,7 +52,7 @@ impl State {
     }
 
     /// Set the disambiguation.
-    pub fn set_disambiguation(&mut self, disambiguation: Disambiguation) {
+    pub const fn set_disambiguation(&mut self, disambiguation: Disambiguation) {
         self.disambiguation.replace(disambiguation);
     }
 

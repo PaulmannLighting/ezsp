@@ -37,7 +37,7 @@ impl Encoder {
         match header {
             Header::Legacy(header) => self.header.extend(header.to_le_stream()),
             Header::Extended(header) => self.header.extend(header.to_le_stream()),
-        };
+        }
 
         self.parameters.extend(parameters.to_le_stream());
 

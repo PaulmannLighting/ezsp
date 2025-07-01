@@ -112,10 +112,10 @@ impl Uart {
 }
 
 impl Ezsp for Uart {
-    async fn init(&mut self) -> Result<(), Error> {
-        self.negotiate_version().await?;
+    async fn init(&mut self) -> Result<(u8, StackVersion), Error> {
+        let (stack_type, stack_version) = self.negotiate_version().await?;
         self.state.write().set_connection(Connection::Connected);
-        Ok(())
+        Ok((stack_type, stack_version))
     }
 }
 
@@ -141,7 +141,7 @@ impl Transport for Uart {
         match connection {
             Connection::Disconnected => {
                 info!("Initializing UART connection");
-                self.init().await
+                self.init().await.map(drop)
             }
             Connection::Connected => {
                 trace!("UART is connected");
@@ -149,7 +149,7 @@ impl Transport for Uart {
             }
             Connection::Failed => {
                 warn!("UART connection failed, reinitializing");
-                self.init().await
+                self.init().await.map(drop)
             }
         }
     }

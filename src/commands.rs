@@ -1,8 +1,8 @@
 use std::future::Future;
 
 use crate::Error;
+use crate::parameters::configuration::version;
 
-use crate::ezsp::StackVersion;
 pub use binding::Binding;
 pub use bootloader::Bootloader;
 pub use cbke::Cbke;
@@ -61,5 +61,5 @@ pub trait Ezsp:
     /// # Errors
     ///
     /// Returns an [`Error`] on I/O errors or if the desired protocol version is not supported.
-    fn init(&mut self) -> impl Future<Output = Result<(u8, StackVersion), Error>> + Send;
+    fn init(&mut self) -> impl Future<Output = Result<version::Response, Error>> + Send;
 }

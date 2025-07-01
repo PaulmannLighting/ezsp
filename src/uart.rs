@@ -16,7 +16,7 @@ use crate::{Callback, Configuration, Extended, Ezsp, Legacy};
 use crate::{Parameters, ValueError};
 use np_rw_lock::NpRwLock;
 
-use crate::ezsp::StackVersion;
+use crate::parameters::configuration::version;
 use connection::Connection;
 use encoder::Encoder;
 use state::State;
@@ -80,7 +80,7 @@ impl Uart {
     /// # Panics
     ///
     /// Panics if the read-write lock is poisoned.
-    async fn negotiate_version(&mut self) -> Result<(u8, StackVersion), Error> {
+    async fn negotiate_version(&mut self) -> Result<version::Response, Error> {
         debug!("Negotiating legacy version");
         let mut response = self.version(self.protocol_version).await?;
         self.state
@@ -100,7 +100,7 @@ impl Uart {
                 "Negotiated protocol version: {:#04X}",
                 response.protocol_version()
             );
-            Ok((response.stack_type(), response.stack_version()))
+            Ok(response)
         } else {
             self.state.write().set_connection(Connection::Failed);
             Err(Error::ProtocolVersionMismatch {
@@ -112,10 +112,10 @@ impl Uart {
 }
 
 impl Ezsp for Uart {
-    async fn init(&mut self) -> Result<(u8, StackVersion), Error> {
-        let (stack_type, stack_version) = self.negotiate_version().await?;
+    async fn init(&mut self) -> Result<version::Response, Error> {
+        let response = self.negotiate_version().await?;
         self.state.write().set_connection(Connection::Connected);
-        Ok((stack_type, stack_version))
+        Ok(response)
     }
 }
 

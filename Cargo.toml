@@ -24,6 +24,7 @@ log = "0.4"
 macaddr = "1.0"
 num-derive = "0.4"
 num-traits = "0.2"
+semver = { version = "1.0.26", optional = true }
 serialport = { version = "4.7", default-features = false, optional = true }
 silizium = { git = "https://github.com/PaulmannLighting/silizium.git", version = "0.5", features = ["le-stream"] }
 tokio = { version = "1.44", features = ["sync"] }
@@ -37,6 +38,7 @@ tokio = { version = "1.44", features = ["rt", "rt-multi-thread", "macros"] }
 
 [features]
 ashv2 = ["dep:ashv2", "dep:serialport", "tokio/rt", "tokio/time", "dep:tokio-util", "dep:futures"]
+semver = ["dep:semver"]
 zigbee_development = []
 
 [[example]]

@@ -95,3 +95,26 @@ impl TryFrom<ByteSizedVec<u8>> for EmberVersion {
         Self::try_from(value.as_slice())
     }
 }
+
+#[cfg(feature = "semver")]
+impl TryFrom<EmberVersion> for semver::Version {
+    type Error = semver::Error;
+
+    fn try_from(ember_version: EmberVersion) -> Result<Self, Self::Error> {
+        let mut semver_version = Self::new(
+            ember_version.major().into(),
+            ember_version.minor().into(),
+            ember_version.patch().into(),
+        );
+
+        if ember_version.build() != 0 {
+            semver_version.build = semver::BuildMetadata::new(&ember_version.build().to_string())?;
+        }
+
+        if ember_version.special() != 0 {
+            semver_version.pre = semver::Prerelease::new(&ember_version.special().to_string())?;
+        }
+
+        Ok(semver_version)
+    }
+}

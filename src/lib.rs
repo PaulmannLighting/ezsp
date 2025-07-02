@@ -21,8 +21,8 @@ pub mod uart;
 mod zigbee;
 
 pub use commands::{
-    Binding, Bootloader, Cbke, Configuration, Ezsp, GreenPower, Messaging, Mfglib, Networking,
-    ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
+    Binding, Bootloader, Cbke, Configuration, Ezsp, GetValueExt, GreenPower, Messaging, Mfglib,
+    Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
 };
 pub use constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 pub use error::{Error, ValueError};

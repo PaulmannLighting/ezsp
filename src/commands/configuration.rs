@@ -14,6 +14,10 @@ use crate::parameters::configuration::write_attribute::Attribute;
 use crate::transport::Transport;
 use crate::types::ByteSizedVec;
 
+pub use get_value_ext::GetValueExt;
+
+mod get_value_ext;
+
 /// The `Configuration` trait provides an interface for the configuration commands.
 pub trait Configuration {
     /// Configures endpoint information on the NCP.

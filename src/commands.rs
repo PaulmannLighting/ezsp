@@ -6,7 +6,7 @@ use crate::parameters::configuration::version;
 pub use binding::Binding;
 pub use bootloader::Bootloader;
 pub use cbke::Cbke;
-pub use configuration::Configuration;
+pub use configuration::{Configuration, GetValueExt};
 pub use green_power::{GreenPower, ProxyTable, SinkTable};
 pub use messaging::Messaging;
 pub use mfglib::Mfglib;

@@ -78,7 +78,7 @@ impl Decoder {
     ///
     /// # Returns
     ///
-    /// Returns `Some(`[`Frame`]`)` if the frame fragment was successfully parsed.
+    /// Returns <code>Some([Frame])</code> if the frame fragment was successfully parsed.
     ///
     /// Returns `None` if the decoder needs more data to decode the frame.
     ///

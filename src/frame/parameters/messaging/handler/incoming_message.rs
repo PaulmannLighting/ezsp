@@ -1,3 +1,4 @@
+use le_stream::Prefixed;
 use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 
@@ -20,7 +21,7 @@ pub struct Handler {
     sender: NodeId,
     binding_index: u8,
     address_index: u8,
-    message: ByteSizedVec<u8>,
+    message: Prefixed<u8, ByteSizedVec<u8>>,
     // FIXME: There appears to be one byte more at the end than specified in the docs in most cases.
     // Assume optional node type for now.
     node_type: Option<u8>,

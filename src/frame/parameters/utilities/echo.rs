@@ -1,5 +1,6 @@
 //! Parameters for the [`Utilities::echo`](crate::Utilities::echo) command.
 
+use le_stream::Prefixed;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
@@ -9,13 +10,13 @@ const ID: u16 = 0x0081;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
-    data: ByteSizedVec<u8>,
+    data: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(data: ByteSizedVec<u8>) -> Self {
-        Self { data }
+    pub fn new(data: ByteSizedVec<u8>) -> Self {
+        Self { data: data.into() }
     }
 }
 
@@ -26,14 +27,14 @@ impl Parameter for Command {
 /// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
-    echo: ByteSizedVec<u8>,
+    echo: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Response {
     /// Returns the echoed data.
     #[must_use]
     pub fn echo(self) -> ByteSizedVec<u8> {
-        self.echo
+        self.echo.into_data()
     }
 }
 

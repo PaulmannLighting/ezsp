@@ -8,6 +8,7 @@ use crate::ember::{Eui64, NodeId, zigbee};
 /// The parameters of a ZLL network.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Network {
+    #[allow(clippy::struct_field_names)]
     zigbee_network: zigbee::Network,
     security_algorithm: SecurityAlgorithmData,
     eui64: Eui64,

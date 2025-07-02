@@ -1,3 +1,4 @@
+use le_stream::Prefixed;
 use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 
@@ -13,7 +14,7 @@ const ID: u16 = 0x0093;
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     status: u8,
-    message: ByteSizedVec<u8>,
+    message: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Handler {

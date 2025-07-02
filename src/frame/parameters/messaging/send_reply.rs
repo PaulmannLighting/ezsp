@@ -1,5 +1,6 @@
 //! Parameters for the [`Messaging::send_reply`](crate::Messaging::send_reply) command.
 
+use le_stream::Prefixed;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -15,16 +16,16 @@ const ID: u16 = 0x0039;
 pub(crate) struct Command {
     sender: NodeId,
     aps_frame: Frame,
-    message: ByteSizedVec<u8>,
+    message: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(sender: NodeId, aps_frame: Frame, message: ByteSizedVec<u8>) -> Self {
+    pub fn new(sender: NodeId, aps_frame: Frame, message: ByteSizedVec<u8>) -> Self {
         Self {
             sender,
             aps_frame,
-            message,
+            message: message.into(),
         }
     }
 }

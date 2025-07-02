@@ -1,5 +1,6 @@
 //! Parameters for the [`Messaging::send_broadcast`](crate::Messaging::send_broadcast) command.
 
+use le_stream::Prefixed;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -17,12 +18,12 @@ pub(crate) struct Command {
     aps_frame: Frame,
     radius: u8,
     message_tag: u8,
-    message_contents: ByteSizedVec<u8>,
+    message_contents: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(
+    pub fn new(
         destination: NodeId,
         aps_frame: Frame,
         radius: u8,
@@ -34,7 +35,7 @@ impl Command {
             aps_frame,
             radius,
             message_tag,
-            message_contents,
+            message_contents: message_contents.into(),
         }
     }
 }

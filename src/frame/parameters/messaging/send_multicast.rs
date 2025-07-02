@@ -1,5 +1,6 @@
 //! Parameters for the [`Messaging::send_multicast`](crate::Messaging::send_multicast) command.
 
+use le_stream::Prefixed;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -17,12 +18,12 @@ pub(crate) struct Command {
     hops: u8,
     nonmember_radius: u8,
     message_tag: u8,
-    message_contents: ByteSizedVec<u8>,
+    message_contents: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(
+    pub fn new(
         aps_frame: Frame,
         hops: u8,
         nonmember_radius: u8,
@@ -34,7 +35,7 @@ impl Command {
             hops,
             nonmember_radius,
             message_tag,
-            message_contents,
+            message_contents: message_contents.into(),
         }
     }
 }

@@ -1,5 +1,6 @@
 //! Parameters for the [`Configuration::read_attribute`](crate::Configuration::read_attribute) command.
 
+use le_stream::Prefixed;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -46,7 +47,7 @@ impl Parameter for Command {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Attribute {
     data_type: u8,
-    data: ByteSizedVec<u8>,
+    data: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Attribute {

@@ -121,7 +121,7 @@ pub trait Configuration {
         &mut self,
         endpoint: u8,
         cluster: u16,
-        attribute: &Attribute,
+        attribute: Attribute,
         just_test: bool,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
@@ -266,7 +266,7 @@ where
         &mut self,
         endpoint: u8,
         cluster: u16,
-        attribute: &Attribute,
+        attribute: Attribute,
         just_test: bool,
     ) -> Result<(), Error> {
         self.communicate::<_, write_attribute::Response>(write_attribute::Command::new(

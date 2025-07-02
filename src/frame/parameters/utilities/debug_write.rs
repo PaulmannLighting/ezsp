@@ -1,5 +1,6 @@
 //! Parameters for the [`Utilities::debug_write`](crate::Utilities::debug_write) command.
 
+use le_stream::Prefixed;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -13,15 +14,15 @@ const ID: u16 = 0x0012;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
     binary_message: bool,
-    message: ByteSizedVec<u8>,
+    message: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(binary_message: bool, message: ByteSizedVec<u8>) -> Self {
+    pub fn new(binary_message: bool, message: ByteSizedVec<u8>) -> Self {
         Self {
             binary_message,
-            message,
+            message: message.into(),
         }
     }
 }

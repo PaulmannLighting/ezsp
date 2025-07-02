@@ -1,3 +1,4 @@
+use le_stream::Prefixed;
 use le_stream::derive::FromLeStream;
 
 use crate::frame::Parameter;
@@ -10,7 +11,7 @@ const ID: u16 = 0x008E;
 pub struct Handler {
     link_quality: u8,
     rssi: i8,
-    content: ByteSizedVec<u8>,
+    content: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Handler {

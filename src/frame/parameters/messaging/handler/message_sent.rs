@@ -1,3 +1,4 @@
+use le_stream::Prefixed;
 use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 
@@ -18,7 +19,7 @@ pub struct Handler {
     aps_frame: Frame,
     message_tag: u8,
     status: u8,
-    message: ByteSizedVec<u8>,
+    message: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Handler {

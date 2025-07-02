@@ -1,5 +1,6 @@
 //! Parameters for the [`Configuration::write_attribute`](crate::Configuration::write_attribute) command.
 
+use le_stream::Prefixed;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -19,13 +20,13 @@ pub(crate) struct Command {
     manufacturer_code: u16,
     just_test: bool,
     data_type: u8,
-    data: ByteSizedVec<u8>,
+    data: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Command {
     #[allow(clippy::too_many_arguments)]
     #[must_use]
-    pub fn new(endpoint: u8, cluster: u16, attribute: &Attribute, just_test: bool) -> Self {
+    pub fn new(endpoint: u8, cluster: u16, attribute: Attribute, just_test: bool) -> Self {
         Self {
             endpoint,
             cluster,
@@ -34,7 +35,7 @@ impl Command {
             manufacturer_code: attribute.manufacturer_code,
             just_test,
             data_type: attribute.data_type,
-            data: attribute.data.clone(),
+            data: attribute.data.into(),
         }
     }
 }

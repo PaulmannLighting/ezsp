@@ -1,8 +1,8 @@
-use le_stream::derive::FromLeStream;
-
 use crate::ember::Eui64;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
+use le_stream::Prefixed;
+use le_stream::derive::FromLeStream;
 
 const ID: u16 = 0x0092;
 
@@ -12,7 +12,7 @@ pub struct Handler {
     long_id: Eui64,
     last_hop_lqi: u8,
     last_hop_rssi: i8,
-    message: ByteSizedVec<u8>,
+    message: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Handler {

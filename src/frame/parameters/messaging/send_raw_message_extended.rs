@@ -1,5 +1,6 @@
 //! Parameters for the [`Messaging::send_raw_message_extended`](crate::Messaging::send_raw_message_extended) command.
 
+use le_stream::Prefixed;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -12,16 +13,16 @@ const ID: u16 = 0x0051;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
-    message: ByteSizedVec<u8>,
+    message: Prefixed<u8, ByteSizedVec<u8>>,
     priority: u8,
     use_cca: bool,
 }
 
 impl Command {
     #[must_use]
-    pub const fn new(message_contents: ByteSizedVec<u8>, priority: u8, use_cca: bool) -> Self {
+    pub fn new(message: ByteSizedVec<u8>, priority: u8, use_cca: bool) -> Self {
         Self {
-            message: message_contents,
+            message: message.into(),
             priority,
             use_cca,
         }

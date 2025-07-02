@@ -1,3 +1,4 @@
+use le_stream::Prefixed;
 use le_stream::derive::FromLeStream;
 use num_traits::FromPrimitive;
 
@@ -46,7 +47,7 @@ pub struct Payload {
     mic: u32,
     proxy_table_index: u8,
     #[allow(clippy::struct_field_names)]
-    gpd_command_payload: ByteSizedVec<u8>,
+    gpd_command_payload: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Payload {
@@ -119,7 +120,7 @@ impl Payload {
 
     /// The GPD command payload.
     #[must_use]
-    pub const fn gpd_command_payload(&self) -> &ByteSizedVec<u8> {
-        &self.gpd_command_payload
+    pub fn gpd_command_payload(&self) -> &[u8] {
+        self.gpd_command_payload.as_slice()
     }
 }

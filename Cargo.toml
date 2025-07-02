@@ -7,7 +7,7 @@ repository = "https://github.com/PaulmannLighting/ezsp"
 keywords = ["Ember", "ZNet", "Serial", "Zigbee"]
 categories = ["hardware-support", "network-programming"]
 documentation = "https://www.silabs.com/documents/public/user-guides/ug100-ezsp-reference-guide.pdf"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 exclude = [".gitignore"]
 publish = false
@@ -19,7 +19,7 @@ enum-iterator = "2.1"
 futures = { version = "0.3", optional = true }
 heapless = "0.8"
 itertools = "0.14"
-le-stream = { version = "0.5", features = ["derive", "macaddr", "heapless"] }
+le-stream = { version = "1.2", features = ["derive", "macaddr", "heapless"] }
 log = "0.4"
 macaddr = "1.0"
 num-derive = "0.4"

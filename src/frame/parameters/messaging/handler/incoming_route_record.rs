@@ -1,3 +1,4 @@
+use le_stream::Prefixed;
 use le_stream::derive::FromLeStream;
 
 use crate::ember::{Eui64, NodeId};
@@ -13,7 +14,7 @@ pub struct Handler {
     source_eui: Eui64,
     last_hop_lqi: u8,
     last_hop_rssi: i8,
-    relays: ByteSizedVec<u8>,
+    relays: Prefixed<u8, ByteSizedVec<u8>>,
 }
 
 impl Handler {
@@ -43,8 +44,8 @@ impl Handler {
 
     /// Returns the relays.
     #[must_use]
-    pub const fn relays(&self) -> &ByteSizedVec<u8> {
-        &self.relays
+    pub fn relays(&self) -> &[u8] {
+        self.relays.as_slice()
     }
 }
 

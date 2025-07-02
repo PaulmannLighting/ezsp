@@ -3,6 +3,10 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
+pub use ember_version::EmberVersion;
+
+mod ember_version;
+
 /// Identifies a value.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]

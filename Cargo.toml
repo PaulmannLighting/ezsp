@@ -19,7 +19,7 @@ enum-iterator = "2.1"
 futures = { version = "0.3", optional = true }
 heapless = "0.8"
 itertools = "0.14"
-le-stream = { version = "1.2", features = ["derive", "macaddr", "heapless"] }
+le-stream = { version = "2", features = ["derive", "macaddr", "heapless"] }
 log = "0.4"
 macaddr = "1.0"
 num-derive = "0.4"

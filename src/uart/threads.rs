@@ -3,6 +3,7 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
 use ashv2::{Payload, Transceiver};
+use log::error;
 use serialport::SerialPort;
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, Sender, channel};
@@ -17,15 +18,15 @@ use crate::uart::state::State;
 
 /// Threads and async tasks for the UART communication.
 #[derive(Debug)]
-pub struct Threads {
+pub struct Threads<T> {
     running: Arc<AtomicBool>,
-    transceiver: Option<std::thread::JoinHandle<()>>,
+    transceiver: Option<std::thread::JoinHandle<T>>,
     splitter: tokio::task::JoinHandle<()>,
 }
 
-impl Threads {
+impl<T> Threads<T> {
     /// Spawn the threads for the UART communication.
-    pub fn spawn<T>(
+    pub fn spawn(
         serial_port: T,
         callbacks_tx: Sender<Callback>,
         state: Arc<NpRwLock<State>>,
@@ -59,21 +60,34 @@ impl Threads {
         };
         (frames_out, response_rx, instance)
     }
-}
 
-/// Tear down the threads for the UART communication.
-impl Drop for Threads {
-    fn drop(&mut self) {
+    /// Terminate the threads and return the serial port.
+    pub fn terminate(mut self) -> T {
+        self.try_terminate()
+            .expect("Transceiver thread should be present and be able to join. This is a bug.")
+    }
+
+    fn try_terminate(&mut self) -> Option<T> {
         // First stop the ASHv2 transceiver...
         self.running.store(false, Relaxed);
 
-        if let Some(transceiver) = self.transceiver.take() {
+        // ...then stop the transceiver thread and return the serial port.
+        let serial_port = self.transceiver.take().and_then(|transceiver| {
             transceiver
                 .join()
-                .expect("Transceiver thread should be able to join. This is a bug.");
-        }
+                .inspect_err(|_| error!("Failed to join transceiver thread."))
+                .ok()
+        });
 
-        // ...then stop the frame splitter and callback handler.
+        // Finally stop the frame splitter and callback handler.
         self.splitter.abort();
+        serial_port
+    }
+}
+
+/// Tear down the threads for the UART communication.
+impl<T> Drop for Threads<T> {
+    fn drop(&mut self) {
+        self.try_terminate();
     }
 }

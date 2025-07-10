@@ -32,29 +32,32 @@ mod threads;
 
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
-pub struct Uart {
+pub struct Uart<T> {
     protocol_version: u8,
     state: Arc<NpRwLock<State>>,
     responses: Receiver<Result<Parameters, Error>>,
     encoder: Encoder,
-    _threads: Threads,
+    threads: Threads<T>,
     sequence: u8,
 }
 
-impl Uart {
+impl<T> Uart<T>
+where
+    T: SerialPort,
+{
     /// Creates an `ASHv2` host.
     ///
     /// A minimum protocol version of [`MIN_NON_LEGACY_VERSION`] is required
     /// to support non-legacy commands.
     #[must_use]
-    pub fn new<S>(
-        serial_port: S,
+    pub fn new(
+        serial_port: T,
         callbacks: Sender<Callback>,
         protocol_version: u8,
         channel_size: usize,
     ) -> Self
     where
-        S: SerialPort + 'static,
+        T: 'static,
     {
         let state = Arc::new(NpRwLock::new(State::default()));
         let (frames_out, responses, threads) =
@@ -64,7 +67,7 @@ impl Uart {
             state,
             responses,
             encoder: Encoder::new(frames_out),
-            _threads: threads,
+            threads,
             sequence: 0,
         }
     }
@@ -109,9 +112,18 @@ impl Uart {
             })
         }
     }
+
+    /// Terminate the UART threads and return the serial port.
+    #[must_use]
+    pub fn terminate(self) -> impl SerialPort {
+        self.threads.terminate()
+    }
 }
 
-impl Ezsp for Uart {
+impl<T> Ezsp for Uart<T>
+where
+    T: SerialPort,
+{
     async fn init(&mut self) -> Result<version::Response, Error> {
         let response = self.negotiate_version().await?;
         self.state.write().set_connection(Connection::Connected);
@@ -119,7 +131,10 @@ impl Ezsp for Uart {
     }
 }
 
-impl Transport for Uart {
+impl<T> Transport for Uart<T>
+where
+    T: SerialPort,
+{
     fn next_header(&mut self, id: u16) -> Result<Header, TryFromIntError> {
         let header = if self.state.read().is_legacy() {
             Header::Legacy(Legacy::new(
@@ -154,22 +169,22 @@ impl Transport for Uart {
         }
     }
 
-    async fn send<T>(&mut self, command: T) -> Result<(), Error>
+    async fn send<C>(&mut self, command: C) -> Result<(), Error>
     where
-        T: Parameter + ToLeStream,
+        C: Parameter + ToLeStream,
     {
         let header = self
-            .next_header(T::ID)
+            .next_header(C::ID)
             .map_err(ValueError::InvalidFrameId)?;
         self.encoder.send(header, command).await?;
-        self.state.write().set_disambiguation(T::DISAMBIGUATION);
+        self.state.write().set_disambiguation(C::DISAMBIGUATION);
         Ok(())
     }
 
-    async fn receive<T>(&mut self) -> Result<T, Error>
+    async fn receive<P>(&mut self) -> Result<P, Error>
     where
-        T: TryFrom<Parameters>,
-        Error: From<<T as TryFrom<Parameters>>::Error>,
+        P: TryFrom<Parameters>,
+        Error: From<<P as TryFrom<Parameters>>::Error>,
     {
         let response = self
             .responses

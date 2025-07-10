@@ -115,7 +115,7 @@ where
 
     /// Terminate the UART threads and return the serial port.
     #[must_use]
-    pub fn terminate(self) -> impl SerialPort {
+    pub fn terminate(self) -> T {
         self.threads.terminate()
     }
 }

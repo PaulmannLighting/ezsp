@@ -1,12 +1,15 @@
 //! Echo command implementation.
 
-use log::error;
-
 use ezsp::Utilities;
 use ezsp::uart::Uart;
+use log::error;
+use serialport::SerialPort;
 
 /// Echoes a message.
-pub async fn echo(uart: &mut Uart, message: String) {
+pub async fn echo<T>(uart: &mut Uart<T>, message: String)
+where
+    T: SerialPort + 'static,
+{
     let mut bytes = heapless::Vec::<u8, { u8::MAX as usize }>::new();
 
     if bytes.extend_from_slice(&message.bytes().collect::<Vec<_>>()) == Err(()) {

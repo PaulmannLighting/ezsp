@@ -6,7 +6,7 @@ use std::str::FromStr;
 use ashv2::{BaudRate, open};
 use clap::Parser;
 use log::error;
-use serialport::FlowControl;
+use serialport::{FlowControl, SerialPort};
 use tokio::sync::mpsc::channel;
 
 use ezsp::uart::Uart;
@@ -43,7 +43,10 @@ async fn main() {
 }
 
 #[allow(clippy::future_not_send)]
-async fn run(mut uart: Uart) {
+async fn run<T>(mut uart: Uart<T>)
+where
+    T: SerialPort + 'static,
+{
     if let Err(error) = uart.init().await {
         error!("{error}");
         return;

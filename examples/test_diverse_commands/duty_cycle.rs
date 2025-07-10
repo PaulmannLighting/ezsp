@@ -2,13 +2,16 @@
 
 use log::{error, info};
 
-use le_stream::ToLeStream;
-
 use ezsp::Networking;
 use ezsp::uart::Uart;
+use le_stream::ToLeStream;
+use serialport::SerialPort;
 
 /// Test duty-cycle-related commands.
-pub async fn get_duty_cycle_info(ezsp: &mut Uart) {
+pub async fn get_duty_cycle_info<T>(ezsp: &mut Uart<T>)
+where
+    T: SerialPort + 'static,
+{
     match ezsp.get_duty_cycle_limits().await {
         Ok(limits) => {
             info!("Duty cycle limits: {limits:#04X?}");

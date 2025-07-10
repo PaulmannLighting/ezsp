@@ -1,12 +1,12 @@
 //! Interactive command parsing.
 
 use clap::{Error, Parser};
+use echo::echo;
 use ezsp::uart::Uart;
+use scan::scan;
+use serialport::SerialPort;
 use std::iter::once;
 use std::str::FromStr;
-
-use echo::echo;
-use scan::scan;
 use token_factory_reset::token_factory_reset;
 
 mod echo;
@@ -45,7 +45,10 @@ pub enum Command {
 }
 
 impl Command {
-    pub async fn run(self, uart: &mut Uart) {
+    pub async fn run<T>(self, uart: &mut Uart<T>)
+    where
+        T: SerialPort + 'static,
+    {
         match self {
             Self::Echo { message } => {
                 echo(uart, message.join(" ")).await;

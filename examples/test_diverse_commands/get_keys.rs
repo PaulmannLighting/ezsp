@@ -1,14 +1,17 @@
 //! Get diverse keys from the device.
 
-use log::{error, info};
-
 use ezsp::Security;
 use ezsp::ember::key::Type;
 use ezsp::uart::Uart;
+use log::{error, info};
+use serialport::SerialPort;
 
 /// Get diverse keys from the device.
 #[allow(deprecated)]
-pub async fn get_keys(ezsp: &mut Uart) {
+pub async fn get_keys<T>(ezsp: &mut Uart<T>)
+where
+    T: SerialPort + 'static,
+{
     match ezsp.get_key(Type::TrustCenterLinkKey).await {
         Ok(key) => {
             info!("Current trust center link key: {key:?}");

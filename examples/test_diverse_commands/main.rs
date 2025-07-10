@@ -283,7 +283,10 @@ where
 }
 
 /// Test getting values.
-async fn get_value_ids(ezsp: &mut Uart) {
+async fn get_value_ids<T>(ezsp: &mut Uart<T>)
+where
+    T: SerialPort + 'static,
+{
     for id in [
         Id::ActiveRadioConfig,
         Id::AntennaMode,

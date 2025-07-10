@@ -17,8 +17,6 @@ mod transport;
 mod types;
 #[cfg(feature = "ashv2")]
 pub mod uart;
-#[cfg(feature = "zigbee_development")]
-mod zigbee;
 
 pub use commands::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GetValueExt, GreenPower, Messaging, Mfglib,

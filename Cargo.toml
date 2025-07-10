@@ -39,7 +39,6 @@ tokio = { version = "1.46", features = ["rt", "rt-multi-thread", "macros"] }
 [features]
 ashv2 = ["dep:ashv2", "dep:serialport", "tokio/rt", "tokio/time", "tokio/sync"]
 semver = ["dep:semver"]
-zigbee_development = []
 
 [[example]]
 name = "console"

@@ -6,7 +6,7 @@ pub fn handle_scan_complete(scan_complete: &ScanComplete) {
     info!("Scan completed.");
 
     if let Some(channel) = scan_complete.channel() {
-        error!("Scan failed on channel: {:#04X}", channel);
+        error!("Scan failed on channel: {channel:#04X}");
     } else {
         info!("Scan succeeded.");
     }

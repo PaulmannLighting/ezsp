@@ -190,7 +190,7 @@ where
             .responses
             .recv()
             .await
-            .expect("Response channel should be open. This is a bug");
+            .expect("Response channel should be open. This is a bug.");
         Ok(response?.try_into()?)
     }
 }

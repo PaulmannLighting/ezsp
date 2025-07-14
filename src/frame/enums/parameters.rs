@@ -1,6 +1,7 @@
 use super::{Callback, Response};
 
 mod conversion;
+/// Conversion traits for `Parameters`.
 mod parsing;
 
 /// Parameter types of `EZSP` frames.

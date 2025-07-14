@@ -1,4 +1,7 @@
-use super::{Callback, Response};
+//! Parsing of parameters from byte streams.
+
+use le_stream::FromLeStream;
+
 use crate::Parsable;
 use crate::error::Decode;
 use crate::frame::Parameter;
@@ -7,9 +10,10 @@ use crate::frame::parameters::{
     binding, bootloader, cbke, configuration, green_power, messaging, mfglib, networking,
 };
 use crate::parameters::{security, token_interface, trust_center, utilities, wwah, zll};
-use le_stream::FromLeStream;
 
-impl Parsable for super::Parameters {
+use super::{Callback, Parameters, Response};
+
+impl Parsable for Parameters {
     #[allow(clippy::too_many_lines)]
     fn parse_from_le_stream<T>(
         id: u16,

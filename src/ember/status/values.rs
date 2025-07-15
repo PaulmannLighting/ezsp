@@ -1,5 +1,6 @@
-use num_derive::FromPrimitive;
 use std::fmt::{Display, LowerHex, UpperHex};
+
+use num_derive::FromPrimitive;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
 #[repr(u8)]

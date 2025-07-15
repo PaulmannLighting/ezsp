@@ -1,12 +1,11 @@
 use std::fmt::{Debug, Display, Formatter, LowerHex, UpperHex};
 
-use num_traits::FromPrimitive;
-
 pub use adc::Adc;
 pub use application::Application;
 pub use eeprom::Eeprom;
 pub use err::{Bootloader, Err, Flash};
 pub use mac::Mac;
+use num_traits::FromPrimitive;
 pub use phy::Phy;
 pub use serial::Serial;
 pub use sim_eeprom::SimEeprom;

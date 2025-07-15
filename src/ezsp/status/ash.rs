@@ -1,8 +1,8 @@
+pub use error::Error;
+pub use misc::Misc;
 use num_traits::FromPrimitive;
 
 use super::values::Values;
-pub use error::Error;
-pub use misc::Misc;
 
 mod error;
 mod misc;

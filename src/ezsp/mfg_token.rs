@@ -1,8 +1,7 @@
 //! Manufacturing tokens.
 
-use num_traits::FromPrimitive;
-
 pub use mfg::Mfg;
+use num_traits::FromPrimitive;
 pub use stack::Stack;
 
 mod mfg;

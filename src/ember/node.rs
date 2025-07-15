@@ -1,7 +1,8 @@
 //! Ember node type.
 
-use num_derive::FromPrimitive;
 use std::fmt::Display;
+
+use num_derive::FromPrimitive;
 
 /// Ember node type.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]

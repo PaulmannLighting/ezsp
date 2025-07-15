@@ -3,18 +3,17 @@
 use std::io::{Write, stdin, stdout};
 use std::str::FromStr;
 
+use args::Args;
 use ashv2::{BaudRate, open};
 use clap::Parser;
+use command::Command;
+use ezsp::uart::Uart;
+use ezsp::{Callback, Ezsp, Utilities};
 use log::error;
 use serialport::{FlowControl, SerialPort};
 use tokio::sync::mpsc::channel;
 
-use ezsp::uart::Uart;
-use ezsp::{Callback, Ezsp, Utilities};
-
 use crate::handler::handle_callback;
-use args::Args;
-use command::Command;
 
 mod args;
 mod command;

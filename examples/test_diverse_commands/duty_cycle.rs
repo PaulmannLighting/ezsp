@@ -1,10 +1,9 @@
 //! Test duty-cycle-related commands.
 
-use log::{error, info};
-
 use ezsp::Networking;
 use ezsp::uart::Uart;
 use le_stream::ToLeStream;
+use log::{error, info};
 use serialport::SerialPort;
 
 /// Test duty-cycle-related commands.

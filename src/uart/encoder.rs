@@ -4,9 +4,8 @@ use ashv2::{MAX_PAYLOAD_SIZE, Payload};
 use le_stream::ToLeStream;
 use tokio::sync::mpsc::Sender;
 
-use crate::Error;
 use crate::frame::Header;
-use crate::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
+use crate::{Error, MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 
 /// Encode `EZSP` frames into `ASHv2` frames.
 #[derive(Debug)]

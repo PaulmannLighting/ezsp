@@ -1,8 +1,9 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-use crate::ember::status::values::Values;
 use num_traits::FromPrimitive;
+
+use crate::ember::status::values::Values;
 
 /// Ember simulated EEPROM status.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

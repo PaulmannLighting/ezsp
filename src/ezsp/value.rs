@@ -1,9 +1,8 @@
 //! EZSP value identifiers.
 
+pub use ember_version::EmberVersion;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
-
-pub use ember_version::EmberVersion;
 
 mod ember_version;
 

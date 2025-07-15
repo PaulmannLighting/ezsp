@@ -1,3 +1,5 @@
+use le_stream::FromLeStream;
+
 use crate::Callback;
 use crate::error::Decode;
 use crate::frame::Parameter;
@@ -6,7 +8,6 @@ use crate::parameters::{
     binding, bootloader, cbke, green_power, messaging, mfglib, networking, security, trust_center,
     utilities, zll,
 };
-use le_stream::FromLeStream;
 
 /// A trait for parsing parameters from a little-endian stream given their frame ID.
 pub trait Parsable: Sized {

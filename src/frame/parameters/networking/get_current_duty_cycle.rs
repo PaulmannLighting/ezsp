@@ -5,8 +5,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use log::error;
 use num_traits::FromPrimitive;
 
-use crate::ember::{DeviceDutyCycles, Status};
-use crate::ember::{MAX_END_DEVICE_CHILDREN, PerDeviceDutyCycle};
+use crate::ember::{DeviceDutyCycles, MAX_END_DEVICE_CHILDREN, PerDeviceDutyCycle, Status};
 use crate::error::Error;
 use crate::frame::Parameter;
 

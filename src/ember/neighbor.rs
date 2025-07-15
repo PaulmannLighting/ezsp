@@ -1,7 +1,8 @@
 //! Neighbor table entries.
 
-use crate::ember::types::Eui64;
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::ember::types::Eui64;
 
 /// A neighbor table entry stores information about the
 /// reliability of RF links to and from neighboring nodes.

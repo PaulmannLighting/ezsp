@@ -2,13 +2,12 @@
 
 use ashv2::{BaudRate, open};
 use clap::Parser;
-use log::{debug, error, info, warn};
-use serialport::{FlowControl, SerialPort};
-
 use ezsp::ember::zigbee::Network;
 use ezsp::ezsp::network::scan::Type;
 use ezsp::uart::Uart;
 use ezsp::{Callback, Networking, Utilities, parameters};
+use log::{debug, error, info, warn};
+use serialport::{FlowControl, SerialPort};
 use tokio::sync::mpsc::channel;
 
 #[derive(Debug, Parser)]

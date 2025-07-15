@@ -1,8 +1,9 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-use super::super::values::Values;
 use num_traits::FromPrimitive;
+
+use super::super::values::Values;
 
 /// Ember bootloader status.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

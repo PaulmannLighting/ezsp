@@ -1,12 +1,13 @@
 //! Interactive command parsing.
 
+use std::iter::once;
+use std::str::FromStr;
+
 use clap::{Error, Parser};
 use echo::echo;
 use ezsp::uart::Uart;
 use scan::scan;
 use serialport::SerialPort;
-use std::iter::once;
-use std::str::FromStr;
 use token_factory_reset::token_factory_reset;
 
 mod echo;

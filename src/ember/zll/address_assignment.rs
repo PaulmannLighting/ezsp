@@ -1,5 +1,6 @@
-use crate::ember::{MulticastId, NodeId};
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::ember::{MulticastId, NodeId};
 
 /// ZLL address assignment data.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

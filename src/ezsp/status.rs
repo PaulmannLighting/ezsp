@@ -1,8 +1,8 @@
-use num_traits::FromPrimitive;
 use std::fmt::{Display, LowerHex, UpperHex};
 
 pub use ash::Ash;
 pub use error::Error;
+use num_traits::FromPrimitive;
 pub use spi_err::SpiErr;
 use values::Values;
 

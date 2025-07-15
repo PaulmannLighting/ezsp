@@ -1,10 +1,9 @@
 use std::future::Future;
 
-use crate::ember::MAX_END_DEVICE_CHILDREN;
+use crate::ember::multi_phy::{nwk, radio};
 use crate::ember::{
-    Eui64, NodeId, PerDeviceDutyCycle, beacon, child, concentrator, duty_cycle,
-    multi_phy::{nwk, radio},
-    neighbor, network, node, route,
+    Eui64, MAX_END_DEVICE_CHILDREN, NodeId, PerDeviceDutyCycle, beacon, child, concentrator,
+    duty_cycle, neighbor, network, node, route,
 };
 use crate::error::Error;
 use crate::ezsp::network::{InitBitmask, scan};

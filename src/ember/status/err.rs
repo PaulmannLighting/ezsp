@@ -1,11 +1,11 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
+pub use bootloader::Bootloader;
+pub use flash::Flash;
 use num_traits::FromPrimitive;
 
 use super::values::Values;
-pub use bootloader::Bootloader;
-pub use flash::Flash;
 
 mod bootloader;
 mod flash;

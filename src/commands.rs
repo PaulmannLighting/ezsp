@@ -1,8 +1,5 @@
 use std::future::Future;
 
-use crate::Error;
-use crate::parameters::configuration::version;
-
 pub use binding::Binding;
 pub use bootloader::Bootloader;
 pub use cbke::Cbke;
@@ -17,6 +14,9 @@ pub use trust_center::TrustCenter;
 pub use utilities::Utilities;
 pub use wwah::Wwah;
 pub use zll::Zll;
+
+use crate::Error;
+use crate::parameters::configuration::version;
 
 mod binding;
 mod bootloader;

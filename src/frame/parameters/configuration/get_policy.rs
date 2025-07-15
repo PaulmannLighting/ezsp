@@ -5,8 +5,7 @@ use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::error::ValueError;
-use crate::ezsp::Status;
-use crate::ezsp::{decision, policy};
+use crate::ezsp::{Status, decision, policy};
 use crate::frame::Parameter;
 
 const ID: u16 = 0x0056;

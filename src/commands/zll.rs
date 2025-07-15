@@ -1,3 +1,5 @@
+use std::future::Future;
+
 use crate::ember::key::Data;
 use crate::ember::node::Type;
 use crate::ember::radio::PowerMode;
@@ -12,7 +14,6 @@ use crate::frame::parameters::zll::{
     set_security_state_without_key, start_scan,
 };
 use crate::transport::Transport;
-use std::future::Future;
 
 /// The `Zll` trait provides an interface for the Zigbee Light Link (ZLL) protocol.
 pub trait Zll {

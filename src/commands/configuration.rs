@@ -1,5 +1,7 @@
 use std::future::Future;
 
+pub use get_value_ext::GetValueExt;
+
 use crate::ember::PanId;
 use crate::error::Error;
 use crate::ezsp::config::Id;
@@ -13,8 +15,6 @@ use crate::frame::parameters::configuration::{
 use crate::parameters::configuration::write_attribute::Attribute;
 use crate::transport::Transport;
 use crate::types::ByteSizedVec;
-
-pub use get_value_ext::GetValueExt;
 
 mod get_value_ext;
 

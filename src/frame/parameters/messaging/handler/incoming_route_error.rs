@@ -1,8 +1,9 @@
+use le_stream::derive::FromLeStream;
+use num_traits::FromPrimitive;
+
 use crate::Error;
 use crate::ember::{NodeId, Status};
 use crate::frame::Parameter;
-use le_stream::derive::FromLeStream;
-use num_traits::FromPrimitive;
 
 const ID: u16 = 0x0080;
 

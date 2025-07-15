@@ -2,6 +2,7 @@
 
 use le_stream::FromLeStream;
 
+use super::{Callback, Parameters, Response};
 use crate::Parsable;
 use crate::error::Decode;
 use crate::frame::Parameter;
@@ -10,8 +11,6 @@ use crate::frame::parameters::{
     binding, bootloader, cbke, configuration, green_power, messaging, mfglib, networking,
 };
 use crate::parameters::{security, token_interface, trust_center, utilities, wwah, zll};
-
-use super::{Callback, Parameters, Response};
 
 impl Parsable for Parameters {
     #[allow(clippy::too_many_lines)]

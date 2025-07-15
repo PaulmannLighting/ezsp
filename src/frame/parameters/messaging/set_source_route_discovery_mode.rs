@@ -1,7 +1,8 @@
 //! Parameters for the [`Messaging::set_source_route_discovery_mode`](crate::Messaging::set_source_route_discovery_mode) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
 use std::time::Duration;
+
+use le_stream::derive::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 use crate::types::SourceRouteDiscoveryMode;

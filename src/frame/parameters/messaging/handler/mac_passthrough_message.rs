@@ -1,8 +1,9 @@
+use le_stream::Prefixed;
+use le_stream::derive::FromLeStream;
+
 use crate::ember::mac::PassThroughType;
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
-use le_stream::Prefixed;
-use le_stream::derive::FromLeStream;
 
 const ID: u16 = 0x0097;
 

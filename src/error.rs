@@ -7,15 +7,15 @@ mod value_error;
 use std::convert::Infallible;
 use std::fmt::{Debug, Display, Formatter};
 
-use crate::frame::parameters::configuration::version;
-use crate::frame::parameters::utilities::invalid_command;
-use crate::{Parameters, Response, ember, ezsp};
-
-use crate::parameters::utilities;
 pub use decode::Decode;
 pub use status::Status;
 #[allow(clippy::module_name_repetitions)]
 pub use value_error::ValueError;
+
+use crate::frame::parameters::configuration::version;
+use crate::frame::parameters::utilities::invalid_command;
+use crate::parameters::utilities;
+use crate::{Parameters, Response, ember, ezsp};
 
 /// An error that can occur when communicating with an NCP.
 #[derive(Debug)]

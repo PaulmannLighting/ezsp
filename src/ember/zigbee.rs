@@ -1,8 +1,9 @@
 //! Zigbee network parameters.
 
-use crate::ember::types::PanId;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use macaddr::MacAddr8;
+
+use crate::ember::types::PanId;
 
 /// The parameters of a Zigbee network.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

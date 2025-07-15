@@ -4,23 +4,21 @@ use std::fmt::Debug;
 use std::num::TryFromIntError;
 use std::sync::Arc;
 
+use connection::Connection;
+use encoder::Encoder;
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
+use np_rw_lock::NpRwLock;
 use serialport::SerialPort;
+use state::State;
+use threads::Threads;
 use tokio::sync::mpsc::{Receiver, Sender};
 
 use crate::error::Error;
 use crate::frame::{Command, Header, Parameter};
-use crate::transport::{MIN_NON_LEGACY_VERSION, Transport};
-use crate::{Callback, Configuration, Extended, Ezsp, Legacy};
-use crate::{Parameters, ValueError};
-use np_rw_lock::NpRwLock;
-
 use crate::parameters::configuration::version;
-use connection::Connection;
-use encoder::Encoder;
-use state::State;
-use threads::Threads;
+use crate::transport::{MIN_NON_LEGACY_VERSION, Transport};
+use crate::{Callback, Configuration, Extended, Ezsp, Legacy, Parameters, ValueError};
 
 mod connection;
 mod decoder;

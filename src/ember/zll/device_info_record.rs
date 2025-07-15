@@ -1,5 +1,6 @@
-use crate::ember::Eui64;
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+use crate::ember::Eui64;
 
 /// Information about a specific ZLL Device.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

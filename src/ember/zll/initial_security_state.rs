@@ -1,6 +1,7 @@
+use le_stream::derive::{FromLeStream, ToLeStream};
+
 use crate::ember::key::Data;
 use crate::ember::zll::KeyIndex;
-use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// Describes the initial security features and requirements
 /// that will be used when forming or joining ZLL networks.

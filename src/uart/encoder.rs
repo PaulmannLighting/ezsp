@@ -1,4 +1,4 @@
-use std::io::ErrorKind;
+use std::io::{self, ErrorKind};
 
 use ashv2::{MAX_PAYLOAD_SIZE, Payload};
 use le_stream::ToLeStream;
@@ -56,7 +56,7 @@ impl Encoder {
         Ok(())
     }
 
-    async fn send_chunk(&self, chunk: Option<&[u8]>) -> std::io::Result<()> {
+    async fn send_chunk(&self, chunk: Option<&[u8]>) -> io::Result<()> {
         let mut payload = heapless::Vec::new();
         payload
             .extend_from_slice(&self.header)
@@ -75,10 +75,10 @@ impl Encoder {
     }
 }
 
-fn buffer_overflow() -> std::io::Error {
-    std::io::Error::new(ErrorKind::OutOfMemory, "Payload buffer overflow")
+fn buffer_overflow() -> io::Error {
+    io::Error::new(ErrorKind::OutOfMemory, "Payload buffer overflow")
 }
 
-fn failed_to_send_payload() -> std::io::Error {
-    std::io::Error::new(ErrorKind::BrokenPipe, "Failed to send payload")
+fn failed_to_send_payload() -> io::Error {
+    io::Error::new(ErrorKind::BrokenPipe, "Failed to send payload")
 }

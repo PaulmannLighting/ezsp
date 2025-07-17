@@ -1,4 +1,4 @@
-use std::future::Future;
+use core::future::Future;
 
 use crate::ember::constants::COUNTER_TYPE_COUNT;
 use crate::ember::entropy::Source;

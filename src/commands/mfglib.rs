@@ -1,4 +1,4 @@
-use std::future::Future;
+use core::future::Future;
 
 use crate::error::Error;
 use crate::frame::parameters::mfglib::{

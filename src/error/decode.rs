@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use core::fmt::Display;
 
 /// An error that occurs when decoding a frame.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

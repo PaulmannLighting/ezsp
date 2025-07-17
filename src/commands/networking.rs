@@ -1,4 +1,4 @@
-use std::future::Future;
+use core::future::Future;
 
 use crate::ember::multi_phy::{nwk, radio};
 use crate::ember::{

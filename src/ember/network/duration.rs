@@ -1,4 +1,4 @@
-use std::num::TryFromIntError;
+use core::num::TryFromIntError;
 
 const OFF: u8 = 0x00;
 const ON: u8 = 0xFF;

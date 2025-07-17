@@ -1,4 +1,4 @@
 use crate::Error;
 
 /// A specialized [`Result`] type for this crate.
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = core::result::Result<T, Error>;

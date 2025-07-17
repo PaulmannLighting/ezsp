@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use core::fmt::Debug;
 
 #[cfg(feature = "ashv2")]
 pub use disambiguation::Disambiguation;

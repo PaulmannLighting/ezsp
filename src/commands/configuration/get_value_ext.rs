@@ -1,4 +1,4 @@
-use std::array::TryFromSliceError;
+use core::array::TryFromSliceError;
 
 use crate::ezsp::value::{EmberVersion, Id};
 use crate::{Configuration, Error};

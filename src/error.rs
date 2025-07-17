@@ -4,8 +4,8 @@ mod decode;
 mod status;
 mod value_error;
 
-use std::convert::Infallible;
-use std::fmt::{Debug, Display, Formatter};
+use core::convert::Infallible;
+use core::fmt::{self, Debug, Display, Formatter};
 
 pub use decode::Decode;
 pub use status::Status;
@@ -42,7 +42,7 @@ pub enum Error {
 }
 
 impl Display for Error {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Io(error) => Display::fmt(error, f),
             Self::Decode(decode) => Display::fmt(decode, f),
@@ -64,8 +64,8 @@ impl Display for Error {
     }
 }
 
-impl std::error::Error for Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+impl core::error::Error for Error {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         match self {
             Self::Io(error) => Some(error),
             Self::Decode(decode) => Some(decode),

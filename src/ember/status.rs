@@ -1,4 +1,4 @@
-use std::fmt::{Debug, Display, Formatter, LowerHex, UpperHex};
+use core::fmt::{Debug, Display, Formatter, LowerHex, UpperHex};
 
 pub use adc::Adc;
 pub use application::Application;

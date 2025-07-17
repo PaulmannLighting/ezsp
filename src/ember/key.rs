@@ -1,7 +1,7 @@
 //! Ember key types and structures.
 
-use std::num::TryFromIntError;
-use std::time::Duration;
+use core::num::TryFromIntError;
+use core::time::Duration;
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;

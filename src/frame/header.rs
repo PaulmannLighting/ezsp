@@ -1,5 +1,5 @@
-use std::fmt::Debug;
-use std::hash::Hash;
+use core::fmt::Debug;
+use core::hash::Hash;
 
 pub use extended::Extended;
 pub use high_byte::{FormatVersion, HighByte};

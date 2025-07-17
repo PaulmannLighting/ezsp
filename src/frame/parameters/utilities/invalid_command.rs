@@ -1,6 +1,6 @@
 //! Indicates that the NCP received an invalid command.
 
-use std::fmt::Display;
+use core::fmt::Display;
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;

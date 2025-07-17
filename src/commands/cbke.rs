@@ -1,4 +1,4 @@
-use std::future::Future;
+use core::future::Future;
 
 use crate::ember::{
     Certificate283k1Data, CertificateData, MessageDigest, PrivateKeyData, PublicKey283k1Data,

@@ -1,7 +1,7 @@
 //! Interactive console.
 
+use core::str::FromStr;
 use std::io::{Write, stdin, stdout};
-use std::str::FromStr;
 
 use args::Args;
 use ashv2::{BaudRate, open};

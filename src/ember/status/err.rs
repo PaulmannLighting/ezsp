@@ -1,5 +1,5 @@
-use std::error::Error;
-use std::fmt::{Display, Formatter};
+use core::error::Error;
+use core::fmt::{Display, Formatter};
 
 pub use bootloader::Bootloader;
 pub use flash::Flash;

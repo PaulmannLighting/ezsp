@@ -1,4 +1,4 @@
-use std::future::Future;
+use core::future::Future;
 
 pub use get_value_ext::GetValueExt;
 

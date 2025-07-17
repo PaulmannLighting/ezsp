@@ -1,7 +1,7 @@
 //! Transport layer to communicate with an NCP that supports the `EZSP` protocol.
 
-use std::future::Future;
-use std::num::TryFromIntError;
+use core::future::Future;
+use core::num::TryFromIntError;
 
 use le_stream::ToLeStream;
 

@@ -1,6 +1,6 @@
 //! Parameters for the [`Messaging::set_source_route_discovery_mode`](crate::Messaging::set_source_route_discovery_mode) command.
 
-use std::time::Duration;
+use core::time::Duration;
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 

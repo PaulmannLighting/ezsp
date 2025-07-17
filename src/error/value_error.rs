@@ -1,5 +1,5 @@
-use std::fmt::Display;
-use std::num::TryFromIntError;
+use core::fmt::Display;
+use core::num::TryFromIntError;
 
 /// Invalid values.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

@@ -1,7 +1,7 @@
 //! Interactive command parsing.
 
-use std::iter::once;
-use std::str::FromStr;
+use core::iter::once;
+use core::str::FromStr;
 
 use clap::{Error, Parser};
 use echo::echo;

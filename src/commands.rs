@@ -1,4 +1,4 @@
-use std::future::Future;
+use core::future::Future;
 
 pub use binding::Binding;
 pub use bootloader::Bootloader;

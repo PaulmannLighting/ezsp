@@ -1,4 +1,4 @@
-use std::future::Future;
+use core::future::Future;
 
 use crate::Transport;
 use crate::ember::token::{Data, Info};

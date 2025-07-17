@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use core::fmt::Display;
 
 const MAJOR: u16 = 0b1111_0000_0000_0000;
 const MINOR: u16 = 0b0000_1111_0000_0000;

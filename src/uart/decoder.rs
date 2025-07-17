@@ -1,5 +1,6 @@
 //! Decoding of `ASHv2` frames into `EZSP` frames.
 
+use std::io;
 use std::sync::Arc;
 
 use ashv2::{HexSlice, Payload};
@@ -19,7 +20,7 @@ use crate::{Error, Extended, Legacy, MAX_PARAMETER_SIZE, Parameters};
 /// Decode `ASHv2` frames into `EZSP` frames.
 #[derive(Debug)]
 pub struct Decoder {
-    source: Receiver<std::io::Result<Payload>>,
+    source: Receiver<io::Result<Payload>>,
     state: Arc<NpRwLock<State>>,
     header: Option<Header>,
     parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
@@ -31,10 +32,7 @@ impl Decoder {
     /// Sets the source as a receiver for incoming `ASHv2` frames
     /// and the current state of the `EZSP` UART.
     #[must_use]
-    pub const fn new(
-        source: Receiver<std::io::Result<Payload>>,
-        state: Arc<NpRwLock<State>>,
-    ) -> Self {
+    pub const fn new(source: Receiver<io::Result<Payload>>, state: Arc<NpRwLock<State>>) -> Self {
         Self {
             source,
             state,

@@ -1,7 +1,7 @@
 //! Ember concentrator parameters.
 
-use std::num::TryFromIntError;
-use std::time::Duration;
+use core::num::TryFromIntError;
+use core::time::Duration;
 
 use le_stream::derive::ToLeStream;
 

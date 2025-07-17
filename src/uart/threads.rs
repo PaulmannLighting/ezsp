@@ -1,6 +1,6 @@
+use core::sync::atomic::AtomicBool;
+use core::sync::atomic::Ordering::Relaxed;
 use std::sync::Arc;
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering::Relaxed;
 
 use ashv2::{Payload, Transceiver};
 use log::error;

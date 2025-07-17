@@ -1,7 +1,7 @@
 mod command;
 mod response;
 
-use std::array::IntoIter;
+use core::array::IntoIter;
 
 pub use command::{Command, SleepMode};
 use le_stream::{FromLeStream, ToLeStream};

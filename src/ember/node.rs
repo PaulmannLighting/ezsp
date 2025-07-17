@@ -1,6 +1,6 @@
 //! Ember node type.
 
-use std::fmt::Display;
+use core::fmt::Display;
 
 use num_derive::FromPrimitive;
 

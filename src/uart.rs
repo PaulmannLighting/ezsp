@@ -1,7 +1,7 @@
 //! `ASHv2` transport layer.
 
-use std::fmt::Debug;
-use std::num::TryFromIntError;
+use core::fmt::Debug;
+use core::num::TryFromIntError;
 use std::sync::Arc;
 
 use connection::Connection;

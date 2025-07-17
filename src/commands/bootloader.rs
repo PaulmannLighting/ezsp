@@ -1,4 +1,4 @@
-use std::future::Future;
+use core::future::Future;
 
 use crate::ember::Eui64;
 use crate::error::Error;

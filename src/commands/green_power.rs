@@ -1,4 +1,4 @@
-use std::future::Future;
+use core::future::Future;
 
 pub use proxy_table::ProxyTable;
 pub use sink_table::SinkTable;

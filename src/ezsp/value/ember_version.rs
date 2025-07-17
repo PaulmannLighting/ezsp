@@ -1,5 +1,5 @@
-use std::array::TryFromSliceError;
-use std::fmt::Display;
+use core::array::TryFromSliceError;
+use core::fmt::Display;
 
 use crate::types::ByteSizedVec;
 

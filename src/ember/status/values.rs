@@ -1,4 +1,4 @@
-use std::fmt::{Display, LowerHex, UpperHex};
+use core::fmt::{Display, LowerHex, UpperHex};
 
 use num_derive::FromPrimitive;
 

@@ -1,4 +1,4 @@
-use std::future::Future;
+use core::future::Future;
 
 use crate::ember::gp::Address;
 use crate::ember::gp::sink::TableEntry;

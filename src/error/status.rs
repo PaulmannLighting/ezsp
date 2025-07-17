@@ -1,5 +1,5 @@
-use std::error::Error;
-use std::fmt::Display;
+use core::error::Error;
+use core::fmt::Display;
 
 use crate::{ember, ezsp};
 

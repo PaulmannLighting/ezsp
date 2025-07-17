@@ -3,7 +3,7 @@
 //!
 //! The response provides information about the firmware running on the NCP.
 
-use std::fmt::Debug;
+use core::fmt::Debug;
 
 use le_stream::derive::{FromLeStream, ToLeStream};
 

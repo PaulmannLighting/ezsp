@@ -32,7 +32,7 @@ impl Handler {
     /// Its length will be greater than 3 and less than 123.
     #[must_use]
     pub fn content(&self) -> &[u8] {
-        self.content.as_slice()
+        self.content.as_ref()
     }
 }
 

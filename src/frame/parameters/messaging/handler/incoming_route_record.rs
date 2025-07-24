@@ -45,7 +45,7 @@ impl Handler {
     /// Returns the relays.
     #[must_use]
     pub fn relays(&self) -> &[u8] {
-        self.relays.as_slice()
+        self.relays.as_ref()
     }
 }
 

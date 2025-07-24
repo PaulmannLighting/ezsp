@@ -60,7 +60,7 @@ impl Attribute {
     /// Attribute data.
     #[must_use]
     pub fn data(&self) -> &[u8] {
-        self.data.as_slice()
+        self.data.as_ref()
     }
 }
 

@@ -121,6 +121,6 @@ impl Payload {
     /// The GPD command payload.
     #[must_use]
     pub fn gpd_command_payload(&self) -> &[u8] {
-        self.gpd_command_payload.as_slice()
+        self.gpd_command_payload.as_ref()
     }
 }

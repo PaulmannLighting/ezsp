@@ -49,7 +49,7 @@ impl Handler {
     /// The raw message that was received.
     #[must_use]
     pub fn message(&self) -> &[u8] {
-        self.message.as_slice()
+        self.message.as_ref()
     }
 }
 

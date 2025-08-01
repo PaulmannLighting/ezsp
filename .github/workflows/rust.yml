@@ -1,4 +1,4 @@
-on: [push]
+on: [ push ]
 
 name: CI
 
@@ -8,11 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.DEPLOY_KEY_ASHV2 }}
-            ${{ secrets.DEPLOY_KEY_SILICONLABS }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
@@ -25,11 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.DEPLOY_KEY_ASHV2 }}
-            ${{ secrets.DEPLOY_KEY_SILICONLABS }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
@@ -42,14 +32,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.DEPLOY_KEY_ASHV2 }}
-            ${{ secrets.DEPLOY_KEY_SILICONLABS }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: libudev-dev
           version: 1.0
-      - run: cargo clippy -- -W clippy::pedantic -W clippy::nursery -W clippy::unwrap_used -W clippy::cargo -A clippy::multiple_crate_versions
+      - run: cargo clippy --all-features

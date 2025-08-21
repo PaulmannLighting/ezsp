@@ -7,7 +7,7 @@ repository = "https://github.com/PaulmannLighting/ezsp"
 keywords = ["Ember", "ZNet", "Serial", "Zigbee"]
 categories = ["hardware-support", "network-programming"]
 documentation = "https://docs.rs/ezsp"
-version = "1.2.2"
+version = "1.2.3"
 edition = "2024"
 exclude = [".gitignore"]
 
@@ -18,9 +18,9 @@ all-features = true
 ashv2 = { version = "1.2", optional = true }
 bitflags = "2.9"
 enum-iterator = "2.1"
-heapless = "0.8"
+heapless = "0.9"
 itertools = "0.14"
-le-stream = { version = "3", features = ["derive", "macaddr", "heapless"] }
+le-stream = { version = "4", features = ["derive", "macaddr", "heapless"] }
 log = "0.4"
 macaddr = "1.0"
 num-derive = "0.4"

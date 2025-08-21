@@ -60,25 +60,15 @@ impl Encoder {
         let mut payload = heapless::Vec::new();
         payload
             .extend_from_slice(&self.header)
-            .map_err(|()| buffer_overflow())?;
+            .map_err(io::Error::other)?;
 
         if let Some(chunk) = chunk {
-            payload
-                .extend_from_slice(chunk)
-                .map_err(|()| buffer_overflow())?;
+            payload.extend_from_slice(chunk).map_err(io::Error::other)?;
         }
 
         self.sender
             .send(payload)
             .await
-            .map_err(|_| failed_to_send_payload())
+            .map_err(|_| io::Error::new(ErrorKind::BrokenPipe, "Failed to send payload"))
     }
-}
-
-fn buffer_overflow() -> io::Error {
-    io::Error::new(ErrorKind::OutOfMemory, "Payload buffer overflow")
-}
-
-fn failed_to_send_payload() -> io::Error {
-    io::Error::new(ErrorKind::BrokenPipe, "Failed to send payload")
 }

@@ -94,14 +94,14 @@ impl Decoder {
             Header::Extended(Extended::from_le_stream(&mut stream).ok_or(Decode::TooFewBytes)?)
         };
 
-        if let Some(header) = self.header.take() {
-            if header != next_header {
-                return Err(Decode::FrameIdMismatch {
-                    expected: header.id(),
-                    found: next_header.id(),
-                }
-                .into());
+        if let Some(header) = self.header.take()
+            && header != next_header
+        {
+            return Err(Decode::FrameIdMismatch {
+                expected: header.id(),
+                found: next_header.id(),
             }
+            .into());
         }
 
         self.parameters.extend(stream);

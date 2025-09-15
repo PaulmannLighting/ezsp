@@ -12,7 +12,10 @@ where
 {
     let mut bytes = heapless::Vec::<u8, { u8::MAX as usize }>::new();
 
-    if bytes.extend_from_slice(&message.bytes().collect::<Vec<_>>()) == Err(()) {
+    if bytes
+        .extend_from_slice(&message.bytes().collect::<Vec<_>>())
+        .is_err()
+    {
         error!("Message too long!");
         return;
     };

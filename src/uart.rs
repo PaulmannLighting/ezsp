@@ -174,6 +174,10 @@ where
         let header = self
             .next_header(C::ID)
             .map_err(ValueError::InvalidFrameId)?;
+        // Set disambiguation for the command being sent.
+        //
+        // XXX: This needs to be done before sending the command, because if the serial port
+        // responds before we set the disambiguation, we might misinterpret the response.
         self.state.write().set_disambiguation(C::DISAMBIGUATION);
         self.encoder.send(header, command).await?;
         Ok(())

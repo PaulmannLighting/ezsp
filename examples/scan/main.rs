@@ -32,7 +32,7 @@ async fn run<S>(serial_port: S, args: Args)
 where
     S: SerialPort + 'static,
 {
-    let (callbacks_tx, mut callbacks_rx) = channel::<Callback>(8);
+    let (callbacks_tx, mut callbacks_rx) = channel::<Callback>(args.channel_size);
 
     tokio::spawn(async move {
         loop {
@@ -42,7 +42,7 @@ where
         }
     });
 
-    let mut uart = Uart::new(serial_port, callbacks_tx, args.version, 8);
+    let mut uart = Uart::new(serial_port, callbacks_tx, args.version, args.channel_size);
 
     uart.print_echo("About to start a scan.").await;
 

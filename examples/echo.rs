@@ -9,6 +9,7 @@ use serialport::{FlowControl, SerialPort};
 use tokio::sync::mpsc::channel;
 
 const DEFAULT_VERSION: u8 = 8;
+const DEFAULT_CHANNEL_SIZE: usize = 8;
 
 #[derive(Debug, Parser)]
 struct Args {
@@ -16,10 +17,12 @@ struct Args {
     tty: String,
     #[arg(index = 2, help = "Strings to echo")]
     texts: Vec<String>,
-    #[arg(short, long, default_value_t = DEFAULT_VERSION, help = "EZSP version to negotiate")]
+    #[arg(long, short, default_value_t = DEFAULT_VERSION, help = "EZSP version to negotiate")]
     version: u8,
-    #[arg(short, long, help = "Keep listening for incoming messages")]
+    #[arg(long, short, help = "Keep listening for incoming messages")]
     keep_listening: bool,
+    #[arg(long, short = 's', default_value_t = DEFAULT_CHANNEL_SIZE, help = "Channel size")]
+    channel_size: usize,
 }
 
 #[tokio::main]
@@ -37,7 +40,7 @@ async fn run<S>(serial_port: S, args: Args)
 where
     S: SerialPort + 'static,
 {
-    let (callbacks_tx, mut callbacks_rx) = channel::<Callback>(8);
+    let (callbacks_tx, mut callbacks_rx) = channel::<Callback>(args.channel_size);
 
     tokio::spawn(async move {
         loop {
@@ -47,7 +50,7 @@ where
         }
     });
 
-    let mut uart = Uart::new(serial_port, callbacks_tx, args.version, 8);
+    let mut uart = Uart::new(serial_port, callbacks_tx, args.version, args.channel_size);
 
     for text in args.texts {
         match uart.echo(text.bytes().collect()).await {

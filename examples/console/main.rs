@@ -25,7 +25,7 @@ async fn main() {
     env_logger::init();
     let args = Args::parse();
 
-    let (callbacks_tx, mut callbacks_rx) = channel::<Callback>(8);
+    let (callbacks_tx, mut callbacks_rx) = channel::<Callback>(args.channel_size);
 
     tokio::spawn(async move {
         loop {
@@ -36,7 +36,15 @@ async fn main() {
     });
 
     match open(args.tty.clone(), BaudRate::RstCts, FlowControl::Software) {
-        Ok(serial_port) => run(Uart::new(serial_port, callbacks_tx, args.version, 8)).await,
+        Ok(serial_port) => {
+            run(Uart::new(
+                serial_port,
+                callbacks_tx,
+                args.version,
+                args.channel_size,
+            ))
+            .await
+        }
         Err(error) => error!("{error}"),
     }
 }

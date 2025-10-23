@@ -18,15 +18,18 @@ mod duty_cycle;
 mod get_keys;
 
 const TEST_TEXT: &str = "Rust rules! 🦀";
+const DEFAULT_CHANNEL_SIZE: usize = 8;
 
 #[derive(Debug, Parser)]
 struct Args {
     #[arg(index = 1, help = "Path to the serial port")]
     tty: String,
-    #[arg(short, long, help = "EZSP version to negotiate")]
+    #[arg(long, short, help = "EZSP version to negotiate")]
     version: u8,
-    #[arg(short, long, help = "Keep listening for incoming messages")]
+    #[arg(long, short, help = "Keep listening for incoming messages")]
     keep_listening: bool,
+    #[arg(long, short = 's', default_value_t = DEFAULT_CHANNEL_SIZE, help = "Channel size")]
+    channel_size: usize,
 }
 
 #[tokio::main]
@@ -45,7 +48,7 @@ async fn run<S>(serial_port: S, args: Args)
 where
     S: SerialPort + 'static,
 {
-    let (callbacks_tx, mut callbacks_rx) = channel::<Callback>(8);
+    let (callbacks_tx, mut callbacks_rx) = channel::<Callback>(args.channel_size);
 
     tokio::spawn(async move {
         loop {
@@ -55,7 +58,7 @@ where
         }
     });
 
-    let mut ezsp = Uart::new(serial_port, callbacks_tx, args.version, 8);
+    let mut ezsp = Uart::new(serial_port, callbacks_tx, args.version, args.channel_size);
 
     // Test echo reply. Should be same as sent text.
     match ezsp.echo(TEST_TEXT.bytes().collect()).await {

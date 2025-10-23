@@ -172,8 +172,8 @@ impl Parsable for Parameters {
                 ))))
             }
             <cbke::handler::GenerateCbkeKeys as Parameter>::UNIQUE_ID => {
-                Ok(Self::Callback(Callback::Cbke(cbke::handler::Handler::GenerateCbkeKeys283k1(
-                    cbke::handler::GenerateCbkeKeys283k1::from_le_stream_exact(stream)?,
+                Ok(Self::Callback(Callback::Cbke(cbke::handler::Handler::GenerateCbkeKeys(
+                    cbke::handler::GenerateCbkeKeys::from_le_stream_exact(stream)?,
                 ))))
             }
             <cbke::handler::GenerateCbkeKeys283k1 as Parameter>::UNIQUE_ID => {

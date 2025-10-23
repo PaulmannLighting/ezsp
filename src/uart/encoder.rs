@@ -61,11 +61,7 @@ impl Encoder {
         payload
             .extend_from_slice(&self.header)
             .map_err(io::Error::other)?;
-
-        if !chunk.is_empty() {
-            payload.extend_from_slice(chunk).map_err(io::Error::other)?;
-        }
-
+        payload.extend_from_slice(chunk).map_err(io::Error::other)?;
         self.sender
             .send(payload)
             .await

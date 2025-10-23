@@ -1,10 +1,10 @@
 use core::error::Error;
 use core::fmt::{Display, Formatter};
 
-pub use bootloader::Bootloader;
-pub use flash::Flash;
 use num_traits::FromPrimitive;
 
+pub use self::bootloader::Bootloader;
+pub use self::flash::Flash;
 use super::values::Values;
 
 mod bootloader;

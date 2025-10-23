@@ -1,11 +1,12 @@
-mod command;
-mod response;
-
 use core::array::IntoIter;
 
-pub use command::{Command, SleepMode};
 use le_stream::{FromLeStream, ToLeStream};
-pub use response::{CallbackType, Response};
+
+pub use self::command::{Command, SleepMode};
+pub use self::response::{CallbackType, Response};
+
+mod command;
+mod response;
 
 /// The low byte of a frame header.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

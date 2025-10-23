@@ -1,15 +1,15 @@
 use core::fmt::Debug;
 
 #[cfg(feature = "ashv2")]
-pub use disambiguation::Disambiguation;
-pub use enums::{Callback, Parameters, Response};
+pub use self::disambiguation::Disambiguation;
+pub use self::enums::{Callback, Parameters, Response};
 #[cfg(feature = "ashv2")]
-pub use header::Command;
-pub use header::{
+pub use self::header::Command;
+pub use self::header::{
     CallbackType, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
 };
-pub use parameter::Parameter;
-pub use parsable::Parsable;
+pub use self::parameter::Parameter;
+pub use self::parsable::Parsable;
 
 mod disambiguation;
 mod enums;

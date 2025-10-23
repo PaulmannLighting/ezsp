@@ -1,8 +1,7 @@
 use core::future::Future;
 
-pub use proxy_table::ProxyTable;
-pub use sink_table::SinkTable;
-
+pub use self::proxy_table::ProxyTable;
+pub use self::sink_table::SinkTable;
 use crate::ember::gp::Address;
 use crate::error::Error;
 use crate::frame::parameters::green_power::{send, sink_commission, translation_table_clear};

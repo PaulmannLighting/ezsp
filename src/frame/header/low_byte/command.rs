@@ -1,8 +1,9 @@
-mod sleep_mode;
-
 use bitflags::bitflags;
 use le_stream::derive::{FromLeStream, ToLeStream};
-pub use sleep_mode::SleepMode;
+
+pub use self::sleep_mode::SleepMode;
+
+mod sleep_mode;
 
 /// Low byte control field of the frame header when it represents a command.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]

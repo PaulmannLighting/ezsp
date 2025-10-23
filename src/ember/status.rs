@@ -1,15 +1,16 @@
 use core::fmt::{Debug, Display, Formatter, LowerHex, UpperHex};
 
-pub use adc::Adc;
-pub use application::Application;
-pub use eeprom::Eeprom;
-pub use err::{Bootloader, Err, Flash};
-pub use mac::Mac;
 use num_traits::FromPrimitive;
-pub use phy::Phy;
-pub use serial::Serial;
-pub use sim_eeprom::SimEeprom;
-use values::Values;
+
+pub use self::adc::Adc;
+pub use self::application::Application;
+pub use self::eeprom::Eeprom;
+pub use self::err::{Bootloader, Err, Flash};
+pub use self::mac::Mac;
+pub use self::phy::Phy;
+pub use self::serial::Serial;
+pub use self::sim_eeprom::SimEeprom;
+use self::values::Values;
 
 mod adc;
 mod application;

@@ -1,12 +1,12 @@
 use core::fmt::Debug;
 use core::hash::Hash;
 
-pub use extended::Extended;
-pub use high_byte::{FormatVersion, HighByte};
-pub use legacy::Legacy;
+pub use self::extended::Extended;
+pub use self::high_byte::{FormatVersion, HighByte};
+pub use self::legacy::Legacy;
 #[cfg(feature = "ashv2")]
-pub use low_byte::Command;
-pub use low_byte::{CallbackType, LowByte, SleepMode};
+pub use self::low_byte::Command;
+pub use self::low_byte::{CallbackType, LowByte, SleepMode};
 
 mod extended;
 mod high_byte;

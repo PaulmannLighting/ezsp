@@ -4,16 +4,16 @@ use core::fmt::Debug;
 use core::num::TryFromIntError;
 use std::sync::Arc;
 
-use connection::Connection;
-use encoder::Encoder;
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
-use np_rw_lock::NpRwLock;
 use serialport::SerialPort;
-use state::State;
-use threads::Threads;
 use tokio::sync::mpsc::{Receiver, Sender};
 
+use self::connection::Connection;
+use self::encoder::Encoder;
+use self::np_rw_lock::NpRwLock;
+use self::state::State;
+use self::threads::Threads;
 use crate::error::Error;
 use crate::frame::{Command, Header, Parameter};
 use crate::parameters::configuration::version;

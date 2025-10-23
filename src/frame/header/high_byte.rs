@@ -1,8 +1,9 @@
-mod format_version;
-
 use bitflags::bitflags;
-pub use format_version::FormatVersion;
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+pub use self::format_version::FormatVersion;
+
+mod format_version;
 
 /// The extended frame control field of the frame header.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]

@@ -1,6 +1,6 @@
 use core::fmt::Debug;
 
-use crate::frame::disambiguation::Disambiguation;
+use super::disambiguation::Disambiguation;
 
 pub trait Parameter: Debug + Send {
     /// The frame ID.

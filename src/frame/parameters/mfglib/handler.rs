@@ -1,8 +1,8 @@
 //! `Mfglib` event handler.
 
-mod rx;
+pub use self::rx::Handler as Rx;
 
-pub use rx::Handler as Rx;
+mod rx;
 
 /// Handler of a `Mfglib` event.
 #[derive(Clone, Debug, Eq, PartialEq)]

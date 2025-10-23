@@ -1,14 +1,14 @@
 //! Handlers for the ZLL commands.
 
+pub use self::address_assignment::Handler as AddressAssignment;
+pub use self::network_found::Handler as NetworkFound;
+pub use self::scan_complete::Handler as ScanComplete;
+pub use self::touch_link_target::Handler as TouchLinkTarget;
+
 mod address_assignment;
 mod network_found;
 mod scan_complete;
 mod touch_link_target;
-
-pub use address_assignment::Handler as AddressAssignment;
-pub use network_found::Handler as NetworkFound;
-pub use scan_complete::Handler as ScanComplete;
-pub use touch_link_target::Handler as TouchLinkTarget;
 
 /// The handler for the ZLL commands.
 #[derive(Clone, Debug, Eq, PartialEq)]

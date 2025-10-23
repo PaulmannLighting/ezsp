@@ -1,8 +1,8 @@
 //! Handlers for the trust center commands.
 
-mod trust_center_join;
+pub use self::trust_center_join::Handler as TrustCenterJoin;
 
-pub use trust_center_join::Handler as TrustCenterJoin;
+mod trust_center_join;
 
 /// The handler for the trust center command.
 #[derive(Clone, Debug, Eq, PartialEq)]

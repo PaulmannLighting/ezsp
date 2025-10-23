@@ -1,8 +1,9 @@
-mod callback_type;
-
 use bitflags::bitflags;
-pub use callback_type::CallbackType;
 use le_stream::derive::{FromLeStream, ToLeStream};
+
+pub use self::callback_type::CallbackType;
+
+mod callback_type;
 
 /// Low byte control field of the frame header when it represents a response.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]

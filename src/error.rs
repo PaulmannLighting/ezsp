@@ -1,21 +1,20 @@
 //! Error handling for the NCP protocol.
 
-mod decode;
-mod status;
-mod value_error;
-
 use core::convert::Infallible;
 use core::fmt::{self, Debug, Display, Formatter};
 
-pub use decode::Decode;
-pub use status::Status;
+pub use self::decode::Decode;
+pub use self::status::Status;
 #[allow(clippy::module_name_repetitions)]
-pub use value_error::ValueError;
-
+pub use self::value_error::ValueError;
 use crate::frame::parameters::configuration::version;
 use crate::frame::parameters::utilities::invalid_command;
 use crate::parameters::utilities;
 use crate::{Parameters, Response, ember, ezsp};
+
+mod decode;
+mod status;
+mod value_error;
 
 /// An error that can occur when communicating with an NCP.
 #[derive(Debug)]

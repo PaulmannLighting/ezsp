@@ -43,26 +43,26 @@ impl Encoder {
         if self.parameters.is_empty() {
             // If there are no parameters to send, e.g. on `nop`, a call to `.chunks()`
             // would yield an empty iterator, resulting in us not even sending the header.
-            self.send_chunk(None).await?;
+            self.send_chunk(&[]).await?;
         }
 
         for chunk in self
             .parameters
             .chunks(MAX_PAYLOAD_SIZE.saturating_sub(self.header.len()))
         {
-            self.send_chunk(Some(chunk)).await?;
+            self.send_chunk(chunk).await?;
         }
 
         Ok(())
     }
 
-    async fn send_chunk(&self, chunk: Option<&[u8]>) -> io::Result<()> {
+    async fn send_chunk(&self, chunk: &[u8]) -> io::Result<()> {
         let mut payload = heapless::Vec::new();
         payload
             .extend_from_slice(&self.header)
             .map_err(io::Error::other)?;
 
-        if let Some(chunk) = chunk {
+        if !chunk.is_empty() {
             payload.extend_from_slice(chunk).map_err(io::Error::other)?;
         }
 

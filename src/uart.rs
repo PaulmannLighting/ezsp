@@ -174,8 +174,8 @@ where
         let header = self
             .next_header(C::ID)
             .map_err(ValueError::InvalidFrameId)?;
-        self.encoder.send(header, command).await?;
         self.state.write().set_disambiguation(C::DISAMBIGUATION);
+        self.encoder.send(header, command).await?;
         Ok(())
     }
 

@@ -76,9 +76,9 @@ impl Decoder {
 
     /// Try to parse a frame fragment from a chunk of bytes.
     ///
-    /// EZSP frames, in practice, though undocumented, may be split across multiple ASHv2 frames:
+    /// EZSP frames, in practice, though undocumented, may be split across multiple `ASHv2` frames:
     ///
-    /// <Header><Payload Fragment 1>, <Header><Payload Fragment 2>, ...
+    /// <EZSP Header><Payload Fragment 1>, <EZSP Header><Payload Fragment 2>, ...
     ///
     /// This method will parse these potentially fragmented EZSP frames by matching the headers
     /// and appending the remaining bytes to the parameter buffer.

@@ -42,29 +42,30 @@ impl Decoder {
     }
 
     /// Decode incoming `ASHv2` frames into `EZSP` frames.
-    pub async fn decode(&mut self) -> Option<Result<Frame, Error>> {
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if no frame could be decoded.
+    pub async fn decode(&mut self) -> Result<Frame, Error> {
         self.parameters.clear();
 
         loop {
-            if let Some(result) = self.source.recv().await {
-                match result {
-                    Ok(frame) => match self.try_parse_frame_fragment(frame) {
-                        Ok(Some(frame)) => {
-                            return Some(Ok(frame));
+            match self.source.recv().await.expect("Source closed") {
+                Ok(frame) => match self.try_parse_frame_fragment(frame) {
+                    Ok(maybe_frame) => {
+                        if let Some(frame) = maybe_frame {
+                            return Ok(frame);
                         }
-                        Ok(None) => continue,
-                        Err(error) => {
-                            return Some(Err(error));
-                        }
-                    },
-                    Err(error) => {
-                        self.state.write().set_connection(Connection::Failed);
-                        return Some(Err(error.into()));
                     }
+                    Err(error) => {
+                        return Err(error);
+                    }
+                },
+                Err(error) => {
+                    self.state.write().set_connection(Connection::Failed);
+                    return Err(error.into());
                 }
             }
-
-            return None;
         }
     }
 

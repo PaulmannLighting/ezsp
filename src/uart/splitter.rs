@@ -42,18 +42,23 @@ impl Splitter {
     ///
     /// Continuously decodes incoming frames and forwards them as responses or callbacks.
     pub async fn run(mut self) {
-        while let Some(frame) = self.incoming.decode().await {
-            match frame {
-                Ok(frame) => {
-                    self.handle_frame(frame).await;
-                }
-                Err(error) => {
-                    if self.state.read().is_response_pending() {
-                        self.responses
-                            .send(Err(error))
-                            .await
-                            .expect("Response channel should be open. This is a bug");
-                    }
+        loop {
+            self.split().await;
+        }
+    }
+
+    /// Handle an incoming frame.
+    async fn split(&mut self) {
+        match self.incoming.decode().await {
+            Ok(frame) => {
+                self.handle_frame(frame).await;
+            }
+            Err(error) => {
+                if self.state.read().is_response_pending() {
+                    self.responses
+                        .send(Err(error))
+                        .await
+                        .expect("Response channel should be open. This is a bug");
                 }
             }
         }

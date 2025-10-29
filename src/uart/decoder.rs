@@ -50,7 +50,12 @@ impl Decoder {
         self.parameters.clear();
 
         loop {
-            match self.source.recv().await.expect("Source closed") {
+            match self
+                .source
+                .recv()
+                .await
+                .expect("Source channel should be open")
+            {
                 Ok(frame) => match self.try_parse_frame_fragment(frame) {
                     Ok(maybe_frame) => {
                         if let Some(frame) = maybe_frame {

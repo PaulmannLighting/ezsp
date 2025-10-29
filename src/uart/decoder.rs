@@ -93,12 +93,7 @@ impl Decoder {
         trace!("Decoding ASHv2 frame: {:#04X}", HexSlice::new(&frame));
 
         let mut stream = frame.into_iter();
-
-        let next_header = if self.state.read().is_legacy() {
-            Header::Legacy(Legacy::from_le_stream(&mut stream).ok_or(Decode::TooFewBytes)?)
-        } else {
-            Header::Extended(Extended::from_le_stream(&mut stream).ok_or(Decode::TooFewBytes)?)
-        };
+        let next_header = self.read_header(&mut stream).ok_or(Decode::TooFewBytes)?;
 
         if let Some(header) = self.header.take()
             && header != next_header
@@ -111,11 +106,11 @@ impl Decoder {
         }
 
         self.parameters.extend(stream);
-        let disambiguation = self.state.read().disambiguation();
+        let disambiguation = self.state.read().disambiguation().unwrap_or_default();
 
         match Parameters::parse_from_le_stream(
             next_header.id(),
-            disambiguation.unwrap_or_default(),
+            disambiguation,
             self.parameters.iter().copied(),
         ) {
             Ok(parameters) => Ok(Some(Frame::new(next_header, parameters))),
@@ -123,7 +118,7 @@ impl Decoder {
                 if let Ok(invalid_command) = invalid_command::Response::parse_from_le_stream(
                     next_header.id(),
                     Disambiguation::None,
-                    self.parameters.iter().copied(),
+                    self.parameters.drain(..),
                 ) {
                     return Err(Error::InvalidCommand(invalid_command));
                 }
@@ -135,6 +130,18 @@ impl Decoder {
 
                 Err(error.into())
             }
+        }
+    }
+
+    /// Read the header from a stream of bytes.
+    fn read_header<T>(&self, stream: T) -> Option<Header>
+    where
+        T: Iterator<Item = u8>,
+    {
+        if self.state.read().is_legacy() {
+            Legacy::from_le_stream(stream).map(Header::Legacy)
+        } else {
+            Extended::from_le_stream(stream).map(Header::Extended)
         }
     }
 }

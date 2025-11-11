@@ -11,7 +11,7 @@ pub mod set_entry;
 pub mod set_security_frame_counter;
 
 /// Sink table response parameters.
-#[allow(variant_size_differences)]
+#[expect(variant_size_differences)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {
     /// Response to the `sink_table_clear_all` command.

@@ -7,7 +7,7 @@ use log::{error, info};
 use serialport::SerialPort;
 
 /// Get diverse keys from the device.
-#[allow(deprecated)]
+#[expect(deprecated)]
 pub async fn get_keys<T>(ezsp: &mut Uart<T>)
 where
     T: SerialPort + 'static,

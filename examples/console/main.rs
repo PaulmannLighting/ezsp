@@ -49,7 +49,7 @@ async fn main() {
     }
 }
 
-#[allow(clippy::future_not_send)]
+#[expect(clippy::future_not_send)]
 async fn run<T>(mut uart: Uart<T>)
 where
     T: SerialPort + 'static,

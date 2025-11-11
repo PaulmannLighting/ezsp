@@ -74,7 +74,7 @@ impl Duration {
 impl TryFrom<Option<std::time::Duration>> for Duration {
     type Error = std::time::Duration;
 
-    #[allow(clippy::cast_possible_truncation)]
+    #[expect(clippy::cast_possible_truncation)]
     fn try_from(duration: Option<std::time::Duration>) -> Result<Self, Self::Error> {
         let Some(duration) = duration else {
             return Ok(Self {

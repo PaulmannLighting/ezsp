@@ -7,7 +7,7 @@ mod switch_network_key;
 mod zigbee_key_establishment;
 
 /// The handler for the security command.
-#[allow(variant_size_differences)]
+#[expect(variant_size_differences)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     /// The handler for the switch network key command.

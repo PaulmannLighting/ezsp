@@ -14,7 +14,7 @@ pub trait Binding {
     /// Note that this command does not indicate whether a binding is clear.
     /// To determine whether a binding is clear, check whether the type field of the
     /// [`TableEntry`] has the value [`Type::Unused`](crate::ember::binding::Type::Unused).
-    #[allow(clippy::wrong_self_convention)]
+    #[expect(clippy::wrong_self_convention)]
     fn is_active(&mut self, index: u8) -> impl Future<Output = Result<bool, Error>> + Send;
 
     /// Deletes all binding table entries.

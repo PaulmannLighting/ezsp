@@ -14,7 +14,6 @@ pub mod stop_stream;
 pub mod stop_tone;
 
 /// Response parameters for the `Mfglib` commands.
-#[allow(variant_size_differences)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {
     /// Response to the `end` command.

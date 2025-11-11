@@ -5,7 +5,7 @@ use crate::frame::parameters::{
 };
 
 /// Possible callback responses, which are called "handler"s according to the EZSP documentation.
-#[allow(clippy::large_enum_variant)]
+#[expect(clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Callback {
     /// Binding handlers.

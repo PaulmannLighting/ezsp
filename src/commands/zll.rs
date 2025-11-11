@@ -30,7 +30,7 @@ pub trait Zll {
     fn get_tokens(&mut self) -> impl Future<Output = Result<get_tokens::Response, Error>> + Send;
 
     /// Is this a ZLL network?
-    #[allow(clippy::wrong_self_convention)]
+    #[expect(clippy::wrong_self_convention)]
     fn is_zll_network(&mut self) -> impl Future<Output = Result<bool, Error>> + Send;
 
     /// A consolidation of ZLL network operations with similar signatures;

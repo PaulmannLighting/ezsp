@@ -13,7 +13,7 @@ use crate::frame::parameters::{
 use crate::parameters::{security, token_interface, trust_center, utilities, wwah, zll};
 
 impl Parsable for Parameters {
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     fn parse_from_le_stream<T>(
         id: u16,
         disambiguation: Disambiguation,

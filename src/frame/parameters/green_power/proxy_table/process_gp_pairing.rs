@@ -23,7 +23,7 @@ pub(crate) struct Command {
 }
 
 impl Command {
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     #[must_use]
     pub const fn new(
         options: u32,

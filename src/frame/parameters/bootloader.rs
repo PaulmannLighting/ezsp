@@ -3,14 +3,14 @@
 pub mod aes_encrypt;
 pub mod get_standalone_bootloader_version_plat_micro_phy;
 pub mod handler;
-#[allow(clippy::module_name_repetitions)]
+#[expect(clippy::module_name_repetitions)]
 pub mod launch_standalone_bootloader;
 pub mod override_current_channel;
 pub mod send_bootload_message;
 
 /// `EZSP` response parameters for bootloader frames.
 #[derive(Clone, Debug, Eq, PartialEq)]
-#[allow(clippy::large_enum_variant)]
+#[expect(clippy::large_enum_variant)]
 pub enum Response {
     /// Response parameters for [`Bootloader::aes_encrypt()`](crate::Bootloader::aes_encrypt).
     AesEncrypt(aes_encrypt::Response),

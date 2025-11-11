@@ -49,7 +49,7 @@ impl Limits {
     #[must_use]
     pub const fn try_new(crit_thresh: u16, limit_thresh: u16, susp_limit: u16) -> Option<Self> {
         if susp_limit > crit_thresh && crit_thresh > limit_thresh {
-            #[allow(unsafe_code)]
+            #[expect(unsafe_code)]
             // SAFETY: We checked the limit constraints in the line above.
             Some(unsafe { Self::new_unchecked(crit_thresh, limit_thresh, susp_limit) })
         } else {
@@ -62,7 +62,7 @@ impl Limits {
     /// # Safety
     /// If the limits are not as follows: `susp_limit` > `crit_thresh` > `limit_thresh`,
     /// the limits will cause undefined behaviour (UB).
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     #[must_use]
     pub const unsafe fn new_unchecked(
         crit_thresh: u16,

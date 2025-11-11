@@ -286,7 +286,7 @@ impl From<Status> for Values {
 }
 
 impl From<Values> for Status {
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     fn from(value: Values) -> Self {
         match value {
             Values::Success => Self::Success,

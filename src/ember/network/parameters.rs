@@ -20,7 +20,7 @@ pub struct Parameters {
 
 impl Parameters {
     /// Create new network parameters.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     #[must_use]
     pub fn new(
         extended_pan_id: MacAddr8,

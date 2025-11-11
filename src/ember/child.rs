@@ -23,7 +23,7 @@ pub struct Data {
 
 impl Data {
     /// Create a new child data structure.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     #[must_use]
     pub fn new(
         eui64: Eui64,

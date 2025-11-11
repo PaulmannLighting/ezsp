@@ -46,7 +46,7 @@ pub struct Payload {
     gpd_command_id: u8,
     mic: u32,
     proxy_table_index: u8,
-    #[allow(clippy::struct_field_names)]
+    #[expect(clippy::struct_field_names)]
     gpd_command_payload: Prefixed<u8, ByteSizedVec<u8>>,
 }
 

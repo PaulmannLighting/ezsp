@@ -25,7 +25,7 @@ pub struct Data {
 
 impl Data {
     /// Create a new beacon data structure.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     #[must_use]
     pub const fn new(
         channel: u8,

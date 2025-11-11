@@ -13,7 +13,7 @@ pub mod configuration {
     /// callback to see if the
     /// [`ZdoResponseRequired`](crate::ember::aps::Option::ZdoResponseRequired)
     /// flag is set.
-    #[allow(clippy::enum_variant_names)]
+    #[expect(clippy::enum_variant_names)]
     #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, FromPrimitive, ToPrimitive)]
     pub enum Flags {
         /// The application receives supported ZDO requests.

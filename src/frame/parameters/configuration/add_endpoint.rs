@@ -44,9 +44,9 @@ impl Command {
 pub(crate) struct Clusters {
     input_cluster_counts: u8,
     output_cluster_counts: u8,
-    #[allow(clippy::struct_field_names)]
+    #[expect(clippy::struct_field_names)]
     input_clusters: ByteSizedVec<u16>,
-    #[allow(clippy::struct_field_names)]
+    #[expect(clippy::struct_field_names)]
     output_clusters: ByteSizedVec<u16>,
 }
 
@@ -54,9 +54,9 @@ impl Clusters {
     #[must_use]
     pub fn new(input_clusters: ByteSizedVec<u16>, output_clusters: ByteSizedVec<u16>) -> Self {
         Self {
-            #[allow(clippy::cast_possible_truncation)]
+            #[expect(clippy::cast_possible_truncation)]
             input_cluster_counts: input_clusters.len() as u8,
-            #[allow(clippy::cast_possible_truncation)]
+            #[expect(clippy::cast_possible_truncation)]
             output_cluster_counts: output_clusters.len() as u8,
             input_clusters,
             output_clusters,

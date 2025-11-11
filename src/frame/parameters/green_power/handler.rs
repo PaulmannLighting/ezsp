@@ -7,7 +7,7 @@ mod incoming_message;
 mod sent;
 
 /// Callbacks for the Green Power cluster.
-#[allow(clippy::large_enum_variant)]
+#[expect(clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     /// Callbacks for incoming messages.

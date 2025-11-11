@@ -116,7 +116,7 @@ pub trait Configuration {
     ) -> impl Future<Output = Result<version::Response, Error>> + Send;
 
     /// Write attribute data on NCP endpoints.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     fn write_attribute(
         &mut self,
         endpoint: u8,

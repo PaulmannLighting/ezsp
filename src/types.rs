@@ -25,7 +25,7 @@ impl From<SourceRouteDiscoveryMode> for u8 {
     }
 }
 
-#[allow(clippy::struct_field_names)]
+#[expect(clippy::struct_field_names)]
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct VariableLengthU32 {
     byte_1: u8,

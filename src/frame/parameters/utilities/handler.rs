@@ -11,7 +11,7 @@ mod stack_token_changed;
 mod timer;
 
 /// Callbacks for the utility parameters.
-#[allow(variant_size_differences)]
+#[expect(variant_size_differences)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     /// The counter has rolled over.

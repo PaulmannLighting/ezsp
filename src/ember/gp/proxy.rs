@@ -27,7 +27,7 @@ pub struct TableEntry {
 
 impl TableEntry {
     /// Create a new proxy table entry.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     #[must_use]
     pub const fn new(
         status: Status,

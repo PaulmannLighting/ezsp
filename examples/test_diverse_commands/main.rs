@@ -43,7 +43,7 @@ async fn main() {
     }
 }
 
-#[allow(clippy::too_many_lines)]
+#[expect(clippy::too_many_lines)]
 async fn run<S>(serial_port: S, args: Args)
 where
     S: SerialPort + 'static,

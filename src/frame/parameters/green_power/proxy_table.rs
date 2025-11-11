@@ -5,7 +5,7 @@ pub mod lookup;
 pub mod process_gp_pairing;
 
 /// Green Power sink table response parameters.
-#[allow(variant_size_differences)]
+#[expect(variant_size_differences)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {
     /// Response to the `sink_table::get_entry` command.

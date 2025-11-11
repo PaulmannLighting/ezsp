@@ -45,7 +45,7 @@ impl State {
     }
 
     /// Returns the disambiguation.
-    #[allow(clippy::unwrap_in_result)]
+    #[expect(clippy::unwrap_in_result)]
     #[must_use]
     pub const fn disambiguation(&self) -> Option<Disambiguation> {
         self.disambiguation

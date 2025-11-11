@@ -97,7 +97,7 @@ pub trait Messaging {
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Sends a proxied broadcast message as per the Zigbee specification.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     fn proxy_broadcast(
         &mut self,
         source: NodeId,
@@ -181,7 +181,7 @@ pub trait Messaging {
 
     /// Sends a multicast message to all endpoints that share a specific multicast ID and are
     /// within a specified number of hops of the sender.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     fn send_multicast_with_alias(
         &mut self,
         aps_frame: Frame,

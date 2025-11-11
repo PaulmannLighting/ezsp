@@ -8,7 +8,7 @@ pub mod remove_device;
 pub mod unicast_nwk_key_update;
 
 /// Trust Center response parameters.
-#[allow(variant_size_differences)]
+#[expect(variant_size_differences)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {
     /// Response to the `aes_mmo_hash` command.

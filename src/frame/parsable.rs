@@ -54,7 +54,7 @@ impl Parsable for Callback {
     /// # Errors
     ///
     /// Returns an error if the frame ID is not recognized.
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     fn parse_from_le_stream<T>(id: u16, _: Disambiguation, stream: T) -> Result<Self, Decode>
     where
         T: Iterator<Item = u8>,

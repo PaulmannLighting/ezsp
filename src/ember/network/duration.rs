@@ -9,7 +9,7 @@ pub enum Duration {
     /// Joining is disabled.
     Disable,
     /// Joining is enabled for a specific amount of seconds.
-    #[allow(private_interfaces)]
+    #[expect(private_interfaces)]
     Seconds(Seconds),
     /// Joining is enabled indefinitely.
     Enable,

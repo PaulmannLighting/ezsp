@@ -10,7 +10,6 @@ pub mod send_bootload_message;
 
 /// `EZSP` response parameters for bootloader frames.
 #[derive(Clone, Debug, Eq, PartialEq)]
-#[expect(clippy::large_enum_variant)]
 pub enum Response {
     /// Response parameters for [`Bootloader::aes_encrypt()`](crate::Bootloader::aes_encrypt).
     AesEncrypt(aes_encrypt::Response),

@@ -23,14 +23,12 @@ impl StackVersion {
     }
 
     /// Returns the patch version.
-    #[expect(clippy::cast_possible_truncation)]
     #[must_use]
     pub const fn patch(self) -> u8 {
         ((self.0 & PATCH) >> 4) as u8
     }
 
     /// Returns the release version.
-    #[expect(clippy::cast_possible_truncation)]
     #[must_use]
     pub const fn release(self) -> u8 {
         (self.0 & RELEASE) as u8

@@ -24,7 +24,6 @@ pub(crate) struct Command {
 }
 
 impl Command {
-    #[expect(clippy::too_many_arguments)]
     #[must_use]
     pub fn new(endpoint: u8, cluster: u16, attribute: Attribute, just_test: bool) -> Self {
         Self {

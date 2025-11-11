@@ -16,11 +16,9 @@ pub trait Wwah {
     fn get_parent_classification_enabled(&mut self) -> impl Future<Output = Result<bool, Error>>;
 
     /// Checks if the hub is connected or not.
-    #[expect(clippy::wrong_self_convention)]
     fn is_hub_connected(&mut self) -> impl Future<Output = Result<bool, Error>>;
 
     /// Checks if the device uptime is long or short.
-    #[expect(clippy::wrong_self_convention)]
     fn is_uptime_long(&mut self) -> impl Future<Output = Result<bool, Error>>;
 
     /// Sets the hub connectivity to be `true` or `false`.

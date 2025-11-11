@@ -5,7 +5,6 @@ use core::fmt::{self, Debug, Display, Formatter};
 
 pub use self::decode::Decode;
 pub use self::status::Status;
-#[expect(clippy::module_name_repetitions)]
 pub use self::value_error::ValueError;
 use crate::frame::parameters::configuration::version;
 use crate::frame::parameters::utilities::invalid_command;

@@ -52,7 +52,7 @@ impl Splitter {
                         self.responses
                             .send(Err(error))
                             .await
-                            .expect("Response channel should be open. This is a bug");
+                            .expect("Response channel should be open. This is a bug.");
                     }
                 }
             }

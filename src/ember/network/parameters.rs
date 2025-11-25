@@ -50,10 +50,20 @@ impl Parameters {
         self.extended_pan_id
     }
 
+    /// Set the network's extended PAN identifier.
+    pub const fn set_extended_pan_id(&mut self, extended_pan_id: MacAddr8) {
+        self.extended_pan_id = extended_pan_id;
+    }
+
     /// Return the network's PAN identifier.
     #[must_use]
     pub const fn pan_id(&self) -> PanId {
         self.pan_id
+    }
+
+    /// Set the network's PAN identifier.
+    pub const fn set_pan_id(&mut self, pan_id: PanId) {
+        self.pan_id = pan_id;
     }
 
     /// Return the power setting in dBm.
@@ -62,16 +72,31 @@ impl Parameters {
         self.radio_tx_power
     }
 
+    /// Set the power setting in dBm.
+    pub const fn set_radio_tx_power(&mut self, radio_tx_power: u8) {
+        self.radio_tx_power = radio_tx_power;
+    }
+
     /// Return the radio channel.
     #[must_use]
     pub const fn radio_channel(&self) -> u8 {
         self.radio_channel
     }
 
+    /// Set the radio channel.
+    pub const fn set_radio_channel(&mut self, radio_channel: u8) {
+        self.radio_channel = radio_channel;
+    }
+
     /// Return the method used to initially join the network.
     #[must_use]
     pub fn join_method(&self) -> Option<Method> {
         Method::from_u8(self.join_method)
+    }
+
+    /// Set the method used to initially join the network.
+    pub fn set_join_method(&mut self, join_method: Method) {
+        self.join_method = join_method.into();
     }
 
     /// Return the NWK Manager ID.
@@ -81,6 +106,11 @@ impl Parameters {
     #[must_use]
     pub const fn nwk_manager_id(&self) -> u16 {
         self.nwk_manager_id
+    }
+
+    /// Set the NWK Manager ID.
+    pub const fn set_nwk_manager_id(&mut self, nwk_manager_id: u16) {
+        self.nwk_manager_id = nwk_manager_id;
     }
 
     /// Return the NWK Update ID.
@@ -93,6 +123,11 @@ impl Parameters {
         self.nwk_update_id
     }
 
+    /// Set the NWK Update ID.
+    pub const fn set_nwk_update_id(&mut self, nwk_update_id: u8) {
+        self.nwk_update_id = nwk_update_id;
+    }
+
     /// Return the NWK channel mask.
     ///
     /// The list of preferred channels that the NWK manager has told this device to use when
@@ -101,5 +136,10 @@ impl Parameters {
     #[must_use]
     pub const fn channels(&self) -> u32 {
         self.channels
+    }
+
+    /// Set the NWK channel mask.
+    pub const fn set_channels(&mut self, channels: u32) {
+        self.channels = channels;
     }
 }

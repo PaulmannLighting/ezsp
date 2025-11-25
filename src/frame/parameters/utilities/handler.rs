@@ -10,8 +10,7 @@ mod custom_frame;
 mod stack_token_changed;
 mod timer;
 
-/// Callbacks for the utility parameters.
-#[expect(variant_size_differences)]
+/// Callback handlers for utility commands.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Handler {
     /// The counter has rolled over.

@@ -23,7 +23,7 @@ pub(crate) struct Command {
 
 impl Command {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         destination: NodeId,
         aps_frame: Frame,
         radius: u8,
@@ -35,7 +35,7 @@ impl Command {
             aps_frame,
             radius,
             message_tag,
-            message_contents: message_contents.into(),
+            message_contents: Prefixed::new(message_contents),
         }
     }
 }

@@ -46,32 +46,29 @@ impl Decoder {
     /// # Errors
     ///
     /// Returns an [`Error`] if no frame could be decoded.
-    pub async fn decode(&mut self) -> Result<Frame, Error> {
+    pub async fn decode(&mut self) -> Option<Result<Frame, Error>> {
         self.parameters.clear();
 
-        loop {
-            match self
-                .source
-                .recv()
-                .await
-                .expect("Source channel should be open")
-            {
+        while let Some(result) = self.source.recv().await {
+            match result {
                 Ok(frame) => match self.try_parse_frame_fragment(frame) {
                     Ok(maybe_frame) => {
                         if let Some(frame) = maybe_frame {
-                            return Ok(frame);
+                            return Some(Ok(frame));
                         }
                     }
                     Err(error) => {
-                        return Err(error);
+                        return Some(Err(error));
                     }
                 },
                 Err(error) => {
                     self.state.write().set_connection(Connection::Failed);
-                    return Err(error.into());
+                    return Some(Err(error.into()));
                 }
             }
         }
+
+        None
     }
 
     /// Try to parse a frame fragment from a chunk of bytes.

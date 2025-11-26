@@ -1,18 +1,18 @@
 //! Test diverse `EZSP` commands.
 
-use ashv2::{BaudRate, HexSlice, open};
+use ashv2::{BaudRate, FlowControl, HexSlice, SerialPort, open};
 use clap::Parser;
-use duty_cycle::get_duty_cycle_info;
 use ezsp::ember::{CertificateData, PublicKeyData};
 use ezsp::ezsp::value::Id;
 use ezsp::uart::Uart;
 use ezsp::{Callback, Cbke, Configuration, Networking, ProxyTable, Security, SinkTable, Utilities};
-use get_keys::get_keys;
 use le_stream::ToLeStream;
 use log::{debug, error, info};
-use serialport::{FlowControl, SerialPort};
 use silizium::zigbee::security::man::{Context, DerivedKeyType, Flags, KeyType};
 use tokio::sync::mpsc::channel;
+
+use self::duty_cycle::get_duty_cycle_info;
+use self::get_keys::get_keys;
 
 mod duty_cycle;
 mod get_keys;

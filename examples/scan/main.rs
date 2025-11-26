@@ -1,12 +1,11 @@
 //! Test `scan` command.
 
-use ashv2::{BaudRate, open};
+use ashv2::{BaudRate, FlowControl, SerialPort, open};
 use clap::Parser;
 use ezsp::ezsp::network::scan::Type;
 use ezsp::uart::Uart;
 use ezsp::{Callback, Networking};
 use log::{error, info};
-use serialport::{FlowControl, SerialPort};
 use tokio::sync::mpsc::channel;
 
 use self::args::Args;

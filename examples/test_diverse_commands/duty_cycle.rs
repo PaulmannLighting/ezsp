@@ -1,10 +1,10 @@
 //! Test duty-cycle-related commands.
 
+use ashv2::SerialPort;
 use ezsp::Networking;
 use ezsp::uart::Uart;
 use le_stream::ToLeStream;
 use log::{error, info};
-use serialport::SerialPort;
 
 /// Test duty-cycle-related commands.
 pub async fn get_duty_cycle_info<T>(ezsp: &mut Uart<T>)

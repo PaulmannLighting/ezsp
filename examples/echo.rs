@@ -1,11 +1,10 @@
 //! Test `echo` command.
 
-use ashv2::{BaudRate, open};
+use ashv2::{BaudRate, FlowControl, SerialPort, open};
 use clap::Parser;
 use ezsp::uart::Uart;
 use ezsp::{Callback, Utilities};
 use log::{debug, error, info};
-use serialport::{FlowControl, SerialPort};
 use tokio::sync::mpsc::channel;
 
 const DEFAULT_VERSION: u8 = 8;

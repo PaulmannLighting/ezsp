@@ -2,9 +2,8 @@ use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering::Relaxed;
 use std::sync::Arc;
 
-use ashv2::{Payload, Transceiver};
+use ashv2::{Payload, SerialPort, Transceiver};
 use log::error;
-use serialport::SerialPort;
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, Sender, channel};
 

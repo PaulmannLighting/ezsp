@@ -1,9 +1,9 @@
 //! Perform a token factory reset.
 
+use ashv2::SerialPort;
 use ezsp::TokenInterface;
 use ezsp::uart::Uart;
 use log::{error, info};
-use serialport::SerialPort;
 
 /// Perform a token factory reset.
 pub async fn token_factory_reset<T>(

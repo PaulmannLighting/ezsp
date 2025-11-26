@@ -3,17 +3,16 @@
 use core::str::FromStr;
 use std::io::{Write, stdin, stdout};
 
-use args::Args;
-use ashv2::{BaudRate, open};
+use ashv2::{BaudRate, FlowControl, SerialPort, open};
 use clap::Parser;
-use command::Command;
 use ezsp::uart::Uart;
 use ezsp::{Callback, Ezsp, Utilities};
 use log::error;
-use serialport::{FlowControl, SerialPort};
 use tokio::sync::mpsc::channel;
 
-use crate::handler::handle_callback;
+use self::args::Args;
+use self::command::Command;
+use self::handler::handle_callback;
 
 mod args;
 mod command;
@@ -43,7 +42,7 @@ async fn main() {
                 args.version,
                 args.channel_size,
             ))
-            .await
+            .await;
         }
         Err(error) => error!("{error}"),
     }

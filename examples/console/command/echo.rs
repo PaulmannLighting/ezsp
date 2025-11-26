@@ -1,9 +1,9 @@
 //! Echo command implementation.
 
+use ashv2::SerialPort;
 use ezsp::Utilities;
 use ezsp::uart::Uart;
 use log::error;
-use serialport::SerialPort;
 
 /// Echoes a message.
 pub async fn echo<T>(uart: &mut Uart<T>, message: String)

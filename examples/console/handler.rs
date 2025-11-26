@@ -1,9 +1,10 @@
 //! Callback handler implementation.
 
 use ezsp::{Callback, parameters};
-use handle_network_found::handle_network_found;
-use handle_scan_complete::handle_scan_complete;
 use log::{debug, warn};
+
+use self::handle_network_found::handle_network_found;
+use self::handle_scan_complete::handle_scan_complete;
 
 mod handle_network_found;
 mod handle_scan_complete;

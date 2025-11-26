@@ -3,12 +3,13 @@
 use core::iter::once;
 use core::str::FromStr;
 
+use ashv2::SerialPort;
 use clap::{Error, Parser};
-use echo::echo;
 use ezsp::uart::Uart;
-use scan::scan;
-use serialport::SerialPort;
-use token_factory_reset::token_factory_reset;
+
+use self::echo::echo;
+use self::scan::scan;
+use self::token_factory_reset::token_factory_reset;
 
 mod echo;
 mod scan;

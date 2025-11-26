@@ -4,9 +4,9 @@ use core::fmt::Debug;
 use core::num::TryFromIntError;
 use std::sync::Arc;
 
+use ashv2::SerialPort;
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
-use serialport::SerialPort;
 use tokio::sync::mpsc::{Receiver, Sender};
 
 use self::connection::Connection;

@@ -1,10 +1,10 @@
 //! Get diverse keys from the device.
 
+use ashv2::SerialPort;
 use ezsp::Security;
 use ezsp::ember::key::Type;
 use ezsp::uart::Uart;
 use log::{error, info};
-use serialport::SerialPort;
 
 /// Get diverse keys from the device.
 #[expect(deprecated)]

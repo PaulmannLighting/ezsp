@@ -15,28 +15,12 @@ pub struct Data {
     phy: u8,
     power: u8,
     timeout: u8,
-    gpd_ieee_address: Eui64,
-    source_id: u32,
-    application_id: u8,
-    endpoint: u8,
 }
 
 impl Data {
     /// Create a new child data structure.
-    #[expect(clippy::too_many_arguments)]
     #[must_use]
-    pub fn new(
-        eui64: Eui64,
-        typ: Type,
-        id: NodeId,
-        phy: u8,
-        power: u8,
-        timeout: u8,
-        gpd_ieee_address: Eui64,
-        source_id: u32,
-        application_id: u8,
-        endpoint: u8,
-    ) -> Self {
+    pub fn new(eui64: Eui64, typ: Type, id: NodeId, phy: u8, power: u8, timeout: u8) -> Self {
         Self {
             eui64,
             typ: typ.into(),
@@ -44,10 +28,6 @@ impl Data {
             phy,
             power,
             timeout,
-            gpd_ieee_address,
-            source_id,
-            application_id,
-            endpoint,
         }
     }
 
@@ -85,29 +65,5 @@ impl Data {
     #[must_use]
     pub const fn timeout(&self) -> u8 {
         self.timeout
-    }
-
-    /// Return the GPD's EUI64.
-    #[must_use]
-    pub const fn gpd_ieee_address(&self) -> Eui64 {
-        self.gpd_ieee_address
-    }
-
-    /// Return the GPD's source ID.
-    #[must_use]
-    pub const fn source_id(&self) -> u32 {
-        self.source_id
-    }
-
-    /// Return the GPD Application ID.
-    #[must_use]
-    pub const fn application_id(&self) -> u8 {
-        self.application_id
-    }
-
-    /// Return the GPD endpoint.
-    #[must_use]
-    pub const fn endpoint(&self) -> u8 {
-        self.endpoint
     }
 }

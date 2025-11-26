@@ -27,6 +27,38 @@ pub struct Response {
     parameters: Parameters,
 }
 
+impl Response {
+    /// Returns the status of the response.
+    ///
+    /// # Errors
+    ///
+    /// Returns the raw status byte if it does not correspond to a known [`Status`].
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::from_u8(self.status).ok_or(self.status)
+    }
+
+    /// Returns the node type of the response.
+    ///
+    /// # Errors
+    ///
+    /// Returns the raw node type byte if it does not correspond to a known [`Type`].
+    pub fn node_type(&self) -> Result<Type, u8> {
+        Type::from_u8(self.node_type).ok_or(self.node_type)
+    }
+
+    /// Returns the network parameters of the response.
+    #[must_use]
+    pub const fn parameters(&self) -> &Parameters {
+        &self.parameters
+    }
+
+    /// Consumes the response and returns the network parameters.
+    #[must_use]
+    pub const fn into_parameters(self) -> Parameters {
+        self.parameters
+    }
+}
+
 impl Parameter for Response {
     const ID: u16 = ID;
 }

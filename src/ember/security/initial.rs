@@ -1,5 +1,7 @@
 //! Initial security state configuration for the `EmberZNet` stack.
 
+use std::collections::BTreeSet;
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -103,14 +105,14 @@ impl State {
     /// Create a new security state.
     #[must_use]
     pub fn new(
-        bitmask: Bitmask,
+        bitmask: BTreeSet<Bitmask>,
         preconfigured_key: Data,
         network_key: Data,
         network_key_sequence_number: u8,
         preconfigured_trust_center_eui64: Eui64,
     ) -> Self {
         Self {
-            bitmask: bitmask.into(),
+            bitmask: bitmask.into_iter().map(u16::from).sum(),
             preconfigured_key,
             network_key,
             network_key_sequence_number,

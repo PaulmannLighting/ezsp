@@ -1,6 +1,7 @@
 //! Parameters for the [`Networking::network_init`](crate::Networking::network_init) command.
 
-use itertools::Itertools;
+use std::collections::BTreeSet;
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -18,9 +19,9 @@ pub(crate) struct Command {
 
 impl Command {
     #[must_use]
-    pub fn new(bitmask: &[InitBitmask]) -> Self {
+    pub fn new(bitmask: BTreeSet<InitBitmask>) -> Self {
         Self {
-            bitmask: bitmask.iter().unique().copied().map(u16::from).sum(),
+            bitmask: bitmask.into_iter().map(u16::from).sum(),
         }
     }
 }

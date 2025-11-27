@@ -274,9 +274,9 @@ where
 
     // Test get network parameters
     match ezsp.get_network_parameters().await {
-        Ok((typ, parameters)) => {
-            info!("Network type: {typ}");
-            info!("Network parameters: {parameters:?}");
+        Ok(response) => {
+            info!("Network type: {:?}", response.node_type());
+            info!("Network parameters: {:?}", response.parameters());
         }
         Err(error) => {
             error!("Error getting network parameters: {error}");

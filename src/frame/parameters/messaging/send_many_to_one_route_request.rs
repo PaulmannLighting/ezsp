@@ -5,6 +5,7 @@ use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
+use crate::ember::concentrator::Type;
 use crate::frame::Parameter;
 
 const ID: u16 = 0x0041;
@@ -17,9 +18,9 @@ pub(crate) struct Command {
 
 impl Command {
     #[must_use]
-    pub const fn new(concentrator_type: u16, radius: u8) -> Self {
+    pub const fn new(concentrator_type: Type, radius: u8) -> Self {
         Self {
-            concentrator_type,
+            concentrator_type: concentrator_type as u16,
             radius,
         }
     }

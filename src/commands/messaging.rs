@@ -3,6 +3,7 @@ use core::time::Duration;
 
 use crate::ember::aps::Frame;
 use crate::ember::beacon::ClassificationParams;
+use crate::ember::concentrator::Type;
 use crate::ember::event::Units;
 use crate::ember::message::Outgoing;
 use crate::ember::multicast::TableEntry;
@@ -164,7 +165,7 @@ pub trait Messaging {
     /// by calling this function periodically.
     fn send_many_to_one_route_request(
         &mut self,
-        concentrator_type: u16,
+        concentrator_type: Type,
         radius: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
@@ -495,7 +496,7 @@ where
 
     async fn send_many_to_one_route_request(
         &mut self,
-        concentrator_type: u16,
+        concentrator_type: Type,
         radius: u8,
     ) -> Result<(), Error> {
         self.communicate::<_, send_many_to_one_route_request::Response>(

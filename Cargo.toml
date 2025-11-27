@@ -19,7 +19,6 @@ ashv2 = { version = "1.2", optional = true }
 bitflags = "2.10"
 enum-iterator = "2.3"
 heapless = "0.9"
-itertools = "0.14"
 le-stream = { version = "5", features = ["derive", "macaddr", "heapless"] }
 log = "0.4"
 macaddr = "1.0"

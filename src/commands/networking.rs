@@ -141,7 +141,7 @@ pub trait Networking {
     /// Returns the current network parameters.
     fn get_network_parameters(
         &mut self,
-    ) -> impl Future<Output = Result<get_network_parameters::Response, Error>> + Send;
+    ) -> impl Future<Output = Result<(node::Type, network::Parameters), Error>> + Send;
 
     /// Returns the next beacon in the cache.
     ///
@@ -517,9 +517,10 @@ where
         .try_into()
     }
 
-    async fn get_network_parameters(&mut self) -> Result<get_network_parameters::Response, Error> {
+    async fn get_network_parameters(&mut self) -> Result<(node::Type, network::Parameters), Error> {
         self.communicate::<_, get_network_parameters::Response>(get_network_parameters::Command)
-            .await
+            .await?
+            .try_into()
     }
 
     async fn get_next_beacon(&mut self) -> Result<beacon::Data, Error> {

@@ -115,37 +115,7 @@ impl Decoder {
             self.parameters.iter().copied(),
         ) {
             Ok(parameters) => Ok(Some(Frame::new(next_header, parameters))),
-            Err(error) => {
-                if let Ok(invalid_command) = invalid_command::Response::parse_from_le_stream(
-                    next_header.id(),
-                    Disambiguation::None,
-                    self.parameters.drain(..),
-                ) {
-                    return Err(Error::InvalidCommand(invalid_command));
-                }
-
-                if error == Decode::TooFewBytes {
-                    if let LowByte::Response(response) = next_header.low_byte() {
-                        if response.is_truncated() {
-                            // TODO: This may result in a deadlock, if the next frame part never arrives.
-                            warn!("Frame is truncated.");
-                        }
-
-                        if response.has_overflowed() {
-                            return Err(io::Error::new(
-                                ErrorKind::OutOfMemory,
-                                "NCP ran out of memory.",
-                            )
-                            .into());
-                        }
-                    }
-
-                    self.header.replace(next_header);
-                    return Ok(None);
-                }
-
-                Err(error.into())
-            }
+            Err(error) => self.handle_error(error, next_header),
         }
     }
 
@@ -159,5 +129,35 @@ impl Decoder {
         } else {
             Extended::from_le_stream(stream).map(Header::Extended)
         }
+    }
+
+    fn handle_error(&mut self, error: Decode, next_header: Header) -> Result<Option<Frame>, Error> {
+        if let Ok(invalid_command) = invalid_command::Response::parse_from_le_stream(
+            next_header.id(),
+            Disambiguation::None,
+            self.parameters.drain(..),
+        ) {
+            return Err(Error::InvalidCommand(invalid_command));
+        }
+
+        if error == Decode::TooFewBytes {
+            if let LowByte::Response(response) = next_header.low_byte() {
+                if response.is_truncated() {
+                    // TODO: This may result in a deadlock, if the next frame part never arrives.
+                    warn!("Frame is truncated.");
+                }
+
+                if response.has_overflowed() {
+                    return Err(
+                        io::Error::new(ErrorKind::OutOfMemory, "NCP ran out of memory.").into(),
+                    );
+                }
+            }
+
+            self.header.replace(next_header);
+            return Ok(None);
+        }
+
+        Err(error.into())
     }
 }

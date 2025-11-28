@@ -1,40 +1,41 @@
 //! Ember current security state.
 
+use bitflags::bitflags;
 use le_stream::derive::{FromLeStream, ToLeStream};
-use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
 
 use crate::ember::types::Eui64;
 
 /// Ember current security bitmask.
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
-#[repr(u16)]
-pub enum Bitmask {
-    /// This denotes that the device is running in a network with Zigbee Standard Security.
-    StandardSecurityMode = 0x0000,
-    /// This denotes that the device is running in a network without a centralized Trust Center.
-    DistributedTrustCenterMode = 0x0002,
-    /// This denotes that the device has a Global Link Key.
-    ///
-    /// The Trust Center Link Key is the same across multiple nodes.
-    GlobalLinkKey = 0x0004,
-    /// This denotes that the node has a Trust Center Link Key.
-    HaveTrustCenterLinkKey = 0x0010,
-    /// This denotes that the Trust Center is using a Hashed Link Key.
-    TrustCenterUsesHashedLinkKey = 0x0084,
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct Bitmask(u16);
+
+bitflags! {
+    impl Bitmask: u16 {
+        /// This denotes that the device is running in a network with Zigbee Standard Security.
+        const STANDARD_SECURITY_MODE = 0x0000;
+        /// This denotes that the device is running in a network without a centralized Trust Center.
+        const DISTRIBUTED_TRUST_CENTER_MODE = 0x0002;
+        /// This denotes that the device has a Global Link Key.
+        ///
+        /// The Trust Center Link Key is the same across multiple nodes.
+        const GLOBAL_LINK_KEY = 0x0004;
+        /// This denotes that the node has a Trust Center Link Key.
+        const HAVE_TRUST_CENTER_LINK_KEY = 0x0010;
+        /// This denotes that the Trust Center is using a hashed Link Key.
+        const TRUST_CENTER_USES_HASHED_LINK_KEY = 0x0084;
+    }
 }
 
 impl From<Bitmask> for u16 {
     fn from(bitmask: Bitmask) -> Self {
-        bitmask as Self
+        bitmask.0
     }
 }
 
-impl TryFrom<u16> for Bitmask {
-    type Error = u16;
-
-    fn try_from(value: u16) -> Result<Self, Self::Error> {
-        Self::from_u16(value).ok_or(value)
+impl From<u16> for Bitmask {
+    fn from(value: u16) -> Self {
+        Self::from_bits_truncate(value)
     }
 }
 
@@ -48,9 +49,9 @@ pub struct State {
 impl State {
     /// Create a new current security state.
     #[must_use]
-    pub fn new(bitmask: Bitmask, trust_center_long_address: Eui64) -> Self {
+    pub const fn new(bitmask: Bitmask, trust_center_long_address: Eui64) -> Self {
         Self {
-            bitmask: bitmask.into(),
+            bitmask: bitmask.0,
             trust_center_long_address,
         }
     }
@@ -60,8 +61,9 @@ impl State {
     ///
     /// # Errors
     /// Returns the [`u16`] value of the bitmask if it is not a valid [`Bitmask`].
-    pub fn bitmask(&self) -> Result<Bitmask, u16> {
-        Bitmask::try_from(self.bitmask)
+    #[must_use]
+    pub fn bitmask(&self) -> Bitmask {
+        Bitmask::from(self.bitmask)
     }
 
     /// Return the IEEE Address of the Trust Center device.

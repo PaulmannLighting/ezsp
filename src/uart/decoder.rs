@@ -1,6 +1,7 @@
 //! Decoding of `ASHv2` frames into `EZSP` frames.
 
 use std::io;
+use std::io::ErrorKind;
 use std::sync::Arc;
 
 use ashv2::{HexSlice, Payload};
@@ -124,11 +125,19 @@ impl Decoder {
                 }
 
                 if error == Decode::TooFewBytes {
-                    if let LowByte::Response(response) = next_header.low_byte()
-                        && response.is_truncated()
-                    {
-                        // TODO: This may result in a deadlock, if the next frame part never arrives.
-                        warn!("Frame is truncated.");
+                    if let LowByte::Response(response) = next_header.low_byte() {
+                        if response.is_truncated() {
+                            // TODO: This may result in a deadlock, if the next frame part never arrives.
+                            warn!("Frame is truncated.");
+                        }
+
+                        if response.has_overflowed() {
+                            return Err(io::Error::new(
+                                ErrorKind::OutOfMemory,
+                                "NCP ran out of memory.",
+                            )
+                            .into());
+                        }
                     }
 
                     self.header.replace(next_header);

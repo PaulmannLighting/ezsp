@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use ashv2::{HexSlice, Payload};
 use le_stream::FromLeStream;
-use log::trace;
+use log::{trace, warn};
 use tokio::sync::mpsc::Receiver;
 
 use crate::error::Decode;
@@ -15,7 +15,7 @@ use crate::parameters::utilities::invalid_command;
 use crate::uart::connection::Connection;
 use crate::uart::np_rw_lock::NpRwLock;
 use crate::uart::state::State;
-use crate::{Error, Extended, Legacy, MAX_PARAMETER_SIZE, Parameters};
+use crate::{Error, Extended, Legacy, LowByte, MAX_PARAMETER_SIZE, Parameters};
 
 /// Decode `ASHv2` frames into `EZSP` frames.
 #[derive(Debug)]
@@ -124,6 +124,13 @@ impl Decoder {
                 }
 
                 if error == Decode::TooFewBytes {
+                    if let LowByte::Response(response) = next_header.low_byte()
+                        && response.is_truncated()
+                    {
+                        // TODO: This may result in a deadlock, if the next frame part never arrives.
+                        warn!("Frame is truncated.");
+                    }
+
                     self.header.replace(next_header);
                     return Ok(None);
                 }

@@ -70,7 +70,7 @@ pub struct Frame {
 impl Frame {
     /// Create a new APS frame.
     #[must_use]
-    pub fn new(
+    pub const fn new(
         profile_id: u16,
         cluster_id: u16,
         source_endpoint: u8,
@@ -115,11 +115,8 @@ impl Frame {
     }
 
     /// Return a list of options.
-    ///
-    /// # Panics
-    /// This function will panic if the options buffer does not have sufficient capacity.
     #[must_use]
-    pub fn options(&self) -> Options {
+    pub const fn options(&self) -> Options {
         Options::from_bits_truncate(self.options)
     }
 

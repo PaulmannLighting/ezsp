@@ -131,6 +131,7 @@ impl Decoder {
         }
     }
 
+    /// Handle an error that occurred during frame parsing.
     fn handle_error(&mut self, error: Decode, next_header: Header) -> Result<Option<Frame>, Error> {
         if let Ok(invalid_command) = invalid_command::Response::parse_from_le_stream(
             next_header.id(),

@@ -6,7 +6,7 @@ use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::aps::Frame;
-use crate::ember::message::Outgoing;
+use crate::ember::message::Destination;
 use crate::ember::{NodeId, Status};
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
@@ -25,14 +25,18 @@ pub(crate) struct Command {
 impl Command {
     #[must_use]
     pub fn new(
-        typ: Outgoing,
-        index_or_destination: NodeId,
+        destination: Destination,
         aps_frame: Frame,
         tag: u8,
         message: ByteSizedVec<u8>,
     ) -> Self {
+        let index_or_destination = match destination {
+            Destination::Direct(node_id) => node_id,
+            Destination::ViaAddressTable(index) | Destination::ViaBinding(index) => index,
+        };
+
         Self {
-            typ: typ.into(),
+            typ: destination.discriminant(),
             index_or_destination,
             aps_frame,
             tag,

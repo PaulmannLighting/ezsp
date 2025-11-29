@@ -51,10 +51,10 @@ impl EventHandler {
             self.handle_event(event).await;
         }
 
-        warn!("EZSP event handler has stopped receiving events.");
+        debug!("EZSP event handler has stopped receiving events.");
     }
 
-    async fn handle_event(&mut self, event: Callback) {
+    async fn handle_event(&self, event: Callback) {
         match event {
             Callback::Binding(event) => {
                 self.handle_binding_event(event);
@@ -92,7 +92,7 @@ impl EventHandler {
         }
     }
 
-    fn handle_binding_event(&mut self, event: BindingEvent) {
+    fn handle_binding_event(&self, event: BindingEvent) {
         match event {
             BindingEvent::RemoteDeleteBinding(event) => match u8::try_from(event) {
                 Ok(index) => {
@@ -113,7 +113,7 @@ impl EventHandler {
         }
     }
 
-    fn handle_bootloader_event(&mut self, event: BootloaderEvent) {
+    fn handle_bootloader_event(&self, event: BootloaderEvent) {
         match event {
             BootloaderEvent::BootloadTransmitComplete(event) => {
                 debug!("Bootloader transmit complete: {event:?}");

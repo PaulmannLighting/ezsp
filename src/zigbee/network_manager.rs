@@ -21,7 +21,6 @@ use crate::ezsp::{config, decision, policy};
 use crate::{Configuration, Error, Messaging, Networking, Security, Utilities};
 
 mod address;
-mod endpoint;
 mod event_handler;
 mod send_unicast;
 mod zigbee_message;

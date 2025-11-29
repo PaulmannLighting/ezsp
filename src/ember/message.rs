@@ -2,6 +2,9 @@
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
+use repr_discriminant::ReprDiscriminant;
+
+use crate::ember::NodeId;
 
 /// Ember incoming message type.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
@@ -37,7 +40,7 @@ impl TryFrom<u8> for Incoming {
     }
 }
 
-/// Ember outgoing message type.
+/// Ember outgoing message type for receiving `message_send::Handler`s.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum Outgoing {
@@ -71,4 +74,16 @@ impl TryFrom<u8> for Outgoing {
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         Self::from_u8(value).ok_or(value)
     }
+}
+
+/// Ember outgoing message type for sending unicasts.
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, ReprDiscriminant)]
+#[repr(u8)]
+pub enum Destination {
+    /// Unicast sent directly to an `EmberNodeId`.
+    Direct(NodeId) = 0x00,
+    /// Unicast sent using an entry in the address table.
+    ViaAddressTable(u16) = 0x01,
+    /// Unicast sent using an entry in the binding table.
+    ViaBinding(u16) = 0x02,
 }

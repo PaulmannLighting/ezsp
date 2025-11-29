@@ -5,7 +5,7 @@ use crate::ember::aps::Frame;
 use crate::ember::beacon::ClassificationParams;
 use crate::ember::concentrator::Type;
 use crate::ember::event::Units;
-use crate::ember::message::Outgoing;
+use crate::ember::message::Destination;
 use crate::ember::multicast::TableEntry;
 use crate::ember::{Eui64, NodeId};
 use crate::error::Error;
@@ -246,8 +246,7 @@ pub trait Messaging {
     /// number field in the APS frame to the sequence number assigned by the stack to the first fragment.
     fn send_unicast(
         &mut self,
-        typ: Outgoing,
-        index_or_destination: NodeId,
+        destination: Destination,
         aps_frame: Frame,
         message_tag: u8,
         message: ByteSizedVec<u8>,
@@ -586,15 +585,13 @@ where
 
     async fn send_unicast(
         &mut self,
-        typ: Outgoing,
-        index_or_destination: NodeId,
+        destination: Destination,
         aps_frame: Frame,
         message_tag: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
         self.communicate::<_, send_unicast::Response>(send_unicast::Command::new(
-            typ,
-            index_or_destination,
+            destination,
             aps_frame,
             message_tag,
             message,

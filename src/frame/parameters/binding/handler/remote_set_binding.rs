@@ -33,19 +33,27 @@ impl Handler {
         self.index
     }
 
-    /// `Ok(())` if the binding was added to the table.
+    /// Return the policy decision made by the NCP.
     ///
     /// # Errors
     ///
-    /// Returns an error if the status is not [`Status::Success`].
-    pub fn policy_decision(&self) -> Result<(), Error> {
-        match Status::from_u8(self.policy_decision).ok_or(self.policy_decision) {
-            Ok(Status::Success) => Ok(()),
-            other => Err(other.into()),
-        }
+    /// Returns the [`u8`] value of the policy decision if it has an invalid value.
+    pub fn policy_decision(&self) -> Result<Status, u8> {
+        Status::from_u8(self.policy_decision).ok_or(self.policy_decision)
     }
 }
 
 impl Parameter for Handler {
     const ID: u16 = ID;
+}
+
+impl TryFrom<Handler> for (u8, TableEntry) {
+    type Error = Error;
+
+    fn try_from(handler: Handler) -> Result<Self, Self::Error> {
+        match handler.policy_decision() {
+            Ok(Status::Success) => Ok((handler.index, handler.entry)),
+            other => Err(other.into()),
+        }
+    }
 }

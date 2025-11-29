@@ -98,6 +98,12 @@ impl Handler {
     pub fn node_type(&self) -> Option<Type> {
         self.node_type.and_then(Type::from_u8)
     }
+
+    /// Consumes the handler and returns the incoming message.
+    #[must_use]
+    pub fn into_message(self) -> ByteSizedVec<u8> {
+        self.message.into_data()
+    }
 }
 
 impl Parameter for Handler {

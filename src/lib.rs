@@ -33,3 +33,5 @@ mod transport;
 mod types;
 #[cfg(feature = "ashv2")]
 pub mod uart;
+#[cfg(feature = "zigbee")]
+pub mod zigbee;

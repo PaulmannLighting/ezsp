@@ -14,7 +14,6 @@ use zigbee_nwk::{NetworkDescriptor, Nlme};
 
 pub use self::device_config::DeviceConfig;
 pub use self::event_handler::EventHandler;
-pub use self::send_unicast::SendUnicast;
 pub use self::zigbee_message::ZigbeeMessage;
 use crate::ember::message::Destination;
 use crate::ember::security::initial;
@@ -25,7 +24,6 @@ use crate::{Configuration, Error, Messaging, Networking, Security, Utilities};
 mod address;
 mod device_config;
 mod event_handler;
-mod send_unicast;
 mod zigbee_message;
 
 const ENDPOINT_ID: u8 = 1;

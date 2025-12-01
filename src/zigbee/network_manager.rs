@@ -136,7 +136,7 @@ where
             .await
             .expect("Failed to get network parameters");
         info!("Node type: {node_type:?}");
-        log_parameters(&parameters);
+        info!("{parameters}");
     }
 }
 
@@ -358,15 +358,4 @@ where
     async fn leave(&mut self) -> Result<(), Self::Error> {
         self.transport.leave_network().await
     }
-}
-
-fn log_parameters(parameters: &network::Parameters) {
-    info!("PAN ID: {:#X}", parameters.pan_id());
-    info!("Extended PAN ID: {:#X?}", parameters.extended_pan_id());
-    info!("Radio TX power: {:#X}", parameters.radio_tx_power());
-    info!("Radio channel: {:#X}", parameters.radio_channel());
-    info!("Join method: {:#X?}", parameters.join_method());
-    info!("Nwk manager ID: {:#X}", parameters.nwk_manager_id());
-    info!("Nwk update ID: {:#X}", parameters.nwk_update_id());
-    info!("Channels: {:#X}", parameters.channels());
 }

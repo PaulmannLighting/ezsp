@@ -1,3 +1,6 @@
+use std::fmt::Display;
+
+use ashv2::HexSlice;
 use le_stream::derive::{FromLeStream, ToLeStream};
 use macaddr::MacAddr8;
 use num_traits::FromPrimitive;
@@ -141,5 +144,22 @@ impl Parameters {
     /// Set the NWK channel mask.
     pub const fn set_channels(&mut self, channels: u32) {
         self.channels = channels;
+    }
+}
+
+impl Display for Parameters {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "PAN ID: {:#06X}, ", self.pan_id)?;
+        writeln!(
+            f,
+            "Extended PAN ID: {:#04X}",
+            HexSlice::new(self.extended_pan_id.as_bytes())
+        )?;
+        writeln!(f, "Radio TX power: {:#04X}", self.radio_tx_power)?;
+        writeln!(f, "Radio channel: {:#04X}", self.radio_channel)?;
+        writeln!(f, "Join method: {:#04X}", self.join_method)?;
+        writeln!(f, "Nwk manager ID: {:#06X}", self.nwk_manager_id)?;
+        writeln!(f, "Nwk update ID: {:#04X}", self.nwk_update_id)?;
+        writeln!(f, "Channels: {:#010X}", self.channels)
     }
 }

@@ -126,9 +126,14 @@ where
         info!("Network is up");
 
         info!("Final EZSP NCP configuration:");
-        self.print_configuration().await;
+        for (key, value) in self.get_configuration().await {
+            info!("  {key:?}: {value}");
+        }
+
         info!("Final EZSP NCP policy:");
-        self.print_policy().await;
+        for (key, value) in self.get_policy().await {
+            info!("  {key:?}: {value:?}");
+        }
 
         let (node_type, parameters) = self
             .transport
@@ -178,22 +183,38 @@ where
         Ok(())
     }
 
-    async fn print_configuration(&mut self) {
+    async fn get_configuration(&mut self) -> BTreeMap<config::Id, u16> {
+        let mut configuration = BTreeMap::new();
+
         for id in all::<config::Id>() {
             match self.transport.get_configuration_value(id).await {
-                Ok(value) => info!("Configuration {id:?} = {value}"),
-                Err(error) => warn!("Failed to get configuration {id:?}: {error}"),
+                Ok(value) => {
+                    configuration.insert(id, value);
+                }
+                Err(error) => {
+                    warn!("Failed to get configuration {id:?}: {error}");
+                }
             }
         }
+
+        configuration
     }
 
-    async fn print_policy(&mut self) {
+    async fn get_policy(&mut self) -> BTreeMap<policy::Id, decision::Id> {
+        let mut policy = BTreeMap::new();
+
         for id in all::<policy::Id>() {
             match self.transport.get_policy(id).await {
-                Ok(value) => info!("Policy {id:?} = {value:?}"),
-                Err(error) => warn!("Failed to get policy {id:?}: {error}"),
+                Ok(value) => {
+                    policy.insert(id, value);
+                }
+                Err(error) => {
+                    warn!("Failed to get policy {id:?}: {error}");
+                }
             }
         }
+
+        policy
     }
 }
 
@@ -273,9 +294,14 @@ where
 
     async fn configure(&mut self, settings: Self::DeviceSettings) -> Result<(), Self::Error> {
         info!("Initial EZSP NCP configuration:");
-        self.print_configuration().await;
+        for (key, value) in self.get_configuration().await {
+            info!("  {key:?}: {value}");
+        }
+
         info!("Initial EZSP NCP policy:");
-        self.print_policy().await;
+        for (key, value) in self.get_policy().await {
+            info!("  {key:?}: {value:?}");
+        }
 
         info!("Adding endpoint");
         self.transport

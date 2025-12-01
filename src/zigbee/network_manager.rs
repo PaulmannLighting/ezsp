@@ -7,13 +7,15 @@ use std::sync::atomic::Ordering::SeqCst;
 use std::time::Duration;
 
 use enum_iterator::all;
-pub use event_handler::EventHandler;
 use log::{info, warn};
 use macaddr::MacAddr8;
-pub use send_unicast::SendUnicast;
 use tokio::time::sleep;
-pub use zigbee_message::ZigbeeMessage;
+use zigbee_nwk::{NetworkDescriptor, Nlme};
 
+pub use self::device_config::DeviceConfig;
+pub use self::event_handler::EventHandler;
+pub use self::send_unicast::SendUnicast;
+pub use self::zigbee_message::ZigbeeMessage;
 use crate::ember::message::Destination;
 use crate::ember::security::initial;
 use crate::ember::{aps, concentrator, join, network};
@@ -21,6 +23,7 @@ use crate::ezsp::{config, decision, policy};
 use crate::{Configuration, Error, Messaging, Networking, Security, Utilities};
 
 mod address;
+mod device_config;
 mod event_handler;
 mod send_unicast;
 mod zigbee_message;
@@ -39,6 +42,7 @@ const TICK: Duration = Duration::from_secs(1);
 /// Network manager for Zigbee networks.
 pub struct NetworkManager<T> {
     transport: T,
+    settings: Option<DeviceConfig>,
     network_up: Arc<AtomicBool>,
     network_open: Arc<AtomicBool>,
     aps_seq: u8,
@@ -55,6 +59,7 @@ impl<T> NetworkManager<T> {
     ) -> Self {
         Self {
             transport,
+            settings: None,
             network_up,
             network_open,
             aps_seq: 0,
@@ -79,84 +84,6 @@ impl<T> NetworkManager<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities,
 {
-    /// Initializes the Zigbee endpoint.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] if the endpoint could not be added.
-    #[expect(clippy::too_many_arguments)]
-    pub async fn init(
-        &mut self,
-        reinitialize: bool,
-        concentrator: concentrator::Parameters,
-        configuration: BTreeMap<config::Id, u16>,
-        policy: BTreeMap<policy::Id, decision::Id>,
-        link_key: [u8; 16],
-        extended_pan_id: MacAddr8,
-        pan_id: u16,
-        radio_channel: u8,
-    ) -> Result<(), Error> {
-        info!("Initial EZSP NCP configuration:");
-        self.print_configuration().await;
-        info!("Initial EZSP NCP policy:");
-        self.print_policy().await;
-
-        info!("Adding endpoint");
-        self.transport
-            .add_endpoint(
-                ENDPOINT_ID,
-                HOME_AUTOMATION,
-                HOME_GATEWAY,
-                0,
-                INPUT_CLUSTERS.iter().copied().collect(),
-                OUTPUT_CLUSTERS.iter().copied().collect(),
-            )
-            .await?;
-
-        if reinitialize {
-            info!("Leaving existing network");
-
-            if matches!(self.transport.leave_network().await, Ok(())) {
-                while self.network_up.load(SeqCst) {
-                    sleep(TICK).await;
-                }
-
-                info!("Left existing network");
-            }
-        }
-
-        info!("Initializing network");
-        self.initialize(concentrator, configuration, policy, link_key)
-            .await?;
-
-        if reinitialize {
-            info!("Reinitializing network");
-            self.transport
-                .form_network(network::Parameters::new(
-                    extended_pan_id,
-                    pan_id,
-                    RADIO_TX_POWER as u8,
-                    radio_channel,
-                    join::Method::MacAssociation,
-                    0,
-                    0,
-                    0,
-                ))
-                .await?;
-        } else {
-            self.transport.network_init(BTreeSet::default()).await?;
-        }
-
-        self.await_network_up().await;
-
-        info!("Sending many-to-one route request");
-        self.transport
-            .send_many_to_one_route_request(concentrator::Type::HighRam, 8)
-            .await?;
-
-        Ok(())
-    }
-
     async fn initialize(
         &mut self,
         concentrator: concentrator::Parameters,
@@ -334,6 +261,102 @@ where
             sleep(Duration::from_secs(1)).await;
         }
         info!("Network is closed");
+    }
+}
+
+impl<T> Nlme for NetworkManager<T>
+where
+    T: Configuration + Security + Messaging + Networking + Utilities,
+{
+    type DeviceSettings = DeviceConfig;
+    type Error = Error;
+
+    async fn configure(&mut self, settings: Self::DeviceSettings) -> Result<(), Self::Error> {
+        info!("Initial EZSP NCP configuration:");
+        self.print_configuration().await;
+        info!("Initial EZSP NCP policy:");
+        self.print_policy().await;
+
+        info!("Adding endpoint");
+        self.transport
+            .add_endpoint(
+                ENDPOINT_ID,
+                HOME_AUTOMATION,
+                HOME_GATEWAY,
+                0,
+                INPUT_CLUSTERS.iter().copied().collect(),
+                OUTPUT_CLUSTERS.iter().copied().collect(),
+            )
+            .await?;
+
+        self.settings.replace(settings);
+        Ok(())
+    }
+
+    async fn start(&mut self, reinitialize: bool) -> Result<(), Self::Error> {
+        let Some(settings) = self.settings.clone() else {
+            return Err(Error::NotConfigured);
+        };
+
+        if reinitialize {
+            info!("Leaving existing network");
+
+            if matches!(self.transport.leave_network().await, Ok(())) {
+                while self.network_up.load(SeqCst) {
+                    sleep(TICK).await;
+                }
+
+                info!("Left existing network");
+            }
+        }
+
+        info!("Initializing network");
+        self.initialize(
+            settings.concentrator,
+            settings.configuration,
+            settings.policy,
+            settings.link_key,
+        )
+        .await?;
+
+        if reinitialize {
+            info!("Reinitializing network");
+            self.transport
+                .form_network(network::Parameters::new(
+                    settings.extended_pan_id,
+                    settings.pan_id,
+                    RADIO_TX_POWER as u8,
+                    settings.radio_channel,
+                    join::Method::MacAssociation,
+                    0,
+                    0,
+                    0,
+                ))
+                .await?;
+        } else {
+            self.transport.network_init(BTreeSet::default()).await?;
+        }
+
+        self.await_network_up().await;
+
+        info!("Sending many-to-one route request");
+        self.transport
+            .send_many_to_one_route_request(concentrator::Type::HighRam, 8)
+            .await?;
+
+        Ok(())
+    }
+
+    async fn join(&mut self, network: NetworkDescriptor) -> Result<(), Self::Error> {
+        todo!("Network joining is not yet implemented")
+    }
+
+    async fn rejoin(&mut self, network: NetworkDescriptor) -> Result<(), Self::Error> {
+        todo!("Network rejoining is not yet implemented")
+    }
+
+    async fn leave(&mut self) -> Result<(), Self::Error> {
+        self.transport.leave_network().await
     }
 }
 

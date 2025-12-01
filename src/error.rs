@@ -37,6 +37,8 @@ pub enum Error {
         /// The version that was received.
         negotiated: version::Response,
     },
+    /// The NCP is not configured.
+    NotConfigured,
 }
 
 impl Display for Error {
@@ -58,6 +60,7 @@ impl Display for Error {
                     negotiated.protocol_version()
                 )
             }
+            Self::NotConfigured => write!(f, "NCP is not configured"),
         }
     }
 }
@@ -71,7 +74,8 @@ impl core::error::Error for Error {
             Self::ValueError(value_error) => Some(value_error),
             Self::UnexpectedResponse(_)
             | Self::InvalidCommand(_)
-            | Self::ProtocolVersionMismatch { .. } => None,
+            | Self::ProtocolVersionMismatch { .. }
+            | Self::NotConfigured => None,
         }
     }
 }

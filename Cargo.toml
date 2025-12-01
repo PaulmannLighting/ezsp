@@ -28,6 +28,7 @@ repr-discriminant = { version = "3", features = ["derive"] }
 semver = { version = "1.0", optional = true }
 silizium = { version = "1.0", features = ["le-stream"] }
 tokio = { version = "1.48", optional = true }
+zigbee-nwk = { version = "0.1.0", path = "../apis-saltans/nwk", optional = true }
 
 [dev-dependencies]
 clap = { version = "4.5", features = ["derive"] }
@@ -37,7 +38,7 @@ tokio = { version = "1.48", features = ["rt", "rt-multi-thread", "macros"] }
 [features]
 ashv2 = ["ashv2/serialport", "tokio/rt", "tokio/time", "tokio/sync"]
 semver = ["dep:semver"]
-zigbee = []
+zigbee = ["dep:zigbee-nwk"]
 
 [[example]]
 name = "console"

@@ -96,9 +96,7 @@ where
         self.transport
             .set_initial_security_state(initial::State::new(
                 initial::Bitmask::TRUST_CENTER_GLOBAL_LINK_KEY
-                    | initial::Bitmask::HAVE_NETWORK_KEY
-                    | initial::Bitmask::HAVE_PRECONFIGURED_KEY
-                    | initial::Bitmask::REQUIRE_ENCRYPTED_KEY,
+                    | initial::Bitmask::HAVE_PRECONFIGURED_KEY,
                 link_key,
                 network_key,
                 0,

@@ -258,6 +258,57 @@ where
             )
             .await
     }
+
+    pub async fn send_raw(&mut self, payload: &[u8]) -> Result<(), Error> {
+        self.transport
+            .send_raw_message(payload.iter().copied().collect())
+            .await
+    }
+}
+
+impl<T> NetworkManager<T>
+where
+    T: Messaging,
+{
+    pub async fn send_many_to_one_route_request(&mut self) -> Result<(), Error> {
+        info!("Sending many-to-one route request");
+        self.transport
+            .send_many_to_one_route_request(concentrator::Type::HighRam, 8)
+            .await
+    }
+}
+
+impl<T> NetworkManager<T>
+where
+    T: Networking,
+{
+    pub async fn get_neighbors(&mut self) -> Result<BTreeMap<MacAddr8, u16>, Error> {
+        let mut neighbors = BTreeMap::new();
+
+        for index in 0..=u8::MAX {
+            if let Ok(neighbor) = self.transport.get_neighbor(index).await {
+                neighbors.insert(neighbor.long_id(), neighbor.short_id());
+            } else {
+                break;
+            }
+        }
+
+        Ok(neighbors)
+    }
+
+    pub async fn get_children(&mut self) -> Result<BTreeMap<MacAddr8, u16>, Error> {
+        let mut neighbors = BTreeMap::new();
+
+        for index in 0..=u8::MAX {
+            if let Ok(child) = self.transport.get_child_data(index).await {
+                neighbors.insert(child.eui64(), child.id());
+            } else {
+                break;
+            }
+        }
+
+        Ok(neighbors)
+    }
 }
 
 impl<T> NetworkManager<T>
@@ -266,20 +317,16 @@ where
 {
     /// Wait until the network is open.
     pub async fn await_network_open(&self) {
-        info!("Waiting for network to open...");
         while !self.network_open.load(SeqCst) {
             sleep(Duration::from_secs(1)).await;
         }
-        info!("Network is open");
     }
 
     /// Wait until the network is closed.
     pub async fn await_network_closed(&self) {
-        info!("Waiting for network to close...");
         while self.network_open.load(SeqCst) {
             sleep(Duration::from_secs(1)).await;
         }
-        info!("Network is closed");
     }
 }
 
@@ -364,9 +411,7 @@ where
         self.await_network_up().await;
 
         info!("Sending many-to-one route request");
-        self.transport
-            .send_many_to_one_route_request(concentrator::Type::HighRam, 8)
-            .await?;
+        self.send_many_to_one_route_request().await?;
 
         Ok(())
     }

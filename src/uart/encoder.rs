@@ -1,7 +1,9 @@
+use std::fmt::Debug;
 use std::io::{self, ErrorKind};
 
-use ashv2::{MAX_PAYLOAD_SIZE, Payload};
+use ashv2::{HexSlice, MAX_PAYLOAD_SIZE, Payload};
 use le_stream::ToLeStream;
+use log::trace;
 use tokio::sync::mpsc::Sender;
 
 use crate::frame::Header;
@@ -28,7 +30,7 @@ impl Encoder {
     /// Encode an `EZSP` header and parameters into a `ASHv2` frames.
     pub async fn send<T>(&mut self, header: Header, parameters: T) -> Result<(), Error>
     where
-        T: ToLeStream + Send,
+        T: Debug + ToLeStream + Send,
     {
         self.header.clear();
         self.parameters.clear();
@@ -37,8 +39,14 @@ impl Encoder {
             Header::Legacy(header) => self.header.extend(header.to_le_stream()),
             Header::Extended(header) => self.header.extend(header.to_le_stream()),
         }
+        trace!("Sending header: {:#04X}", HexSlice::new(&self.header));
 
+        trace!("Sending parameters (type): {parameters:?}");
         self.parameters.extend(parameters.to_le_stream());
+        trace!(
+            "Sending parameters (bytes): {:#04X}",
+            HexSlice::new(&self.parameters)
+        );
 
         if self.parameters.is_empty() {
             // If there are no parameters to send, e.g. on `nop`, a call to `.chunks()`
@@ -57,11 +65,12 @@ impl Encoder {
     }
 
     async fn send_chunk(&self, chunk: &[u8]) -> io::Result<()> {
-        let mut payload = heapless::Vec::new();
+        let mut payload = Payload::new();
         payload
             .extend_from_slice(&self.header)
             .map_err(io::Error::other)?;
         payload.extend_from_slice(chunk).map_err(io::Error::other)?;
+        trace!("Sending chunk: {:#04X}", HexSlice::new(&payload));
         self.sender
             .send(payload)
             .await

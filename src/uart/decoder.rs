@@ -114,7 +114,10 @@ impl Decoder {
             disambiguation,
             self.parameters.iter().copied(),
         ) {
-            Ok(parameters) => Ok(Some(Frame::new(next_header, parameters))),
+            Ok(parameters) => {
+                trace!("Decoded parameters: {parameters:?}");
+                Ok(Some(Frame::new(next_header, parameters)))
+            }
             Err(error) => self.handle_error(error, next_header),
         }
     }
@@ -138,10 +141,12 @@ impl Decoder {
             Disambiguation::None,
             self.parameters.drain(..),
         ) {
+            trace!("Received invalid command error.");
             return Err(Error::InvalidCommand(invalid_command));
         }
 
         if error != Decode::TooFewBytes {
+            trace!("Received and error during frame parsing: {error:?}");
             return Err(error.into());
         }
 
@@ -158,6 +163,7 @@ impl Decoder {
             }
         }
 
+        trace!("Frame is incomplete. Waiting for more data. Header was: {next_header:?}");
         self.header.replace(next_header);
         Ok(None)
     }

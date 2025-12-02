@@ -17,7 +17,7 @@ pub use self::event_handler::EventHandler;
 pub use self::zigbee_message::ZigbeeMessage;
 use crate::ember::message::Destination;
 use crate::ember::security::initial;
-use crate::ember::{aps, beacon, concentrator, join, network, node};
+use crate::ember::{aps, concentrator, join, network, node};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, decision, policy};
 use crate::{Configuration, Error, Messaging, Networking, Security, Utilities};
@@ -102,11 +102,10 @@ where
 
         self.transport
             .set_initial_security_state(initial::State::new(
-                [
-                    initial::Bitmask::HavePreconfiguredKey,
-                    initial::Bitmask::RequireEncryptedKey,
-                ]
-                .into(),
+                initial::Bitmask::TRUST_CENTER_GLOBAL_LINK_KEY
+                    | initial::Bitmask::HAVE_NETWORK_KEY
+                    | initial::Bitmask::HAVE_PRECONFIGURED_KEY
+                    | initial::Bitmask::REQUIRE_ENCRYPTED_KEY,
                 link_key,
                 NETWORK_KEY,
                 0,
@@ -269,18 +268,6 @@ where
 
 impl<T> NetworkManager<T>
 where
-    T: Messaging,
-{
-    pub async fn send_many_to_one_route_request(&mut self) -> Result<(), Error> {
-        info!("Sending many-to-one route request");
-        self.transport
-            .send_many_to_one_route_request(concentrator::Type::HighRam, 8)
-            .await
-    }
-}
-
-impl<T> NetworkManager<T>
-where
     T: Networking,
 {
     pub async fn get_neighbors(&mut self) -> Result<BTreeMap<MacAddr8, u16>, Error> {
@@ -362,6 +349,7 @@ where
             .await?;
 
         self.settings.replace(settings);
+        info!("Initialization complete");
         Ok(())
     }
 
@@ -370,19 +358,7 @@ where
             return Err(Error::NotConfigured);
         };
 
-        if reinitialize {
-            info!("Leaving existing network");
-
-            if matches!(self.transport.leave_network().await, Ok(())) {
-                while self.network_up.load(SeqCst) {
-                    sleep(TICK).await;
-                }
-
-                info!("Left existing network");
-            }
-        }
-
-        info!("Initializing network");
+        info!("Initializing network manager");
         self.initialize(
             settings.concentrator,
             settings.configuration,
@@ -390,6 +366,19 @@ where
             settings.link_key,
         )
         .await?;
+
+        info!("Initializing network");
+        if let Err(error) = self
+            .transport
+            .network_init(InitBitmask::END_DEVICE_REJOIN_ON_REBOOT)
+            .await
+            && !reinitialize
+        {
+            return Err(error);
+        }
+
+        let network_state = self.transport.network_state().await?;
+        info!("Current network state: {network_state:?}");
 
         if reinitialize {
             info!("Reinitializing network");
@@ -405,16 +394,18 @@ where
                     0,
                 ))
                 .await?;
-        } else {
-            self.transport
-                .network_init(InitBitmask::END_DEVICE_REJOIN_ON_REBOOT)
-                .await?;
         }
 
         self.await_network_up().await;
 
         info!("Sending many-to-one route request");
-        self.send_many_to_one_route_request().await?;
+        let radius = self
+            .transport
+            .get_configuration_value(config::Id::MaxHops)
+            .await?;
+        self.transport
+            .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
+            .await?;
 
         Ok(())
     }

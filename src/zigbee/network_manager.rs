@@ -1,6 +1,6 @@
 //! Network manager for Zigbee networks.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::SeqCst;
@@ -18,9 +18,10 @@ pub use self::zigbee_message::ZigbeeMessage;
 use crate::ember::message::Destination;
 use crate::ember::security::initial;
 use crate::ember::{aps, concentrator, join, network};
+use crate::error::Status;
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, decision, policy};
-use crate::{Configuration, Error, Messaging, Networking, Security, Utilities};
+use crate::{Configuration, Error, Messaging, Networking, Security, Utilities, ember};
 
 mod address;
 mod device_config;
@@ -61,6 +62,10 @@ impl<T> NetworkManager<T> {
             network_open,
             message_tag: 0,
         }
+    }
+
+    pub fn get_transport(&mut self) -> &mut T {
+        &mut self.transport
     }
 
     const fn next_message_tag(&mut self) -> u8 {
@@ -233,20 +238,18 @@ where
     /// # Errors
     ///
     /// Returns an [`Error`] if the message could not be sent.
-    pub async fn send_unicast(
+    pub async fn send_unicast<P>(
         &mut self,
         destination: Destination,
         aps_frame: aps::Frame,
-        payload: &[u8],
-    ) -> Result<u8, Error> {
+        payload: P,
+    ) -> Result<u8, Error>
+    where
+        P: IntoIterator<Item = u8>,
+    {
         let tag = self.next_message_tag();
         self.transport
-            .send_unicast(
-                destination,
-                aps_frame,
-                tag,
-                payload.iter().copied().collect(),
-            )
+            .send_unicast(destination, aps_frame, tag, payload.into_iter().collect())
             .await
     }
 
@@ -327,6 +330,17 @@ where
             info!("  {key:?}: {value:?}");
         }
 
+        self.settings.replace(settings);
+
+        info!("Initialization complete");
+        Ok(())
+    }
+
+    async fn start(&mut self, reinitialize: bool) -> Result<(), Self::Error> {
+        let Some(settings) = self.settings.clone() else {
+            return Err(Error::NotConfigured);
+        };
+
         info!("Adding endpoint");
         self.transport
             .add_endpoint(
@@ -339,25 +353,33 @@ where
             )
             .await?;
 
-        self.settings.replace(settings);
-        info!("Initialization complete");
-        Ok(())
-    }
+        if !reinitialize {
+            info!("Initializing network manager");
+            self.initialize(
+                settings.concentrator.clone(),
+                settings.configuration.clone(),
+                settings.policy.clone(),
+                settings.link_key,
+            )
+            .await?;
+        }
 
-    async fn start(&mut self, reinitialize: bool) -> Result<(), Self::Error> {
-        let Some(settings) = self.settings.clone() else {
-            return Err(Error::NotConfigured);
-        };
+        info!("Initializing network");
+        if let Err(error) = self.transport.network_init(InitBitmask::empty()).await {
+            match error {
+                Error::Status(Status::Ember(Ok(ember::Status::NotJoined))) => {
+                    if !reinitialize {
+                        return Err(error);
+                    }
+                }
+                error => {
+                    return Err(error);
+                }
+            }
+        }
 
         let network_state = self.transport.network_state().await?;
         info!("Current network state: {network_state:?}");
-
-        if !reinitialize {
-            info!("Initializing network");
-            self.transport
-                .network_init(InitBitmask::END_DEVICE_REJOIN_ON_REBOOT)
-                .await?;
-        }
 
         if reinitialize {
             self.leave().await?;
@@ -381,12 +403,15 @@ where
                     join::Method::MacAssociation,
                     0,
                     0,
-                    0,
+                    1 << settings.radio_channel,
                 ))
                 .await?;
         }
 
         self.await_network_up().await;
+
+        let network_state = self.transport.network_state().await?;
+        info!("Final network state: {network_state:?}");
 
         let security_state = self.transport.get_current_security_state().await?;
         info!("Current security state: {security_state:?}");

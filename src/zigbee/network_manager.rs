@@ -359,17 +359,6 @@ where
                 .await?;
         }
 
-        let parameters = network::Parameters::new(
-            settings.extended_pan_id,
-            settings.pan_id,
-            RADIO_TX_POWER as u8,
-            settings.radio_channel,
-            join::Method::MacAssociation,
-            0,
-            0,
-            0,
-        );
-
         if reinitialize {
             self.leave().await?;
 
@@ -383,7 +372,18 @@ where
             .await?;
 
             info!("Reinitializing network");
-            self.transport.form_network(parameters).await?;
+            self.transport
+                .form_network(network::Parameters::new(
+                    settings.extended_pan_id,
+                    settings.pan_id,
+                    RADIO_TX_POWER as u8,
+                    settings.radio_channel,
+                    join::Method::MacAssociation,
+                    0,
+                    0,
+                    0,
+                ))
+                .await?;
         }
 
         self.await_network_up().await;

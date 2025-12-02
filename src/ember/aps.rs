@@ -4,7 +4,7 @@ use bitflags::bitflags;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 /// Ember APS options.
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromLeStream, ToLeStream)]
 #[repr(transparent)]
 pub struct Options(u16);
 bitflags! {
@@ -62,7 +62,7 @@ pub struct Frame {
     cluster_id: u16,
     source_endpoint: u8,
     destination_endpoint: u8,
-    options: u16,
+    options: Options,
     group_id: u16,
     sequence: u8,
 }
@@ -84,7 +84,7 @@ impl Frame {
             cluster_id,
             source_endpoint,
             destination_endpoint,
-            options: options.0,
+            options,
             group_id,
             sequence,
         }
@@ -117,7 +117,7 @@ impl Frame {
     /// Return a list of options.
     #[must_use]
     pub const fn options(&self) -> Options {
-        Options::from_bits_truncate(self.options)
+        self.options
     }
 
     /// Return the group ID for this message, if it is multicast mode.

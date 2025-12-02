@@ -1,5 +1,4 @@
 use core::future::Future;
-use std::collections::BTreeSet;
 
 use crate::ember::multi_phy::{nwk, radio};
 use crate::ember::{
@@ -284,7 +283,7 @@ pub trait Networking {
     /// This command accepts options to control the network initialization.
     fn network_init(
         &mut self,
-        bitmask: BTreeSet<InitBitmask>,
+        bitmask: InitBitmask,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Returns a value indicating whether the node is joining, joined to, or leaving a network.
@@ -690,7 +689,7 @@ where
             .map(|response| response.value())
     }
 
-    async fn network_init(&mut self, bitmask: BTreeSet<InitBitmask>) -> Result<(), Error> {
+    async fn network_init(&mut self, bitmask: InitBitmask) -> Result<(), Error> {
         self.communicate::<_, network_init::Response>(network_init::Command::new(bitmask))
             .await?
             .try_into()

@@ -17,7 +17,8 @@ pub use self::event_handler::EventHandler;
 pub use self::zigbee_message::ZigbeeMessage;
 use crate::ember::message::Destination;
 use crate::ember::security::initial;
-use crate::ember::{aps, concentrator, join, network};
+use crate::ember::{aps, beacon, concentrator, join, network, node};
+use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, decision, policy};
 use crate::{Configuration, Error, Messaging, Networking, Security, Utilities};
 
@@ -405,7 +406,9 @@ where
                 ))
                 .await?;
         } else {
-            self.transport.network_init(BTreeSet::default()).await?;
+            self.transport
+                .network_init(InitBitmask::END_DEVICE_REJOIN_ON_REBOOT)
+                .await?;
         }
 
         self.await_network_up().await;
@@ -416,7 +419,7 @@ where
         Ok(())
     }
 
-    async fn join(&mut self, network: NetworkDescriptor) -> Result<(), Self::Error> {
+    async fn join(&mut self, settings: Self::DeviceSettings) -> Result<(), Self::Error> {
         todo!("Network joining is not yet implemented")
     }
 

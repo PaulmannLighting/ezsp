@@ -30,14 +30,12 @@ impl Command {
         tag: u8,
         message: ByteSizedVec<u8>,
     ) -> Self {
-        let index_or_destination = match destination {
-            Destination::Direct(node_id) => node_id,
-            Destination::ViaAddressTable(index) | Destination::ViaBinding(index) => index,
-        };
-
         Self {
             typ: destination.discriminant(),
-            index_or_destination,
+            index_or_destination: match destination {
+                Destination::Direct(node_id) => node_id,
+                Destination::ViaAddressTable(index) | Destination::ViaBinding(index) => index,
+            },
             aps_frame,
             tag,
             message: message.into(),

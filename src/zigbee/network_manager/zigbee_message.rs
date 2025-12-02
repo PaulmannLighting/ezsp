@@ -1,6 +1,7 @@
 use macaddr::MacAddr8;
 
 use crate::ember::device::Update;
+use crate::ember::node;
 use crate::parameters::messaging::handler::IncomingMessage;
 use crate::parameters::networking::handler::ChildJoin;
 use crate::parameters::trust_center::handler::TrustCenterJoin;
@@ -16,6 +17,10 @@ pub enum ZigbeeMessage {
         id: MacAddr8,
         /// The short ID of the child device, if available.
         short_id: Option<u16>,
+        /// The index of the child device in the child table.
+        index: Option<u8>,
+        /// The type of the child device, if available.
+        typ: Option<node::Type>,
     },
     /// A child device has left the network.
     ChildLeft {
@@ -23,6 +28,10 @@ pub enum ZigbeeMessage {
         id: MacAddr8,
         /// The short ID of the child device, if available.
         short_id: Option<u16>,
+        /// The index of the child device in the child table.
+        index: Option<u8>,
+        /// The type of the child device, if available.
+        typ: Option<node::Type>,
     },
     /// A device has joined the network through the Trust Center.
     TrustCenterJoin {
@@ -58,14 +67,18 @@ pub enum ZigbeeMessage {
 impl From<ChildJoin> for ZigbeeMessage {
     fn from(value: ChildJoin) -> Self {
         if value.joining() {
-            ZigbeeMessage::ChildJoined {
+            Self::ChildJoined {
                 id: value.child_eui64(),
                 short_id: Some(value.child_id()),
+                index: Some(value.index()),
+                typ: value.child_type().ok(),
             }
         } else {
-            ZigbeeMessage::ChildLeft {
+            Self::ChildLeft {
                 id: value.child_eui64(),
                 short_id: Some(value.child_id()),
+                index: Some(value.index()),
+                typ: value.child_type().ok(),
             }
         }
     }
@@ -76,20 +89,20 @@ impl TryFrom<TrustCenterJoin> for ZigbeeMessage {
 
     fn try_from(value: TrustCenterJoin) -> Result<Self, Self::Error> {
         Ok(match value.status()? {
-            Update::StandardSecuritySecuredRejoin => ZigbeeMessage::TrustCenterRejoin {
+            Update::StandardSecuritySecuredRejoin => Self::TrustCenterRejoin {
                 id: value.new_node_eui64(),
                 short_id: Some(value.new_node_id()),
                 secure: true,
             },
-            Update::StandardSecurityUnsecuredJoin => ZigbeeMessage::TrustCenterJoin {
+            Update::StandardSecurityUnsecuredJoin => Self::TrustCenterJoin {
                 id: value.new_node_eui64(),
                 short_id: Some(value.new_node_id()),
             },
-            Update::DeviceLeft => ZigbeeMessage::TrustCenterLeave {
+            Update::DeviceLeft => Self::TrustCenterLeave {
                 id: value.new_node_eui64(),
                 short_id: Some(value.new_node_id()),
             },
-            Update::StandardSecurityUnsecuredRejoin => ZigbeeMessage::TrustCenterRejoin {
+            Update::StandardSecurityUnsecuredRejoin => Self::TrustCenterRejoin {
                 id: value.new_node_eui64(),
                 short_id: Some(value.new_node_id()),
                 secure: false,
@@ -100,7 +113,7 @@ impl TryFrom<TrustCenterJoin> for ZigbeeMessage {
 
 impl From<IncomingMessage> for ZigbeeMessage {
     fn from(value: IncomingMessage) -> Self {
-        ZigbeeMessage::IncomingMessage {
+        Self::IncomingMessage {
             source: Address::Short(value.sender()),
             data: value.into_message(),
         }

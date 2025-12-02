@@ -17,7 +17,7 @@ pub use self::event_handler::EventHandler;
 pub use self::zigbee_message::ZigbeeMessage;
 use crate::ember::message::Destination;
 use crate::ember::security::initial;
-use crate::ember::{aps, concentrator, join, network, node};
+use crate::ember::{aps, concentrator, join, network};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, decision, policy};
 use crate::{Configuration, Error, Messaging, Networking, Security, Utilities};
@@ -36,7 +36,6 @@ const HOME_AUTOMATION: u16 = 0x0104;
 const HOME_GATEWAY: u16 = 0x0050;
 const INPUT_CLUSTERS: &[u16] = &[0x0000, 0x0006, 0x0008, 0x0300, 0x0403, 0x0201];
 const OUTPUT_CLUSTERS: &[u16] = &[0x0000, 0x0006, 0x0008, 0x0300, 0x0403];
-const TICK: Duration = Duration::from_secs(1);
 
 /// Network manager for Zigbee networks.
 pub struct NetworkManager<T> {
@@ -44,7 +43,6 @@ pub struct NetworkManager<T> {
     settings: Option<DeviceConfig>,
     network_up: Arc<AtomicBool>,
     network_open: Arc<AtomicBool>,
-    aps_seq: u8,
     message_tag: u8,
 }
 
@@ -61,15 +59,8 @@ impl<T> NetworkManager<T> {
             settings: None,
             network_up,
             network_open,
-            aps_seq: 0,
             message_tag: 0,
         }
-    }
-
-    const fn next_aps_seq(&mut self) -> u8 {
-        let seq = self.aps_seq;
-        self.aps_seq = self.aps_seq.wrapping_add(1);
-        seq
     }
 
     const fn next_message_tag(&mut self) -> u8 {
@@ -358,45 +349,50 @@ where
             return Err(Error::NotConfigured);
         };
 
-        info!("Initializing network manager");
-        self.initialize(
-            settings.concentrator,
-            settings.configuration,
-            settings.policy,
-            settings.link_key,
-        )
-        .await?;
-
-        info!("Initializing network");
-        if let Err(error) = self
-            .transport
-            .network_init(InitBitmask::END_DEVICE_REJOIN_ON_REBOOT)
-            .await
-            && !reinitialize
-        {
-            return Err(error);
-        }
-
         let network_state = self.transport.network_state().await?;
         info!("Current network state: {network_state:?}");
 
-        if reinitialize {
-            info!("Reinitializing network");
+        if !reinitialize {
+            info!("Initializing network");
             self.transport
-                .form_network(network::Parameters::new(
-                    settings.extended_pan_id,
-                    settings.pan_id,
-                    RADIO_TX_POWER as u8,
-                    settings.radio_channel,
-                    join::Method::MacAssociation,
-                    0,
-                    0,
-                    0,
-                ))
+                .network_init(InitBitmask::END_DEVICE_REJOIN_ON_REBOOT)
                 .await?;
         }
 
+        let parameters = network::Parameters::new(
+            settings.extended_pan_id,
+            settings.pan_id,
+            RADIO_TX_POWER as u8,
+            settings.radio_channel,
+            join::Method::MacAssociation,
+            0,
+            0,
+            0,
+        );
+
+        if reinitialize {
+            self.leave().await?;
+
+            info!("Initializing network manager");
+            self.initialize(
+                settings.concentrator,
+                settings.configuration,
+                settings.policy,
+                settings.link_key,
+            )
+            .await?;
+
+            info!("Reinitializing network");
+            self.transport.form_network(parameters).await?;
+        }
+
         self.await_network_up().await;
+
+        let security_state = self.transport.get_current_security_state().await?;
+        info!("Current security state: {security_state:?}");
+        for (name, _) in security_state.bitmask().iter_names() {
+            info!("  Security bitmask: {name}");
+        }
 
         info!("Sending many-to-one route request");
         let radius = self
@@ -419,6 +415,13 @@ where
     }
 
     async fn leave(&mut self) -> Result<(), Self::Error> {
-        self.transport.leave_network().await
+        if self.transport.leave_network().await.is_ok() {
+            info!("Waiting for network to go down...");
+            while self.network_up.load(SeqCst) {
+                sleep(Duration::from_secs(1)).await;
+            }
+        }
+
+        Ok(())
     }
 }

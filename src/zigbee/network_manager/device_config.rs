@@ -12,9 +12,11 @@ pub struct DeviceConfig {
     pub(crate) configuration: BTreeMap<config::Id, u16>,
     pub(crate) policy: BTreeMap<policy::Id, decision::Id>,
     pub(crate) link_key: [u8; 16],
+    pub(crate) network_key: [u8; 16],
     pub(crate) extended_pan_id: MacAddr8,
     pub(crate) pan_id: u16,
     pub(crate) radio_channel: u8,
+    pub(crate) radio_power: i8,
 }
 
 impl DeviceConfig {
@@ -25,18 +27,22 @@ impl DeviceConfig {
         configuration: BTreeMap<config::Id, u16>,
         policy: BTreeMap<policy::Id, decision::Id>,
         link_key: [u8; 16],
+        network_key: [u8; 16],
         extended_pan_id: MacAddr8,
         pan_id: u16,
         radio_channel: u8,
+        radio_power: i8,
     ) -> Self {
         Self {
             concentrator,
             configuration,
             policy,
             link_key,
+            network_key,
             extended_pan_id,
             pan_id,
             radio_channel,
+            radio_power,
         }
     }
 }

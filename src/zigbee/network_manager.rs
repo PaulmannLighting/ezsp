@@ -29,10 +29,6 @@ mod event_handler;
 mod zigbee_message;
 
 const ENDPOINT_ID: u8 = 1;
-const RADIO_TX_POWER: i8 = 8;
-const NETWORK_KEY: [u8; 16] = [
-    0x29, 0xB0, 0x0D, 0xE6, 0x31, 0xAB, 0x7A, 0xD0, 0xC6, 0x83, 0xC8, 0x7A, 0xBF, 0x70, 0xD6, 0x08,
-];
 const HOME_AUTOMATION: u16 = 0x0104;
 const HOME_GATEWAY: u16 = 0x0050;
 const INPUT_CLUSTERS: &[u16] = &[0x0000, 0x0006, 0x0008, 0x0300, 0x0403, 0x0201];
@@ -85,6 +81,7 @@ where
         configuration: BTreeMap<config::Id, u16>,
         policy: BTreeMap<policy::Id, decision::Id>,
         link_key: [u8; 16],
+        network_key: [u8; 16],
     ) -> Result<(), Error> {
         info!("Initializing EZSP NCP");
         self.transport.set_concentrator(Some(concentrator)).await?;
@@ -103,7 +100,7 @@ where
                     | initial::Bitmask::HAVE_PRECONFIGURED_KEY
                     | initial::Bitmask::REQUIRE_ENCRYPTED_KEY,
                 link_key,
-                NETWORK_KEY,
+                network_key,
                 0,
                 MacAddr8::default(),
             ))
@@ -360,6 +357,7 @@ where
                 settings.configuration.clone(),
                 settings.policy.clone(),
                 settings.link_key,
+                settings.network_key,
             )
             .await?;
         }
@@ -390,6 +388,7 @@ where
                 settings.configuration,
                 settings.policy,
                 settings.link_key,
+                settings.network_key,
             )
             .await?;
 
@@ -398,7 +397,7 @@ where
                 .form_network(network::Parameters::new(
                     settings.extended_pan_id,
                     settings.pan_id,
-                    RADIO_TX_POWER as u8,
+                    settings.radio_power as u8,
                     settings.radio_channel,
                     join::Method::MacAssociation,
                     0,

@@ -239,7 +239,7 @@ impl EventHandler {
     async fn handle_networking_event(&self, event: NetworkingEvent) {
         match event {
             NetworkingEvent::ChildJoin(child_join) => {
-                trace!("Child join event: {child_join:?}");
+                debug!("Child join event: {child_join:?}");
 
                 if let Err(error) = self.zigbee_messages.send(child_join.into()).await {
                     error!("Failed to forward child join message: {error}");

@@ -10,20 +10,14 @@ use zigbee_nwk::aps::Command;
 use zigbee_nwk::zcl::Cluster;
 use zigbee_nwk::{Nlme, zcl};
 
-pub use self::device_config::DeviceConfig;
 pub use self::event_manager::EventManager;
-pub use self::zigbee_message::ZigbeeMessage;
 use crate::ember::message::Destination;
 use crate::ember::{aps, network};
 use crate::zigbee::network_manager::builder::Builder;
 use crate::{Configuration, Error, Messaging, Networking, Security, Utilities};
 
-mod address;
 mod builder;
-mod device_config;
-mod event_handler;
 mod event_manager;
-mod zigbee_message;
 
 /// Network manager for Zigbee networks.
 pub struct NetworkManager<T> {

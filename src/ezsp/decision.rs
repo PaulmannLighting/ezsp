@@ -1,5 +1,7 @@
 //! Policy decision identifiers and bitmasks.
 
+use bitflags::bitflags;
+use le_stream::derive::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
 
 /// Identifies a policy decision.
@@ -110,27 +112,30 @@ impl From<Id> for u8 {
 /// This is the policy decision bitmask that controls the trust center decision strategies.
 ///
 /// The bitmask is modified and extracted from the [`Id`] for supporting bitmask operations.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive)]
-#[repr(u16)]
-pub enum Bitmask {
-    /// Disallow joins and rejoins.
-    Default = 0x0000,
-    /// Send the network key to all joining devices.
-    AllowJoins = 0x0001,
-    /// Send the network key to all rejoining devices.
-    AllowUnsecuredRejoins = 0x0002,
-    /// Send the network key in the clear.
-    SendKeyInClear = 0x0004,
-    /// Do nothing for unsecured rejoins.
-    IgnoreUnsecuredRejoins = 0x0008,
-    /// Allow joins if there is an entry in the transient key table.
-    JoinsUseInstallCodeKey = 0x0010,
-    /// Delay sending the network key to a new joining device.
-    DeferJoins = 0x0020,
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromLeStream, ToLeStream)]
+#[repr(transparent)]
+pub struct Bitmask(u8);
+bitflags! {
+    impl Bitmask: u8 {
+        /// Disallow joins and rejoins.
+        const DEFAULT = 0x00;
+        /// Send the network key to all joining devices.
+        const ALLOW_JOINS = 0x01;
+        /// Send the network key to all rejoining devices.
+        const ALLOW_UNSECURED_REJOINS = 0x02;
+        /// Send the network key in the clear.
+        const SEND_KEY_IN_CLEAR = 0x04;
+        /// Do nothing for unsecured rejoins.
+        const IGNORE_UNSECURED_REJOINS = 0x08;
+        /// Allow joins if there is an entry in the transient key table.
+        const JOINS_USE_INSTALL_CODE_KEY = 0x10;
+        /// Delay sending the network key to a new joining device.
+        const DEFER_JOINS = 0x20;
+    }
 }
 
-impl From<Bitmask> for u16 {
-    fn from(bitmask: Bitmask) -> Self {
-        bitmask as Self
+impl From<Id> for Bitmask {
+    fn from(value: Id) -> Self {
+        Self::from_bits_retain(value.into())
     }
 }

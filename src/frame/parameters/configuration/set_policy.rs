@@ -4,7 +4,7 @@ use le_stream::derive::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
-use crate::ezsp::{Status, decision, policy};
+use crate::ezsp::{Status, policy};
 use crate::frame::Parameter;
 
 const ID: u16 = 0x0055;
@@ -17,10 +17,10 @@ pub(crate) struct Command {
 
 impl Command {
     #[must_use]
-    pub fn new(policy_id: policy::Id, decision_id: decision::Id) -> Self {
+    pub fn new(policy_id: policy::Id, decision_id: u8) -> Self {
         Self {
             policy_id: policy_id.into(),
-            decision_id: decision_id.into(),
+            decision_id,
         }
     }
 }

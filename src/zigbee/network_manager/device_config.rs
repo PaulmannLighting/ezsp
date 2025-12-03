@@ -3,14 +3,14 @@ use std::collections::BTreeMap;
 use macaddr::MacAddr8;
 
 use crate::ember::concentrator;
-use crate::ezsp::{config, decision, policy};
+use crate::ezsp::{config, policy};
 
 /// Configuration for a Zigbee device.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DeviceConfig {
     pub(crate) concentrator: concentrator::Parameters,
     pub(crate) configuration: BTreeMap<config::Id, u16>,
-    pub(crate) policy: BTreeMap<policy::Id, decision::Id>,
+    pub(crate) policy: BTreeMap<policy::Id, u8>,
     pub(crate) link_key: [u8; 16],
     pub(crate) network_key: [u8; 16],
     pub(crate) extended_pan_id: MacAddr8,
@@ -25,7 +25,7 @@ impl DeviceConfig {
     pub const fn new(
         concentrator: concentrator::Parameters,
         configuration: BTreeMap<config::Id, u16>,
-        policy: BTreeMap<policy::Id, decision::Id>,
+        policy: BTreeMap<policy::Id, u8>,
         link_key: [u8; 16],
         network_key: [u8; 16],
         extended_pan_id: MacAddr8,

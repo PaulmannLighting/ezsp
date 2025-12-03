@@ -97,7 +97,7 @@ pub trait Configuration {
     fn set_policy(
         &mut self,
         policy_id: policy::Id,
-        decision_id: decision::Id,
+        decision_id: u8,
     ) -> impl Future<Output = Result<(), Error>>;
 
     /// Writes a value to the NCP.
@@ -230,11 +230,7 @@ where
         .try_into()
     }
 
-    async fn set_policy(
-        &mut self,
-        policy_id: policy::Id,
-        decision_id: decision::Id,
-    ) -> Result<(), Error> {
+    async fn set_policy(&mut self, policy_id: policy::Id, decision_id: u8) -> Result<(), Error> {
         self.communicate::<_, set_policy::Response>(set_policy::Command::new(
             policy_id,
             decision_id,

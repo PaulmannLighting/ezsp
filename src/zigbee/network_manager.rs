@@ -79,7 +79,7 @@ where
         &mut self,
         concentrator: concentrator::Parameters,
         configuration: BTreeMap<config::Id, u16>,
-        policy: BTreeMap<policy::Id, decision::Id>,
+        policy: BTreeMap<policy::Id, u8>,
         link_key: [u8; 16],
         network_key: [u8; 16],
     ) -> Result<(), Error> {
@@ -160,10 +160,7 @@ where
     /// # Errors
     ///
     /// Returns an [`Error`] if any of the policies could not be set.
-    async fn set_stack_policy(
-        &mut self,
-        policy: BTreeMap<policy::Id, decision::Id>,
-    ) -> Result<(), Error> {
+    async fn set_stack_policy(&mut self, policy: BTreeMap<policy::Id, u8>) -> Result<(), Error> {
         for (key, value) in policy {
             info!("Setting policy {key:?} to {value:?}");
             self.transport.set_policy(key, value).await?;

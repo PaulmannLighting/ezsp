@@ -6,6 +6,7 @@ use std::time::Duration;
 use le_stream::ToLeStream;
 use log::{error, info};
 use macaddr::MacAddr8;
+use tokio::sync::mpsc::Receiver;
 use zigbee_nwk::aps::Command;
 use zigbee_nwk::zcl::Cluster;
 use zigbee_nwk::{Nlme, zcl};
@@ -14,7 +15,7 @@ pub use self::event_manager::EventManager;
 use crate::ember::message::Destination;
 use crate::ember::{aps, network};
 use crate::zigbee::network_manager::builder::Builder;
-use crate::{Configuration, Error, Messaging, Networking, Security, Utilities};
+use crate::{Callback, Configuration, Error, Messaging, Networking, Security, Utilities};
 
 mod builder;
 mod event_manager;
@@ -50,8 +51,8 @@ impl<T> NetworkManager<T> {
 
     /// Creates a new `Builder` for constructing a `NetworkManager`.
     #[must_use]
-    pub fn build() -> Builder {
-        Builder::default()
+    pub fn build(transport: T, callbacks_rx: Receiver<Callback>) -> Builder<T> {
+        Builder::new(transport, callbacks_rx)
     }
 
     /// Returns a mutable reference to the event manager.

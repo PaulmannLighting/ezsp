@@ -28,8 +28,10 @@ const RADIO_POWER: i8 = 8;
 const ENDPOINT_ID: u8 = 1;
 
 /// Builder for Zigbee device configuration.
-#[derive(Clone, Debug)]
-pub struct Builder {
+#[derive(Debug)]
+pub struct Builder<T> {
+    transport: T,
+    callbacks_rx: Receiver<Callback>,
     policy: BTreeMap<policy::Id, u8>,
     configuration: BTreeMap<config::Id, u16>,
     concentrator: Option<concentrator::Parameters>,
@@ -50,13 +52,37 @@ pub struct Builder {
     reinitialize: bool,
 }
 
-impl Builder {
+impl<T> Builder<T> {
+    /// Creates a new `Builder` with the given transport.
+    #[must_use]
+    pub fn new(transport: T, callbacks_rx: Receiver<Callback>) -> Self {
+        Self {
+            transport,
+            callbacks_rx,
+            policy: BTreeMap::new(),
+            configuration: BTreeMap::new(),
+            concentrator: None,
+            init_bitmask: InitBitmask::NO_OPTIONS,
+            app_flags: 0,
+            aps_options: aps::Options::empty(),
+            profile_id: HOME_AUTOMATION,
+            device_id: HOME_GATEWAY,
+            input_clusters: INPUT_CLUSTERS.to_vec(),
+            output_clusters: OUTPUT_CLUSTERS.to_vec(),
+            link_key: None,
+            network_key: None,
+            pan_id: None,
+            ieee_address: None,
+            radio_channel: RADIO_CHANNEL,
+            radio_power: RADIO_POWER,
+            endpoints: once(ENDPOINT_ID).collect(),
+            reinitialize: false,
+        }
+    }
+
     /// Adds a policy decision to the configuration.
     #[must_use]
-    pub fn with_policy<T>(mut self, policy: policy::Id, decision: T) -> Self
-    where
-        T: Into<u8>,
-    {
+    pub fn with_policy(mut self, policy: policy::Id, decision: impl Into<u8>) -> Self {
         self.policy.insert(policy, decision.into());
         self
     }
@@ -209,20 +235,19 @@ impl Builder {
     }
 
     /// Starts the network manager on the given transport implementation.
-    pub async fn start<T>(
-        mut self,
-        mut transport: T,
-        callbacks_rx: Receiver<Callback>,
-    ) -> Result<NetworkManager<T>, Error>
+    pub async fn start(mut self) -> Result<NetworkManager<T>, Error>
     where
         T: Transport,
     {
-        let mut event_manager = EventManager::new(callbacks_rx);
-        transport.init().await.expect("Failed to initialize UART");
+        let mut event_manager = EventManager::new(self.callbacks_rx);
+        self.transport
+            .init()
+            .await
+            .expect("Failed to initialize UART");
 
         for endpoint in self.endpoints {
             debug!("Adding endpoint: {endpoint:#04X}");
-            transport
+            self.transport
                 .add_endpoint(
                     endpoint,
                     self.profile_id,
@@ -235,23 +260,23 @@ impl Builder {
         }
 
         debug!("Setting concentrator");
-        transport.set_concentrator(self.concentrator).await?;
+        self.transport.set_concentrator(self.concentrator).await?;
 
         for (key, value) in self.configuration {
             debug!("Setting configuration {key:?} to {value:04X}");
-            transport.set_configuration_value(key, value).await?;
+            self.transport.set_configuration_value(key, value).await?;
         }
 
         for (key, value) in self.policy {
             debug!("Setting policy {key:?} to {value:#06X}");
-            transport.set_policy(key, value).await?;
+            self.transport.set_policy(key, value).await?;
         }
 
-        let ieee_address = transport.get_eui64().await?;
+        let ieee_address = self.transport.get_eui64().await?;
         debug!("IEEE address: {ieee_address}");
 
         debug!("Setting radio power to {}", self.radio_power);
-        transport.set_radio_power(self.radio_power).await?;
+        self.transport.set_radio_power(self.radio_power).await?;
 
         debug!("Setting initial security state");
         let mut initial_security_state_bitmask = initial::Bitmask::TRUST_CENTER_GLOBAL_LINK_KEY;
@@ -273,7 +298,7 @@ impl Builder {
                 network_key
             });
 
-        transport
+        self.transport
             .set_initial_security_state(initial::State::new(
                 initial_security_state_bitmask,
                 link_key,
@@ -283,17 +308,17 @@ impl Builder {
             ))
             .await?;
 
-        let network_state = transport.network_state().await?;
+        let network_state = self.transport.network_state().await?;
         info!("Current network state: {network_state:?}");
 
         if self.reinitialize {
-            if transport.leave_network().await.is_ok() {
+            if self.transport.leave_network().await.is_ok() {
                 event_manager.await_not_joined(8).await;
                 info!("Left existing network.");
             }
 
             info!("Reinitializing network");
-            transport
+            self.transport
                 .form_network(network::Parameters::new(
                     self.ieee_address.unwrap_or_default(),
                     self.pan_id.unwrap_or_else(random),
@@ -306,59 +331,35 @@ impl Builder {
                 ))
                 .await?;
         } else {
-            transport.network_init(self.init_bitmask).await?;
+            self.transport.network_init(self.init_bitmask).await?;
         }
 
         event_manager.await_network_up(8).await;
         info!("Network is up.");
 
-        let network_state = transport.network_state().await?;
+        let network_state = self.transport.network_state().await?;
         info!("Final network state: {network_state:?}");
 
-        let security_state = transport.get_current_security_state().await?;
+        let security_state = self.transport.get_current_security_state().await?;
         info!("Current security state: {security_state:?}");
         for (name, _) in security_state.bitmask().iter_names() {
             info!("  Security bitmask: {name}");
         }
 
         info!("Sending many-to-one route request");
-        let radius = transport
+        let radius = self
+            .transport
             .get_configuration_value(config::Id::MaxHops)
             .await?;
-        transport
+        self.transport
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
         Ok(NetworkManager::new(
-            transport,
+            self.transport,
             event_manager,
             self.profile_id,
             self.aps_options,
         ))
-    }
-}
-
-impl Default for Builder {
-    fn default() -> Self {
-        Self {
-            policy: BTreeMap::new(),
-            configuration: BTreeMap::new(),
-            concentrator: None,
-            init_bitmask: InitBitmask::NO_OPTIONS,
-            app_flags: 0,
-            aps_options: aps::Options::empty(),
-            profile_id: HOME_AUTOMATION,
-            device_id: HOME_GATEWAY,
-            input_clusters: INPUT_CLUSTERS.to_vec(),
-            output_clusters: OUTPUT_CLUSTERS.to_vec(),
-            link_key: None,
-            network_key: None,
-            pan_id: None,
-            ieee_address: None,
-            radio_channel: RADIO_CHANNEL,
-            radio_power: RADIO_POWER,
-            endpoints: once(ENDPOINT_ID).collect(),
-            reinitialize: false,
-        }
     }
 }

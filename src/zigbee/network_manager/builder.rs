@@ -44,6 +44,7 @@ pub struct Builder<T> {
     output_clusters: Vec<u16>,
     link_key: Option<Key>,
     network_key: Option<Key>,
+    join_method: join::Method,
     pan_id: Option<u16>,
     ieee_address: Option<MacAddr8>,
     radio_channel: u8,
@@ -71,6 +72,7 @@ impl<T> Builder<T> {
             output_clusters: OUTPUT_CLUSTERS.to_vec(),
             link_key: None,
             network_key: None,
+            join_method: join::Method::MacAssociation,
             pan_id: None,
             ieee_address: None,
             radio_channel: RADIO_CHANNEL,
@@ -182,6 +184,13 @@ impl<T> Builder<T> {
     #[must_use]
     pub const fn with_network_key(mut self, network_key: Key) -> Self {
         self.network_key.replace(network_key);
+        self
+    }
+
+    /// Sets the join method for the configuration.
+    #[must_use]
+    pub const fn with_join_method(mut self, join_method: join::Method) -> Self {
+        self.join_method = join_method;
         self
     }
 
@@ -303,7 +312,7 @@ impl<T> Builder<T> {
                     self.pan_id.unwrap_or_else(random),
                     self.radio_power as u8,
                     self.radio_channel,
-                    join::Method::MacAssociation,
+                    self.join_method,
                     0,
                     0,
                     1 << self.radio_channel,

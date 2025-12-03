@@ -1,7 +1,7 @@
+use super::EventManager;
 use crate::Callback;
 use crate::ember::Status;
 use crate::parameters::networking::handler::Handler as NetworkingEvent;
-use crate::zigbee::EventManager;
 
 pub trait AwaitNetworkUp {
     /// Wait until the network is up and running.

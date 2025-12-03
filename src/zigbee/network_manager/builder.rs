@@ -11,8 +11,9 @@ use crate::ember::security::initial;
 use crate::ember::{aps, concentrator, join, network};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
+use crate::zigbee::NetworkManager;
+use crate::zigbee::network_manager::EventManager;
 use crate::zigbee::network_manager::event_manager::{AwaitNetworkUp, AwaitNotJoined};
-use crate::zigbee::{EventManager, NetworkManager};
 use crate::{
     Callback, Configuration, Error, Messaging, Networking, Security, SinkTable, Transport,
     Utilities,

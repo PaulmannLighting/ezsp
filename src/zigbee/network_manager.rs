@@ -7,7 +7,6 @@ use le_stream::ToLeStream;
 use log::info;
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
-use zigbee_nwk::aps::Command;
 use zigbee_nwk::zcl::Cluster;
 use zigbee_nwk::{Nlme, zcl};
 
@@ -116,7 +115,7 @@ where
     async fn unicast_command<P>(
         &mut self,
         destination: u16,
-        frame: Command<P>,
+        frame: P,
     ) -> Result<(), zigbee_nwk::Error<Self::Error>>
     where
         P: zcl::Command + ToLeStream,
@@ -137,7 +136,16 @@ where
                     seq,
                 ),
                 tag,
-                frame.to_le_stream().collect(),
+                zcl::Frame::new(
+                    zcl::Type::ClusterSpecific,
+                    zcl::Direction::ClientToServer,
+                    true,
+                    None,
+                    seq,
+                    frame,
+                )
+                .to_le_stream()
+                .collect(),
             )
             .await?;
         self.aps_seq = seq.wrapping_add(1);

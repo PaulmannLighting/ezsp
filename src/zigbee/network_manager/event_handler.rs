@@ -1,9 +1,5 @@
-use std::sync::Arc;
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering::SeqCst;
-
 use log::{debug, error, trace, warn};
-use tokio::sync::mpsc::{Receiver, Sender};
+use tokio::sync::mpsc::Sender;
 
 use crate::parameters::binding::handler::Handler as BindingEvent;
 use crate::parameters::bootloader::handler::Handler as BootloaderEvent;
@@ -21,39 +17,7 @@ use crate::parameters::zll::handler::Handler as ZllEvent;
 use crate::zigbee::network_manager::zigbee_message::ZigbeeMessage;
 use crate::{Callback, ember};
 
-/// EZSP event handler.
-pub struct EventHandler {
-    events: Receiver<Callback>,
-    zigbee_messages: Sender<ZigbeeMessage>,
-    network_up: Arc<AtomicBool>,
-    network_open: Arc<AtomicBool>,
-}
-
-impl EventHandler {
-    /// Create a new `EventHandler`.
-    pub const fn new(
-        events: Receiver<Callback>,
-        zigbee_messages: Sender<ZigbeeMessage>,
-        network_up: Arc<AtomicBool>,
-        network_open: Arc<AtomicBool>,
-    ) -> Self {
-        Self {
-            events,
-            zigbee_messages,
-            network_up,
-            network_open,
-        }
-    }
-
-    /// Run the event handler.
-    pub async fn run(mut self) {
-        while let Some(event) = self.events.recv().await {
-            self.handle_event(event).await;
-        }
-
-        debug!("EZSP event handler has stopped receiving events.");
-    }
-
+pub trait EventHandler {
     async fn handle_event(&self, event: Callback) {
         match event {
             Callback::Binding(event) => {
@@ -177,10 +141,6 @@ impl EventHandler {
             }
             MessagingEvent::IncomingMessage(message) => {
                 debug!("Incoming message: {message:?}");
-
-                if let Err(error) = self.zigbee_messages.send(message.into()).await {
-                    error!("Failed to forward incoming message: {error}");
-                }
             }
             MessagingEvent::IncomingNetworkStatus(network_status) => {
                 warn!(
@@ -240,10 +200,6 @@ impl EventHandler {
         match event {
             NetworkingEvent::ChildJoin(child_join) => {
                 debug!("Child join event: {child_join:?}");
-
-                if let Err(error) = self.zigbee_messages.send(child_join.into()).await {
-                    error!("Failed to forward child join message: {error}");
-                }
             }
             NetworkingEvent::DutyCycle(duty_cycle) => {
                 debug!("Duty cycle event: {duty_cycle:?}");
@@ -261,20 +217,15 @@ impl EventHandler {
                 Ok(status) => match status {
                     ember::Status::NetworkUp => {
                         debug!("Network up");
-                        self.network_up.store(true, SeqCst);
                     }
                     ember::Status::NetworkDown => {
                         debug!("Network down");
-                        self.network_up.store(false, SeqCst);
-                        self.network_open.store(false, SeqCst);
                     }
                     ember::Status::NetworkOpened => {
                         debug!("Network opened (joinable)");
-                        self.network_open.store(true, SeqCst);
                     }
                     ember::Status::NetworkClosed => {
                         debug!("Network closed (not joinable)");
-                        self.network_open.store(false, SeqCst);
                     }
                     other => {
                         debug!("Other stack status: {other}");
@@ -308,9 +259,7 @@ impl EventHandler {
 
                 match ZigbeeMessage::try_from(join) {
                     Ok(message) => {
-                        if let Err(error) = self.zigbee_messages.send(message).await {
-                            error!("Failed to forward trust center join message: {error}");
-                        }
+                        debug!("Processed trust center join event: {message:?}");
                     }
                     Err(error) => {
                         error!("Failed to process trust center join event: {error}");

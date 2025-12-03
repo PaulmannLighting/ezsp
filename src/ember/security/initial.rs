@@ -48,7 +48,7 @@ bitflags! {
         ///
         /// A key sent in-the-clear by the Trust Center will be rejected and the join will fail.
         /// This option is only valid when utilizing a pre-configured key.
-        const REQUIRE_ENCRYPTED_KEY = 0x080;
+        const REQUIRE_ENCRYPTED_KEY = 0x0800;
         /// This denotes whether the device should NOT reset its  outgoing frame counters
         /// (both NWK and APS) when `emberSetInitialSecurityState()` is called.
         ///

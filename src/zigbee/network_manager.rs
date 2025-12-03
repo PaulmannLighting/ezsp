@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::time::Duration;
 
 use le_stream::ToLeStream;
-use log::{error, info};
+use log::info;
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
 use zigbee_nwk::aps::Command;
@@ -14,8 +14,9 @@ use zigbee_nwk::{Nlme, zcl};
 pub use self::event_manager::EventManager;
 use crate::ember::message::Destination;
 use crate::ember::{aps, network};
+use crate::error::Status;
 use crate::zigbee::network_manager::builder::Builder;
-use crate::{Callback, Configuration, Error, Messaging, Networking, Security, Utilities};
+use crate::{Callback, Configuration, Error, Messaging, Networking, Security, Utilities, ember};
 
 mod builder;
 mod event_manager;
@@ -117,10 +118,10 @@ where
                 Ok(neighbor) => {
                     neighbors.insert(neighbor.long_id(), Some(neighbor.short_id()));
                 }
-                Err(error) => {
-                    error!("Error getting neighbor: {error}");
-                    break;
-                }
+                Err(error) => match error {
+                    Error::Status(Status::Ember(Ok(ember::Status::ErrFatal))) => break,
+                    error => return Err(error.into()),
+                },
             }
         }
 

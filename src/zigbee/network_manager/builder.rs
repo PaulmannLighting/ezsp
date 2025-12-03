@@ -263,12 +263,12 @@ impl<T> Builder<T> {
         self.transport.set_concentrator(self.concentrator).await?;
 
         for (key, value) in self.configuration {
-            debug!("Setting configuration {key:?} to {value:04X}");
+            debug!("Setting configuration {key:?} to {value:#06X}");
             self.transport.set_configuration_value(key, value).await?;
         }
 
         for (key, value) in self.policy {
-            debug!("Setting policy {key:?} to {value:#06X}");
+            debug!("Setting policy {key:?} to {value:#04X}");
             self.transport.set_policy(key, value).await?;
         }
 

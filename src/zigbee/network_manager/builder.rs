@@ -97,7 +97,7 @@ impl<T> Builder<T> {
     /// Adds a configuration value to the configuration.
     #[must_use]
     pub fn with_configuration(mut self, config: config::Id, value: u16) -> Self {
-        self.configuration.insert(config, value.into());
+        self.configuration.insert(config, value);
         self
     }
 
@@ -117,14 +117,14 @@ impl<T> Builder<T> {
 
     /// Sets the application flags for the configuration.
     #[must_use]
-    pub fn with_app_flags(mut self, flags: u8) -> Self {
+    pub const fn with_app_flags(mut self, flags: u8) -> Self {
         self.app_flags = flags;
         self
     }
 
     /// Sets the APS options.
     #[must_use]
-    pub fn with_aps_options(mut self, options: aps::Options) -> Self {
+    pub const fn with_aps_options(mut self, options: aps::Options) -> Self {
         self.aps_options = options;
         self
     }
@@ -279,32 +279,10 @@ impl<T> Builder<T> {
         self.transport.set_radio_power(self.radio_power).await?;
 
         debug!("Setting initial security state");
-        let mut initial_security_state_bitmask = initial::Bitmask::TRUST_CENTER_GLOBAL_LINK_KEY;
-
-        let link_key = self
-            .network_key
-            .take()
-            .map_or_else(Key::default, |link_key| {
-                initial_security_state_bitmask |= initial::Bitmask::HAVE_NETWORK_KEY;
-                link_key
-            });
-
-        let network_key = self
-            .link_key
-            .take()
-            .map_or_else(Key::default, |network_key| {
-                initial_security_state_bitmask |= initial::Bitmask::HAVE_PRECONFIGURED_KEY
-                    | initial::Bitmask::REQUIRE_ENCRYPTED_KEY;
-                network_key
-            });
-
         self.transport
-            .set_initial_security_state(initial::State::new(
-                initial_security_state_bitmask,
-                link_key,
-                network_key,
-                0,
-                MacAddr8::default(),
+            .set_initial_security_state(build_initial_security_state(
+                self.link_key,
+                self.network_key,
             ))
             .await?;
 
@@ -318,6 +296,7 @@ impl<T> Builder<T> {
             }
 
             info!("Reinitializing network");
+            #[expect(clippy::cast_sign_loss)]
             self.transport
                 .form_network(network::Parameters::new(
                     self.ieee_address.unwrap_or_default(),
@@ -351,6 +330,7 @@ impl<T> Builder<T> {
             .transport
             .get_configuration_value(config::Id::MaxHops)
             .await?;
+        #[expect(clippy::cast_possible_truncation)]
         self.transport
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
@@ -362,4 +342,27 @@ impl<T> Builder<T> {
             self.aps_options,
         ))
     }
+}
+
+fn build_initial_security_state(link_key: Option<Key>, network_key: Option<Key>) -> initial::State {
+    let mut initial_security_state_bitmask = initial::Bitmask::TRUST_CENTER_GLOBAL_LINK_KEY;
+
+    let link_key = link_key.map_or_else(Key::default, |link_key| {
+        initial_security_state_bitmask |= initial::Bitmask::HAVE_NETWORK_KEY;
+        link_key
+    });
+
+    let network_key = network_key.map_or_else(Key::default, |network_key| {
+        initial_security_state_bitmask |=
+            initial::Bitmask::HAVE_PRECONFIGURED_KEY | initial::Bitmask::REQUIRE_ENCRYPTED_KEY;
+        network_key
+    });
+
+    initial::State::new(
+        initial_security_state_bitmask,
+        link_key,
+        network_key,
+        0,
+        MacAddr8::default(),
+    )
 }

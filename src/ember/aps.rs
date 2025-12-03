@@ -19,9 +19,9 @@ bitflags! {
         /// Causes a route discovery to be initiated if no route to the destination is known.
         const ENABLE_ROUTE_DISCOVERY = 0x0100;
         /// Causes a route discovery to be initiated even if one is known.
-        const  FORCE_ROUTE_DISCOVERY = 0x0200;
+        const FORCE_ROUTE_DISCOVERY = 0x0200;
         /// Include the source EUI64 in the network frame.
-        const  SOURCE_EUI64 = 0x0400;
+        const SOURCE_EUI64 = 0x0400;
         /// Include the destination EUI64 in the network frame.
         const DESTINATION_EUI64 = 0x0800;
         /// Send a ZDO request to discover the node ID of the destination, if it is not already know.

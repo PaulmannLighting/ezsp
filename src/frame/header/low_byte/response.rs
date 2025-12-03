@@ -1,3 +1,5 @@
+use core::fmt::{self, Display};
+
 use bitflags::bitflags;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
@@ -80,5 +82,21 @@ impl Response {
     #[must_use]
     pub const fn has_overflowed(self) -> bool {
         self.contains(Self::OVERFLOW)
+    }
+}
+
+impl Display for Response {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Response {{ is_response: {}, network_index: {}, callback_type: {}, is_callback_pending: {}, is_truncated: {}, has_overflowed: {} }}",
+            self.is_response(),
+            self.network_index(),
+            self.callback_type()
+                .map_or("Not a callback", CallbackType::as_str),
+            self.is_callback_pending(),
+            self.is_truncated(),
+            self.has_overflowed()
+        )
     }
 }

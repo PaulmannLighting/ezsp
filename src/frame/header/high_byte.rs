@@ -1,3 +1,5 @@
+use core::fmt::{self, Display};
+
 use bitflags::bitflags;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
@@ -46,5 +48,17 @@ impl HighByte {
             (false, true) => FormatVersion::One,
             (false, false) => FormatVersion::Zero,
         }
+    }
+}
+
+impl Display for HighByte {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "HighByte {{ security_enabled: {}, padding_enabled: {}, frame_format_version: {} }}",
+            self.is_security_enabled(),
+            self.is_padding_enabled(),
+            self.frame_format_version()
+        )
     }
 }

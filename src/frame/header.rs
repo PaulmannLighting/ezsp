@@ -1,4 +1,4 @@
-use core::fmt::Debug;
+use core::fmt::{self, Debug, Display};
 use core::hash::Hash;
 
 pub use self::extended::Extended;
@@ -57,6 +57,15 @@ impl Header {
             response.callback_type() == Some(CallbackType::Async)
         } else {
             false
+        }
+    }
+}
+
+impl Display for Header {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Legacy(legacy) => write!(f, "Legacy({legacy})"),
+            Self::Extended(extended) => write!(f, "Extended({extended})"),
         }
     }
 }

@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use core::fmt::Display;
 
 use ashv2::HexSlice;
 use le_stream::derive::{FromLeStream, ToLeStream};

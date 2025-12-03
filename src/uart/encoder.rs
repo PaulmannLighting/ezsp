@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use core::fmt::Debug;
 use std::io::{self, ErrorKind};
 
 use ashv2::{HexSlice, MAX_PAYLOAD_SIZE, Payload};

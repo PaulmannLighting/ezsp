@@ -1,3 +1,5 @@
+use core::fmt::{self, Display};
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use super::LowByte;
@@ -37,5 +39,15 @@ impl Legacy {
     #[must_use]
     pub const fn id(self) -> u8 {
         self.id
+    }
+}
+
+impl Display for Legacy {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Legacy {{ sequence: {:#04X}, low_byte: {}, id: {:#04X}}}",
+            self.sequence, self.low_byte, self.id
+        )
     }
 }

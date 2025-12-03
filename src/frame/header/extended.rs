@@ -1,3 +1,5 @@
+use core::fmt::{self, Display};
+
 use le_stream::derive::{FromLeStream, ToLeStream};
 
 use super::{HighByte, LowByte};
@@ -45,5 +47,15 @@ impl Extended {
     #[must_use]
     pub const fn id(self) -> u16 {
         self.id
+    }
+}
+
+impl Display for Extended {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Extended {{ sequence: {:#04X}, low_byte: {}, high_byte: {}, id: {:#06X}}}",
+            self.sequence, self.low_byte, self.high_byte, self.id
+        )
     }
 }

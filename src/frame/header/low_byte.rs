@@ -1,4 +1,5 @@
 use core::array::IntoIter;
+use core::fmt::{self, Display};
 
 use le_stream::{FromLeStream, ToLeStream};
 
@@ -28,6 +29,15 @@ impl LowByte {
     #[must_use]
     pub const fn is_response(self) -> bool {
         matches!(self, Self::Response(_))
+    }
+}
+
+impl Display for LowByte {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Command(command) => write!(f, "Command({command})"),
+            Self::Response(response) => write!(f, "Response({response})"),
+        }
     }
 }
 

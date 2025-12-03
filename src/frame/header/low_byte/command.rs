@@ -1,3 +1,5 @@
+use core::fmt::{self, Display};
+
 use bitflags::bitflags;
 use le_stream::derive::{FromLeStream, ToLeStream};
 
@@ -49,5 +51,17 @@ impl Command {
             (false, true) => SleepMode::DeepSleep,
             (false, false) => SleepMode::Idle,
         }
+    }
+}
+
+impl Display for Command {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Command {{ is_response: {}, network_index: {}, sleep_mode: {} }}",
+            self.is_response(),
+            self.network_index(),
+            self.sleep_mode()
+        )
     }
 }

@@ -1,12 +1,11 @@
 //! Decoding of `ASHv2` frames into `EZSP` frames.
 
 use std::io;
-use std::io::ErrorKind;
 use std::sync::Arc;
 
 use ashv2::{HexSlice, Payload};
 use le_stream::FromLeStream;
-use log::{trace, warn};
+use log::trace;
 use tokio::sync::mpsc::Receiver;
 
 use crate::error::Decode;
@@ -16,7 +15,7 @@ use crate::parameters::utilities::invalid_command;
 use crate::uart::connection::Connection;
 use crate::uart::np_rw_lock::NpRwLock;
 use crate::uart::state::State;
-use crate::{Error, Extended, Legacy, LowByte, MAX_PARAMETER_SIZE, Parameters};
+use crate::{Error, Extended, Legacy, LowByte, MAX_PARAMETER_SIZE, Parameters, ezsp};
 
 /// Decode `ASHv2` frames into `EZSP` frames.
 #[derive(Debug)]
@@ -95,6 +94,7 @@ impl Decoder {
 
         let mut stream = frame.into_iter();
         let next_header = self.read_header(&mut stream).ok_or(Decode::TooFewBytes)?;
+        trace!("Next header: {next_header}");
 
         if let Some(header) = self.header.take()
             && header != next_header
@@ -107,6 +107,10 @@ impl Decoder {
         }
 
         self.parameters.extend(stream);
+        trace!(
+            "Accumulated parameters: {:#04X}",
+            HexSlice::new(&self.parameters)
+        );
         let disambiguation = self.state.read().disambiguation().unwrap_or_default();
 
         match Parameters::parse_from_le_stream(
@@ -152,18 +156,15 @@ impl Decoder {
 
         if let LowByte::Response(response) = next_header.low_byte() {
             if response.is_truncated() {
-                // TODO: This may result in a deadlock, if the next frame part never arrives.
-                warn!("Frame is truncated.");
+                return Err(ezsp::Status::Error(ezsp::Error::Truncated).into());
             }
 
             if response.has_overflowed() {
-                return Err(
-                    io::Error::new(ErrorKind::OutOfMemory, "NCP ran out of memory.").into(),
-                );
+                return Err(ezsp::Status::Error(ezsp::Error::Overflow).into());
             }
         }
 
-        trace!("Frame is incomplete. Waiting for more data. Header was: {next_header:?}");
+        trace!("Frame appears fragmented. Waiting for more data...");
         self.header.replace(next_header);
         Ok(None)
     }

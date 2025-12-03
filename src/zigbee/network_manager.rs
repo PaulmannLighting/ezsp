@@ -7,10 +7,13 @@ use std::sync::atomic::Ordering::SeqCst;
 use std::time::Duration;
 
 use enum_iterator::all;
-use log::{info, warn};
+use le_stream::ToLeStream;
+use log::{debug, info, warn};
 use macaddr::MacAddr8;
 use tokio::time::sleep;
-use zigbee_nwk::{NetworkDescriptor, Nlme};
+use zigbee_nwk::aps::Command;
+use zigbee_nwk::zcl::Cluster;
+use zigbee_nwk::{Nlme, zcl};
 
 pub use self::device_config::DeviceConfig;
 pub use self::event_handler::EventHandler;
@@ -41,6 +44,7 @@ pub struct NetworkManager<T> {
     network_up: Arc<AtomicBool>,
     network_open: Arc<AtomicBool>,
     message_tag: u8,
+    aps_options: aps::Options,
 }
 
 impl<T> NetworkManager<T> {
@@ -57,13 +61,11 @@ impl<T> NetworkManager<T> {
             network_up,
             network_open,
             message_tag: 0,
+            aps_options: aps::Options::empty(),
         }
     }
 
-    pub fn get_transport(&mut self) -> &mut T {
-        &mut self.transport
-    }
-
+    /// Returns the next message tag and increments the internal counter.
     const fn next_message_tag(&mut self) -> u8 {
         let tag = self.message_tag;
         self.message_tag = self.message_tag.wrapping_add(1);
@@ -75,6 +77,122 @@ impl<T> NetworkManager<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities,
 {
+    /// Configures the network manager with the given device settings.
+    pub async fn configure(&mut self, settings: DeviceConfig) -> Result<(), Error> {
+        info!("Initial EZSP NCP configuration:");
+        for (key, value) in self.get_configuration().await {
+            info!("  {key:?}: {value}");
+        }
+
+        info!("Initial EZSP NCP policy:");
+        for (key, value) in self.get_policy().await {
+            info!("  {key:?}: {value:?}");
+        }
+
+        self.settings.replace(settings);
+
+        info!("Initialization complete");
+        Ok(())
+    }
+
+    /// Starts the network manager, optionally reinitializing the network.
+    pub async fn start(&mut self, reinitialize: bool) -> Result<(), Error> {
+        let Some(settings) = self.settings.clone() else {
+            return Err(Error::NotConfigured);
+        };
+
+        info!("Adding endpoint");
+        self.transport
+            .add_endpoint(
+                ENDPOINT_ID,
+                HOME_AUTOMATION,
+                HOME_GATEWAY,
+                0,
+                INPUT_CLUSTERS.iter().copied().collect(),
+                OUTPUT_CLUSTERS.iter().copied().collect(),
+            )
+            .await?;
+
+        if !reinitialize {
+            info!("Initializing network manager");
+            self.initialize(
+                settings.concentrator.clone(),
+                settings.configuration.clone(),
+                settings.policy.clone(),
+                settings.link_key,
+                settings.network_key,
+            )
+            .await?;
+        }
+
+        info!("Initializing network");
+        if let Err(error) = self.transport.network_init(InitBitmask::empty()).await {
+            match error {
+                Error::Status(Status::Ember(Ok(ember::Status::NotJoined))) => {
+                    if !reinitialize {
+                        return Err(error);
+                    }
+                }
+                error => {
+                    return Err(error);
+                }
+            }
+        }
+
+        let network_state = self.transport.network_state().await?;
+        info!("Current network state: {network_state:?}");
+
+        if reinitialize {
+            self.leave().await?;
+
+            info!("Initializing network manager");
+            self.initialize(
+                settings.concentrator,
+                settings.configuration,
+                settings.policy,
+                settings.link_key,
+                settings.network_key,
+            )
+            .await?;
+
+            info!("Reinitializing network");
+            self.transport
+                .form_network(network::Parameters::new(
+                    settings.extended_pan_id,
+                    settings.pan_id,
+                    settings.radio_power as u8,
+                    settings.radio_channel,
+                    join::Method::MacAssociation,
+                    0,
+                    0,
+                    1 << settings.radio_channel,
+                ))
+                .await?;
+        }
+
+        self.await_network_up().await;
+
+        let network_state = self.transport.network_state().await?;
+        info!("Final network state: {network_state:?}");
+
+        let security_state = self.transport.get_current_security_state().await?;
+        info!("Current security state: {security_state:?}");
+        for (name, _) in security_state.bitmask().iter_names() {
+            info!("  Security bitmask: {name}");
+        }
+
+        info!("Sending many-to-one route request");
+        let radius = self
+            .transport
+            .get_configuration_value(config::Id::MaxHops)
+            .await?;
+        self.transport
+            .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
+            .await?;
+
+        Ok(())
+    }
+
     async fn initialize(
         &mut self,
         concentrator: concentrator::Parameters,
@@ -105,6 +223,17 @@ where
                 MacAddr8::default(),
             ))
             .await?;
+
+        Ok(())
+    }
+
+    async fn leave(&mut self) -> Result<(), Error> {
+        if self.transport.leave_network().await.is_ok() {
+            info!("Waiting for network to go down...");
+            while self.network_up.load(SeqCst) {
+                sleep(Duration::from_secs(1)).await;
+            }
+        }
 
         Ok(())
     }
@@ -223,39 +352,6 @@ where
 
 impl<T> NetworkManager<T>
 where
-    T: Messaging,
-{
-    /// Sends a unicast message to the given destination with the given APS frame and payload.
-    ///
-    /// Returns the message tag used for the message.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] if the message could not be sent.
-    pub async fn send_unicast<P>(
-        &mut self,
-        destination: Destination,
-        aps_frame: aps::Frame,
-        payload: P,
-    ) -> Result<u8, Error>
-    where
-        P: IntoIterator<Item = u8>,
-    {
-        let tag = self.next_message_tag();
-        self.transport
-            .send_unicast(destination, aps_frame, tag, payload.into_iter().collect())
-            .await
-    }
-
-    pub async fn send_raw(&mut self, payload: &[u8]) -> Result<(), Error> {
-        self.transport
-            .send_raw_message(payload.iter().copied().collect())
-            .await
-    }
-}
-
-impl<T> NetworkManager<T>
-where
     T: Networking,
 {
     pub async fn get_neighbors(&mut self) -> Result<BTreeMap<MacAddr8, u16>, Error> {
@@ -310,139 +406,35 @@ impl<T> Nlme for NetworkManager<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities,
 {
-    type DeviceSettings = DeviceConfig;
     type Error = Error;
 
-    async fn configure(&mut self, settings: Self::DeviceSettings) -> Result<(), Self::Error> {
-        info!("Initial EZSP NCP configuration:");
-        for (key, value) in self.get_configuration().await {
-            info!("  {key:?}: {value}");
-        }
-
-        info!("Initial EZSP NCP policy:");
-        for (key, value) in self.get_policy().await {
-            info!("  {key:?}: {value:?}");
-        }
-
-        self.settings.replace(settings);
-
-        info!("Initialization complete");
-        Ok(())
-    }
-
-    async fn start(&mut self, reinitialize: bool) -> Result<(), Self::Error> {
-        let Some(settings) = self.settings.clone() else {
-            return Err(Error::NotConfigured);
-        };
-
-        info!("Adding endpoint");
-        self.transport
-            .add_endpoint(
-                ENDPOINT_ID,
-                HOME_AUTOMATION,
-                HOME_GATEWAY,
-                0,
-                INPUT_CLUSTERS.iter().copied().collect(),
-                OUTPUT_CLUSTERS.iter().copied().collect(),
-            )
-            .await?;
-
-        if !reinitialize {
-            info!("Initializing network manager");
-            self.initialize(
-                settings.concentrator.clone(),
-                settings.configuration.clone(),
-                settings.policy.clone(),
-                settings.link_key,
-                settings.network_key,
-            )
-            .await?;
-        }
-
-        info!("Initializing network");
-        if let Err(error) = self.transport.network_init(InitBitmask::empty()).await {
-            match error {
-                Error::Status(Status::Ember(Ok(ember::Status::NotJoined))) => {
-                    if !reinitialize {
-                        return Err(error);
-                    }
-                }
-                error => {
-                    return Err(error);
-                }
-            }
-        }
-
-        let network_state = self.transport.network_state().await?;
-        info!("Current network state: {network_state:?}");
-
-        if reinitialize {
-            self.leave().await?;
-
-            info!("Initializing network manager");
-            self.initialize(
-                settings.concentrator,
-                settings.configuration,
-                settings.policy,
-                settings.link_key,
-                settings.network_key,
-            )
-            .await?;
-
-            info!("Reinitializing network");
-            self.transport
-                .form_network(network::Parameters::new(
-                    settings.extended_pan_id,
-                    settings.pan_id,
-                    settings.radio_power as u8,
-                    settings.radio_channel,
-                    join::Method::MacAssociation,
-                    0,
-                    0,
-                    1 << settings.radio_channel,
-                ))
-                .await?;
-        }
-
-        self.await_network_up().await;
-
-        let network_state = self.transport.network_state().await?;
-        info!("Final network state: {network_state:?}");
-
-        let security_state = self.transport.get_current_security_state().await?;
-        info!("Current security state: {security_state:?}");
-        for (name, _) in security_state.bitmask().iter_names() {
-            info!("  Security bitmask: {name}");
-        }
-
-        info!("Sending many-to-one route request");
-        let radius = self
+    async fn unicast_command<P>(
+        &mut self,
+        destination: u16,
+        frame: Command<P>,
+    ) -> Result<(), zigbee_nwk::Error<Self::Error>>
+    where
+        P: zcl::Command + ToLeStream,
+    {
+        let tag = self.next_message_tag();
+        let seq = self
             .transport
-            .get_configuration_value(config::Id::MaxHops)
+            .send_unicast(
+                Destination::Direct(destination),
+                aps::Frame::new(
+                    HOME_AUTOMATION,
+                    <P as Cluster>::ID,
+                    0x01,
+                    0x01,
+                    self.aps_options,
+                    0x00,
+                    0x00,
+                ),
+                tag,
+                frame.into_payload().to_le_stream().collect(),
+            )
             .await?;
-        self.transport
-            .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
-            .await?;
-
-        Ok(())
-    }
-
-    async fn join(&mut self, settings: Self::DeviceSettings) -> Result<(), Self::Error> {
-        todo!("Network joining is not yet implemented")
-    }
-
-    async fn rejoin(&mut self, network: NetworkDescriptor) -> Result<(), Self::Error> {
-        todo!("Network rejoining is not yet implemented")
-    }
-
-    async fn leave(&mut self) -> Result<(), Self::Error> {
-        if self.transport.leave_network().await.is_ok() {
-            info!("Waiting for network to go down...");
-            while self.network_up.load(SeqCst) {
-                sleep(Duration::from_secs(1)).await;
-            }
-        }
-
+        debug!("Received seq: {seq}");
         Ok(())
     }
 }

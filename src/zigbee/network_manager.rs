@@ -137,7 +137,7 @@ where
                     seq,
                 ),
                 tag,
-                frame.into_payload().to_le_stream().collect(),
+                frame.to_le_stream().collect(),
             )
             .await?;
         self.aps_seq = seq.wrapping_add(1);

@@ -348,13 +348,13 @@ fn build_initial_security_state(link_key: Option<Key>, network_key: Option<Key>)
     let mut initial_security_state_bitmask = initial::Bitmask::TRUST_CENTER_GLOBAL_LINK_KEY;
 
     let link_key = link_key.map_or_else(Key::default, |link_key| {
-        initial_security_state_bitmask |= initial::Bitmask::HAVE_NETWORK_KEY;
+        initial_security_state_bitmask |=
+            initial::Bitmask::HAVE_PRECONFIGURED_KEY | initial::Bitmask::REQUIRE_ENCRYPTED_KEY;
         link_key
     });
 
     let network_key = network_key.map_or_else(Key::default, |network_key| {
-        initial_security_state_bitmask |=
-            initial::Bitmask::HAVE_PRECONFIGURED_KEY | initial::Bitmask::REQUIRE_ENCRYPTED_KEY;
+        initial_security_state_bitmask |= initial::Bitmask::HAVE_NETWORK_KEY;
         network_key
     });
 

@@ -1,6 +1,6 @@
 //! Parameters for the [`Networking::send_link_power_delta_request`](crate::Networking::send_link_power_delta_request) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

@@ -1,6 +1,6 @@
 //! Parameters for the [`ProxyTable::lookup`](crate::ProxyTable::lookup) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::gp::Address;
 use crate::frame::Parameter;

@@ -1,6 +1,6 @@
 //! Parameters for the [`Binding::set_binding_remote_node_id`](crate::Binding::set_remote_node_id) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::NodeId;
 use crate::frame::Parameter;

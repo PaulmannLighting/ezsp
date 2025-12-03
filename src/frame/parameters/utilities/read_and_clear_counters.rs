@@ -1,6 +1,6 @@
 //! Parameters for the [`Utilities::read_counters`](crate::Utilities::read_counters) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::constants::COUNTER_TYPE_COUNT;
 use crate::frame::Parameter;

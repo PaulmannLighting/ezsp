@@ -1,6 +1,6 @@
 //! The AES encryption algorithm.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 /// The hash context for an ongoing hash operation.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

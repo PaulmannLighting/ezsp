@@ -1,6 +1,6 @@
 //! Parameters for the [`Zll::set_radio_idle_mode`](crate::Zll::set_radio_idle_mode) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::radio::PowerMode;
 use crate::frame::Parameter;

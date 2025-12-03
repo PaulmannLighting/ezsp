@@ -1,6 +1,6 @@
 //! Parameters for the [`Zll::operation_in_progress`](crate::Zll::operation_in_progress) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

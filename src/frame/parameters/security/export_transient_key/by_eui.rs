@@ -1,6 +1,6 @@
 //! Parameters for the [`Security::export_transient_key_by_eui`](crate::Security::export_transient_key_by_eui) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use silizium::Status;
 

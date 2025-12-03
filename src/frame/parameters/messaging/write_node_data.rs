@@ -1,6 +1,6 @@
 //! Parameters for the [`Messaging::write_node_data`](crate::Messaging::write_node_data) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

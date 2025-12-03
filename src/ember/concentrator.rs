@@ -3,7 +3,7 @@
 use core::num::TryFromIntError;
 use core::time::Duration;
 
-use le_stream::derive::ToLeStream;
+use le_stream::ToLeStream;
 
 /// Concentrator parameters.
 #[derive(Clone, Debug, Default, Eq, PartialEq, ToLeStream)]

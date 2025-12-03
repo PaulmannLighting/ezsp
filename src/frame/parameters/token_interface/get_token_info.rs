@@ -1,6 +1,6 @@
 //! Parameters for the [`TokenInterface::get_token_info`](crate::TokenInterface::get_token_info) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

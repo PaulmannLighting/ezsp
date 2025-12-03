@@ -1,6 +1,6 @@
 //! Parameters for the [`Zll::get_tokens`](crate::Zll::get_tokens) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::zll::{DataToken, SecurityToken};
 use crate::frame::Parameter;

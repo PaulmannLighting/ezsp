@@ -1,4 +1,4 @@
-use le_stream::derive::FromLeStream;
+use le_stream::FromLeStream;
 
 use crate::ember::device::Update;
 use crate::ember::join::Decision;

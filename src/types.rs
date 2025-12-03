@@ -1,6 +1,6 @@
 //! Types used in the `EZSP` protocol.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 /// A vector with a maximum of 255 elements.
 pub type ByteSizedVec<T> = heapless::Vec<T, { u8::MAX as usize }>;

@@ -1,6 +1,6 @@
 //! Parameters for the [`Networking::get_num_stored_beacons`](crate::Networking::get_num_stored_beacons) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

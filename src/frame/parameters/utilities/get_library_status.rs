@@ -1,6 +1,6 @@
 //! Parameters for the [`Utilities::get_library_status`](crate::Utilities::get_library_status) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::library::{Id, Status};
 use crate::frame::Parameter;

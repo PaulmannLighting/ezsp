@@ -1,6 +1,6 @@
 //! Parameters for the [`Messaging::set_mac_poll_failure_wait_time`](crate::Messaging::set_mac_poll_failure_wait_time) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

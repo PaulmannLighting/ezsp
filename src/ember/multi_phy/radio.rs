@@ -1,6 +1,6 @@
 //! Radio parameters.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 /// Radio parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

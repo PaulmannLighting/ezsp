@@ -1,6 +1,6 @@
 //! Parameters for the [`TrustCenter::unicast_nwk_key_update`](crate::TrustCenter::unicast_nwk_key_update) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

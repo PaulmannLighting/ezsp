@@ -1,6 +1,6 @@
 //! Parameters for the [`Messaging::maximum_payload_length`](crate::Messaging::maximum_payload_length) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

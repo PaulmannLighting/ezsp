@@ -3,7 +3,7 @@
 //! The Host can use this command to find out how much longer it will be
 //! before a previously set timer will generate a callback.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::event::{Duration, Units};
 use crate::frame::Parameter;

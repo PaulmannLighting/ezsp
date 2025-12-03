@@ -1,6 +1,6 @@
 //! Parameters for the [`Cbke::dsa_verify`](crate::Cbke::dsa_verify) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

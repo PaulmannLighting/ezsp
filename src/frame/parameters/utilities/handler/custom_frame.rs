@@ -1,7 +1,6 @@
 //! Custom frame handler.
 
-use le_stream::Prefixed;
-use le_stream::derive::FromLeStream;
+use le_stream::{FromLeStream, Prefixed};
 
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;

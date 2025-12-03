@@ -1,6 +1,6 @@
 //! Parameters for the [`Networking::clear_stored_beacons`](crate::Networking::clear_stored_beacons) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

@@ -1,6 +1,6 @@
 //! Parameters for the [`Messaging::lookup_node_id_by_eui64`](crate::Messaging::lookup_node_id_by_eui64) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::{Eui64, NodeId};
 use crate::frame::Parameter;

@@ -1,6 +1,6 @@
 //! Parameters for the [`Networking::join_network_directly`](crate::Networking::join_network_directly) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

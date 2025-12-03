@@ -1,6 +1,6 @@
 //! Parameters for the [`Mfglib::get_power`](crate::Mfglib::get_power) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

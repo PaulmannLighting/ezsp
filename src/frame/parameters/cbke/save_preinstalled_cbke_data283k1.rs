@@ -1,6 +1,6 @@
 //! Parameters for the [`Cbke::save_preinstalled_cbke_data283k1`](crate::Cbke::save_preinstalled_cbke_data283k1) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

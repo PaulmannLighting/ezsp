@@ -1,7 +1,7 @@
 //! Policy decision identifiers and bitmasks.
 
 use bitflags::bitflags;
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
 
 /// Identifies a policy decision.

@@ -1,6 +1,6 @@
 //! Parameters for the [`Cbke::clear_temporary_data_maybe_store_link_key`](crate::Cbke::clear_temporary_data_maybe_store_link_key) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

@@ -1,6 +1,6 @@
 //! Parameters for the [`Networking::energy_scan_request`](crate::Networking::energy_scan_request) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

@@ -1,6 +1,6 @@
 //! No callbacks response frame.
 
-use le_stream::derive::FromLeStream;
+use le_stream::FromLeStream;
 
 use crate::frame::Parameter;
 

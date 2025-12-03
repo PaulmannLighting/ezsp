@@ -5,7 +5,7 @@
 
 use core::fmt::Debug;
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ezsp::StackVersion;
 use crate::frame::Parameter;

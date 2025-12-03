@@ -1,6 +1,6 @@
 //! Counter Rollover Handler
 
-use le_stream::derive::FromLeStream;
+use le_stream::FromLeStream;
 
 use crate::ember::counter::Type;
 use crate::frame::Parameter;

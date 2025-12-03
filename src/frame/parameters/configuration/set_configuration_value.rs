@@ -1,6 +1,6 @@
 //! Parameters for the [`Configuration::set_configuration_value`](crate::Configuration::set_configuration_value) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

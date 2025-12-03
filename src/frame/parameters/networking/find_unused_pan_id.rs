@@ -1,6 +1,6 @@
 //! Parameters for the [`Networking::find_unused_pan_id`](crate::Networking::find_unused_pan_id) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

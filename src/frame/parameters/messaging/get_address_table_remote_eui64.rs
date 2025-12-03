@@ -1,6 +1,6 @@
 //! Parameters for the [`Messaging::get_address_table_remote_eui64`](crate::Messaging::get_address_table_remote_eui64) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::Eui64;
 use crate::frame::Parameter;

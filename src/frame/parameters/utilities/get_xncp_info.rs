@@ -1,6 +1,6 @@
 //! Parameters for the [`Utilities::get_xncp_info`](crate::Utilities::get_xncp_info) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::ember::Status;

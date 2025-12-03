@@ -1,6 +1,6 @@
 //! Parameters for the [`Security::clear_transient_link_keys`](crate::Security::clear_transient_link_keys) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

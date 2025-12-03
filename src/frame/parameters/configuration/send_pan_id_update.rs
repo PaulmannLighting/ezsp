@@ -1,6 +1,6 @@
 //! Parameters for the [`Configuration::send_pan_id_update`](crate::Configuration::send_pan_id_update) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::PanId;
 use crate::frame::Parameter;

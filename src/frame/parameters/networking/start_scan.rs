@@ -1,6 +1,6 @@
 //! Parameters for the [`Networking::start_scan`](crate::Networking::start_scan) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use silizium::Status;
 

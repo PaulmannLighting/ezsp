@@ -1,6 +1,6 @@
 //! Parameters for the [`Zll::set_security_state_without_key`](crate::Zll::set_security_state_without_key) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

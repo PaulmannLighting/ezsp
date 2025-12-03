@@ -1,6 +1,6 @@
 //! Parameters for the [`Wwah::is_uptime_long`](crate::Wwah::is_uptime_long) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

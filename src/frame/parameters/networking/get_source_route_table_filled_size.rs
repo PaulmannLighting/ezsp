@@ -1,6 +1,6 @@
 //! Parameters for the [`Networking::get_source_route_table_filled_size`](crate::Networking::get_source_route_table_filled_size) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

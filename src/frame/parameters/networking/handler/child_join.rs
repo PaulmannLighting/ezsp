@@ -1,4 +1,4 @@
-use le_stream::derive::FromLeStream;
+use le_stream::FromLeStream;
 use num_traits::FromPrimitive;
 
 use crate::ember::node::Type;

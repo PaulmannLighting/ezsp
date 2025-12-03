@@ -1,7 +1,7 @@
 //! Application Support Sublayer (APS) module.
 
 use bitflags::bitflags;
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 /// Ember APS options.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromLeStream, ToLeStream)]

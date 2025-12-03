@@ -1,6 +1,6 @@
 //! Parameters for the [`Wwah::set_parent_classification_enabled`](crate::Wwah::set_parent_classification_enabled) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

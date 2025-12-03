@@ -1,7 +1,6 @@
 //! Parameters for the [`Utilities::get_mfg_token`](crate::Utilities::get_mfg_token) command.
 
-use le_stream::Prefixed;
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, Prefixed, ToLeStream};
 
 use crate::ezsp::mfg_token::Id;
 use crate::frame::Parameter;

@@ -1,7 +1,7 @@
 //! Initial security state configuration for the `EmberZNet` stack.
 
 use bitflags::bitflags;
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::Eui64;
 use crate::ember::key::Data;

@@ -1,7 +1,6 @@
 //! Parameters for the [`GreenPower::send`](crate::GreenPower::send) command.
 
-use le_stream::Prefixed;
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, Prefixed, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

@@ -1,6 +1,6 @@
 //! Parameters for the [`Utilities::delay_test`](crate::Utilities::delay_test) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

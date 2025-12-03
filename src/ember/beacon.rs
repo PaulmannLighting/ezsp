@@ -1,6 +1,6 @@
 //! Beacon data structures.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use macaddr::MacAddr8;
 
 use crate::ember::types::PanId;

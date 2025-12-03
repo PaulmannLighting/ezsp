@@ -1,7 +1,6 @@
 //! Parameters for the [`Utilities::echo`](crate::Utilities::echo) command.
 
-use le_stream::Prefixed;
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, Prefixed, ToLeStream};
 
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;

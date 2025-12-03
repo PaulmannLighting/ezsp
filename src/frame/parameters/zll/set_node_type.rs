@@ -1,6 +1,6 @@
 //! Parameters for the [`Zll::set_node_type`](crate::Zll::set_node_type) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::node::Type;
 use crate::frame::Parameter;

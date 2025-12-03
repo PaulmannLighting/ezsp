@@ -1,6 +1,6 @@
 //! Parameters for the [`Networking::child_id`](crate::Networking::child_id) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::{NULL_NODE_ID, NodeId};
 use crate::frame::Parameter;

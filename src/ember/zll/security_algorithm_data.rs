@@ -1,4 +1,4 @@
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 /// Data associated with the ZLL security algorithm.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

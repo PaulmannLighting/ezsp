@@ -1,6 +1,6 @@
 //! CBKE handlers.
 
-use le_stream::derive::FromLeStream;
+use le_stream::FromLeStream;
 
 pub use self::calculate_smacs::Handler as CalculateSmacs;
 pub use self::calculate_smacs283k1::Handler as CalculateSmacs283k1;

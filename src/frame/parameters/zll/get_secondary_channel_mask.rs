@@ -1,6 +1,6 @@
 //! Parameters for the [`Zll::get_secondary_channel_mask`](crate::Zll::get_secondary_channel_mask) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

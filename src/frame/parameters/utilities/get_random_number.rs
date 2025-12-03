@@ -1,6 +1,6 @@
 //! Parameters for the [`Utilities::get_random_number`](crate::Utilities::get_random_number) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

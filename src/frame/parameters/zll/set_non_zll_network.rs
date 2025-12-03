@@ -1,6 +1,6 @@
 //! Parameters for the [`Zll::set_non_zll_network`](crate::Zll::set_non_zll_network) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::frame::Parameter;
 

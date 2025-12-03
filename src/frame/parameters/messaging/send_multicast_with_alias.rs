@@ -1,7 +1,6 @@
 //! Parameters for the [`Messaging::send_multicast_with_alias`](crate::Messaging::send_multicast_with_alias) command.
 
-use le_stream::Prefixed;
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, Prefixed, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

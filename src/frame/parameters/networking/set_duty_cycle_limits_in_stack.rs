@@ -1,6 +1,6 @@
 //! Parameters for the  [`Networking::set_duty_cycle_limits_in_stack`](crate::Networking::set_duty_cycle_limits_in_stack) command.
 
-use le_stream::derive::{FromLeStream, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;

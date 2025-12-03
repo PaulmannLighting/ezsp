@@ -254,6 +254,19 @@ impl<T> Builder<T> {
             .await
             .expect("Failed to initialize UART");
 
+        debug!("Setting concentrator");
+        self.transport.set_concentrator(self.concentrator).await?;
+
+        for (key, value) in self.configuration {
+            debug!("Setting configuration {key:?} to {value:#06X}");
+            self.transport.set_configuration_value(key, value).await?;
+        }
+
+        for (key, value) in self.policy {
+            debug!("Setting policy {key:?} to {value:#04X}");
+            self.transport.set_policy(key, value).await?;
+        }
+
         for endpoint in self.endpoints {
             debug!("Adding endpoint: {endpoint:#04X}");
             self.transport
@@ -268,32 +281,8 @@ impl<T> Builder<T> {
                 .await?;
         }
 
-        debug!("Setting concentrator");
-        self.transport.set_concentrator(self.concentrator).await?;
-
-        for (key, value) in self.configuration {
-            debug!("Setting configuration {key:?} to {value:#06X}");
-            self.transport.set_configuration_value(key, value).await?;
-        }
-
-        for (key, value) in self.policy {
-            debug!("Setting policy {key:?} to {value:#04X}");
-            self.transport.set_policy(key, value).await?;
-        }
-
         let ieee_address = self.transport.get_eui64().await?;
         debug!("IEEE address: {ieee_address}");
-
-        debug!("Setting radio power to {}", self.radio_power);
-        self.transport.set_radio_power(self.radio_power).await?;
-
-        debug!("Setting initial security state");
-        self.transport
-            .set_initial_security_state(build_initial_security_state(
-                self.link_key,
-                self.network_key,
-            ))
-            .await?;
 
         let network_state = self.transport.network_state().await?;
         info!("Current network state: {network_state:?}");
@@ -303,6 +292,14 @@ impl<T> Builder<T> {
                 event_manager.await_not_joined(8).await;
                 info!("Left existing network.");
             }
+
+            debug!("Setting initial security state");
+            self.transport
+                .set_initial_security_state(build_initial_security_state(
+                    self.link_key,
+                    self.network_key,
+                ))
+                .await?;
 
             info!("Reinitializing network");
             #[expect(clippy::cast_sign_loss)]
@@ -324,6 +321,9 @@ impl<T> Builder<T> {
 
         event_manager.await_network_up(8).await;
         info!("Network is up.");
+
+        debug!("Setting radio power to {}", self.radio_power);
+        self.transport.set_radio_power(self.radio_power).await?;
 
         let network_state = self.transport.network_state().await?;
         info!("Final network state: {network_state:?}");

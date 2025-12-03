@@ -12,8 +12,8 @@ use zigbee_nwk::zcl::Cluster;
 use zigbee_nwk::{Nlme, zcl};
 
 pub use self::event_manager::EventManager;
+use crate::ember::aps;
 use crate::ember::message::Destination;
-use crate::ember::{aps, network};
 use crate::error::Status;
 use crate::zigbee::network_manager::builder::Builder;
 use crate::{Callback, Configuration, Error, Messaging, Networking, Security, Utilities, ember};
@@ -73,21 +73,6 @@ impl<T> NetworkManager<T> {
         let seq = self.aps_seq;
         self.aps_seq = self.aps_seq.wrapping_add(1);
         seq
-    }
-}
-
-impl<T> NetworkManager<T>
-where
-    T: Networking,
-{
-    /// Allows joining for the given duration.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] if joining could not be permitted.
-    pub async fn allow_joins(&mut self, duration: network::Duration) -> Result<(), Error> {
-        info!("Allowing joins for {} seconds.", u8::from(duration));
-        self.transport.permit_joining(duration).await
     }
 }
 

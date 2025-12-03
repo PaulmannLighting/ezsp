@@ -200,6 +200,13 @@ impl Builder {
         self
     }
 
+    /// Sets whether to reinitialize the network.
+    #[must_use]
+    pub const fn with_reinitialize(mut self, reinitialize: bool) -> Self {
+        self.reinitialize = reinitialize;
+        self
+    }
+
     /// Starts the network manager on the given transport implementation.
     pub async fn start<T>(
         mut self,

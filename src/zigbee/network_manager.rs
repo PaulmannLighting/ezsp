@@ -85,13 +85,13 @@ where
 
     async fn get_neighbors(
         &mut self,
-    ) -> Result<BTreeMap<MacAddr8, Option<u16>>, zigbee_nwk::Error<Self::Error>> {
+    ) -> Result<BTreeMap<MacAddr8, u16>, zigbee_nwk::Error<Self::Error>> {
         let mut neighbors = BTreeMap::new();
 
         for index in 0..=u8::MAX {
             match self.transport.get_neighbor(index).await {
                 Ok(neighbor) => {
-                    neighbors.insert(neighbor.long_id(), Some(neighbor.short_id()));
+                    neighbors.insert(neighbor.long_id(), neighbor.short_id());
                 }
                 Err(error) => match error {
                     Error::Status(Status::Ember(Ok(ember::Status::ErrFatal))) => break,

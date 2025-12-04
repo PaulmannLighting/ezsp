@@ -17,7 +17,7 @@ pub(crate) struct Command {
 
 impl Command {
     #[must_use]
-    pub fn new(bitmask: InitBitmask) -> Self {
+    pub const fn new(bitmask: InitBitmask) -> Self {
         Self { bitmask }
     }
 }

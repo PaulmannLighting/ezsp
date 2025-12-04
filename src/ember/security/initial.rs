@@ -108,10 +108,8 @@ impl State {
 
     /// Return the bitmask indicating the security state used to indicate what the
     /// security configuration will be when the device forms or joins the network.
-    ///
-    /// # Errors
-    /// Returns the [`u8`] value of the bitmask if it is not a valid [`Bitmask`].
-    pub fn bitmask(&self) -> Bitmask {
+    #[must_use]
+    pub const fn bitmask(&self) -> Bitmask {
         self.bitmask
     }
 

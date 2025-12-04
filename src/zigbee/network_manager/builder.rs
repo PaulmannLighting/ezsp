@@ -13,10 +13,10 @@ use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
 use crate::zigbee::NetworkManager;
 use crate::zigbee::network_manager::EventManager;
-use crate::zigbee::network_manager::event_manager::{AwaitNetworkUp, AwaitNotJoined};
+use crate::zigbee::network_manager::stack_status::StackStatus;
 use crate::{
     Callback, Configuration, Error, Messaging, Networking, Security, SinkTable, Transport,
-    Utilities,
+    Utilities, ember,
 };
 
 const HOME_AUTOMATION: u16 = 0x0104;
@@ -248,7 +248,7 @@ impl<T> Builder<T> {
     where
         T: Transport,
     {
-        let mut event_manager = EventManager::new(self.callbacks_rx);
+        let event_manager = EventManager::new(self.callbacks_rx);
         self.transport
             .init()
             .await
@@ -289,7 +289,11 @@ impl<T> Builder<T> {
 
         if self.reinitialize {
             if self.transport.leave_network().await.is_ok() {
-                event_manager.await_not_joined(8).await;
+                event_manager
+                    .register(8)
+                    .await
+                    .stack_status(ember::Status::NotJoined)
+                    .await;
                 info!("Left existing network.");
             }
 
@@ -319,7 +323,11 @@ impl<T> Builder<T> {
             self.transport.network_init(self.init_bitmask).await?;
         }
 
-        event_manager.await_network_up(8).await;
+        event_manager
+            .register(8)
+            .await
+            .stack_status(ember::Status::NetworkUp)
+            .await;
         info!("Network is up.");
 
         debug!("Setting radio power to {}", self.radio_power);

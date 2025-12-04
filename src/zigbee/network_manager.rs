@@ -19,6 +19,7 @@ use crate::{Callback, Configuration, Error, Messaging, Networking, Security, Uti
 
 mod builder;
 mod event_manager;
+mod stack_status;
 
 /// Network manager for Zigbee networks.
 pub struct NetworkManager<T> {

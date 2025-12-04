@@ -6,12 +6,7 @@ use tokio::sync::mpsc::error::TrySendError;
 use tokio::sync::mpsc::{Receiver, Sender, channel};
 use tokio::task::{JoinError, JoinHandle};
 
-pub use self::await_network_up::AwaitNetworkUp;
-pub use self::await_not_joined::AwaitNotJoined;
 use crate::Callback;
-
-mod await_network_up;
-mod await_not_joined;
 
 type Handlers = Arc<Mutex<Vec<Sender<Callback>>>>;
 

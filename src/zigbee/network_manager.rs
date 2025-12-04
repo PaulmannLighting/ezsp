@@ -139,7 +139,7 @@ where
                 tag,
                 zcl::Frame::new(
                     zcl::Type::ClusterSpecific,
-                    zcl::Direction::ClientToServer,
+                    <P as zcl::Command>::DIRECTION,
                     true,
                     None,
                     seq,

@@ -102,7 +102,8 @@ where
 
     async fn unicast_command<F>(
         &mut self,
-        destination: u16,
+        pan_id: u16,
+        endpoint: u8,
         frame: F,
     ) -> Result<(), zigbee_nwk::Error<Self::Error>>
     where
@@ -113,12 +114,12 @@ where
         seq = self
             .transport
             .send_unicast(
-                Destination::Direct(destination),
+                Destination::Direct(pan_id),
                 aps::Frame::new(
                     self.profile_id,
                     <F as Cluster>::ID,
                     0x01,
-                    0x01,
+                    endpoint,
                     self.aps_options,
                     0x00,
                     seq,

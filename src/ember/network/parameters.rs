@@ -1,6 +1,5 @@
 use core::fmt::Display;
 
-use ashv2::HexSlice;
 use le_stream::{FromLeStream, ToLeStream};
 use macaddr::MacAddr8;
 use num_traits::FromPrimitive;
@@ -150,11 +149,7 @@ impl Parameters {
 impl Display for Parameters {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "PAN ID: {:#06X}, ", self.pan_id)?;
-        writeln!(
-            f,
-            "Extended PAN ID: {:#04X}",
-            HexSlice::new(self.extended_pan_id.as_bytes())
-        )?;
+        writeln!(f, "Extended PAN ID: {}", self.extended_pan_id)?;
         writeln!(f, "Radio TX power: {:#04X}", self.radio_tx_power)?;
         writeln!(f, "Radio channel: {:#04X}", self.radio_channel)?;
         writeln!(f, "Join method: {:#04X}", self.join_method)?;

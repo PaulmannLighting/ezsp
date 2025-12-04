@@ -8,6 +8,7 @@ use log::info;
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
 use zigbee_nwk::zcl::Cluster;
+use zigbee_nwk::zigbee::Endpoint;
 use zigbee_nwk::{Nlme, zcl};
 
 pub use self::event_manager::EventManager;
@@ -103,7 +104,7 @@ where
     async fn unicast_command<F>(
         &mut self,
         pan_id: u16,
-        endpoint: u8,
+        endpoint: Endpoint,
         frame: F,
     ) -> Result<(), zigbee_nwk::Error<Self::Error>>
     where
@@ -119,7 +120,7 @@ where
                     self.profile_id,
                     <F as Cluster>::ID,
                     0x01,
-                    endpoint,
+                    endpoint.into(),
                     self.aps_options,
                     0x00,
                     seq,

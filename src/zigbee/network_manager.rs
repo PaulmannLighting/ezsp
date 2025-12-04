@@ -24,7 +24,6 @@ mod stack_status;
 /// Network manager for Zigbee networks.
 pub struct NetworkManager<T> {
     transport: T,
-    event_manager: EventManager,
     aps_options: aps::Options,
     profile_id: u16,
     message_tag: u8,
@@ -34,15 +33,9 @@ pub struct NetworkManager<T> {
 impl<T> NetworkManager<T> {
     /// Creates a new `NetworkManager` with the given transport.
     #[must_use]
-    pub(crate) const fn new(
-        transport: T,
-        event_manager: EventManager,
-        profile_id: u16,
-        aps_options: aps::Options,
-    ) -> Self {
+    pub(crate) const fn new(transport: T, profile_id: u16, aps_options: aps::Options) -> Self {
         Self {
             transport,
-            event_manager,
             aps_options,
             profile_id,
             message_tag: 0,
@@ -54,12 +47,6 @@ impl<T> NetworkManager<T> {
     #[must_use]
     pub fn build(transport: T, callbacks_rx: Receiver<Callback>) -> Builder<T> {
         Builder::new(transport, callbacks_rx)
-    }
-
-    /// Returns a mutable reference to the event manager.
-    #[must_use]
-    pub const fn event_manager(&mut self) -> &mut EventManager {
-        &mut self.event_manager
     }
 
     /// Returns the next message tag and increments the internal counter.

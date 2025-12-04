@@ -244,7 +244,7 @@ impl<T> Builder<T> {
     }
 
     /// Starts the network manager on the given transport implementation.
-    pub async fn start(mut self) -> Result<NetworkManager<T>, Error>
+    pub async fn start(mut self) -> Result<(NetworkManager<T>, EventManager), Error>
     where
         T: Transport,
     {
@@ -352,12 +352,10 @@ impl<T> Builder<T> {
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
-        Ok(NetworkManager::new(
-            self.transport,
-            event_manager,
-            self.profile_id,
-            self.aps_options,
-        ))
+        let network_manager =
+            NetworkManager::new(self.transport, self.profile_id, self.aps_options);
+
+        Ok((network_manager, event_manager))
     }
 }
 

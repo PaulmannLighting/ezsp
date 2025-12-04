@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use log::trace;
+use log::{trace, warn};
 use tokio::sync::mpsc::Sender;
 
 use super::decoder::Decoder;
@@ -45,9 +45,12 @@ impl Splitter {
         while let Some(frame) = self.incoming.decode().await {
             match frame {
                 Ok(frame) => {
+                    trace!("Received frame: {frame:?}");
                     self.handle_frame(frame).await;
                 }
                 Err(error) => {
+                    warn!("Failed to decode frame: {error}");
+
                     if self.state.read().is_response_pending() {
                         self.responses
                             .send(Err(error))
@@ -64,15 +67,15 @@ impl Splitter {
 
         match parameters {
             Parameters::Response(response) => {
-                trace!("Forwarding response.");
+                trace!("Forwarding response: {response:?}");
                 self.handle_response(Parameters::Response(response)).await;
             }
             Parameters::Callback(callback) => {
                 if header.is_async_callback() {
-                    trace!("Forwarding async callback.");
+                    trace!("Forwarding async callback: {callback:?}");
                     self.handle_callback(callback).await;
                 } else {
-                    trace!("Forwarding non-async callback as response.");
+                    trace!("Forwarding non-async callback as response: {callback:?}");
                     self.handle_response(Parameters::Callback(callback)).await;
                 }
             }

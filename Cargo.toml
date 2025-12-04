@@ -30,7 +30,6 @@ silizium = { version = "1.0", path = "../silizium", features = ["le-stream"] }
 tokio = { version = "1.48", optional = true }
 zigbee-nwk = { version = "0.1.0", path = "../apis-saltans/nwk", optional = true }
 rand = "0.10.0-rc.5"
-uuid = { version = "1.19.0", features = ["v4"] }
 
 [dev-dependencies]
 clap = { version = "4.5", features = ["derive"] }

@@ -128,16 +128,9 @@ where
                     seq,
                 ),
                 tag,
-                zcl::Frame::new(
-                    zcl::Type::ClusterSpecific,
-                    <F as zcl::Command>::DIRECTION,
-                    true,
-                    None,
-                    seq,
-                    frame,
-                )
-                .to_le_stream()
-                .collect(),
+                zcl::Frame::new(zcl::Type::ClusterSpecific, true, None, seq, frame)
+                    .to_le_stream()
+                    .collect(),
             )
             .await?;
         self.aps_seq = seq.wrapping_add(1);

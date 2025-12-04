@@ -25,7 +25,7 @@ where
     async fn handle_incoming_message(&mut self, message: IncomingMessage) -> Result<(), Error> {
         debug!("Handling incoming message: {message:?}");
         let ember_aps_frame = message.aps_frame();
-        let (typ, parameters) = self.transport.get_network_parameters().await?;
+        let (_, parameters) = self.transport.get_network_parameters().await?;
 
         if ember_aps_frame.options().contains(Options::FRAGMENT) {
             warn!(

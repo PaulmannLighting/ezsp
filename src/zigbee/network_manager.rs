@@ -113,13 +113,13 @@ where
         Ok(neighbors)
     }
 
-    async fn unicast_command<P>(
+    async fn unicast_command<F>(
         &mut self,
         destination: u16,
-        frame: P,
+        frame: F,
     ) -> Result<(), zigbee_nwk::Error<Self::Error>>
     where
-        P: zcl::Command + ToLeStream,
+        F: zcl::Command + ToLeStream,
     {
         let tag = self.next_message_tag();
         let mut seq = self.next_aps_seq();
@@ -129,7 +129,7 @@ where
                 Destination::Direct(destination),
                 aps::Frame::new(
                     self.profile_id,
-                    <P as Cluster>::ID,
+                    <F as Cluster>::ID,
                     0x01,
                     0x01,
                     self.aps_options,
@@ -139,7 +139,7 @@ where
                 tag,
                 zcl::Frame::new(
                     zcl::Type::ClusterSpecific,
-                    <P as zcl::Command>::DIRECTION,
+                    <F as zcl::Command>::DIRECTION,
                     true,
                     None,
                     seq,

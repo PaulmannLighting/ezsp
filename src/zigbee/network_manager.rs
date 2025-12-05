@@ -115,7 +115,6 @@ where
         &mut self,
         pan_id: u16,
         endpoint: Endpoint,
-        cluster_id: u16,
         frame: Frame,
     ) -> Result<(), zigbee_nwk::Error> {
         let frame = frame.with_seq(self.next_transaction_seq());
@@ -127,7 +126,7 @@ where
                 Destination::Direct(pan_id),
                 aps::Frame::new(
                     self.profile_id,
-                    cluster_id,
+                    frame.cluster_id(),
                     0x01,
                     endpoint.into(),
                     self.aps_options,

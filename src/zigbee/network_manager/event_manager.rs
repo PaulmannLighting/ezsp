@@ -44,7 +44,7 @@ impl EventManager {
 
 async fn forward_events(mut events: Receiver<Callback>, handlers: Handlers) {
     while let Some(event) = events.recv().await {
-        debug!("Received EZSP event: {event:?}");
+        trace!("Received EZSP event: {event:?}");
         let mut lock = handlers.lock().await;
         lock.retain(|sender| !sender.is_closed());
 

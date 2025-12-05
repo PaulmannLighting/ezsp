@@ -1,11 +1,10 @@
 //! Transport layer to communicate with an NCP that supports the `EZSP` protocol.
 
 use core::future::Future;
-use core::num::TryFromIntError;
 
 use le_stream::ToLeStream;
 
-use crate::frame::{Header, Parameter};
+use crate::frame::Parameter;
 use crate::{Error, Parameters};
 
 /// The minimum protocol version that supports non-legacy commands.
@@ -18,18 +17,6 @@ pub const MIN_NON_LEGACY_VERSION: u8 = 8;
 ///
 /// Unless you know what you are doing, you should not use the methods of this trait directly.
 pub trait Transport: Send {
-    /// Return the next header.
-    ///
-    /// This method is used to determine the next header to be used in the communication.
-    ///
-    /// The `id` parameter is the identifier of the command that will be sent.
-    ///
-    /// # Errors
-    ///
-    /// This method may return an error if `EZSP` is in legacy mode
-    /// and the `id` cannot be converted into a `u8`.
-    fn next_header(&mut self, id: u16) -> Result<Header, TryFromIntError>;
-
     /// Check if the `EZSP` connection needs to be reset and reset it if necessary.
     fn check_reset(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 

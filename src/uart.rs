@@ -70,6 +70,30 @@ where
         }
     }
 
+    /// Return the next header.
+    ///
+    /// This method is used to determine the next header to be used in the communication.
+    ///
+    /// The `id` parameter is the identifier of the command that will be sent.
+    ///
+    /// # Errors
+    ///
+    /// This method may return an error if `EZSP` is in legacy mode
+    /// and the `id` cannot be converted into a `u8`.
+    fn next_header(&mut self, id: u16) -> Result<Header, TryFromIntError> {
+        let header = if self.state.read().is_legacy() {
+            Header::Legacy(Legacy::new(
+                self.sequence,
+                Command::default().into(),
+                id.try_into()?,
+            ))
+        } else {
+            Header::Extended(Extended::new(self.sequence, Command::default().into(), id))
+        };
+        self.sequence = self.sequence.wrapping_add(1);
+        Ok(header)
+    }
+
     /// Negotiate the `EZSP` protocol version.
     ///
     /// A minimum version of [`MIN_NON_LEGACY_VERSION`] is required to support non-legacy commands.
@@ -133,20 +157,6 @@ impl<T> Transport for Uart<T>
 where
     T: SerialPort,
 {
-    fn next_header(&mut self, id: u16) -> Result<Header, TryFromIntError> {
-        let header = if self.state.read().is_legacy() {
-            Header::Legacy(Legacy::new(
-                self.sequence,
-                Command::default().into(),
-                id.try_into()?,
-            ))
-        } else {
-            Header::Extended(Extended::new(self.sequence, Command::default().into(), id))
-        };
-        self.sequence = self.sequence.wrapping_add(1);
-        Ok(header)
-    }
-
     async fn check_reset(&mut self) -> Result<(), Error> {
         // Use temporary variable, because we need to drop the lock before the match statement.
         let connection = self.state.read().connection();

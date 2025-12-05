@@ -2,8 +2,9 @@ mod fragments;
 
 use std::collections::BTreeMap;
 
+use aps::Control;
 use le_stream::FromLeStream;
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use tokio::sync::mpsc::Receiver;
 use zigbee_nwk::{Event, ReceivedApsFrame};
 
@@ -89,7 +90,17 @@ impl MessageHandler {
             }
         }
 
-        match ReceivedApsFrame::from_le_stream_exact(incoming_message.into_message().into_iter()) {
+        let payload = incoming_message.into_message();
+
+        if let Some(first_byte) = payload.first() {
+            let control = Control::from_bits_retain(*first_byte);
+            debug!("Control fields:");
+            for (name, control) in control.iter_names() {
+                debug!(" - {name}: {control:#04X}");
+            }
+        }
+
+        match ReceivedApsFrame::from_le_stream_exact(payload.into_iter()) {
             Ok(aps_frame) => {
                 info!("Decoded APS frame: {aps_frame:?}");
             }

@@ -15,6 +15,7 @@ exclude = [".gitignore"]
 all-features = true
 
 [dependencies]
+aps = { version = "0.1.0", path = "../apis-saltans/aps", optional = true }
 ashv2 = { version = "1.2", optional = true }
 bitflags = "2.10"
 enum-iterator = "2.3"
@@ -36,7 +37,7 @@ tokio-mpmc = { version = "0.2.4", optional = true }
 [features]
 ashv2 = ["ashv2/serialport", "tokio/rt", "tokio/time", "tokio/sync"]
 semver = ["dep:semver"]
-zigbee = ["dep:zigbee", "dep:zigbee-nwk", "dep:rand", "dep:tokio-mpmc"]
+zigbee = ["dep:zigbee", "dep:zigbee-nwk", "dep:rand", "dep:tokio-mpmc", "dep:aps"]
 
 [profile.release]
 opt-level = 3

@@ -15,6 +15,12 @@ pub struct State {
 }
 
 impl State {
+    /// Returns the negotiated version.
+    #[must_use]
+    pub const fn negotiated_version(&self) -> Option<u8> {
+        self.negotiated_version
+    }
+
     /// Set the negotiated version.
     pub const fn set_negotiated_version(&mut self, version: u8) {
         self.negotiated_version.replace(version);

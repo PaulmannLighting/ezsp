@@ -59,4 +59,7 @@ pub trait Ezsp:
     ///
     /// Returns an [`Error`] on I/O errors or if the desired protocol version is not supported.
     fn init(&mut self) -> impl Future<Output = Result<version::Response, Error>> + Send;
+
+    /// Returns the negotiated protocol version, if any.
+    fn negotiated_version(&self) -> Option<u8>;
 }

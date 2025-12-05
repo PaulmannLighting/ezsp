@@ -151,6 +151,10 @@ where
         self.state.write().set_connection(Connection::Connected);
         Ok(response)
     }
+
+    fn negotiated_version(&self) -> Option<u8> {
+        self.state.read().negotiated_version()
+    }
 }
 
 impl<T> Transport for Uart<T>

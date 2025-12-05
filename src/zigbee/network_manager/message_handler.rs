@@ -1,42 +1,27 @@
-mod fragments;
-
-use std::collections::BTreeMap;
-
-use aps::Control;
-use le_stream::FromLeStream;
-use log::{debug, error, info, warn};
+use log::{error, warn};
 use tokio::sync::mpsc::Receiver;
 use tokio_mpmc::ChannelError;
-use zigbee_nwk::{Event, ReceivedApsFrame};
+use zigbee_nwk::Event;
 
 use crate::ember::device::Update;
-use crate::ember::message::Incoming;
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage};
 use crate::parameters::networking::handler::ChildJoin;
 use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
-use crate::zigbee::network_manager::message_handler::fragments::Fragments;
 use crate::{Callback, ember};
 
 /// Handler for processing incoming messages.
+///
+/// TODO: Handle and reassemble fragmented frames.
 pub struct MessageHandler {
     outgoing: tokio_mpmc::Sender<Event>,
-    // TODO: Handle and reassemble fragmented frames.
-    _fragments: BTreeMap<u8, Fragments>,
 }
 
 impl MessageHandler {
     /// Creates a new `MessageHandler` with the given outgoing channel size.
     pub fn new(size: usize) -> (Self, tokio_mpmc::Receiver<Event>) {
         let (outgoing, rx) = tokio_mpmc::channel(size);
-
-        (
-            Self {
-                outgoing,
-                _fragments: BTreeMap::default(),
-            },
-            rx,
-        )
+        (Self { outgoing }, rx)
     }
 
     pub async fn process(self, mut callbacks: Receiver<Callback>) {
@@ -52,10 +37,8 @@ impl MessageHandler {
     async fn handle(&self, callback: Callback) -> Result<(), ChannelError> {
         match callback {
             Callback::Messaging(Messaging::IncomingMessage(incoming_message)) => {
-                self.handle_incoming_message(incoming_message);
-                Ok(())
+                self.handle_incoming_message(incoming_message).await
             }
-
             Callback::Networking(Networking::StackStatus(status)) => {
                 self.handle_stack_status(status.result()).await
             }
@@ -73,48 +56,19 @@ impl MessageHandler {
         }
     }
 
-    fn handle_incoming_message(&self, incoming_message: IncomingMessage) {
-        let typ = match incoming_message.typ() {
-            Ok(typ) => typ,
-            Err(value) => {
-                error!("Received incoming message with invalid type: {value}");
-                return;
-            }
-        };
-
-        match typ {
-            Incoming::Broadcast | Incoming::Unicast | Incoming::UnicastReply => {
-                info!("Handling incoming message: {incoming_message:?}");
-            }
-            Incoming::BroadcastLoopback | Incoming::MulticastLoopback => {
-                warn!("Ignoring loopback message: {incoming_message:?}");
-                return;
-            }
-            Incoming::Multicast => {
-                info!("Handling multicast message: {incoming_message:?}");
-            }
-            Incoming::ManyToOneRouteRequest => {
-                warn!("Ignoring many-to-one route request message: {incoming_message:?}");
-                return;
-            }
-        }
-
-        let payload = incoming_message.into_message();
-
-        if let Some(first_byte) = payload.first() {
-            let control = Control::from_bits_retain(*first_byte);
-            debug!("Control fields:");
-            for (name, control) in control.iter_names() {
-                debug!(" - {name}: {control:#04X}");
-            }
-        }
-
-        match ReceivedApsFrame::from_le_stream_exact(payload.into_iter()) {
-            Ok(aps_frame) => {
-                info!("Decoded APS frame: {aps_frame:?}");
+    async fn handle_incoming_message(
+        &self,
+        incoming_message: IncomingMessage,
+    ) -> Result<(), ChannelError> {
+        match incoming_message.try_into() {
+            Ok(received_aps_frame) => {
+                self.outgoing
+                    .send(Event::MessageReceived(received_aps_frame))
+                    .await
             }
             Err(error) => {
-                error!("Failed to parse APS frame from incoming message: {error}");
+                warn!("Ignoring unknown APS frame type: {error}");
+                Ok(())
             }
         }
     }

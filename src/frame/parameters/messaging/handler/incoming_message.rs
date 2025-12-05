@@ -108,3 +108,38 @@ impl Handler {
 impl Parameter for Handler {
     const ID: u16 = ID;
 }
+
+#[cfg(feature = "zigbee")]
+impl TryFrom<Handler> for zigbee_nwk::ReceivedApsFrame {
+    type Error = u8;
+
+    fn try_from(frame: Handler) -> Result<Self, Self::Error> {
+        let control = None; // FIXME: We don't have that.
+
+        let destination = match frame.typ()? {
+            Incoming::Unicast | Incoming::UnicastReply => {
+                aps::Destination::Unicast(frame.aps_frame.source_endpoint())
+            }
+            Incoming::Broadcast | Incoming::BroadcastLoopback => {
+                aps::Destination::Broadcast(frame.aps_frame.source_endpoint())
+            }
+            Incoming::Multicast | Incoming::MulticastLoopback => {
+                aps::Destination::Group(frame.aps_frame.group_id())
+            }
+            Incoming::ManyToOneRouteRequest => {
+                return Err(Incoming::ManyToOneRouteRequest.into());
+            }
+        };
+
+        Ok(Self::new(
+            control,
+            destination,
+            frame.aps_frame.cluster_id(),
+            frame.aps_frame.profile_id(),
+            frame.aps_frame.source_endpoint(),
+            frame.aps_frame.sequence(),
+            None, // FIXME: Extended header not available either.
+            frame.into_message().drain(..).collect(),
+        ))
+    }
+}

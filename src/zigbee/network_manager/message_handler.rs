@@ -1,11 +1,11 @@
-use log::{error, warn};
+use log::{error, trace, warn};
 use tokio::sync::mpsc::Receiver;
 use tokio_mpmc::ChannelError;
 use zigbee_nwk::Event;
 
 use crate::ember::device::Update;
 use crate::frame::parameters::networking::handler::Handler as Networking;
-use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage};
+use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
 use crate::parameters::networking::handler::ChildJoin;
 use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
 use crate::{Callback, ember};
@@ -39,6 +39,10 @@ impl MessageHandler {
             Callback::Messaging(Messaging::IncomingMessage(incoming_message)) => {
                 self.handle_incoming_message(incoming_message).await
             }
+            Callback::Messaging(Messaging::MessageSent(message_sent)) => {
+                Self::handle_message_sent(&message_sent);
+                Ok(())
+            }
             Callback::Networking(Networking::StackStatus(status)) => {
                 self.handle_stack_status(status.result()).await
             }
@@ -71,6 +75,11 @@ impl MessageHandler {
                 Ok(())
             }
         }
+    }
+
+    fn handle_message_sent(message_sent: &MessageSent) {
+        // TODO: Maybe handle those?
+        trace!("Message sent: {message_sent:?}");
     }
 
     async fn handle_stack_status(

@@ -5,18 +5,18 @@ use crate::ember::aps::Options;
 use crate::parameters::messaging::handler::IncomingMessage;
 
 /// Trait for handling incoming messages.
-pub trait HandlerIncomingMessage {
+pub trait HandleIncomingMessage {
     fn handle_incoming_message(
-        &mut self,
+        &self,
         message: IncomingMessage,
     ) -> impl Future<Output = Result<(), Error>>;
 }
 
-impl<T> HandlerIncomingMessage for T
+impl<T> HandleIncomingMessage for T
 where
     T: Proxy,
 {
-    async fn handle_incoming_message(&mut self, message: IncomingMessage) -> Result<(), Error> {
+    async fn handle_incoming_message(&self, message: IncomingMessage) -> Result<(), Error> {
         debug!("Handling incoming message: {message:?}");
         let ember_aps_frame = message.aps_frame();
         let pan_id = self.get_pan_id().await?;

@@ -32,7 +32,7 @@ bitflags! {
         /// and the application is responsible for sending a ZDO response.
         ///
         /// This flag is used only when the ZDO is configured to have requests handled by the application.
-        /// See the `EZSP_CONFIG_APPLICATION_ZDO_FLAGS` configuration parameter for more information.
+        /// See the [`ApplicationZdoFlags`](crate::ezsp::config::Id::ApplicationZdoFlags) configuration parameter for more information.
         const ZDO_RESPONSE_REQUIRED = 0x4000;
         /// This message is part of a fragmented message. This option may only be set for unicasts.
         ///

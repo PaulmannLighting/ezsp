@@ -131,4 +131,27 @@ impl Frame {
     pub const fn sequence(&self) -> u8 {
         self.sequence
     }
+
+    /// Return fragmentation information, if the message is fragmented.
+    ///
+    /// # Returns
+    ///
+    /// - `Some((index, Some(total_fragments)))` if this is the first fragment, where `index` is 0.
+    /// - `Some((index, None))` if this is a subsequent fragment.
+    /// - `None` if the message is not fragmented.
+    #[must_use]
+    pub const fn fragmentation(&self) -> Option<(u8, Option<u8>)> {
+        if self.options.contains(Options::FRAGMENT) {
+            let index = (self.group_id & 0x00FF) as u8;
+
+            if index == 0 {
+                let total_fragments = (self.group_id >> 8) as u8;
+                Some((index, Some(total_fragments)))
+            } else {
+                Some((index, None))
+            }
+        } else {
+            None
+        }
+    }
 }

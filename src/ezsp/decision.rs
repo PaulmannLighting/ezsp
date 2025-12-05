@@ -13,7 +13,7 @@ pub enum Id {
     /// Send the network key encrypted with the joining or rejoining device's trust center link key.
     /// The trust center and any joining or rejoining device are assumed to share a link key, either
     /// preconfigured or obtained under a previous policy. This is the default value for the
-    /// `EZSP_TRUST_CENTER_POLICY`.
+    /// [`TrustCenter`](crate::ezsp::policy::Id::TrustCenter).
     AllowPreconfiguredKeyJoins = 0x01,
     /// Send the network key encrypted with the rejoining device's trust center link key. The trust
     /// center and any rejoining device are assumed to share a link key, either preconfigured or
@@ -34,65 +34,65 @@ pub enum Id {
     BdbJoinUsesInstallCodeKey = 0x06,
     /// Delay sending the network key to a new joining device.
     DeferJoinsRejoinsHaveLinkKey = 0x07,
-    /// `EZSP_BINDING_MODIFICATION_POLICY` default decision.
+    /// [`BindingModification`](crate::ezsp::policy::Id::BindingModification) default decision.
     ///
     /// Do not allow the local binding table to be changed by remote nodes.
     DisallowBindingModification = 0x10,
-    /// `EZSP_BINDING_MODIFICATION_POLICY` decision.
+    /// [`BindingModification`](crate::ezsp::policy::Id::BindingModification) decision.
     ///
     /// Allow remote nodes to change the local binding table.
     AllowBindingModification = 0x11,
-    /// `EZSP_BINDING_MODIFICATION_POLICY` decision.
+    /// [`BindingModification`](crate::ezsp::policy::Id::BindingModification) decision.
     ///
     /// Allows remote nodes to set local binding entries only if the entries correspond to
     /// endpoints defined on the device, and for output clusters bound to those endpoints.
     CheckBindingModificationsAreValidEndpointClusters = 0x12,
-    /// `EZSP_UNICAST_REPLIES_POLICY` default decision.
+    /// [`UnicastReplies`](crate::ezsp::policy::Id::UnicastReplies) default decision.
     ///
     /// The NCP will automatically send an empty reply (containing no payload)
     /// for every unicast received.
     HostWillNotSupplyReply = 0x20,
-    /// `EZSP_UNICAST_REPLIES_POLICY` decision.
+    /// [`UnicastReplies`](crate::ezsp::policy::Id::UnicastReplies) decision.
     ///
     /// The NCP will only send a reply if it receives a sendReply command from the Host.
     HostWillSupplyReply = 0x21,
-    /// `EZSP_POLL_HANDLER_POLICY` default decision.
+    /// [`PollHandler`](crate::ezsp::policy::Id::PollHandler) default decision.
     ///
     /// Do not inform the Host when a child polls.
     PollHandlerIgnore = 0x30,
-    /// `EZSP_POLL_HANDLER_POLICY` decision.
+    /// [`PollHandler`](crate::ezsp::policy::Id::PollHandler) decision.
     ///
     /// Generate a pollHandler callback when a child polls.
     PollHandlerCallback = 0x31,
-    /// `EZSP_MESSAGE_CONTENTS_IN_CALLBACK_POLICY` default decision.
+    /// [`MessageContentsInCallback`](crate::ezsp::policy::Id::MessageContentsInCallback) default decision.
     ///
     /// Include only the message tag in the messageSentHandler callback.
     MessageTagOnlyInCallback = 0x40,
-    /// `EZSP_MESSAGE_CONTENTS_IN_CALLBACK_POLICY` decision.
+    /// [`MessageContentsInCallback`](crate::ezsp::policy::Id::MessageContentsInCallback) decision.
     ///
     /// Include both the message tag and the message contents in the messageSentHandler callback.
     MessageTagAndContentsInCallback = 0x41,
-    /// `EZSP_TC_KEY_REQUEST_POLICY` decision.
+    /// [`TcKeyRequest`](crate::ezsp::policy::Id::TcKeyRequest) decision.
     ///
     /// When the Trust Center receives a request for a Trust Center link key, it will be ignored.
     DenyTcKeyRequests = 0x50,
-    /// `EZSP_TC_KEY_REQUEST_POLICY` decision.
+    /// [`TcKeyRequest`](crate::ezsp::policy::Id::TcKeyRequest) decision.
     ///
     /// When the Trust Center receives a request for a Trust Center link key,
     /// it will reply to it with the corresponding key.
     AllowTcKeyRequestsAndSendCurrentKey = 0x51,
-    /// `EZSP_TC_KEY_REQUEST_POLICY` decision.
+    /// [`TcKeyRequest`](crate::ezsp::policy::Id::TcKeyRequest) decision.
     ///
     /// When the Trust Center receives a request for a Trust Center link key,
     /// it will generate a key to send to the joiner.
     /// After generation, the key will be added to the transient key table and after
     /// verification this key will be added to the link key table.
     AllowTcKeyRequestsAndGenerateNewKey = 0x52,
-    /// `EZSP_APP_KEY_REQUEST_POLICY` decision.
+    /// [`AppKeyRequest`](crate::ezsp::policy::Id::AppKeyRequest) decision.
     ///
     /// When the Trust Center receives a request for an application link key, it will be ignored.
     DenyAppKeyRequests = 0x60,
-    /// `EZSP_APP_KEY_REQUEST_POLICY` decision.
+    /// [`AppKeyRequest`](crate::ezsp::policy::Id::AppKeyRequest) decision.
     ///
     /// When the Trust Center receives a request for an application link key,
     /// it will randomly generate a key and send it to both partners.

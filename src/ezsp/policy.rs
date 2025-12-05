@@ -20,7 +20,7 @@ pub enum Id {
     /// Controls whether the Trust Center will respond to Trust Center link key requests.
     TcKeyRequest = 0x05,
     /// Controls whether the Trust Center will respond to application link key requests.
-    KeyRequest = 0x06,
+    AppKeyRequest = 0x06,
     /// Controls whether Zigbee packets that appear invalid are automatically dropped by the stack.
     ///
     /// A counter will be incremented when this occurs.

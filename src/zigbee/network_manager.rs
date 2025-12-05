@@ -116,7 +116,6 @@ where
         pan_id: u16,
         endpoint: Endpoint,
         cluster_id: u16,
-        group_id: u16,
         frame: Frame,
     ) -> Result<(), zigbee_nwk::Error> {
         let frame = frame.with_seq(self.next_transaction_seq());
@@ -132,7 +131,7 @@ where
                     0x01,
                     endpoint.into(),
                     self.aps_options,
-                    group_id,
+                    0x00, // This is not a multicast message.
                     seq,
                 ),
                 tag,

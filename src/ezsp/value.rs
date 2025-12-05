@@ -40,7 +40,7 @@ pub enum Id {
     StackTokenWriting = 0x07,
     /// A read-only value indicating whether the stack is currently performing a rejoin.
     StackIsPerformingRejoin = 0x08,
-    // TODO: where is `EmberMacFilterMatchData` defined?
+    // TODO: Maybe add `EmberMacFilterMatchData`?
     /// A list of `EmberMacFilterMatchData` values.
     MacFilterList = 0x09,
     /// The Ember Extended Security Bitmask.
@@ -59,7 +59,6 @@ pub enum Id {
     MfgSecurityConfig = 0x10,
     /// Retrieves the version information from the stack on the NCP.
     VersionInfo = 0x11,
-    // TODO: Where is `EMBER_REJOIN_REASON_NONE` defined?
     /// This will get/set the rejoin reason noted by the host for a subsequent call to
     /// [`Networking::find_and_rejoin_network`](crate::Networking::find_and_rejoin_network).
     ///

@@ -20,7 +20,8 @@ pub enum Id {
     /// for the application.
     ///
     /// Note, the total number of such address associations maintained by the NCP is the sum of
-    /// the value of this setting and the value of [`TrustCenterAddressCacheSize`](Id::TrustCenterAddressCacheSize).
+    /// the value of this setting and the value of
+    /// [`TrustCenterAddressCacheSize`](Id::TrustCenterAddressCacheSize).
     AddressTableSize = 0x05,
     /// The maximum number of multicast groups that the device may be a member of.
     MulticastTableSize = 0x06,
@@ -46,10 +47,10 @@ pub enum Id {
     IndirectTransmissionTimeout = 0x12,
     /// The maximum amount of time that an end device child can wait between polls.
     ///
-    /// If no poll is heard within this timeout, then the parent removes the end device from its tables.
-    /// Value range 0-14. The timeout corresponding to a value of zero is 10 seconds.
-    /// The timeout corresponding to a nonzero value N is 2^N minutes,
-    /// ranging from 2^1 = 2 minutes to 2^14 = 16384 minutes.
+    /// If no poll is heard within this timeout, then the parent removes the end device from its
+    /// tables. Value range 0-14. The timeout corresponding to a value of zero is 10 seconds.
+    /// The timeout corresponding to a nonzero value N is 2^N minutes, ranging from
+    /// 2^1 = 2 minutes to 2^14 = 16384 minutes.
     EndDevicePollTimeout = 0x13,
     /// Enables boost power mode and/or the alternate transmitter output.
     TxPowerMode = 0x17,
@@ -112,7 +113,8 @@ pub enum Id {
     /// The bits are defined in the [`Flags`](crate::ember::zdo::configuration::Flags) enumeration.
     /// To see if the application is required to send a ZDO response in reply to an incoming message,
     /// the application must check the APS options bitfield within the `incomingMessageHandler`
-    /// callback to see if the [`ZDO_RESPONSE_REQUIRED`](crate::ember::aps::Options::ZDO_RESPONSE_REQUIRED)
+    /// callback to see if the
+    /// [`ZDO_RESPONSE_REQUIRED`](crate::ember::aps::Options::ZDO_RESPONSE_REQUIRED)
     /// flag is set.
     ApplicationZdoFlags = 0x2A,
     /// The maximum number of broadcasts during a single broadcast timeout period.
@@ -138,7 +140,8 @@ pub enum Id {
     RetryQueueSize = 0x34,
     /// Setting the new broadcast entry threshold.
     ///
-    /// The number([`BroadcastTableSize`](Id::BroadcastTableSize) - [`NewBroadcastEntryThreshold`](Id::NewBroadcastEntryThreshold))
+    /// The number ([`BroadcastTableSize`](Id::BroadcastTableSize)
+    /// - [`NewBroadcastEntryThreshold`](Id::NewBroadcastEntryThreshold))
     /// of broadcast table entries are reserved for relaying the broadcast messages originated
     /// on other devices.
     /// The local device will fail to originate a broadcast message after this threshold is reached.

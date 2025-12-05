@@ -7,9 +7,11 @@ use log::{error, info, warn};
 use tokio::sync::mpsc::Receiver;
 use zigbee_nwk::{Event, ReceivedApsFrame};
 
+use crate::ember::device::Update;
 use crate::ember::message::Incoming;
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage};
+use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
 use crate::zigbee::network_manager::message_handler::fragments::Fragments;
 use crate::{Callback, ember};
 
@@ -50,6 +52,9 @@ impl MessageHandler {
 
             Callback::Networking(Networking::StackStatus(status)) => {
                 self.handle_stack_status(status.result()).await;
+            }
+            Callback::TrustCenter(TrustCenter::TrustCenterJoin(trust_center_join)) => {
+                self.handle_trust_center_join(trust_center_join).await;
             }
             other => {
                 // TODO: Handle other callbacks.
@@ -136,6 +141,63 @@ impl MessageHandler {
             }
             other => {
                 warn!("Received unhandled stack status: {other:?}");
+            }
+        }
+    }
+
+    async fn handle_trust_center_join(&self, trust_center_join: TrustCenterJoin) {
+        match match trust_center_join.status() {
+            Ok(status) => status,
+            Err(value) => {
+                error!("Received invalid trust center join status: {value}");
+                return;
+            }
+        } {
+            Update::StandardSecurityUnsecuredJoin => {
+                self.outgoing
+                    .send(Event::DeviceJoined {
+                        ieee_address: trust_center_join.new_node_eui64(),
+                        pan_id: trust_center_join.new_node_id(),
+                    })
+                    .await
+                    .unwrap_or_else(|error| {
+                        error!("Failed to send NetworkOpened event: {error}");
+                    });
+            }
+            Update::StandardSecurityUnsecuredRejoin => {
+                self.outgoing
+                    .send(Event::DeviceRejoined {
+                        ieee_address: trust_center_join.new_node_eui64(),
+                        pan_id: trust_center_join.new_node_id(),
+                        secured: false,
+                    })
+                    .await
+                    .unwrap_or_else(|error| {
+                        error!("Failed to send NetworkOpened event: {error}");
+                    });
+            }
+            Update::StandardSecuritySecuredRejoin => {
+                self.outgoing
+                    .send(Event::DeviceRejoined {
+                        ieee_address: trust_center_join.new_node_eui64(),
+                        pan_id: trust_center_join.new_node_id(),
+                        secured: true,
+                    })
+                    .await
+                    .unwrap_or_else(|error| {
+                        error!("Failed to send NetworkOpened event: {error}");
+                    });
+            }
+            Update::DeviceLeft => {
+                self.outgoing
+                    .send(Event::DeviceLeft {
+                        ieee_address: trust_center_join.new_node_eui64(),
+                        pan_id: trust_center_join.new_node_id(),
+                    })
+                    .await
+                    .unwrap_or_else(|error| {
+                        error!("Failed to send NetworkOpened event: {error}");
+                    });
             }
         }
     }

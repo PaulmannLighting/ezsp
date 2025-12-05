@@ -55,8 +55,6 @@ pub trait Ezsp:
     ///
     /// Negotiates the protocol version.
     ///
-    /// TODO: Maybe restore network from exported settings here, too?
-    ///
     /// # Errors
     ///
     /// Returns an [`Error`] on I/O errors or if the desired protocol version is not supported.

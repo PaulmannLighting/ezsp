@@ -43,4 +43,4 @@ This project is free software and is not affiliated with Siliconlabs.
 ## Contribution guidelines
 
 * Format the code with `cargo +nightly fmt`
-* Check code with `cargo clippy`
+* Check the code with `cargo clippy`

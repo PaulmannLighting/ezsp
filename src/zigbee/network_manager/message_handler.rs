@@ -6,12 +6,14 @@ use aps::Control;
 use le_stream::FromLeStream;
 use log::{debug, error, info, warn};
 use tokio::sync::mpsc::Receiver;
+use tokio_mpmc::ChannelError;
 use zigbee_nwk::{Event, ReceivedApsFrame};
 
 use crate::ember::device::Update;
 use crate::ember::message::Incoming;
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage};
+use crate::parameters::networking::handler::ChildJoin;
 use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
 use crate::zigbee::network_manager::message_handler::fragments::Fragments;
 use crate::{Callback, ember};
@@ -39,27 +41,34 @@ impl MessageHandler {
 
     pub async fn process(self, mut callbacks: Receiver<Callback>) {
         while let Some(callback) = callbacks.recv().await {
-            self.handle(callback).await;
+            self.handle(callback).await.unwrap_or_else(|error| {
+                error!("Failed to send event: {error}");
+            });
         }
 
         warn!("Callback channel closed.");
     }
 
-    async fn handle(&self, callback: Callback) {
+    async fn handle(&self, callback: Callback) -> Result<(), ChannelError> {
         match callback {
             Callback::Messaging(Messaging::IncomingMessage(incoming_message)) => {
                 self.handle_incoming_message(incoming_message);
+                Ok(())
             }
 
             Callback::Networking(Networking::StackStatus(status)) => {
-                self.handle_stack_status(status.result()).await;
+                self.handle_stack_status(status.result()).await
+            }
+            Callback::Networking(Networking::ChildJoin(child_join)) => {
+                self.handle_child_join(child_join).await
             }
             Callback::TrustCenter(TrustCenter::TrustCenterJoin(trust_center_join)) => {
-                self.handle_trust_center_join(trust_center_join).await;
+                self.handle_trust_center_join(trust_center_join).await
             }
             other => {
                 // TODO: Handle other callbacks.
                 warn!("Received unsupported callback: {other:?}");
+                Ok(())
             }
         }
     }
@@ -110,106 +119,79 @@ impl MessageHandler {
         }
     }
 
-    async fn handle_stack_status(&self, status: Result<ember::Status, u8>) {
-        match match status {
+    async fn handle_stack_status(
+        &self,
+        status: Result<ember::Status, u8>,
+    ) -> Result<(), ChannelError> {
+        let status = match status {
             Ok(status) => status,
             Err(value) => {
                 error!("Received invalid stack status: {value}");
-                return;
+                return Ok(());
             }
-        } {
-            ember::Status::NetworkUp => {
-                self.outgoing
-                    .send(Event::NetworkUp)
-                    .await
-                    .unwrap_or_else(|error| {
-                        error!("Failed to send NetworkUp event: {error}");
-                    });
-            }
-            ember::Status::NetworkDown => {
-                self.outgoing
-                    .send(Event::NetworkDown)
-                    .await
-                    .unwrap_or_else(|error| {
-                        error!("Failed to send NetworkUp event: {error}");
-                    });
-            }
-            ember::Status::NetworkOpened => {
-                self.outgoing
-                    .send(Event::NetworkOpened)
-                    .await
-                    .unwrap_or_else(|error| {
-                        error!("Failed to send NetworkOpened event: {error}");
-                    });
-            }
-            ember::Status::NetworkClosed => {
-                self.outgoing
-                    .send(Event::NetworkClosed)
-                    .await
-                    .unwrap_or_else(|error| {
-                        error!("Failed to send NetworkOpened event: {error}");
-                    });
-            }
+        };
+
+        match status {
+            ember::Status::NetworkUp => self.outgoing.send(Event::NetworkUp).await,
+            ember::Status::NetworkDown => self.outgoing.send(Event::NetworkDown).await,
+            ember::Status::NetworkOpened => self.outgoing.send(Event::NetworkOpened).await,
+            ember::Status::NetworkClosed => self.outgoing.send(Event::NetworkClosed).await,
             other => {
                 warn!("Received unhandled stack status: {other:?}");
+                Ok(())
             }
         }
     }
 
-    async fn handle_trust_center_join(&self, trust_center_join: TrustCenterJoin) {
-        match match trust_center_join.status() {
+    async fn handle_child_join(&self, child_join: ChildJoin) -> Result<(), ChannelError> {
+        self.outgoing
+            .send(if child_join.joining() {
+                Event::DeviceJoined {
+                    ieee_address: child_join.child_eui64(),
+                    pan_id: child_join.child_id(),
+                }
+            } else {
+                Event::DeviceLeft {
+                    ieee_address: child_join.child_eui64(),
+                    pan_id: child_join.child_id(),
+                }
+            })
+            .await
+    }
+
+    async fn handle_trust_center_join(
+        &self,
+        trust_center_join: TrustCenterJoin,
+    ) -> Result<(), ChannelError> {
+        let status = match trust_center_join.status() {
             Ok(status) => status,
             Err(value) => {
                 error!("Received invalid trust center join status: {value}");
-                return;
+                return Ok(());
             }
-        } {
-            Update::StandardSecurityUnsecuredJoin => {
-                self.outgoing
-                    .send(Event::DeviceJoined {
-                        ieee_address: trust_center_join.new_node_eui64(),
-                        pan_id: trust_center_join.new_node_id(),
-                    })
-                    .await
-                    .unwrap_or_else(|error| {
-                        error!("Failed to send NetworkOpened event: {error}");
-                    });
-            }
-            Update::StandardSecurityUnsecuredRejoin => {
-                self.outgoing
-                    .send(Event::DeviceRejoined {
-                        ieee_address: trust_center_join.new_node_eui64(),
-                        pan_id: trust_center_join.new_node_id(),
-                        secured: false,
-                    })
-                    .await
-                    .unwrap_or_else(|error| {
-                        error!("Failed to send NetworkOpened event: {error}");
-                    });
-            }
-            Update::StandardSecuritySecuredRejoin => {
-                self.outgoing
-                    .send(Event::DeviceRejoined {
-                        ieee_address: trust_center_join.new_node_eui64(),
-                        pan_id: trust_center_join.new_node_id(),
-                        secured: true,
-                    })
-                    .await
-                    .unwrap_or_else(|error| {
-                        error!("Failed to send NetworkOpened event: {error}");
-                    });
-            }
-            Update::DeviceLeft => {
-                self.outgoing
-                    .send(Event::DeviceLeft {
-                        ieee_address: trust_center_join.new_node_eui64(),
-                        pan_id: trust_center_join.new_node_id(),
-                    })
-                    .await
-                    .unwrap_or_else(|error| {
-                        error!("Failed to send NetworkOpened event: {error}");
-                    });
-            }
-        }
+        };
+
+        self.outgoing
+            .send(match status {
+                Update::StandardSecurityUnsecuredJoin => Event::DeviceJoined {
+                    ieee_address: trust_center_join.new_node_eui64(),
+                    pan_id: trust_center_join.new_node_id(),
+                },
+                Update::StandardSecurityUnsecuredRejoin => Event::DeviceRejoined {
+                    ieee_address: trust_center_join.new_node_eui64(),
+                    pan_id: trust_center_join.new_node_id(),
+                    secured: false,
+                },
+                Update::StandardSecuritySecuredRejoin => Event::DeviceRejoined {
+                    ieee_address: trust_center_join.new_node_eui64(),
+                    pan_id: trust_center_join.new_node_id(),
+                    secured: true,
+                },
+                Update::DeviceLeft => Event::DeviceLeft {
+                    ieee_address: trust_center_join.new_node_eui64(),
+                    pan_id: trust_center_join.new_node_id(),
+                },
+            })
+            .await
     }
 }

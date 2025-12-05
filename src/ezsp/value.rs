@@ -72,6 +72,15 @@ pub enum Id {
     /// but if the app is invoking a rejoin directly, it should/can set this value to aid in
     /// debugging of any rejoin state machine issues over EZSP logs after the fact.
     ///
+    /// The currently defined rejoin reasons are:
+    ///
+    /// * `EMBER_REJOIN_REASON_NONE`              = 0
+    /// * `EMBER_REJOIN_DUE_TO_NWK_KEY_UPDATE`    = 1
+    /// * `EMBER_REJOIN_DUE_TO_LEAVE_MESSAGE`     = 2
+    /// * `EMBER_REJOIN_DUE_TO_NO_PARENT`         = 3
+    /// * `EMBER_REJOIN_DUE_TO_ZLL_TOUCHLINK`     = 4
+    /// * `EMBER_REJOIN_DUE_TO_END_DEVICE_REBOOT` = 5
+    ///
     /// The NCP doesn't do anything with this value other than  cache it so you can read it later.
     NextHostRejoinReason = 0x12,
     /// This is the reason that the last rejoin took place.
@@ -85,7 +94,7 @@ pub enum Id {
     /// [`Configuration::set_value(Id::LastRejoinReason, EMBER_REJOIN_DUE_TO_APP_EVENT_X)`](crate::commands::configuration::Configuration::set_value).
     /// X is a number corresponding to one of the app events defined.
     ///
-    /// The currently defined application rejoin reasons are:
+    /// The currently defined application events are:
     ///
     /// * `EMBER_REJOIN_DUE_TO_APP_EVENT_1` = 0xFF
     /// * `EMBER_REJOIN_DUE_TO_APP_EVENT_2` = 0xFE

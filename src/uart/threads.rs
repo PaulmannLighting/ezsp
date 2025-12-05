@@ -27,7 +27,7 @@ impl<T> Threads<T> {
     /// Spawn the threads for the UART communication.
     pub fn spawn(
         serial_port: T,
-        callbacks_tx: Sender<Callback>,
+        callbacks_tx: tokio_mpmc::Sender<Callback>,
         state: Arc<NpRwLock<State>>,
         channel_size: usize,
     ) -> (Sender<Payload>, Receiver<Result<Parameters, Error>>, Self)

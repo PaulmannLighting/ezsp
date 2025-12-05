@@ -5,18 +5,16 @@ use log::{debug, info};
 use macaddr::MacAddr8;
 use rand::random;
 use silizium::zigbee::security::man::Key;
-use tokio::sync::mpsc::Receiver;
+use tokio_mpmc::Receiver;
 
 use crate::ember::security::initial;
 use crate::ember::{aps, concentrator, join, network};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
 use crate::zigbee::NetworkManager;
-use crate::zigbee::network_manager::EventManager;
 use crate::zigbee::network_manager::stack_status::StackStatus;
 use crate::{
-    Callback, Configuration, Error, Messaging, Networking, Security, SinkTable, Transport,
-    Utilities, ember,
+    Callback, Configuration, Error, Messaging, Networking, Security, Transport, Utilities, ember,
 };
 
 const HOME_AUTOMATION: u16 = 0x0104;
@@ -28,7 +26,6 @@ const RADIO_POWER: i8 = 8;
 const ENDPOINT_ID: u8 = 1;
 
 /// Builder for Zigbee device configuration.
-#[derive(Debug)]
 pub struct Builder<T> {
     transport: T,
     callbacks_rx: Receiver<Callback>,
@@ -244,16 +241,10 @@ impl<T> Builder<T> {
     }
 
     /// Starts the network manager on the given transport implementation.
-    pub async fn start(mut self) -> Result<(NetworkManager<T>, EventManager), Error>
+    pub async fn start(mut self) -> Result<(NetworkManager<T>, Receiver<Callback>), Error>
     where
         T: Transport,
     {
-        let event_manager = EventManager::new(self.callbacks_rx);
-        self.transport
-            .init()
-            .await
-            .expect("Failed to initialize UART");
-
         debug!("Setting concentrator");
         self.transport.set_concentrator(self.concentrator).await?;
 
@@ -289,11 +280,9 @@ impl<T> Builder<T> {
 
         if self.reinitialize {
             if self.transport.leave_network().await.is_ok() {
-                event_manager
-                    .register(8)
-                    .await
+                self.callbacks_rx
                     .stack_status(ember::Status::NotJoined)
-                    .await;
+                    .await?;
                 info!("Left existing network.");
             }
 
@@ -323,11 +312,9 @@ impl<T> Builder<T> {
             self.transport.network_init(self.init_bitmask).await?;
         }
 
-        event_manager
-            .register(8)
-            .await
+        self.callbacks_rx
             .stack_status(ember::Status::NetworkUp)
-            .await;
+            .await?;
         info!("Network is up.");
 
         debug!("Setting radio power to {}", self.radio_power);
@@ -355,7 +342,7 @@ impl<T> Builder<T> {
         let network_manager =
             NetworkManager::new(self.transport, self.profile_id, self.aps_options);
 
-        Ok((network_manager, event_manager))
+        Ok((network_manager, self.callbacks_rx))
     }
 }
 

@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::sync::Arc;
 
 use log::{trace, warn};
@@ -10,11 +11,10 @@ use crate::error::Error;
 use crate::frame::{Callback, Frame, Parameters};
 
 /// Split incoming `EZSP` frames into responses and asynchronous callbacks.
-#[derive(Debug)]
 pub struct Splitter {
     incoming: Decoder,
     responses: Sender<Result<Parameters, Error>>,
-    callbacks: Sender<Callback>,
+    callbacks: tokio_mpmc::Sender<Callback>,
     state: Arc<NpRwLock<State>>,
 }
 
@@ -27,7 +27,7 @@ impl Splitter {
     pub const fn new(
         incoming: Decoder,
         responses: Sender<Result<Parameters, Error>>,
-        callbacks: Sender<Callback>,
+        callbacks: tokio_mpmc::Sender<Callback>,
         state: Arc<NpRwLock<State>>,
     ) -> Self {
         Self {
@@ -94,5 +94,16 @@ impl Splitter {
             .send(handler)
             .await
             .expect("Callback channel should be open. This is a bug");
+    }
+}
+
+impl Debug for Splitter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Splitter")
+            .field("incoming", &self.incoming)
+            .field("responses", &self.responses)
+            .field("callbacks", &"...")
+            .field("state", &self.state)
+            .finish()
     }
 }

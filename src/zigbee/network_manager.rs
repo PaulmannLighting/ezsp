@@ -6,11 +6,10 @@ use std::time::Duration;
 
 use log::info;
 use macaddr::MacAddr8;
-use tokio::sync::mpsc::Receiver;
+use tokio_mpmc::Receiver;
 use zigbee::Endpoint;
 use zigbee_nwk::Nlme;
 
-pub use self::event_manager::EventManager;
 use crate::ember::aps;
 use crate::ember::message::Destination;
 use crate::error::Status;
@@ -19,9 +18,8 @@ use crate::zigbee::network_manager::builder::Builder;
 use crate::{Callback, Configuration, Error, Messaging, Networking, Security, Utilities, ember};
 
 mod builder;
-mod event_manager;
-mod incoming_message;
-mod message_sent_handler;
+mod handle_incoming_message;
+mod handle_message_sent;
 mod stack_status;
 
 /// Network manager for Zigbee networks.

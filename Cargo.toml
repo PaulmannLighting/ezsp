@@ -33,31 +33,10 @@ zigbee-nwk = { version = "0.1.0", path = "../apis-saltans/nwk", optional = true 
 zigbee = { version = "0.1.0", path = "../apis-saltans/zigbee", optional = true }
 tokio-mpmc = { version = "0.2.4", optional = true }
 
-[dev-dependencies]
-clap = { version = "4.5", features = ["derive"] }
-env_logger = "0.11"
-tokio = { version = "1.48", features = ["rt", "rt-multi-thread", "macros"] }
-
 [features]
 ashv2 = ["ashv2/serialport", "tokio/rt", "tokio/time", "tokio/sync", "dep:tokio-mpmc"]
 semver = ["dep:semver"]
 zigbee = ["dep:zigbee", "dep:zigbee-nwk", "dep:rand"]
-
-[[example]]
-name = "console"
-required-features = ["ashv2/serialport"]
-
-[[example]]
-name = "test_diverse_commands"
-required-features = ["ashv2/serialport"]
-
-[[example]]
-name = "echo"
-required-features = ["ashv2/serialport"]
-
-[[example]]
-name = "scan"
-required-features = ["ashv2/serialport"]
 
 [profile.release]
 opt-level = 3

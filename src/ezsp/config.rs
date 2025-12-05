@@ -8,12 +8,6 @@ use num_traits::FromPrimitive;
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, FromPrimitive, Sequence)]
 #[repr(u8)]
 pub enum Id {
-    /// The NCP no longer supports configuration of packet buffer count at runtime
-    /// using this parameter.
-    ///
-    /// Packet buffers must be configured using the `EMBER_PACKET_BUFFER_COUNT` macro
-    /// when building the NCP project.
-    PacketBufferCount = 0x01,
     /// The maximum number of router neighbors the stack can keep track of.
     ///
     /// A neighbor is a node within radio range.
@@ -26,7 +20,7 @@ pub enum Id {
     /// for the application.
     ///
     /// Note, the total number of such address associations maintained by the NCP is the sum of
-    /// the value of this setting and the value of `EZSP_CONFIG_TRUST_CENTER_ADDRESS_CACHE_SIZE`.
+    /// the value of this setting and the value of [`TrustCenterAddressCacheSize`](Id::TrustCenterAddressCacheSize).
     AddressTableSize = 0x05,
     /// The maximum number of multicast groups that the device may be a member of.
     MulticastTableSize = 0x06,
@@ -72,7 +66,7 @@ pub enum Id {
     /// the Trust Center is expected to accommodate.
     ///
     /// Note, the total number of such address associations maintained by the NCP is the sum of
-    /// the value of this setting and the value of `EZSP_CONFIG_ADDRESS_TABLE_SIZE`.
+    /// the value of this setting and the value of [`AddressTableSize`](Id::AddressTableSize).
     TrustCenterAddressCacheSize = 0x19,
     /// The size of the source route table.
     SourceRouteTableSize = 0x1A,
@@ -118,7 +112,7 @@ pub enum Id {
     /// The bits are defined in the [`Flags`](crate::ember::zdo::configuration::Flags) enumeration.
     /// To see if the application is required to send a ZDO response in reply to an incoming message,
     /// the application must check the APS options bitfield within the `incomingMessageHandler`
-    /// callback to see if the [`ZdoResponseRequired`](crate::ember::aps::Option::ZdoResponseRequired)
+    /// callback to see if the [`ZDO_RESPONSE_REQUIRED`](crate::ember::aps::Options::ZDO_RESPONSE_REQUIRED)
     /// flag is set.
     ApplicationZdoFlags = 0x2A,
     /// The maximum number of broadcasts during a single broadcast timeout period.
@@ -144,22 +138,13 @@ pub enum Id {
     RetryQueueSize = 0x34,
     /// Setting the new broadcast entry threshold.
     ///
-    /// The number(`BROADCAST_TABLE_SIZE` - `NEW_BROADCAST_ENTRY_THRESHOLD`) of
-    /// broadcast table entries are reserved for relaying the broadcast messages originated
+    /// The number([`BroadcastTableSize`](Id::BroadcastTableSize) - [`NewBroadcastEntryThreshold`](Id::NewBroadcastEntryThreshold))
+    /// of broadcast table entries are reserved for relaying the broadcast messages originated
     /// on other devices.
     /// The local device will fail to originate a broadcast message after this threshold is reached.
     /// Setting this value to `BROADCAST_TABLE_SIZE` and greater
     /// will effectively kill this limitation.
     NewBroadcastEntryThreshold = 0x35,
-    /// The length of time, in seconds, that a trust center will store a transient link key
-    /// that a device can use to join its network.
-    ///
-    /// A transient key is added with a call to `emberAddTransientLinkKey`.
-    /// After the transient key is added, it will be removed once this amount of time has passed.
-    /// A joining device will not be able to use that key to join until
-    /// it is added again on the trust center.
-    /// The default value is 300 seconds, i.e., 5 minutes.
-    TransientKeyTimeoutSec = 0x36,
     /// The number of passive acknowledgements to record from neighbors
     /// before we stop re-transmitting broadcasts.
     BroadcastMinAcksNeeded = 0x37,

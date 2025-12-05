@@ -1,18 +1,20 @@
 //! Network manager for Zigbee networks.
 
 use std::collections::BTreeMap;
+use std::io;
 use std::time::Duration;
 
 use log::info;
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
+use zigbee::Endpoint;
 use zigbee_nwk::Nlme;
-use zigbee_nwk::zigbee::Endpoint;
 
 pub use self::event_manager::EventManager;
 use crate::ember::aps;
 use crate::ember::message::Destination;
 use crate::error::Status;
+use crate::types::ByteSizedVec;
 use crate::zigbee::network_manager::builder::Builder;
 use crate::{Callback, Configuration, Error, Messaging, Networking, Security, Utilities, ember};
 
@@ -116,7 +118,7 @@ where
         pan_id: u16,
         endpoint: Endpoint,
         cluster_id: u16,
-        mut payload: Vec<u8>,
+        payload: Vec<u8>,
     ) -> Result<(), zigbee_nwk::Error> {
         let tag = self.next_message_tag();
         let mut seq = self.next_aps_seq();
@@ -134,7 +136,9 @@ where
                     seq,
                 ),
                 tag,
-                payload.drain(..).collect(),
+                ByteSizedVec::from_slice(&payload)
+                    .map_err(io::Error::other)
+                    .map_err(Error::from)?,
             )
             .await?;
         self.aps_seq = seq.wrapping_add(1);

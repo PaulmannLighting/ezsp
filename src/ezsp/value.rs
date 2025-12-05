@@ -74,7 +74,6 @@ pub enum Id {
     ///
     /// The NCP doesn't do anything with this value other than  cache it so you can read it later.
     NextHostRejoinReason = 0x12,
-    // TODO: Where are `EMBER_REJOIN_DUE_TO_APP_EVENT_1`, `EMBER_REJOIN_DUE_TO_APP_EVENT_X`, etc defined?
     /// This is the reason that the last rejoin took place.
     ///
     /// This value may only be retrieved, not set.
@@ -83,11 +82,19 @@ pub enum Id {
     /// `EMBER_REJOIN_DUE_TO_APP_EVENT_1`.
     ///
     /// If the application wishes to denote its own rejoin reasons it can do so by calling
-    /// `ezspSetValue(EMBER_VALUE_HOST_REJOIN_REASON,  EMBER_REJOIN_DUE_TO_APP_EVENT_X)`.
+    /// [`Configuration::set_value(Id::LastRejoinReason, EMBER_REJOIN_DUE_TO_APP_EVENT_X)`](crate::commands::configuration::Configuration::set_value).
     /// X is a number corresponding to one of the app events defined.
     ///
+    /// The currently defined application rejoin reasons are:
+    ///
+    /// * `EMBER_REJOIN_DUE_TO_APP_EVENT_1` = 0xFF
+    /// * `EMBER_REJOIN_DUE_TO_APP_EVENT_2` = 0xFE
+    /// * `EMBER_REJOIN_DUE_TO_APP_EVENT_3` = 0xFD
+    /// * `EMBER_REJOIN_DUE_TO_APP_EVENT_4` = 0xFC
+    /// * `EMBER_REJOIN_DUE_TO_APP_EVENT_5` = 0xFB
+    ///
     /// If the NCP initiated a rejoin it will record this value internally for retrieval by
-    /// `ezspGetValue(EZSP_VALUE_REAL_REJOIN_REASON)`.
+    /// [`Configuration::get_value(Id::LastRejoinReason)`](crate::commands::configuration::Configuration::get_value).
     LastRejoinReason = 0x13,
     /// The next Zigbee sequence number.
     NextZigbeeSequenceNumber = 0x14,

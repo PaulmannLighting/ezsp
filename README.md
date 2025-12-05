@@ -20,13 +20,16 @@ The official documentation can be found at
 ### Raw EZSP frame communication
 
 If you just want to send and receive raw EZSP frames, you can use the EZSP-related traits as exported by this library on
-any type which implements `Trnsport`.
+any type which implements `Transport`.
+
+This library currently only provides an `ASHv2`-based transport implementation named `Uart`, which operates on a serial
+port and is guarded behind the [`ashv2`](https://github.com/PaulmannLighting/ashv2) feature flag.
 
 This should only be done to investigate and get familiar with the protocol, not for production use.
 
 ### Zigbee Host Communication
 
-If you want to use this library to use an EZSP-compatible NCP, you can use the `NetworkManager` struct.
+If you want to use use an EZSP-compatible NCP as a Zigbee Coordinator, you can use the `NetworkManager` struct.
 
 It is recommended to construct it using the `NetworkManager::build()` method, which returns an appropriate builder.
 
@@ -34,7 +37,7 @@ The resulting `NetworkManager` implements the `Actor` trait from the [
 `zigbee-nwk`](https://github.com/PaulmannLighting/apis-saltans/tree/main/nwk) crate, which is part of the
 [`apis-saltans`](https://github.com/PaulmannLighting/apis-saltans) project.
 
-All of these features require the `zigbee` feature to be enabled.
+All this requires the `zigbee` feature to be enabled.
 
 ## Legal
 

@@ -8,7 +8,7 @@ use log::info;
 use macaddr::MacAddr8;
 use tokio_mpmc::Receiver;
 use zigbee::Endpoint;
-use zigbee_nwk::Nlme;
+use zigbee_nwk::{Frame, Nlme};
 
 use crate::ember::aps;
 use crate::ember::message::Destination;
@@ -116,9 +116,10 @@ where
         pan_id: u16,
         endpoint: Endpoint,
         cluster_id: u16,
-        payload: Vec<u8>,
+        mut frame: Frame,
     ) -> Result<(), zigbee_nwk::Error> {
         let tag = self.next_message_tag();
+        frame.set_seq(self.next_transaction_seq());
         let mut seq = self.next_aps_seq();
         seq = self
             .transport
@@ -134,7 +135,7 @@ where
                     seq,
                 ),
                 tag,
-                ByteSizedVec::from_slice(&payload)
+                ByteSizedVec::from_slice(&frame.serialize())
                     .map_err(io::Error::other)
                     .map_err(Error::from)?,
             )

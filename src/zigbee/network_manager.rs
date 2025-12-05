@@ -116,10 +116,11 @@ where
         pan_id: u16,
         endpoint: Endpoint,
         cluster_id: u16,
-        mut frame: Frame,
+        group_id: u16,
+        frame: Frame,
     ) -> Result<(), zigbee_nwk::Error> {
+        let frame = frame.with_seq(self.next_transaction_seq());
         let tag = self.next_message_tag();
-        frame.set_seq(self.next_transaction_seq());
         let mut seq = self.next_aps_seq();
         seq = self
             .transport
@@ -131,7 +132,7 @@ where
                     0x01,
                     endpoint.into(),
                     self.aps_options,
-                    0x00, // TODO: Pass this in or get from context.
+                    group_id,
                     seq,
                 ),
                 tag,

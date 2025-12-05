@@ -1,20 +1,23 @@
 use std::collections::{BTreeMap, BTreeSet};
+use std::io;
 use std::iter::once;
 
 use log::{debug, info};
 use macaddr::MacAddr8;
 use rand::random;
 use silizium::zigbee::security::man::Key;
-use tokio_mpmc::Receiver;
+use tokio::spawn;
+use tokio::sync::mpsc::Receiver;
+use zigbee_nwk::{Event, Waiter};
 
 use crate::ember::security::initial;
 use crate::ember::{aps, concentrator, join, network};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
 use crate::zigbee::NetworkManager;
-use crate::zigbee::network_manager::stack_status::StackStatus;
+use crate::zigbee::network_manager::message_handler::MessageHandler;
 use crate::{
-    Callback, Configuration, Error, Messaging, Networking, Security, Transport, Utilities, ember,
+    Callback, Configuration, Error, Messaging, Networking, Security, Transport, Utilities,
 };
 
 const HOME_AUTOMATION: u16 = 0x0104;
@@ -241,10 +244,13 @@ impl<T> Builder<T> {
     }
 
     /// Starts the network manager on the given transport implementation.
-    pub async fn start(mut self) -> Result<NetworkManager<T>, Error>
+    pub async fn start(mut self) -> Result<(NetworkManager<T>, tokio_mpmc::Receiver<Event>), Error>
     where
         T: Transport,
     {
+        let (message_handler, mut events) = MessageHandler::new(1024);
+        spawn(message_handler.process(self.callbacks_rx));
+
         debug!("Setting concentrator");
         self.transport.set_concentrator(self.concentrator).await?;
 
@@ -280,9 +286,10 @@ impl<T> Builder<T> {
 
         if self.reinitialize {
             if self.transport.leave_network().await.is_ok() {
-                self.callbacks_rx
-                    .stack_status(ember::Status::NotJoined)
-                    .await?;
+                events
+                    .network_down()
+                    .await
+                    .map_err(|_| io::Error::other("Events channel closed."))?;
                 info!("Left existing network.");
             }
 
@@ -312,9 +319,10 @@ impl<T> Builder<T> {
             self.transport.network_init(self.init_bitmask).await?;
         }
 
-        self.callbacks_rx
-            .stack_status(ember::Status::NetworkUp)
-            .await?;
+        events
+            .network_up()
+            .await
+            .map_err(|_| io::Error::other("Events channel closed."))?;
         info!("Network is up.");
 
         debug!("Setting radio power to {}", self.radio_power);
@@ -339,10 +347,9 @@ impl<T> Builder<T> {
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
-        Ok(NetworkManager::new(
-            self.transport,
-            self.profile_id,
-            self.aps_options,
+        Ok((
+            NetworkManager::new(self.transport, self.profile_id, self.aps_options),
+            events,
         ))
     }
 }

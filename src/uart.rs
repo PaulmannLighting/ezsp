@@ -7,7 +7,7 @@ use std::sync::Arc;
 use ashv2::SerialPort;
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
-use tokio::sync::mpsc::Receiver;
+use tokio::sync::mpsc::{Receiver, Sender};
 
 use self::connection::Connection;
 use self::encoder::Encoder;
@@ -50,7 +50,7 @@ where
     #[must_use]
     pub fn new(
         serial_port: T,
-        callbacks: tokio_mpmc::Sender<Callback>,
+        callbacks: Sender<Callback>,
         protocol_version: u8,
         channel_size: usize,
     ) -> Self

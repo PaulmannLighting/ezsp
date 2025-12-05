@@ -14,7 +14,7 @@ use crate::frame::{Callback, Frame, Parameters};
 pub struct Splitter {
     incoming: Decoder,
     responses: Sender<Result<Parameters, Error>>,
-    callbacks: tokio_mpmc::Sender<Callback>,
+    callbacks: Sender<Callback>,
     state: Arc<NpRwLock<State>>,
 }
 
@@ -27,7 +27,7 @@ impl Splitter {
     pub const fn new(
         incoming: Decoder,
         responses: Sender<Result<Parameters, Error>>,
-        callbacks: tokio_mpmc::Sender<Callback>,
+        callbacks: Sender<Callback>,
         state: Arc<NpRwLock<State>>,
     ) -> Self {
         Self {

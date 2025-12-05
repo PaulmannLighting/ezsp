@@ -59,12 +59,14 @@ impl<T> NetworkManager<T> {
         tag
     }
 
+    /// Returns the next APS sequence number and increments the internal counter.
     const fn next_aps_seq(&mut self) -> u8 {
         let seq = self.aps_seq;
         self.aps_seq = self.aps_seq.wrapping_add(1);
         seq
     }
 
+    /// Returns the next transaction sequence number and increments the internal counter.
     const fn next_transaction_seq(&mut self) -> u8 {
         let seq = self.transaction_seq;
         self.transaction_seq = self.transaction_seq.wrapping_add(1);

@@ -140,8 +140,8 @@ pub enum Id {
     RetryQueueSize = 0x34,
     /// Setting the new broadcast entry threshold.
     ///
-    /// The number ([`BroadcastTableSize`](Id::BroadcastTableSize)
-    /// - [`NewBroadcastEntryThreshold`](Id::NewBroadcastEntryThreshold))
+    /// The number ([`BroadcastTableSize`](Id::BroadcastTableSize) -
+    /// [`NewBroadcastEntryThreshold`](Id::NewBroadcastEntryThreshold))
     /// of broadcast table entries are reserved for relaying the broadcast messages originated
     /// on other devices.
     /// The local device will fail to originate a broadcast message after this threshold is reached.

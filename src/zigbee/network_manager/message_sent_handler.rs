@@ -1,18 +1,19 @@
+use zigbee_nwk::Proxy;
+
+use crate::Error;
 use crate::parameters::messaging::handler::MessageSent;
-use crate::zigbee::NetworkManager;
-use crate::{Error, Transport};
 
 /// Trait for handling sent messages.
-pub trait MessageSentHandler {
+pub trait HandleMessageSent {
     fn handle_message_sent(
         &mut self,
         message_sent: MessageSent,
     ) -> impl Future<Output = Result<(), Error>>;
 }
 
-impl<T> MessageSentHandler for NetworkManager<T>
+impl<T> HandleMessageSent for T
 where
-    T: Transport,
+    T: Proxy,
 {
     async fn handle_message_sent(&mut self, message_sent: MessageSent) -> Result<(), Error> {
         todo!()

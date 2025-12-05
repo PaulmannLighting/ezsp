@@ -3,13 +3,11 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use le_stream::ToLeStream;
 use log::info;
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
-use zigbee_nwk::zcl::Cluster;
+use zigbee_nwk::Nlme;
 use zigbee_nwk::zigbee::Endpoint;
-use zigbee_nwk::{Nlme, zcl};
 
 pub use self::event_manager::EventManager;
 use crate::ember::aps;
@@ -31,6 +29,7 @@ pub struct NetworkManager<T> {
     profile_id: u16,
     message_tag: u8,
     aps_seq: u8,
+    transaction_seq: u8,
 }
 
 impl<T> NetworkManager<T> {
@@ -43,6 +42,7 @@ impl<T> NetworkManager<T> {
             profile_id,
             message_tag: 0,
             aps_seq: 0,
+            transaction_seq: 0,
         }
     }
 
@@ -64,18 +64,28 @@ impl<T> NetworkManager<T> {
         self.aps_seq = self.aps_seq.wrapping_add(1);
         seq
     }
+
+    const fn next_transaction_seq(&mut self) -> u8 {
+        let seq = self.transaction_seq;
+        self.transaction_seq = self.transaction_seq.wrapping_add(1);
+        seq
+    }
 }
 
 impl<T> Nlme for NetworkManager<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities,
 {
-    type Error = Error;
+    fn get_transaction_seq(&mut self) -> u8 {
+        self.next_transaction_seq()
+    }
 
-    async fn allow_joins(
-        &mut self,
-        duration: Duration,
-    ) -> Result<(), zigbee_nwk::Error<Self::Error>> {
+    async fn get_pan_id(&mut self) -> Result<u16, zigbee_nwk::Error> {
+        let (_, parameters) = self.transport.get_network_parameters().await?;
+        Ok(parameters.pan_id())
+    }
+
+    async fn allow_joins(&mut self, duration: Duration) -> Result<(), zigbee_nwk::Error> {
         info!("Allowing joins for {} seconds.", duration.as_secs());
         self.transport
             .permit_joining(u8::try_from(duration.as_secs()).unwrap_or(u8::MAX).into())
@@ -83,9 +93,7 @@ where
             .map_err(Into::into)
     }
 
-    async fn get_neighbors(
-        &mut self,
-    ) -> Result<BTreeMap<MacAddr8, u16>, zigbee_nwk::Error<Self::Error>> {
+    async fn get_neighbors(&mut self) -> Result<BTreeMap<MacAddr8, u16>, zigbee_nwk::Error> {
         let mut neighbors = BTreeMap::new();
 
         for index in 0..=u8::MAX {
@@ -103,15 +111,13 @@ where
         Ok(neighbors)
     }
 
-    async fn unicast_command<F>(
+    async fn unicast(
         &mut self,
         pan_id: u16,
         endpoint: Endpoint,
-        frame: F,
-    ) -> Result<(), zigbee_nwk::Error<Self::Error>>
-    where
-        F: zcl::Command + ToLeStream,
-    {
+        cluster_id: u16,
+        mut payload: Vec<u8>,
+    ) -> Result<(), zigbee_nwk::Error> {
         let tag = self.next_message_tag();
         let mut seq = self.next_aps_seq();
         seq = self
@@ -120,17 +126,15 @@ where
                 Destination::Direct(pan_id),
                 aps::Frame::new(
                     self.profile_id,
-                    <F as Cluster>::ID,
+                    cluster_id,
                     0x01,
                     endpoint.into(),
                     self.aps_options,
-                    0x00,
+                    0x00, // TODO: Pass this in or get from context.
                     seq,
                 ),
                 tag,
-                zcl::Frame::new(zcl::Type::ClusterSpecific, true, None, seq, frame)
-                    .to_le_stream()
-                    .collect(),
+                payload.drain(..).collect(),
             )
             .await?;
         self.aps_seq = seq.wrapping_add(1);

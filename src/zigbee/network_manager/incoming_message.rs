@@ -1,39 +1,35 @@
-use le_stream::ToLeStream;
 use log::{debug, warn};
-use zigbee_nwk::aps::{AckFmt, Acknowledgment};
+use zigbee_nwk::{Error, Proxy};
 
-use crate::ember::aps;
 use crate::ember::aps::Options;
-use crate::ember::message::Destination;
 use crate::parameters::messaging::handler::IncomingMessage;
-use crate::types::ByteSizedVec;
-use crate::zigbee::NetworkManager;
-use crate::{Error, Messaging, Networking, Transport};
 
 /// Trait for handling incoming messages.
-pub trait HandleIncomingMessage {
+pub trait HandlerIncomingMessage {
     fn handle_incoming_message(
         &mut self,
         message: IncomingMessage,
     ) -> impl Future<Output = Result<(), Error>>;
 }
 
-impl<T> HandleIncomingMessage for NetworkManager<T>
+impl<T> HandlerIncomingMessage for T
 where
-    T: Transport,
+    T: Proxy,
 {
     async fn handle_incoming_message(&mut self, message: IncomingMessage) -> Result<(), Error> {
         debug!("Handling incoming message: {message:?}");
         let ember_aps_frame = message.aps_frame();
-        let (_, parameters) = self.transport.get_network_parameters().await?;
+        let pan_id = self.get_pan_id().await?;
 
         if ember_aps_frame.options().contains(Options::FRAGMENT) {
             warn!(
                 "Received fragmented message, but fragmentation handling is not yet properly implemented."
             );
-            self.transport
+            // TODO: Implement proper fragmentation handling.
+            /*
+            self.proxy
                 .send_reply(
-                    parameters.pan_id(),
+                    pan_id,
                     aps::Frame::new(
                         ember_aps_frame.profile_id(),
                         ember_aps_frame.cluster_id(),
@@ -46,8 +42,11 @@ where
                     ByteSizedVec::default(),
                 )
                 .await?;
+                */
         }
 
+        // TODO: Implement acknowledgment sending for Proxy..
+        /*
         let seq = self.next_aps_seq();
         let tag = self.next_message_tag();
         let ack = Acknowledgment::new(
@@ -61,7 +60,7 @@ where
             None,
         );
 
-        self.transport
+        self.proxy
             .send_unicast(
                 Destination::Direct(message.sender()),
                 aps::Frame::new(
@@ -82,6 +81,8 @@ where
             )
             .await?;
 
+
+         */
         Ok(())
     }
 }

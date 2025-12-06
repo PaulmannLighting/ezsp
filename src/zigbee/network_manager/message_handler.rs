@@ -69,25 +69,52 @@ impl MessageHandler {
     /// Translates EZSP callbacks into Zigbee events and sends them to the outgoing channel.
     async fn forward_to_zigbee(&self, callback: Callback) -> Result<(), ChannelError> {
         match callback {
-            Callback::Messaging(Messaging::IncomingMessage(incoming_message)) => {
-                self.handle_incoming_message(incoming_message).await
-            }
-            Callback::Messaging(Messaging::MessageSent(message_sent)) => {
-                Self::handle_message_sent(&message_sent);
-                Ok(())
-            }
-            Callback::Networking(Networking::StackStatus(status)) => {
-                self.handle_stack_status(status.result()).await
-            }
-            Callback::Networking(Networking::ChildJoin(child_join)) => {
-                self.handle_child_join(child_join).await
-            }
+            Callback::Messaging(messaging) => self.handle_messaging_callbacks(messaging).await,
+            Callback::Networking(networking) => self.handle_networking_callbacks(networking).await,
             Callback::TrustCenter(TrustCenter::TrustCenterJoin(trust_center_join)) => {
                 self.handle_trust_center_join(trust_center_join).await
             }
             other => {
                 // TODO: Handle other callbacks.
                 warn!("Received unsupported callback: {other:?}");
+                Ok(())
+            }
+        }
+    }
+
+    async fn handle_networking_callbacks(
+        &self,
+        networking: Networking,
+    ) -> Result<(), ChannelError> {
+        match networking {
+            Networking::StackStatus(status) => self.handle_stack_status(status.result()).await,
+            Networking::ChildJoin(child_join) => self.handle_child_join(child_join).await,
+            Networking::NetworkFound(_) => {
+                trace!("Network found events are handled by the network scanner.");
+                Ok(())
+            }
+            Networking::ScanComplete(_) => {
+                trace!("Scan complete events are handled by the network scanner.");
+                Ok(())
+            }
+            other => {
+                warn!("Received unsupported networking callback: {other:?}");
+                Ok(())
+            }
+        }
+    }
+
+    async fn handle_messaging_callbacks(&self, messaging: Messaging) -> Result<(), ChannelError> {
+        match messaging {
+            Messaging::IncomingMessage(incoming_message) => {
+                self.handle_incoming_message(incoming_message).await
+            }
+            Messaging::MessageSent(message_sent) => {
+                Self::handle_message_sent(&message_sent);
+                Ok(())
+            }
+            other => {
+                warn!("Received unsupported messaging callback: {other:?}");
                 Ok(())
             }
         }

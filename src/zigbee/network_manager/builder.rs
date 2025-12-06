@@ -1,14 +1,12 @@
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet};
 use std::io;
 use std::iter::once;
-use std::sync::Arc;
 
 use log::{debug, info};
 use macaddr::MacAddr8;
 use rand::random;
 use silizium::zigbee::security::man::Key;
 use tokio::spawn;
-use tokio::sync::Mutex;
 use tokio::sync::mpsc::Receiver;
 use zigbee_nwk::{Event, Waiter};
 

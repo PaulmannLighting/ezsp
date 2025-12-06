@@ -47,6 +47,14 @@ impl Handler {
     }
 }
 
+impl TryFrom<Handler> for u8 {
+    type Error = Error;
+
+    fn try_from(handler: Handler) -> Result<Self, Self::Error> {
+        handler.status().map(|()| handler.channel)
+    }
+}
+
 impl Parameter for Handler {
     const ID: u16 = ID;
 }

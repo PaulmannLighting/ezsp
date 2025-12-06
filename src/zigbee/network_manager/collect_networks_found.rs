@@ -1,3 +1,5 @@
+use std::io;
+
 use tokio::sync::mpsc::Receiver;
 use zigbee_nwk::FoundNetwork;
 
@@ -19,9 +21,13 @@ impl CollectNetworksFound for Receiver<Callback> {
         while let Some(callback) = self.recv().await {
             if let Callback::Networking(Networking::NetworkFound(network_found)) = callback {
                 networks.push(network_found.into());
+            } else if let Callback::Networking(Networking::ScanComplete(scan_complete)) = callback {
+                return scan_complete.status().map(|()| networks);
             }
         }
 
-        Ok(networks)
+        Err(Error::Io(io::Error::other(
+            "Callback channel closed before scan completed",
+        )))
     }
 }

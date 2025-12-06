@@ -39,3 +39,21 @@ impl Handler {
 impl Parameter for Handler {
     const ID: u16 = ID;
 }
+
+#[cfg(feature = "zigbee")]
+impl From<Handler> for zigbee_nwk::FoundNetwork {
+    fn from(handler: Handler) -> Self {
+        zigbee_nwk::FoundNetwork::new(
+            zigbee_nwk::Network::new(
+                handler.network_found.channel(),
+                handler.network_found.pan_id(),
+                handler.network_found.extended_pan_id(),
+                handler.network_found.allowing_join(),
+                handler.network_found.stack_profile(),
+                handler.network_found.nwk_update_id(),
+            ),
+            handler.last_hop_lqi(),
+            handler.last_hop_rssi(),
+        )
+    }
+}

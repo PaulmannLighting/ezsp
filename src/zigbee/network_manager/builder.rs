@@ -1,12 +1,14 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::io;
 use std::iter::once;
+use std::sync::Arc;
 
 use log::{debug, info};
 use macaddr::MacAddr8;
 use rand::random;
 use silizium::zigbee::security::man::Key;
 use tokio::spawn;
+use tokio::sync::Mutex;
 use tokio::sync::mpsc::Receiver;
 use zigbee_nwk::{Event, Waiter};
 
@@ -248,7 +250,7 @@ impl<T> Builder<T> {
     where
         T: Transport,
     {
-        let (message_handler, mut events) = MessageHandler::new(1024);
+        let (message_handler, handlers, mut events) = MessageHandler::new(1024);
         spawn(message_handler.process(self.callbacks_rx));
 
         debug!("Setting concentrator");
@@ -348,7 +350,7 @@ impl<T> Builder<T> {
             .await?;
 
         Ok((
-            NetworkManager::new(self.transport, self.profile_id, self.aps_options),
+            NetworkManager::new(self.transport, self.profile_id, self.aps_options, handlers),
             events,
         ))
     }

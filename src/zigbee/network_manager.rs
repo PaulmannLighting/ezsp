@@ -10,21 +10,26 @@ use tokio::sync::mpsc::Receiver;
 use zigbee::Endpoint;
 use zigbee_nwk::{Frame, Nlme};
 
+use self::builder::Builder;
+use self::collect_networks_found::CollectNetworksFound;
+use self::message_handler::Handlers;
 use crate::ember::aps;
 use crate::ember::message::Destination;
 use crate::error::Status;
+use crate::ezsp::network::scan;
 use crate::types::ByteSizedVec;
-use crate::zigbee::network_manager::builder::Builder;
 use crate::{Callback, Configuration, Error, Messaging, Networking, Security, Utilities, ember};
 
 mod builder;
+mod collect_networks_found;
 mod message_handler;
 
 /// Network manager for Zigbee networks.
 pub struct NetworkManager<T> {
     transport: T,
-    aps_options: aps::Options,
     profile_id: u16,
+    aps_options: aps::Options,
+    handlers: Handlers,
     message_tag: u8,
     aps_seq: u8,
     transaction_seq: u8,
@@ -33,11 +38,17 @@ pub struct NetworkManager<T> {
 impl<T> NetworkManager<T> {
     /// Creates a new `NetworkManager` with the given transport.
     #[must_use]
-    pub(crate) const fn new(transport: T, profile_id: u16, aps_options: aps::Options) -> Self {
+    pub(crate) const fn new(
+        transport: T,
+        profile_id: u16,
+        aps_options: aps::Options,
+        handlers: Handlers,
+    ) -> Self {
         Self {
             transport,
-            aps_options,
             profile_id,
+            aps_options,
+            handlers,
             message_tag: 0,
             aps_seq: 0,
             transaction_seq: 0,
@@ -70,6 +81,14 @@ impl<T> NetworkManager<T> {
         self.transaction_seq = self.transaction_seq.wrapping_add(1);
         seq
     }
+
+    /// Registers a new channel for receiving callbacks.
+    #[expect(clippy::needless_pass_by_ref_mut)]
+    async fn register_handler(&mut self, size: usize) -> Receiver<Callback> {
+        let (tx, rx) = tokio::sync::mpsc::channel(size);
+        self.handlers.lock().await.push(tx);
+        rx
+    }
 }
 
 impl<T> Nlme for NetworkManager<T>
@@ -83,6 +102,18 @@ where
     async fn get_pan_id(&mut self) -> Result<u16, zigbee_nwk::Error> {
         let (_, parameters) = self.transport.get_network_parameters().await?;
         Ok(parameters.pan_id())
+    }
+
+    async fn scan_networks(
+        &mut self,
+        channel_mask: u32,
+        duration: u8,
+    ) -> Result<Vec<zigbee_nwk::FoundNetwork>, zigbee_nwk::Error> {
+        let mut rx = self.register_handler(16).await;
+        self.transport
+            .start_scan(scan::Type::ActiveScan, channel_mask, duration)
+            .await?;
+        Ok(rx.collect_networks_found().await?)
     }
 
     async fn allow_joins(&mut self, duration: Duration) -> Result<(), zigbee_nwk::Error> {

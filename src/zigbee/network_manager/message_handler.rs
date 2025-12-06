@@ -1,5 +1,8 @@
+use std::sync::Arc;
+
 use log::{error, trace, warn};
-use tokio::sync::mpsc::Receiver;
+use tokio::sync::Mutex;
+use tokio::sync::mpsc::{Receiver, Sender};
 use tokio_mpmc::ChannelError;
 use zigbee_nwk::Event;
 
@@ -10,31 +13,61 @@ use crate::parameters::networking::handler::ChildJoin;
 use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
 use crate::{Callback, ember};
 
+/// Type alias for a thread-safe list of callback handlers.
+pub type Handlers = Arc<Mutex<Vec<Sender<Callback>>>>;
+
 /// Handler for processing incoming messages.
-///
-/// TODO: Handle and reassemble fragmented frames.
 pub struct MessageHandler {
+    handlers: Handlers,
     outgoing: tokio_mpmc::Sender<Event>,
 }
 
 impl MessageHandler {
     /// Creates a new `MessageHandler` with the given outgoing channel size.
-    pub fn new(size: usize) -> (Self, tokio_mpmc::Receiver<Event>) {
+    pub fn new(size: usize) -> (Self, Handlers, tokio_mpmc::Receiver<Event>) {
+        let handlers = Arc::new(Mutex::new(Vec::new()));
         let (outgoing, rx) = tokio_mpmc::channel(size);
-        (Self { outgoing }, rx)
+        (
+            Self {
+                handlers: handlers.clone(),
+                outgoing,
+            },
+            handlers,
+            rx,
+        )
     }
 
+    /// Processes incoming messages and sends events to the outgoing channel.
     pub async fn process(self, mut callbacks: Receiver<Callback>) {
         while let Some(callback) = callbacks.recv().await {
-            self.handle(callback).await.unwrap_or_else(|error| {
-                error!("Failed to send event: {error}");
-            });
+            self.forward_to_handlers(&callback).await;
+            self.forward_to_zigbee(callback)
+                .await
+                .unwrap_or_else(|error| {
+                    error!("Failed to forward Zigbee event: {error}");
+                });
         }
 
         warn!("Callback channel closed.");
     }
 
-    async fn handle(&self, callback: Callback) -> Result<(), ChannelError> {
+    /// Forward EZSP callbacks to registered handlers.
+    async fn forward_to_handlers(&self, callback: &Callback) {
+        let mut lock = self.handlers.lock().await;
+
+        trace!("Removing closed EZSP event handlers...");
+        lock.retain(|sender| !sender.is_closed());
+
+        for sender in lock.iter() {
+            trace!("Forwarding EZSP event to registered handler: {sender:?}");
+            if let Err(error) = sender.send(callback.clone()).await {
+                trace!("Failed to forward EZSP event to registered handler: {error}");
+            }
+        }
+    }
+
+    /// Translates EZSP callbacks into Zigbee events and sends them to the outgoing channel.
+    async fn forward_to_zigbee(&self, callback: Callback) -> Result<(), ChannelError> {
         match callback {
             Callback::Messaging(Messaging::IncomingMessage(incoming_message)) => {
                 self.handle_incoming_message(incoming_message).await
@@ -64,6 +97,7 @@ impl MessageHandler {
         &self,
         incoming_message: IncomingMessage,
     ) -> Result<(), ChannelError> {
+        // TODO: Handle and reassemble fragmented frames.
         match incoming_message.try_into() {
             Ok(received_aps_frame) => {
                 self.outgoing
@@ -129,7 +163,7 @@ impl MessageHandler {
         let status = match trust_center_join.status() {
             Ok(status) => status,
             Err(value) => {
-                error!("Received invalid trust center join status: {value}");
+                warn!("Ignoring trust center join event with invalid status: {value}");
                 return Ok(());
             }
         };

@@ -116,6 +116,18 @@ where
         Ok(rx.collect_networks_found().await?)
     }
 
+    async fn scan_channels(
+        &mut self,
+        channel_mask: u32,
+        duration: u8,
+    ) -> Result<Vec<zigbee_nwk::ScannedChannel>, zigbee_nwk::Error> {
+        let mut rx = self.register_handler(16).await;
+        self.transport
+            .start_scan(scan::Type::EnergyScan, channel_mask, duration)
+            .await?;
+        Ok(rx.collect_scanned_channels().await?)
+    }
+
     async fn allow_joins(&mut self, duration: Duration) -> Result<(), zigbee_nwk::Error> {
         info!("Allowing joins for {} seconds.", duration.as_secs());
         self.transport

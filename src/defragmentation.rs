@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use log::{debug, error, trace};
+use log::{error, trace};
 
 pub use self::defragmentation_error::DefragmentationError;
 pub use self::defragmented_message::DefragmentedMessage;

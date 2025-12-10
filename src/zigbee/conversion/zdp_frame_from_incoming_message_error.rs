@@ -40,8 +40,7 @@ impl Display for ZdpFrameFromIncomingMessageError {
 impl Error for ZdpFrameFromIncomingMessageError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
-            Self::InvalidSourceEndpoint(_) => None,
-            Self::InvalidDestinationEndpoint(_) => None,
+            Self::InvalidSourceEndpoint(_) | Self::InvalidDestinationEndpoint(_) => None,
             Self::ParseFrameError(error) => Some(error),
         }
     }

@@ -22,8 +22,14 @@ impl Defragmenter {
     ///
     /// # Returns
     ///
-    /// - `Some(DefragmentedMessage)` if the defragmentation was completed successfully.
-    /// - `None` if the defragmentation is incomplete.
+    /// - `Ok(Some(DefragmentedMessage))` if the defragmentation was completed successfully.
+    /// - `Ok(None)` if the defragmentation is incomplete.
+    /// - `Err(DefragmentationError)` if an error occurred during defragmentation.
+    ///
+    /// # Errors
+    ///
+    /// - [`DefragmentationError::StrayFragment`] if a follow-up fragment is received without an initial fragment.
+    /// - [`DefragmentationError::DuplicateFragment`] if a duplicate fragment is received.
     pub fn defragment(
         &mut self,
         incoming_message: IncomingMessage,

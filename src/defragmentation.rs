@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use log::{error, trace};
+use log::{error, trace, warn};
 
 pub use self::defragmentation_error::DefragmentationError;
 pub use self::defragmented_message::DefragmentedMessage;
@@ -13,11 +13,11 @@ mod transaction;
 
 /// Defragments potentially fragmented EZSP frames.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Hash)]
-pub struct Defragmenter {
+pub struct Defragmenter<const BACKPRESSURE_THRESHOLD: usize> {
     inner: BTreeMap<u8, Transaction>,
 }
 
-impl Defragmenter {
+impl<const BACKPRESSURE_THRESHOLD: usize> Defragmenter<BACKPRESSURE_THRESHOLD> {
     /// Attempt to defragment the given frame.
     ///
     /// # Returns
@@ -34,6 +34,13 @@ impl Defragmenter {
         &mut self,
         incoming_message: IncomingMessage,
     ) -> Result<Option<DefragmentedMessage>, DefragmentationError> {
+        if self.inner.len() > BACKPRESSURE_THRESHOLD {
+            warn!(
+                "Defragmenter backpressure threshold exceeded: {} transactions in progress.",
+                self.inner.len()
+            );
+        }
+
         let seq = incoming_message.aps_frame().sequence();
 
         match incoming_message.aps_frame().fragmentation() {

@@ -21,7 +21,7 @@ pub type Handlers = Arc<Mutex<Vec<Sender<Callback>>>>;
 pub struct MessageHandler {
     handlers: Handlers,
     outgoing: tokio_mpmc::Sender<Event>,
-    transactions: Defragmenter,
+    transactions: Defragmenter<2>,
 }
 
 impl MessageHandler {

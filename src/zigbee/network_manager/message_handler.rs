@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use log::{debug, error, trace, warn};
+use log::{error, trace, warn};
 use tokio::sync::Mutex;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio_mpmc::ChannelError;

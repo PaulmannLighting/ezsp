@@ -31,10 +31,3 @@ impl Handler {
 impl Parameter for Handler {
     const ID: u16 = ID;
 }
-
-#[cfg(feature = "zigbee")]
-impl From<Handler> for zigbee_nwk::ScannedChannel {
-    fn from(handler: Handler) -> Self {
-        zigbee_nwk::ScannedChannel::new(handler.channel(), handler.max_rssi_value())
-    }
-}

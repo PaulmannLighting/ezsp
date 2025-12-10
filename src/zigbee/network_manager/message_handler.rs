@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use log::{error, trace, warn};
+use log::{debug, error, trace, warn};
 use tokio::sync::Mutex;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio_mpmc::ChannelError;
@@ -125,6 +125,16 @@ impl MessageHandler {
         incoming_message: IncomingMessage,
     ) -> Result<(), ChannelError> {
         // TODO: Handle and reassemble fragmented frames.
+        debug!("INCOMING MESSAGE: {incoming_message:?}");
+
+        let aps_frame = incoming_message.aps_frame();
+        if aps_frame.cluster_id() == 1
+            && aps_frame.source_endpoint() == 1
+            && aps_frame.destination_endpoint() == 255
+        {
+            // TODO: Send `IeeeAddressResponse` if this was an IEEE Address Request.
+        }
+
         match incoming_message.try_into() {
             Ok(received_aps_frame) => {
                 self.outgoing

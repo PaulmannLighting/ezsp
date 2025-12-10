@@ -30,6 +30,8 @@ repr-discriminant = { version = "3", features = ["derive"] }
 semver = { version = "1.0", optional = true }
 silizium = { version = "1.0", path = "../silizium", features = ["le-stream"] }
 tokio = { version = "1.48", optional = true }
+zcl = { version = "0.1.0", path = "../apis-saltans/zcl", optional = true }
+zdp = { version = "0.1.0", path = "../apis-saltans/zdp", optional = true }
 zigbee-nwk = { version = "0.1.0", path = "../apis-saltans/nwk", optional = true }
 zigbee = { version = "0.1.0", path = "../apis-saltans/zigbee", optional = true }
 tokio-mpmc = { version = "0.2.4", optional = true }
@@ -37,7 +39,7 @@ tokio-mpmc = { version = "0.2.4", optional = true }
 [features]
 ashv2 = ["ashv2/serialport", "tokio/rt", "tokio/time", "tokio/sync"]
 semver = ["dep:semver"]
-zigbee = ["dep:zigbee", "dep:zigbee-nwk", "dep:rand", "dep:tokio-mpmc", "dep:aps"]
+zigbee = ["dep:zigbee", "dep:zigbee-nwk", "dep:rand", "dep:tokio-mpmc", "dep:aps", "dep:zcl", "dep:zdp"]
 
 [profile.release]
 opt-level = 3

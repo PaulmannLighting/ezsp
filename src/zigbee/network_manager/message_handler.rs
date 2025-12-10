@@ -127,14 +127,6 @@ impl MessageHandler {
         // TODO: Handle and reassemble fragmented frames.
         trace!("Incoming message: {incoming_message:?}");
 
-        let aps_frame = incoming_message.aps_frame();
-        if aps_frame.cluster_id() == 1
-            && aps_frame.source_endpoint() == 1
-            && aps_frame.destination_endpoint() == 255
-        {
-            // TODO: Send `IeeeAddressResponse` if this was an IEEE Address Request.
-        }
-
         match incoming_message.try_into() {
             Ok(command) => self.outgoing.send(Event::MessageReceived(command)).await,
             Err(error) => {

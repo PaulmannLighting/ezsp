@@ -136,11 +136,7 @@ impl MessageHandler {
         }
 
         match incoming_message.try_into() {
-            Ok(received_aps_frame) => {
-                self.outgoing
-                    .send(Event::MessageReceived(received_aps_frame))
-                    .await
-            }
+            Ok(command) => self.outgoing.send(Event::MessageReceived(command)).await,
             Err(error) => {
                 warn!("Ignoring unknown APS frame type: {error}");
                 Ok(())

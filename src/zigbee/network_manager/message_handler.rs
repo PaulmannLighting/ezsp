@@ -125,7 +125,7 @@ impl MessageHandler {
         incoming_message: IncomingMessage,
     ) -> Result<(), ChannelError> {
         // TODO: Handle and reassemble fragmented frames.
-        debug!("INCOMING MESSAGE: {incoming_message:?}");
+        trace!("Incoming message: {incoming_message:?}");
 
         let aps_frame = incoming_message.aps_frame();
         if aps_frame.cluster_id() == 1

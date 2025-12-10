@@ -2,12 +2,12 @@ use zigbee::Profile;
 use zigbee_nwk::Command;
 
 use super::parse_command_error::ParseCommandError;
-use crate::parameters::messaging::handler::IncomingMessage;
+use crate::defragmentation::DefragmentedMessage;
 
-impl TryFrom<IncomingMessage> for Command {
+impl TryFrom<DefragmentedMessage> for Command {
     type Error = ParseCommandError;
 
-    fn try_from(frame: IncomingMessage) -> Result<Self, Self::Error> {
+    fn try_from(frame: DefragmentedMessage) -> Result<Self, Self::Error> {
         let aps_frame = frame.aps_frame();
         let profile =
             Profile::try_from(aps_frame.profile_id()).map_err(ParseCommandError::InvalidProfile)?;

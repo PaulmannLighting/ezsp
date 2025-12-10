@@ -5,6 +5,7 @@
 //!
 //! This library is free software and is not affiliated with Silicon Labs.
 #![deny(unsafe_code)]
+extern crate core;
 
 pub use self::commands::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GetValueExt, GreenPower, Messaging, Mfglib,
@@ -22,6 +23,7 @@ pub use self::types::SourceRouteDiscoveryMode;
 
 mod commands;
 mod constants;
+mod defragmentation;
 pub mod ember;
 mod error;
 pub mod ezsp;

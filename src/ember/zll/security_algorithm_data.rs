@@ -19,7 +19,7 @@ impl SecurityAlgorithmData {
         }
     }
 
-    /// Return the transaction identifier.
+    /// Return the defragmentation identifier.
     #[must_use]
     pub const fn transaction_id(&self) -> u32 {
         self.transaction_id

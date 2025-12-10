@@ -1,11 +1,12 @@
 use std::sync::Arc;
 
-use log::{error, trace, warn};
+use log::{debug, error, trace, warn};
 use tokio::sync::Mutex;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio_mpmc::ChannelError;
 use zigbee_nwk::Event;
 
+use crate::defragmentation::Defragmenter;
 use crate::ember::device::Update;
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
@@ -20,6 +21,7 @@ pub type Handlers = Arc<Mutex<Vec<Sender<Callback>>>>;
 pub struct MessageHandler {
     handlers: Handlers,
     outgoing: tokio_mpmc::Sender<Event>,
+    transactions: Defragmenter,
 }
 
 impl MessageHandler {
@@ -31,6 +33,7 @@ impl MessageHandler {
             Self {
                 handlers: handlers.clone(),
                 outgoing,
+                transactions: Defragmenter::default(),
             },
             handlers,
             rx,
@@ -38,7 +41,7 @@ impl MessageHandler {
     }
 
     /// Processes incoming messages and sends events to the outgoing channel.
-    pub async fn process(self, mut callbacks: Receiver<Callback>) {
+    pub async fn process(mut self, mut callbacks: Receiver<Callback>) {
         while let Some(callback) = callbacks.recv().await {
             self.forward_to_handlers(&callback).await;
             self.forward_to_zigbee(callback)
@@ -67,7 +70,7 @@ impl MessageHandler {
     }
 
     /// Translates EZSP callbacks into Zigbee events and sends them to the outgoing channel.
-    async fn forward_to_zigbee(&self, callback: Callback) -> Result<(), ChannelError> {
+    async fn forward_to_zigbee(&mut self, callback: Callback) -> Result<(), ChannelError> {
         match callback {
             Callback::Messaging(messaging) => self.handle_messaging_callbacks(messaging).await,
             Callback::Networking(networking) => self.handle_networking_callbacks(networking).await,
@@ -104,7 +107,10 @@ impl MessageHandler {
         }
     }
 
-    async fn handle_messaging_callbacks(&self, messaging: Messaging) -> Result<(), ChannelError> {
+    async fn handle_messaging_callbacks(
+        &mut self,
+        messaging: Messaging,
+    ) -> Result<(), ChannelError> {
         match messaging {
             Messaging::IncomingMessage(incoming_message) => {
                 self.handle_incoming_message(incoming_message).await
@@ -121,13 +127,24 @@ impl MessageHandler {
     }
 
     async fn handle_incoming_message(
-        &self,
+        &mut self,
         incoming_message: IncomingMessage,
     ) -> Result<(), ChannelError> {
-        // TODO: Handle and reassemble fragmented frames.
         trace!("Incoming message: {incoming_message:?}");
 
-        match incoming_message.try_into() {
+        let defragmented_message = match self.transactions.defragment(incoming_message) {
+            Ok(Some(defragmented_message)) => defragmented_message,
+            Ok(None) => {
+                debug!("Frame defragmentation incomplete.");
+                return Ok(());
+            }
+            Err(error) => {
+                error!("Defragmentation error: {error}");
+                return Ok(());
+            }
+        };
+
+        match defragmented_message.try_into() {
             Ok(command) => self.outgoing.send(Event::MessageReceived(command)).await,
             Err(error) => {
                 warn!("Ignoring unknown APS frame type: {error}");

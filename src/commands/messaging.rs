@@ -290,7 +290,7 @@ pub trait Messaging {
     /// The stack will automatically extend the timeout:
     ///     * For our own sleepy children.
     ///     * When an address response is received from a parent on behalf of its child.
-    ///     * When an indirect transaction expiry route error is received.
+    ///     * When an indirect defragmentation expiry route error is received.
     ///     * When an end device announcement is received from a sleepy node.
     fn set_extended_timeout(
         &mut self,

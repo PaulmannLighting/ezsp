@@ -1,32 +1,50 @@
-use le_stream::{FromLeStream, Prefixed};
-use num_traits::FromPrimitive;
-
 use crate::ember::NodeId;
 use crate::ember::aps::Frame;
 use crate::ember::message::Incoming;
-use crate::ember::node::Type;
-use crate::frame::Parameter;
-use crate::types::ByteSizedVec;
+use crate::parameters::messaging::handler::IncomingMessage;
 
-const ID: u16 = 0x0045;
-
-/// A callback indicating a message has been received.
-#[derive(Clone, Debug, Eq, PartialEq, Hash, FromLeStream)]
-pub struct Handler {
-    pub(crate) typ: u8,
-    pub(crate) aps_frame: Frame,
-    pub(crate) last_hop_lqi: u8,
-    pub(crate) last_hop_rssi: i8,
-    pub(crate) sender: NodeId,
-    pub(crate) binding_index: u8,
-    pub(crate) address_index: u8,
-    pub(crate) message: Prefixed<u8, ByteSizedVec<u8>>,
-    // FIXME: There appears to be one byte more at the end than specified in the docs in most cases.
-    // Assume optional node type for now.
-    pub(crate) node_type: Option<u8>,
+/// A message that has been defragmented and is ready for processing.
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct DefragmentedMessage {
+    typ: u8,
+    aps_frame: Frame,
+    last_hop_lqi: u8,
+    last_hop_rssi: i8,
+    sender: NodeId,
+    binding_index: u8,
+    address_index: u8,
+    message: Vec<u8>,
 }
 
-impl Handler {
+impl DefragmentedMessage {
+    /// Create a new `DefragmentedMessage` from an `IncomingMessage`.
+    pub(crate) fn new(incoming_message: IncomingMessage) -> Self {
+        Self {
+            typ: incoming_message.typ,
+            aps_frame: incoming_message.aps_frame,
+            last_hop_lqi: incoming_message.last_hop_lqi,
+            last_hop_rssi: incoming_message.last_hop_rssi,
+            sender: incoming_message.sender,
+            binding_index: incoming_message.binding_index,
+            address_index: incoming_message.address_index,
+            message: incoming_message.message.into_data().drain(..).collect(),
+        }
+    }
+
+    /// Create a new `DefragmentedMessage` with the specified first part and complete message.
+    pub(crate) fn new_with_message(first: IncomingMessage, message: Vec<u8>) -> Self {
+        Self {
+            typ: first.typ,
+            aps_frame: first.aps_frame,
+            last_hop_lqi: first.last_hop_lqi,
+            last_hop_rssi: first.last_hop_rssi,
+            sender: first.sender,
+            binding_index: first.binding_index,
+            address_index: first.address_index,
+            message,
+        }
+    }
+
     /// The type of the incoming message.
     ///
     /// One of the following:
@@ -88,23 +106,9 @@ impl Handler {
         self.message.as_ref()
     }
 
-    /// The type of the sender node.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the value is not a valid node type.
-    #[must_use]
-    pub fn node_type(&self) -> Option<Type> {
-        self.node_type.and_then(Type::from_u8)
-    }
-
     /// Consumes the handler and returns the incoming message.
     #[must_use]
-    pub fn into_message(self) -> ByteSizedVec<u8> {
-        self.message.into_data()
+    pub fn into_message(self) -> Vec<u8> {
+        self.message
     }
-}
-
-impl Parameter for Handler {
-    const ID: u16 = ID;
 }

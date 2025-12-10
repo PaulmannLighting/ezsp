@@ -75,7 +75,7 @@ impl<T> NetworkManager<T> {
         seq
     }
 
-    /// Returns the next transaction sequence number and increments the internal counter.
+    /// Returns the next defragmentation sequence number and increments the internal counter.
     const fn next_transaction_seq(&mut self) -> u8 {
         let seq = self.transaction_seq;
         self.transaction_seq = self.transaction_seq.wrapping_add(1);

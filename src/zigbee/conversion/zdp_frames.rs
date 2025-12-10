@@ -1,12 +1,12 @@
 use zdp::{Command, Frame};
 
 pub use super::zdp_frame_from_incoming_message_error::ZdpFrameFromIncomingMessageError;
-use crate::parameters::messaging::handler::IncomingMessage;
+use crate::defragmentation::DefragmentedMessage;
 
-impl TryFrom<IncomingMessage> for Frame<Command> {
+impl TryFrom<DefragmentedMessage> for Frame<Command> {
     type Error = ZdpFrameFromIncomingMessageError;
 
-    fn try_from(frame: IncomingMessage) -> Result<Self, Self::Error> {
+    fn try_from(frame: DefragmentedMessage) -> Result<Self, Self::Error> {
         let aps_frame = frame.aps_frame();
 
         if aps_frame.source_endpoint() != 0 {

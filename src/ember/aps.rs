@@ -4,7 +4,7 @@ use bitflags::bitflags;
 use le_stream::{FromLeStream, ToLeStream};
 
 /// Ember APS options.
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Hash, FromLeStream, ToLeStream)]
 #[repr(transparent)]
 pub struct Options(u16);
 bitflags! {
@@ -56,7 +56,7 @@ impl From<u16> for Options {
 }
 
 /// Zigbee APS frame parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, FromLeStream, ToLeStream)]
 pub struct Frame {
     profile_id: u16,
     cluster_id: u16,

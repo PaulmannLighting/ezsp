@@ -7,15 +7,15 @@ use super::values::Values;
 pub enum SpiErr {
     /// Fatal error.
     Fatal,
-    /// The Response frame of the current transaction indicates the NCP has reset.
+    /// The Response frame of the current defragmentation indicates the NCP has reset.
     NcpReset,
-    /// The NCP is reporting that the Command frame of the current transaction
+    /// The NCP is reporting that the Command frame of the current defragmentation
     /// is oversized (the length byte is too large).
     OversizedEzspFrame,
-    /// The Response frame of the current transaction indicates the
-    /// previous transaction was aborted (nSSEL deasserted too soon).
+    /// The Response frame of the current defragmentation indicates the
+    /// previous defragmentation was aborted (nSSEL deasserted too soon).
     AbortedTransaction,
-    /// The Response frame of the current transaction indicates the
+    /// The Response frame of the current defragmentation indicates the
     /// frame terminator is missing from the Command frame.
     MissingFrameTerminator,
     /// The NCP has not provided a Response within the time limit defined by `WAIT_SECTION_TIMEOUT`.

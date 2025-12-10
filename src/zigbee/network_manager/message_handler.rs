@@ -133,7 +133,10 @@ impl MessageHandler {
         trace!("Incoming message: {incoming_message:?}");
 
         let defragmented_message = match self.transactions.defragment(incoming_message) {
-            Ok(Some(defragmented_message)) => defragmented_message,
+            Ok(Some(defragmented_message)) => {
+                debug!("Defragmented frame: {defragmented_message:?}");
+                defragmented_message
+            }
             Ok(None) => {
                 debug!("Frame defragmentation incomplete.");
                 return Ok(());

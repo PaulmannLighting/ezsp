@@ -40,7 +40,7 @@ impl Defragmenter {
                     return Ok(None);
                 }
 
-                debug!("Received fragmented message with size 1, treating as non-fragmented.");
+                trace!("Received fragmented message with size 1, treating as non-fragmented.");
                 Ok(Some(DefragmentedMessage::new(incoming_message)))
             }
             Some((index, None)) => {
@@ -64,7 +64,6 @@ impl Defragmenter {
                     return Ok(None);
                 };
 
-                debug!("Frame defragmented: {defragmented_message:?}");
                 self.inner.remove(&seq);
                 Ok(Some(defragmented_message))
             }

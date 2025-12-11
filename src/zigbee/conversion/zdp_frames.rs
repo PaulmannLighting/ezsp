@@ -1,3 +1,4 @@
+use le_stream::FromLeStreamTagged;
 use zdp::{Command, Frame};
 
 pub use super::zdp_frame_from_incoming_message_error::ZdpFrameFromIncomingMessageError;
@@ -19,7 +20,8 @@ impl TryFrom<DefragmentedMessage> for Frame<Command> {
             ));
         }
 
-        Self::parse(aps_frame.cluster_id(), frame.into_message().drain(..))
-            .map_err(Self::Error::ParseFrameError)
+        Self::from_le_stream_tagged(aps_frame.cluster_id(), frame.into_message().drain(..))
+            .map_err(Self::Error::InvalidClusterId)?
+            .ok_or(Self::Error::InvalidZdpFrame)
     }
 }

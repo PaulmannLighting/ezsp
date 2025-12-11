@@ -2,8 +2,6 @@ use core::error::Error;
 use core::fmt;
 use core::fmt::Display;
 
-use zdp::ParseFrameError;
-
 /// Errors that can occur when converting an incoming message to a ZDP frame.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ZdpFrameFromIncomingMessageError {
@@ -11,8 +9,10 @@ pub enum ZdpFrameFromIncomingMessageError {
     InvalidSourceEndpoint(u8),
     /// The destination endpoint is invalid (must be 0 for ZDP commands).
     InvalidDestinationEndpoint(u8),
-    /// Failed to parse the ZDP frame.
-    ParseFrameError(ParseFrameError),
+    /// The cluster ID could not be parsed into a ZDP frame.
+    InvalidClusterId(u16),
+    /// The ZDP frame is invalid.
+    InvalidZdpFrame,
 }
 
 impl Display for ZdpFrameFromIncomingMessageError {
@@ -30,18 +30,12 @@ impl Display for ZdpFrameFromIncomingMessageError {
                     "Destination endpoint must be 0 for ZDP commands, got {endpoint}",
                 )
             }
-            Self::ParseFrameError(error) => {
-                write!(f, "Failed to parse ZDP frame: {error}")
+            Self::InvalidClusterId(cluster_id) => {
+                write!(f, "Invalid cluster ID for ZDP frame: {cluster_id:#06X}")
             }
+            Self::InvalidZdpFrame => write!(f, "Invalid ZDP frame"),
         }
     }
 }
 
-impl Error for ZdpFrameFromIncomingMessageError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match self {
-            Self::InvalidSourceEndpoint(_) | Self::InvalidDestinationEndpoint(_) => None,
-            Self::ParseFrameError(error) => Some(error),
-        }
-    }
-}
+impl Error for ZdpFrameFromIncomingMessageError {}

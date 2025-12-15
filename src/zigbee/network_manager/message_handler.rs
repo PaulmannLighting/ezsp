@@ -158,7 +158,7 @@ impl MessageHandler {
 
     fn handle_message_sent(message_sent: &MessageSent) {
         // TODO: Maybe handle those?
-        trace!("Message sent: {message_sent:?}");
+        debug!("Message sent: {message_sent:?}");
     }
 
     async fn handle_stack_status(

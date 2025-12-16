@@ -182,8 +182,11 @@ impl MessageHandler {
     }
 
     fn handle_message_sent(message_sent: &MessageSent) {
-        // TODO: Maybe handle those?
-        debug!("Message sent: {message_sent}");
+        match message_sent.ack_received() {
+            Ok(true) => trace!("ACK received for sent message: {message_sent}"),
+            Ok(false) => warn!("No ACK received for sent message: {message_sent}"),
+            Err(error) => error!("{error}: {message_sent}"),
+        }
     }
 
     async fn handle_stack_status(

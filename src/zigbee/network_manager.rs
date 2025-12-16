@@ -194,7 +194,7 @@ where
 
     async fn multicast(
         &mut self,
-        endpoint: Endpoint,
+        group_id: u16,
         hops: u8,
         radius: u8,
         frame: Frame,
@@ -215,9 +215,9 @@ where
                     self.profile_id,
                     cluster_id,
                     0x01,
-                    endpoint.into(),
+                    0x00, // Destination endpoint is not used in multicast.
                     self.aps_options,
-                    0x00, // This is not a multicast message.
+                    group_id,
                     seq,
                 ),
                 hops,

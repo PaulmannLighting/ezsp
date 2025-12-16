@@ -161,6 +161,7 @@ impl MessageHandler {
 
         let src_address = defragmented_message.sender();
         let src_endpoint: Endpoint = defragmented_message.aps_frame().source_endpoint().into();
+        let cluster_id = defragmented_message.aps_frame().cluster_id();
 
         match defragmented_message.try_into() {
             Ok(command) => {
@@ -168,6 +169,7 @@ impl MessageHandler {
                     .send(Event::MessageReceived {
                         src_address,
                         src_endpoint,
+                        cluster_id,
                         command: Box::new(command),
                     })
                     .await

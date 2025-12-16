@@ -7,6 +7,7 @@ use std::time::Duration;
 use log::{debug, info};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
+use zdp::MgmtPermitJoiningReq;
 use zigbee::Endpoint;
 use zigbee_nwk::{Frame, Nlme};
 
@@ -233,7 +234,6 @@ where
     async fn broadcast(
         &mut self,
         pan_id: u16,
-        endpoint: Endpoint,
         radius: u8,
         frame: Frame,
     ) -> Result<(), zigbee_nwk::Error> {
@@ -241,9 +241,7 @@ where
         let tag = self.next_message_tag();
         let mut seq = self.next_aps_seq();
         let cluster_id = frame.cluster_id();
-        debug!(
-            "Sending broadcast to {pan_id:#06X} on endpoint {endpoint:?} for cluster {cluster_id:#06X}",
-        );
+        debug!("Sending broadcast to {pan_id:#06X} for cluster {cluster_id:#06X}");
         let message = ByteSizedVec::from_slice(&frame.serialize())
             .map_err(io::Error::other)
             .map_err(Error::from)?;
@@ -256,7 +254,7 @@ where
                     self.profile_id,
                     cluster_id,
                     0x01,
-                    endpoint.into(),
+                    Endpoint::Broadcast.into(),
                     self.aps_options,
                     0x00, // This is not a multicast message.
                     seq,

@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::io;
 use std::time::Duration;
 
-use log::{debug, info};
+use log::{debug, info, trace};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
 use zigbee::Endpoint;
@@ -169,6 +169,10 @@ where
             .await?)
     }
 
+    async fn get_ieee_address(&mut self, pan_id: u16) -> Result<MacAddr8, zigbee_nwk::Error> {
+        Ok(self.transport.lookup_eui64_by_node_id(pan_id).await?)
+    }
+
     async fn unicast(
         &mut self,
         pan_id: u16,
@@ -183,7 +187,7 @@ where
         let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
-        debug!("Message bytes: {:#04X?}", message.as_slice());
+        trace!("Message bytes: {:#04X?}", message.as_slice());
         let aps_frame = self.next_aps_frame(cluster_id, endpoint.into(), 0x0000);
         Ok(self
             .transport
@@ -204,7 +208,7 @@ where
         let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
-        debug!("Message bytes: {:#04X?}", message.as_slice());
+        trace!("Message bytes: {:#04X?}", message.as_slice());
         let aps_frame = self.next_aps_frame(cluster_id, 0x00, group_id);
         Ok(self
             .transport
@@ -224,7 +228,7 @@ where
         let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
-        debug!("Message bytes: {:#04X?}", message.as_slice());
+        trace!("Message bytes: {:#04X?}", message.as_slice());
         let aps_frame = self.next_aps_frame(cluster_id, Endpoint::Broadcast.into(), 0x0000);
         Ok(self
             .transport

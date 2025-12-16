@@ -203,7 +203,7 @@ where
         let tag = self.next_message_tag();
         let mut seq = self.next_aps_seq();
         let cluster_id = frame.cluster_id();
-        debug!("Sending multicast to endpoint {endpoint:?} for cluster {cluster_id:#06X}");
+        debug!("Sending multicast to endpoint {group_id:#06X} for cluster {cluster_id:#06X}");
         let message = ByteSizedVec::from_slice(&frame.serialize())
             .map_err(io::Error::other)
             .map_err(Error::from)?;

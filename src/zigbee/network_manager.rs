@@ -7,7 +7,6 @@ use std::time::Duration;
 use log::{debug, info};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
-use zdp::MgmtPermitJoiningReq;
 use zigbee::Endpoint;
 use zigbee_nwk::{Frame, Nlme};
 

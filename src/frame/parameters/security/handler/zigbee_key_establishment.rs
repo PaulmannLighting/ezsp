@@ -1,7 +1,7 @@
 use le_stream::FromLeStream;
 
 use crate::ember::Eui64;
-use crate::ember::key::Status;
+use crate::ember::key::{Status, TrustCenter};
 use crate::frame::Parameter;
 
 const ID: u16 = 0x009B;
@@ -19,14 +19,19 @@ pub struct Handler {
 impl Handler {
     /// This is the IEEE address of the partner that the device successfully established a key with.
     ///
-    /// This value is `None` on a failure.
-    #[must_use]
-    pub fn partner(&self) -> Option<Eui64> {
+    /// # Errors
+    ///
+    /// Returns an error if the key establishment was not successful, containing either the status
+    /// indicating what was established or why the key establishment failed.
+    pub fn partner(&self) -> Result<Eui64, Result<Status, u8>> {
         match self.status() {
-            Ok(Status::AppLinkKeyEstablished | Status::TrustCenterLinkKeyEstablished) => {
-                Some(self.partner)
-            }
-            _ => None,
+            Ok(
+                Status::AppLinkKeyEstablished
+                | Status::TrustCenterLinkKeyEstablished
+                | Status::TrustCenter(TrustCenter::RespondedToKeyRequest),
+            ) => Ok(self.partner),
+            Ok(other) => Err(Ok(other)),
+            Err(invalid) => Err(Err(invalid)),
         }
     }
 

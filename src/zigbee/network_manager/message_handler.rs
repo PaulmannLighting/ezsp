@@ -11,6 +11,7 @@ use crate::ember::device::Update;
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
 use crate::parameters::networking::handler::ChildJoin;
+use crate::parameters::security::handler::Handler as Security;
 use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
 use crate::{Callback, ember};
 
@@ -76,6 +77,10 @@ impl MessageHandler {
             Callback::Networking(networking) => self.handle_networking_callbacks(networking).await,
             Callback::TrustCenter(TrustCenter::TrustCenterJoin(trust_center_join)) => {
                 self.handle_trust_center_join(trust_center_join).await
+            }
+            Callback::Security(security) => {
+                Self::handle_security_callbacks(security);
+                Ok(())
             }
             other => {
                 // TODO: Handle other callbacks.
@@ -241,5 +246,28 @@ impl MessageHandler {
                 },
             })
             .await
+    }
+
+    fn handle_security_callbacks(security: Security) {
+        match security {
+            Security::ZigbeeKeyEstablishment(zigbee_key_establishment) => {
+                match zigbee_key_establishment.partner() {
+                    Ok(partner) => {
+                        debug!("Zigbee key establishment with partner: IEEE Address: {partner}");
+                    }
+                    Err(value) => {
+                        warn!(
+                            "Zigbee key establishment with invalid partner IEEE address: {value:?}"
+                        );
+                    }
+                }
+            }
+            Security::SwitchNetworkKey(switch_network_key) => {
+                debug!(
+                    "Switch network key. New key sequence: {}",
+                    switch_network_key.sequence_number()
+                );
+            }
+        }
     }
 }

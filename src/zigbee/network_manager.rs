@@ -242,7 +242,7 @@ where
         let mut seq = self.next_aps_seq();
         let cluster_id = frame.cluster_id();
         debug!(
-            "Sending unicast to {pan_id:#06X} on endpoint {endpoint:?} for cluster {cluster_id:#06X}",
+            "Sending broadcast to {pan_id:#06X} on endpoint {endpoint:?} for cluster {cluster_id:#06X}",
         );
         let message = ByteSizedVec::from_slice(&frame.serialize())
             .map_err(io::Error::other)

@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::io;
 use std::time::Duration;
 
-use log::info;
+use log::{debug, info};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
 use zigbee::Endpoint;
@@ -163,13 +163,21 @@ where
         let frame = frame.with_seq(self.next_transaction_seq());
         let tag = self.next_message_tag();
         let mut seq = self.next_aps_seq();
+        let cluster_id = frame.cluster_id();
+        debug!(
+            "Sending unicast to {pan_id:#06X} on endpoint {endpoint:?} for cluster {cluster_id:#06X}",
+        );
+        let message = ByteSizedVec::from_slice(&frame.serialize())
+            .map_err(io::Error::other)
+            .map_err(Error::from)?;
+        debug!("Message bytes: {:#04X?}", message.as_slice());
         seq = self
             .transport
             .send_unicast(
                 Destination::Direct(pan_id),
                 aps::Frame::new(
                     self.profile_id,
-                    frame.cluster_id(),
+                    cluster_id,
                     0x01,
                     endpoint.into(),
                     self.aps_options,
@@ -177,9 +185,47 @@ where
                     seq,
                 ),
                 tag,
-                ByteSizedVec::from_slice(&frame.serialize())
-                    .map_err(io::Error::other)
-                    .map_err(Error::from)?,
+                message,
+            )
+            .await?;
+        self.aps_seq = seq.wrapping_add(1);
+        Ok(())
+    }
+
+    async fn broadcast(
+        &mut self,
+        pan_id: u16,
+        endpoint: Endpoint,
+        radius: u8,
+        frame: Frame,
+    ) -> Result<(), zigbee_nwk::Error> {
+        let frame = frame.with_seq(self.next_transaction_seq());
+        let tag = self.next_message_tag();
+        let mut seq = self.next_aps_seq();
+        let cluster_id = frame.cluster_id();
+        debug!(
+            "Sending unicast to {pan_id:#06X} on endpoint {endpoint:?} for cluster {cluster_id:#06X}",
+        );
+        let message = ByteSizedVec::from_slice(&frame.serialize())
+            .map_err(io::Error::other)
+            .map_err(Error::from)?;
+        debug!("Message bytes: {:#04X?}", message.as_slice());
+        seq = self
+            .transport
+            .send_broadcast(
+                pan_id,
+                aps::Frame::new(
+                    self.profile_id,
+                    cluster_id,
+                    0x01,
+                    endpoint.into(),
+                    self.aps_options,
+                    0x00, // This is not a multicast message.
+                    seq,
+                ),
+                radius,
+                tag,
+                message,
             )
             .await?;
         self.aps_seq = seq.wrapping_add(1);

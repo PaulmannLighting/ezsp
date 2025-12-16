@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use le_stream::{FromLeStream, Prefixed};
 use num_traits::FromPrimitive;
 
@@ -81,4 +83,27 @@ impl Handler {
 
 impl Parameter for Handler {
     const ID: u16 = ID;
+}
+
+impl Display for Handler {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let message_length = self.message.len();
+        write!(
+            f,
+            "Handler {{ typ: {:#04X}, index_or_destination: {:#06X}, aps_frame: {}, message_tag: {:#04X}, status: {:#04X}, message_length: {message_length:#04X}, message: [",
+            self.typ, self.index_or_destination, self.aps_frame, self.message_tag, self.status,
+        )?;
+
+        let mut message_bytes = self.message.iter();
+
+        if let Some(byte) = message_bytes.next() {
+            write!(f, "{byte:#04X}")?;
+
+            for byte in message_bytes {
+                write!(f, ", {byte:#04X}")?;
+            }
+        }
+
+        write!(f, "] }}")
+    }
 }

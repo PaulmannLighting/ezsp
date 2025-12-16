@@ -1,5 +1,7 @@
 //! Application Support Sublayer (APS) module.
 
+use std::fmt::Display;
+
 use bitflags::bitflags;
 use le_stream::{FromLeStream, ToLeStream};
 
@@ -153,5 +155,21 @@ impl Frame {
         } else {
             None
         }
+    }
+}
+
+impl Display for Frame {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Frame {{ profile_id: {:#06X}, cluster_id: {:#06X}, source_endpoint: {:#04X}, destination_endpoint: {:#04X}, options: {:#06X}, group_id: {:#06X}, sequence: {:#04X} }}",
+            self.profile_id,
+            self.cluster_id,
+            self.source_endpoint,
+            self.destination_endpoint,
+            u16::from(self.options),
+            self.group_id,
+            self.sequence,
+        )
     }
 }

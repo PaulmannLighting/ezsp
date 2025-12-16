@@ -75,13 +75,6 @@ impl<T> NetworkManager<T> {
         seq
     }
 
-    /// Returns the next defragmentation sequence number and increments the internal counter.
-    const fn next_transaction_seq(&mut self) -> u8 {
-        let seq = self.transaction_seq;
-        self.transaction_seq = self.transaction_seq.wrapping_add(1);
-        seq
-    }
-
     /// Registers a new channel for receiving callbacks.
     #[expect(clippy::needless_pass_by_ref_mut)]
     async fn register_handler(&mut self, size: usize) -> Receiver<Callback> {
@@ -89,14 +82,29 @@ impl<T> NetworkManager<T> {
         self.handlers.lock().await.push(tx);
         rx
     }
+
+    /// Creates a new APS frame with the given parameters.
+    const fn next_aps_frame(&mut self, cluster_id: u16, endpoint: u8, group_id: u16) -> aps::Frame {
+        aps::Frame::new(
+            self.profile_id,
+            cluster_id,
+            0x01,
+            endpoint,
+            self.aps_options,
+            group_id,
+            self.next_aps_seq(),
+        )
+    }
 }
 
 impl<T> Nlme for NetworkManager<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities,
 {
-    fn get_transaction_seq(&mut self) -> u8 {
-        self.next_transaction_seq()
+    fn next_transaction_seq(&mut self) -> u8 {
+        let seq = self.transaction_seq;
+        self.transaction_seq = self.transaction_seq.wrapping_add(1);
+        seq
     }
 
     async fn get_pan_id(&mut self) -> Result<u16, zigbee_nwk::Error> {
@@ -166,37 +174,21 @@ where
         pan_id: u16,
         endpoint: Endpoint,
         frame: Frame,
-    ) -> Result<(), zigbee_nwk::Error> {
-        let frame = frame.with_seq(self.next_transaction_seq());
+    ) -> Result<u8, zigbee_nwk::Error> {
+        let (cluster_id, payload) = frame.into_parts();
         let tag = self.next_message_tag();
-        let mut seq = self.next_aps_seq();
-        let cluster_id = frame.cluster_id();
         debug!(
             "Sending unicast to {pan_id:#06X} on endpoint {endpoint:?} for cluster {cluster_id:#06X}",
         );
-        let message = ByteSizedVec::from_slice(&frame.serialize())
+        let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
         debug!("Message bytes: {:#04X?}", message.as_slice());
-        seq = self
+        let aps_frame = self.next_aps_frame(cluster_id, endpoint.into(), 0x0000);
+        Ok(self
             .transport
-            .send_unicast(
-                Destination::Direct(pan_id),
-                aps::Frame::new(
-                    self.profile_id,
-                    cluster_id,
-                    0x01,
-                    endpoint.into(),
-                    self.aps_options,
-                    0x00, // This is not a multicast message.
-                    seq,
-                ),
-                tag,
-                message,
-            )
-            .await?;
-        self.aps_seq = seq.wrapping_add(1);
-        Ok(())
+            .send_unicast(Destination::Direct(pan_id), aps_frame, tag, message)
+            .await?)
     }
 
     async fn multicast(
@@ -205,36 +197,19 @@ where
         hops: u8,
         radius: u8,
         frame: Frame,
-    ) -> Result<(), zigbee_nwk::Error> {
-        let frame = frame.with_seq(self.next_transaction_seq());
+    ) -> Result<u8, zigbee_nwk::Error> {
+        let (cluster_id, payload) = frame.into_parts();
         let tag = self.next_message_tag();
-        let mut seq = self.next_aps_seq();
-        let cluster_id = frame.cluster_id();
         debug!("Sending multicast to endpoint {group_id:#06X} for cluster {cluster_id:#06X}");
-        let message = ByteSizedVec::from_slice(&frame.serialize())
+        let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
         debug!("Message bytes: {:#04X?}", message.as_slice());
-        seq = self
+        let aps_frame = self.next_aps_frame(cluster_id, 0x00, group_id);
+        Ok(self
             .transport
-            .send_multicast(
-                aps::Frame::new(
-                    self.profile_id,
-                    cluster_id,
-                    0x01,
-                    0x00, // Destination endpoint is not used in multicast.
-                    self.aps_options,
-                    group_id,
-                    seq,
-                ),
-                hops,
-                radius,
-                tag,
-                message,
-            )
-            .await?;
-        self.aps_seq = seq.wrapping_add(1);
-        Ok(())
+            .send_multicast(aps_frame, hops, radius, tag, message)
+            .await?)
     }
 
     async fn broadcast(
@@ -242,35 +217,18 @@ where
         pan_id: u16,
         radius: u8,
         frame: Frame,
-    ) -> Result<(), zigbee_nwk::Error> {
-        let frame = frame.with_seq(self.next_transaction_seq());
+    ) -> Result<u8, zigbee_nwk::Error> {
+        let (cluster_id, payload) = frame.into_parts();
         let tag = self.next_message_tag();
-        let mut seq = self.next_aps_seq();
-        let cluster_id = frame.cluster_id();
         debug!("Sending broadcast to {pan_id:#06X} for cluster {cluster_id:#06X}");
-        let message = ByteSizedVec::from_slice(&frame.serialize())
+        let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
         debug!("Message bytes: {:#04X?}", message.as_slice());
-        seq = self
+        let aps_frame = self.next_aps_frame(cluster_id, Endpoint::Broadcast.into(), 0x0000);
+        Ok(self
             .transport
-            .send_broadcast(
-                pan_id,
-                aps::Frame::new(
-                    self.profile_id,
-                    cluster_id,
-                    0x01,
-                    Endpoint::Broadcast.into(),
-                    self.aps_options,
-                    0x00, // This is not a multicast message.
-                    seq,
-                ),
-                radius,
-                tag,
-                message,
-            )
-            .await?;
-        self.aps_seq = seq.wrapping_add(1);
-        Ok(())
+            .send_broadcast(pan_id, aps_frame, radius, tag, message)
+            .await?)
     }
 }

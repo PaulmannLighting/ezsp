@@ -4,6 +4,7 @@ use log::{debug, error, trace, warn};
 use tokio::sync::Mutex;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio_mpmc::ChannelError;
+use zigbee::Endpoint;
 use zigbee_nwk::Event;
 
 use crate::defragmentation::Defragmenter;
@@ -141,15 +142,15 @@ impl MessageHandler {
         &mut self,
         incoming_message: IncomingMessage,
     ) -> Result<(), ChannelError> {
-        trace!("Incoming message: {incoming_message:?}");
+        debug!("Incoming message: {incoming_message:?}");
 
         let defragmented_message = match self.transactions.defragment(incoming_message) {
             Ok(Some(defragmented_message)) => {
-                debug!("Defragmented frame: {defragmented_message:?}");
+                trace!("Defragmented frame: {defragmented_message:?}");
                 defragmented_message
             }
             Ok(None) => {
-                debug!("Frame defragmentation incomplete.");
+                warn!("Frame defragmentation incomplete.");
                 return Ok(());
             }
             Err(error) => {
@@ -158,8 +159,19 @@ impl MessageHandler {
             }
         };
 
+        let src_address = defragmented_message.sender();
+        let src_endpoint: Endpoint = defragmented_message.aps_frame().source_endpoint().into();
+
         match defragmented_message.try_into() {
-            Ok(command) => self.outgoing.send(Event::MessageReceived(command)).await,
+            Ok(command) => {
+                self.outgoing
+                    .send(Event::MessageReceived {
+                        src_address,
+                        src_endpoint,
+                        command: Box::new(command),
+                    })
+                    .await
+            }
             Err(error) => {
                 warn!("Ignoring unknown APS frame type: {error}");
                 Ok(())

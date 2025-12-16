@@ -13,8 +13,8 @@ use zigbee_nwk::{Frame, Nlme};
 use self::builder::Builder;
 use self::collect_networks_found::CollectNetworksFound;
 use self::message_handler::Handlers;
-use crate::ember::aps;
 use crate::ember::message::Destination;
+use crate::ember::{aps, concentrator};
 use crate::error::Status;
 use crate::ezsp::network::scan;
 use crate::types::ByteSizedVec;
@@ -152,6 +152,13 @@ where
         }
 
         Ok(neighbors)
+    }
+
+    async fn route_request(&mut self, radius: u8) -> Result<(), zigbee_nwk::Error> {
+        Ok(self
+            .transport
+            .send_many_to_one_route_request(concentrator::Type::HighRam, radius)
+            .await?)
     }
 
     async fn unicast(

@@ -119,6 +119,12 @@ impl MessageHandler {
                 Self::handle_message_sent(&message_sent);
                 Ok(())
             }
+            Messaging::IncomingSenderEui64(incoming_sender_eui64) => {
+                trace!(
+                    "Incoming sender EUI64 events are handled by the address manager: {incoming_sender_eui64:?}"
+                );
+                Ok(())
+            }
             other => {
                 warn!("Received unsupported messaging callback: {other:?}");
                 Ok(())

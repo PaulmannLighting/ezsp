@@ -183,7 +183,7 @@ impl MessageHandler {
 
     fn handle_message_sent(message_sent: &MessageSent) {
         match message_sent.ack_received() {
-            Ok(true) => trace!("ACK received for sent message: {message_sent}"),
+            Ok(true) => debug!("ACK received for sent message: {message_sent}"),
             Ok(false) => warn!("No ACK received for sent message: {message_sent}"),
             Err(error) => error!("{error}: {message_sent}"),
         }

@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::io;
 use std::time::Duration;
 
-use log::{debug, info, trace};
+use log::{debug, info};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
 use zigbee::Endpoint;
@@ -187,18 +187,19 @@ where
     ) -> Result<u8, zigbee_nwk::Error> {
         let (cluster_id, source_endpoint, payload) = frame.into_parts();
         let tag = self.next_message_tag();
-        debug!(
-            "Sending unicast to {pan_id:#06X} on endpoint {destination_endpoint:?} for cluster {cluster_id:#06X}",
-        );
         let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
-        trace!("Message bytes: {:#04X?}", message.as_slice());
         let aps_frame =
             self.next_aps_frame(cluster_id, source_endpoint, destination_endpoint, 0x0000);
+        let destination = Destination::Direct(pan_id);
+        debug!(
+            "Sending unicast to: {destination:?}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
+            message.as_slice()
+        );
         Ok(self
             .transport
-            .send_unicast(Destination::Direct(pan_id), aps_frame, tag, message)
+            .send_unicast(destination, aps_frame, tag, message)
             .await?)
     }
 
@@ -211,12 +212,14 @@ where
     ) -> Result<u8, zigbee_nwk::Error> {
         let (cluster_id, source_endpoint, payload) = frame.into_parts();
         let tag = self.next_message_tag();
-        debug!("Sending multicast to endpoint {group_id:#06X} for cluster {cluster_id:#06X}");
         let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
-        trace!("Message bytes: {:#04X?}", message.as_slice());
         let aps_frame = self.next_aps_frame(cluster_id, source_endpoint, Endpoint::Data, group_id);
+        debug!(
+            "Sending multicast: Hops: {hops}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
+            message.as_slice()
+        );
         Ok(self
             .transport
             .send_multicast(aps_frame, hops, radius, tag, message)
@@ -231,13 +234,15 @@ where
     ) -> Result<u8, zigbee_nwk::Error> {
         let (cluster_id, source_endpoint, payload) = frame.into_parts();
         let tag = self.next_message_tag();
-        debug!("Sending broadcast to {pan_id:#06X} for cluster {cluster_id:#06X}");
         let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
-        trace!("Message bytes: {:#04X?}", message.as_slice());
         let aps_frame =
             self.next_aps_frame(cluster_id, source_endpoint, Endpoint::Broadcast, 0x0000);
+        debug!(
+            "Sending broadcast to: {pan_id:#06X}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
+            message.as_slice()
+        );
         Ok(self
             .transport
             .send_broadcast(pan_id, aps_frame, radius, tag, message)

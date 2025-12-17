@@ -8,7 +8,7 @@ use log::{debug, info};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
 use zigbee::Endpoint;
-use zigbee_nwk::{Frame, Nlme};
+use zigbee_nwk::{ApsMetadata, Frame, Nlme};
 
 use self::builder::Builder;
 use self::collect_networks_found::CollectNetworksFound;
@@ -86,15 +86,14 @@ impl<T> NetworkManager<T> {
     /// Creates a new APS frame with the given parameters.
     fn next_aps_frame(
         &mut self,
-        cluster_id: u16,
-        source_endpoint: Option<Endpoint>,
+        aps_metadata: ApsMetadata,
         destination_endpoint: Endpoint,
         group_id: u16,
     ) -> aps::Frame {
         aps::Frame::new(
-            self.profile_id,
-            cluster_id,
-            source_endpoint.map_or(0x01, u8::from),
+            aps_metadata.profile_id().unwrap_or(self.profile_id),
+            aps_metadata.cluster_id(),
+            aps_metadata.source_endpoint().map_or(0x01, u8::from),
             destination_endpoint.into(),
             self.aps_options,
             group_id,
@@ -185,13 +184,12 @@ where
         destination_endpoint: Endpoint,
         frame: Frame,
     ) -> Result<u8, zigbee_nwk::Error> {
-        let (cluster_id, source_endpoint, payload) = frame.into_parts();
+        let (aps_metadata, payload) = frame.into_parts();
         let tag = self.next_message_tag();
         let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
-        let aps_frame =
-            self.next_aps_frame(cluster_id, source_endpoint, destination_endpoint, 0x0000);
+        let aps_frame = self.next_aps_frame(aps_metadata, destination_endpoint, 0x0000);
         let destination = Destination::Direct(pan_id);
         debug!(
             "Sending unicast to: {destination:?}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
@@ -210,12 +208,12 @@ where
         radius: u8,
         frame: Frame,
     ) -> Result<u8, zigbee_nwk::Error> {
-        let (cluster_id, source_endpoint, payload) = frame.into_parts();
+        let (aps_metadata, payload) = frame.into_parts();
         let tag = self.next_message_tag();
         let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
-        let aps_frame = self.next_aps_frame(cluster_id, source_endpoint, Endpoint::Data, group_id);
+        let aps_frame = self.next_aps_frame(aps_metadata, Endpoint::Data, group_id);
         debug!(
             "Sending multicast: Hops: {hops}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
             message.as_slice()
@@ -232,13 +230,12 @@ where
         radius: u8,
         frame: Frame,
     ) -> Result<u8, zigbee_nwk::Error> {
-        let (cluster_id, source_endpoint, payload) = frame.into_parts();
+        let (aps_metadata, payload) = frame.into_parts();
         let tag = self.next_message_tag();
         let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
-        let aps_frame =
-            self.next_aps_frame(cluster_id, source_endpoint, Endpoint::Broadcast, 0x0000);
+        let aps_frame = self.next_aps_frame(aps_metadata, Endpoint::Broadcast, 0x0000);
         debug!(
             "Sending broadcast to: {pan_id:#06X}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
             message.as_slice()

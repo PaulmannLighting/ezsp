@@ -8,6 +8,7 @@ use rand::random;
 use silizium::zigbee::security::man::Key;
 use tokio::spawn;
 use tokio::sync::mpsc::Receiver;
+use zigbee::Profile;
 use zigbee_nwk::{Event, Waiter};
 
 use crate::ember::security::initial;
@@ -20,7 +21,6 @@ use crate::{
     Callback, Configuration, Error, Messaging, Networking, Security, Transport, Utilities,
 };
 
-const HOME_AUTOMATION: u16 = 0x0104;
 const HOME_GATEWAY: u16 = 0x0050;
 const INPUT_CLUSTERS: &[u16] = &[0x0000, 0x0006, 0x0008, 0x0300, 0x0403, 0x0201];
 const OUTPUT_CLUSTERS: &[u16] = &[0x0000, 0x0006, 0x0008, 0x0300, 0x0403];
@@ -38,7 +38,7 @@ pub struct Builder<T> {
     init_bitmask: InitBitmask,
     app_flags: u8,
     aps_options: aps::Options,
-    profile_id: u16,
+    profile: Profile,
     device_id: u16,
     input_clusters: Vec<u16>,
     output_clusters: Vec<u16>,
@@ -66,7 +66,7 @@ impl<T> Builder<T> {
             init_bitmask: InitBitmask::NO_OPTIONS,
             app_flags: 0,
             aps_options: aps::Options::empty(),
-            profile_id: HOME_AUTOMATION,
+            profile: Profile::ZigbeeHomeAutomation,
             device_id: HOME_GATEWAY,
             input_clusters: INPUT_CLUSTERS.to_vec(),
             output_clusters: OUTPUT_CLUSTERS.to_vec(),
@@ -133,8 +133,8 @@ impl<T> Builder<T> {
 
     /// Sets the profile ID for the configuration.
     #[must_use]
-    pub const fn with_profile_id(mut self, profile_id: u16) -> Self {
-        self.profile_id = profile_id;
+    pub const fn with_profile(mut self, profile: Profile) -> Self {
+        self.profile = profile;
         self
     }
 
@@ -269,7 +269,7 @@ impl<T> Builder<T> {
             self.transport
                 .add_endpoint(
                     endpoint,
-                    self.profile_id,
+                    self.profile.into(),
                     self.device_id,
                     0,
                     self.input_clusters.iter().copied().collect(),
@@ -348,7 +348,7 @@ impl<T> Builder<T> {
             .await?;
 
         Ok((
-            NetworkManager::new(self.transport, self.profile_id, self.aps_options, handlers),
+            NetworkManager::new(self.transport, self.profile, self.aps_options, handlers),
             events,
         ))
     }

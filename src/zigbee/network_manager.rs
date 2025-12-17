@@ -7,7 +7,7 @@ use std::time::Duration;
 use log::{debug, info};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
-use zigbee::Endpoint;
+use zigbee::{Endpoint, Profile};
 use zigbee_nwk::{ApsMetadata, Frame, Nlme};
 
 use self::builder::Builder;
@@ -27,7 +27,7 @@ mod message_handler;
 /// Network manager for Zigbee networks.
 pub struct NetworkManager<T> {
     transport: T,
-    profile_id: u16,
+    profile: Profile,
     aps_options: aps::Options,
     handlers: Handlers,
     message_tag: u8,
@@ -40,13 +40,13 @@ impl<T> NetworkManager<T> {
     #[must_use]
     pub(crate) const fn new(
         transport: T,
-        profile_id: u16,
+        profile: Profile,
         aps_options: aps::Options,
         handlers: Handlers,
     ) -> Self {
         Self {
             transport,
-            profile_id,
+            profile,
             aps_options,
             handlers,
             message_tag: 0,
@@ -91,7 +91,7 @@ impl<T> NetworkManager<T> {
         group_id: u16,
     ) -> aps::Frame {
         aps::Frame::new(
-            aps_metadata.profile_id().unwrap_or(self.profile_id),
+            aps_metadata.profile().unwrap_or(self.profile).into(),
             aps_metadata.cluster_id(),
             aps_metadata.source_endpoint().map_or(0x01, u8::from),
             destination_endpoint.into(),

@@ -3,6 +3,7 @@ use std::sync::Arc;
 use ashv2::{Actor, Proxy, SerialPort, TryCloneNative};
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, Sender, channel};
+use tokio::task::JoinError;
 
 use super::decoder::Decoder;
 use super::splitter::Splitter;
@@ -54,5 +55,19 @@ impl Threads {
             splitter,
         };
         (ash_proxy, response_rx, instance)
+    }
+
+    /// Abort all UART communication tasks.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`JoinError`] if any of the tasks fail to abort.
+    pub async fn abort(self) {
+        self.ashv2_transmitter.abort();
+        self.ashv2_receiver.abort();
+        self.splitter.abort();
+        let _ = self.ashv2_transmitter.await;
+        let _ = self.ashv2_receiver.await;
+        let _ = self.splitter.await;
     }
 }

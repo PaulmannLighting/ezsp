@@ -8,6 +8,7 @@ use ashv2::{SerialPort, TryCloneNative};
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
+use tokio::task::JoinError;
 
 use self::connection::Connection;
 use self::encoder::Encoder;
@@ -35,7 +36,6 @@ pub struct Uart {
     state: Arc<NpRwLock<State>>,
     responses: Receiver<Result<Parameters, Error>>,
     encoder: Encoder,
-    #[expect(unused)]
     threads: Threads,
     sequence: u8,
 }
@@ -131,6 +131,15 @@ impl Uart {
                 negotiated: response,
             })
         }
+    }
+
+    /// Abort the UART threads.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`JoinError`] if any of the threads fail to abort.
+    pub async fn abort(self) {
+        self.threads.abort().await;
     }
 }
 

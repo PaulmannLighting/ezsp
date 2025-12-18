@@ -1,4 +1,3 @@
-use core::sync::atomic::AtomicBool;
 use std::sync::Arc;
 
 use ashv2::{Actor, Proxy, TTYPort};
@@ -16,7 +15,6 @@ use crate::uart::state::State;
 /// Threads and async tasks for the UART communication.
 #[derive(Debug)]
 pub struct Threads {
-    running: Arc<AtomicBool>,
     ashv2_transmitter: tokio::task::JoinHandle<()>,
     ashv2_receiver: tokio::task::JoinHandle<()>,
     splitter: tokio::task::JoinHandle<()>,
@@ -30,8 +28,6 @@ impl Threads {
         state: Arc<NpRwLock<State>>,
         channel_size: usize,
     ) -> (Proxy, Receiver<Result<Parameters, Error>>, Self) {
-        let running = Arc::new(AtomicBool::new(true));
-
         // `ASHv2` actor
         let (actor, ash_proxy, ash_rx) =
             Actor::new(serial_port, 64, 64).expect("Actor creation should succeed.");
@@ -50,7 +46,6 @@ impl Threads {
         let (ashv2_transmitter, ashv2_receiver) = actor.spawn();
 
         let instance = Self {
-            running,
             ashv2_transmitter,
             ashv2_receiver,
             splitter,

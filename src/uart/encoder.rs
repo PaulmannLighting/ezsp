@@ -1,5 +1,5 @@
 use core::fmt::Debug;
-use std::io::{self, ErrorKind};
+use std::io::{self};
 
 use ashv2::{HexSlice, MAX_PAYLOAD_SIZE, Payload, Proxy};
 use le_stream::ToLeStream;
@@ -73,6 +73,6 @@ impl Encoder {
         self.sender
             .communicate(payload)
             .await
-            .map_err(|_| io::Error::new(ErrorKind::BrokenPipe, "Failed to send payload"))
+            .map_err(io::Error::other)
     }
 }

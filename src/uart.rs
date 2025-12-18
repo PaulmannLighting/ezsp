@@ -196,7 +196,8 @@ impl Transport for Uart {
 
     async fn receive<P>(&mut self) -> Result<P, Error>
     where
-        P: TryFrom<Parameters, Error = Parameters> + Send,
+        P: TryFrom<Parameters> + Send,
+        <P as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
     {
         let mut parameters;
 
@@ -209,7 +210,8 @@ impl Transport for Uart {
 
             match P::try_from(parameters) {
                 Ok(frame) => return Ok(frame),
-                Err(parameters) => {
+                Err(error) => {
+                    parameters = error.into();
                     trace!(
                         "Received unexpected response: {parameters:?}, requeueing and retrying."
                     );

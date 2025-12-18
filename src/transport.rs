@@ -28,7 +28,8 @@ pub trait Transport: Send {
     /// Receive a response from the NCP.
     fn receive<T>(&mut self) -> impl Future<Output = Result<T, Error>> + Send
     where
-        T: TryFrom<Parameters, Error = Parameters> + Send;
+        T: TryFrom<Parameters> + Send,
+        <T as TryFrom<Parameters>>::Error: Into<Parameters> + Send;
 
     /// Communicate with the NCP.
     ///
@@ -36,7 +37,8 @@ pub trait Transport: Send {
     fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
     where
         C: Parameter + ToLeStream,
-        R: TryFrom<Parameters, Error = Parameters> + Send,
+        R: TryFrom<Parameters> + Send,
+        <R as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
     {
         async {
             self.check_reset().await?;

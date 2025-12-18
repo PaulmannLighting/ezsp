@@ -1,3 +1,5 @@
+use std::convert::Infallible;
+
 use super::{Callback, Response};
 
 mod conversion;
@@ -11,4 +13,11 @@ pub enum Parameters {
     Response(Response),
     /// A callback.
     Callback(Callback),
+}
+
+/// Implementation to satisfy trait bound on `Into<Parameters>`.
+impl From<Infallible> for Parameters {
+    fn from(value: Infallible) -> Self {
+        match value {}
+    }
 }

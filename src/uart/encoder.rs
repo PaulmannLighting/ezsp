@@ -1,5 +1,5 @@
 use core::fmt::Debug;
-use std::io::{self};
+use std::io;
 
 use ashv2::{HexSlice, MAX_PAYLOAD_SIZE, Payload, Proxy};
 use le_stream::ToLeStream;

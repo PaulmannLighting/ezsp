@@ -8,7 +8,7 @@ use log::{debug, info};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
 use zigbee::{Endpoint, Profile};
-use zigbee_nwk::{ApsMetadata, Frame, Nlme};
+use zigbee_nwk::{ApsMetadata, Frame, NetworkManager};
 
 use self::builder::Builder;
 use self::collect_networks_found::CollectNetworksFound;
@@ -25,7 +25,7 @@ mod collect_networks_found;
 mod message_handler;
 
 /// Network manager for Zigbee networks.
-pub struct NetworkManager<T> {
+pub struct EzspNetworkManager<T> {
     transport: T,
     profile: Profile,
     aps_options: aps::Options,
@@ -35,7 +35,7 @@ pub struct NetworkManager<T> {
     transaction_seq: u8,
 }
 
-impl<T> NetworkManager<T> {
+impl<T> EzspNetworkManager<T> {
     /// Creates a new `NetworkManager` with the given transport.
     #[must_use]
     pub(crate) const fn new(
@@ -102,7 +102,7 @@ impl<T> NetworkManager<T> {
     }
 }
 
-impl<T> Nlme for NetworkManager<T>
+impl<T> NetworkManager for EzspNetworkManager<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities,
 {

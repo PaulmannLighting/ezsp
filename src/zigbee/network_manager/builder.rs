@@ -15,7 +15,7 @@ use crate::ember::security::initial;
 use crate::ember::{aps, concentrator, join, network};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
-use crate::zigbee::NetworkManager;
+use crate::zigbee::EzspNetworkManager;
 use crate::zigbee::network_manager::message_handler::MessageHandler;
 use crate::{
     Callback, Configuration, Error, Messaging, Networking, Security, Transport, Utilities,
@@ -244,7 +244,9 @@ impl<T> Builder<T> {
     }
 
     /// Starts the network manager on the given transport implementation.
-    pub async fn start(mut self) -> Result<(NetworkManager<T>, tokio_mpmc::Receiver<Event>), Error>
+    pub async fn start(
+        mut self,
+    ) -> Result<(EzspNetworkManager<T>, tokio_mpmc::Receiver<Event>), Error>
     where
         T: Transport,
     {
@@ -348,7 +350,7 @@ impl<T> Builder<T> {
             .await?;
 
         Ok((
-            NetworkManager::new(self.transport, self.profile, self.aps_options, handlers),
+            EzspNetworkManager::new(self.transport, self.profile, self.aps_options, handlers),
             events,
         ))
     }

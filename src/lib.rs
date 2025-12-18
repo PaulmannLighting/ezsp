@@ -12,6 +12,7 @@ pub use self::commands::{
     Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
 };
 pub use self::constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
+pub use self::defragmentation::{DefragmentationError, DefragmentedMessage, Defragmenter};
 pub use self::error::{Error, ValueError};
 pub use self::frame::{
     Callback, CallbackType, Command, Disambiguation, Extended, FormatVersion, Frame, Header,

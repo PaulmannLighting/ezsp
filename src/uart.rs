@@ -3,11 +3,13 @@
 use core::fmt::Debug;
 use core::num::TryFromIntError;
 use std::sync::Arc;
+use std::time::Duration;
 
 use ashv2::{SerialPort, TryCloneNative};
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
+use tokio::time::sleep;
 
 use self::connection::Connection;
 use self::encoder::Encoder;
@@ -27,6 +29,8 @@ mod np_rw_lock;
 mod splitter;
 mod state;
 mod threads;
+
+const REQUEUE_GRACE_PERIOD: Duration = Duration::from_millis(100);
 
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
@@ -213,12 +217,13 @@ impl Transport for Uart {
                 Err(error) => {
                     parameters = error.into();
                     trace!(
-                        "Received unexpected response: {parameters:?}, requeueing and retrying."
+                        "Received unexpected response: {parameters:?}, re-queueing and retrying in {REQUEUE_GRACE_PERIOD:?}."
                     );
+                    sleep(REQUEUE_GRACE_PERIOD).await;
                     self.responses_tx
                         .send(Ok(parameters))
                         .await
-                        .expect("Response channel should be open. This is a bug.");
+                        .expect("Re-queueing channel should be open. This is a bug.");
                 }
             }
         }

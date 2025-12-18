@@ -22,6 +22,7 @@ pub struct Threads {
 
 impl Threads {
     /// Spawn the threads for the UART communication.
+    #[expect(clippy::type_complexity)]
     pub fn spawn<T>(
         serial_port: T,
         callbacks_tx: Sender<Callback>,

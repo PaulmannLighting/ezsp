@@ -8,7 +8,6 @@ use ashv2::{SerialPort, TryCloneNative};
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
-use tokio::task::JoinError;
 
 use self::connection::Connection;
 use self::encoder::Encoder;

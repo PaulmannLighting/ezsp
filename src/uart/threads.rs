@@ -3,7 +3,6 @@ use std::sync::Arc;
 use ashv2::{Actor, Proxy, SerialPort, TryCloneNative};
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, Sender, channel};
-use tokio::task::JoinError;
 
 use super::decoder::Decoder;
 use super::splitter::Splitter;

@@ -33,7 +33,8 @@ mod threads;
 pub struct Uart {
     protocol_version: u8,
     state: Arc<NpRwLock<State>>,
-    responses: Receiver<Result<Parameters, Error>>,
+    responses_tx: Sender<Result<Parameters, Error>>,
+    responses_rx: Receiver<Result<Parameters, Error>>,
     encoder: Encoder,
     threads: Threads,
     sequence: u8,
@@ -55,12 +56,13 @@ impl Uart {
         T: SerialPort + TryCloneNative + Sync + 'static,
     {
         let state = Arc::new(NpRwLock::new(State::default()));
-        let (frames_out, responses, threads) =
+        let (frames_out, responses_tx, responses_rx, threads) =
             Threads::spawn(serial_port, callbacks, state.clone(), channel_size);
         Self {
             protocol_version,
             state,
-            responses,
+            responses_tx,
+            responses_rx,
             encoder: Encoder::new(frames_out),
             threads,
             sequence: 0,
@@ -175,32 +177,48 @@ impl Transport for Uart {
         }
     }
 
-    async fn send<C>(&mut self, command: C) -> Result<(), Error>
+    async fn send<C>(&mut self, command: C) -> Result<u16, Error>
     where
         C: Parameter + ToLeStream,
     {
         let header = self
             .next_header(C::ID)
             .map_err(ValueError::InvalidFrameId)?;
+        let id = header.id();
         // Set disambiguation for the command being sent.
         //
         // XXX: This needs to be done before sending the command, because if the serial port
         // responds before we set the disambiguation, we might misinterpret the response.
         self.state.write().set_disambiguation(C::DISAMBIGUATION);
         self.encoder.send(header, command).await?;
-        Ok(())
+        Ok(id)
     }
 
     async fn receive<P>(&mut self) -> Result<P, Error>
     where
-        P: TryFrom<Parameters>,
-        Error: From<<P as TryFrom<Parameters>>::Error>,
+        P: TryFrom<Parameters, Error = Parameters> + Send,
     {
-        let response = self
-            .responses
-            .recv()
-            .await
-            .expect("Response channel should be open. This is a bug.");
-        Ok(response?.try_into()?)
+        let mut parameters;
+
+        loop {
+            parameters = self
+                .responses_rx
+                .recv()
+                .await
+                .expect("Response channel should be open. This is a bug.")?;
+
+            match P::try_from(parameters) {
+                Ok(frame) => return Ok(frame),
+                Err(parameters) => {
+                    trace!(
+                        "Received unexpected response: {parameters:?}, requeueing and retrying."
+                    );
+                    self.responses_tx
+                        .send(Ok(parameters))
+                        .await
+                        .expect("Response channel should be open. This is a bug.");
+                }
+            }
+        }
     }
 }

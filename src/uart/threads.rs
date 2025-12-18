@@ -27,7 +27,12 @@ impl Threads {
         callbacks_tx: Sender<Callback>,
         state: Arc<NpRwLock<State>>,
         channel_size: usize,
-    ) -> (Proxy, Receiver<Result<Parameters, Error>>, Self)
+    ) -> (
+        Proxy,
+        Sender<Result<Parameters, Error>>,
+        Receiver<Result<Parameters, Error>>,
+        Self,
+    )
     where
         T: SerialPort + TryCloneNative + Sync + 'static,
     {
@@ -40,7 +45,7 @@ impl Threads {
         let splitter = spawn(
             Splitter::new(
                 Decoder::new(ash_rx, state.clone()),
-                response_tx,
+                response_tx.clone(),
                 callbacks_tx,
                 state,
             )
@@ -53,7 +58,7 @@ impl Threads {
             ashv2_receiver,
             splitter,
         };
-        (ash_proxy, response_rx, instance)
+        (ash_proxy, response_tx, response_rx, instance)
     }
 
     /// Abort all UART communication tasks.

@@ -1,10 +1,9 @@
 use core::fmt::Debug;
 use std::io::{self, ErrorKind};
 
-use ashv2::{HexSlice, MAX_PAYLOAD_SIZE, Payload};
+use ashv2::{HexSlice, MAX_PAYLOAD_SIZE, Payload, Proxy};
 use le_stream::ToLeStream;
 use log::trace;
-use tokio::sync::mpsc::Sender;
 
 use crate::frame::Header;
 use crate::{Error, MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
@@ -12,14 +11,14 @@ use crate::{Error, MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 /// Encode `EZSP` frames into `ASHv2` frames.
 #[derive(Debug)]
 pub struct Encoder {
-    sender: Sender<Payload>,
+    sender: Proxy,
     header: heapless::Vec<u8, MAX_HEADER_SIZE>,
     parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
 }
 
 impl Encoder {
     /// Create a new `Encoder`.
-    pub const fn new(sender: Sender<Payload>) -> Self {
+    pub const fn new(sender: Proxy) -> Self {
         Self {
             sender,
             header: heapless::Vec::new(),
@@ -72,7 +71,7 @@ impl Encoder {
         payload.extend_from_slice(chunk).map_err(io::Error::other)?;
         trace!("Sending chunk: {:#04X}", HexSlice::new(&payload));
         self.sender
-            .send(payload)
+            .communicate(payload)
             .await
             .map_err(|_| io::Error::new(ErrorKind::BrokenPipe, "Failed to send payload"))
     }

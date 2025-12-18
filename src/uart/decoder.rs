@@ -1,6 +1,5 @@
 //! Decoding of `ASHv2` frames into `EZSP` frames.
 
-use std::io;
 use std::sync::Arc;
 
 use ashv2::{HexSlice, Payload};
@@ -12,7 +11,6 @@ use crate::error::Decode;
 use crate::frame::parsable::Parsable;
 use crate::frame::{Disambiguation, Frame, Header};
 use crate::parameters::utilities::invalid_command;
-use crate::uart::connection::Connection;
 use crate::uart::np_rw_lock::NpRwLock;
 use crate::uart::state::State;
 use crate::{Error, Extended, Legacy, LowByte, MAX_PARAMETER_SIZE, Parameters, ezsp};
@@ -20,7 +18,7 @@ use crate::{Error, Extended, Legacy, LowByte, MAX_PARAMETER_SIZE, Parameters, ez
 /// Decode `ASHv2` frames into `EZSP` frames.
 #[derive(Debug)]
 pub struct Decoder {
-    source: Receiver<io::Result<Payload>>,
+    source: Receiver<Payload>,
     state: Arc<NpRwLock<State>>,
     header: Option<Header>,
     parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
@@ -32,7 +30,7 @@ impl Decoder {
     /// Sets the source as a receiver for incoming `ASHv2` frames
     /// and the current state of the `EZSP` UART.
     #[must_use]
-    pub const fn new(source: Receiver<io::Result<Payload>>, state: Arc<NpRwLock<State>>) -> Self {
+    pub const fn new(source: Receiver<Payload>, state: Arc<NpRwLock<State>>) -> Self {
         Self {
             source,
             state,
@@ -49,21 +47,15 @@ impl Decoder {
     pub async fn decode(&mut self) -> Option<Result<Frame, Error>> {
         self.parameters.clear();
 
-        while let Some(result) = self.source.recv().await {
-            match result {
-                Ok(frame) => match self.try_parse_frame_fragment(frame) {
-                    Ok(maybe_frame) => {
-                        if let Some(frame) = maybe_frame {
-                            return Some(Ok(frame));
-                        }
+        while let Some(frame) = self.source.recv().await {
+            match self.try_parse_frame_fragment(frame) {
+                Ok(maybe_frame) => {
+                    if let Some(frame) = maybe_frame {
+                        return Some(Ok(frame));
                     }
-                    Err(error) => {
-                        return Some(Err(error));
-                    }
-                },
+                }
                 Err(error) => {
-                    self.state.write().set_connection(Connection::Failed);
-                    return Some(Err(error.into()));
+                    return Some(Err(error));
                 }
             }
         }

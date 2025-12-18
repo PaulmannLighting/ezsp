@@ -37,7 +37,7 @@ zigbee = { version = "0.1.0", path = "../apis-saltans/zigbee", optional = true }
 tokio-mpmc = { version = "0.2.4", optional = true }
 
 [features]
-ashv2 = ["ashv2/serialport", "tokio/rt", "tokio/time", "tokio/sync"]
+ashv2 = ["dep:ashv2", "tokio/rt", "tokio/time", "tokio/sync"]
 semver = ["dep:semver"]
 zigbee = ["dep:zigbee", "dep:zigbee-nwk", "dep:rand", "dep:tokio-mpmc", "dep:aps", "dep:zcl", "dep:zdp"]
 

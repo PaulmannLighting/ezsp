@@ -1,9 +1,7 @@
 use core::sync::atomic::AtomicBool;
-use core::sync::atomic::Ordering::Relaxed;
 use std::sync::Arc;
 
-use ashv2::{Payload, SerialPort, Transceiver};
-use log::error;
+use ashv2::{Actor, Proxy, TTYPort};
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, Sender, channel};
 
@@ -17,76 +15,46 @@ use crate::uart::state::State;
 
 /// Threads and async tasks for the UART communication.
 #[derive(Debug)]
-pub struct Threads<T> {
+pub struct Threads {
     running: Arc<AtomicBool>,
-    transceiver: Option<std::thread::JoinHandle<T>>,
+    ashv2_transmitter: tokio::task::JoinHandle<()>,
+    ashv2_receiver: tokio::task::JoinHandle<()>,
     splitter: tokio::task::JoinHandle<()>,
 }
 
-impl<T> Threads<T> {
+impl Threads {
     /// Spawn the threads for the UART communication.
     pub fn spawn(
-        serial_port: T,
+        serial_port: TTYPort,
         callbacks_tx: Sender<Callback>,
         state: Arc<NpRwLock<State>>,
         channel_size: usize,
-    ) -> (Sender<Payload>, Receiver<Result<Parameters, Error>>, Self)
-    where
-        T: SerialPort + 'static,
-    {
+    ) -> (Proxy, Receiver<Result<Parameters, Error>>, Self) {
         let running = Arc::new(AtomicBool::new(true));
 
-        // `ASHv2` transceiver
-        let (frames_out, frames_in, transceiver) =
-            Transceiver::spawn(serial_port, running.clone(), channel_size);
+        // `ASHv2` actor
+        let (actor, ash_proxy, ash_rx) =
+            Actor::new(serial_port, 64, 64).expect("Actor creation should succeed.");
 
         // Frame splitter
         let (response_tx, response_rx) = channel(channel_size);
         let splitter = spawn(
             Splitter::new(
-                Decoder::new(frames_in, state.clone()),
+                Decoder::new(ash_rx, state.clone()),
                 response_tx,
                 callbacks_tx,
                 state,
             )
             .run(),
         );
+        let (ashv2_transmitter, ashv2_receiver) = actor.spawn();
 
         let instance = Self {
             running,
-            transceiver: Some(transceiver),
+            ashv2_transmitter,
+            ashv2_receiver,
             splitter,
         };
-        (frames_out, response_rx, instance)
-    }
-
-    /// Terminate the threads and return the serial port.
-    pub fn terminate(mut self) -> T {
-        self.try_terminate()
-            .expect("Transceiver thread should be present and be able to join. This is a bug.")
-    }
-
-    fn try_terminate(&mut self) -> Option<T> {
-        // First stop the ASHv2 transceiver...
-        self.running.store(false, Relaxed);
-
-        // ...then stop the transceiver thread and return the serial port.
-        let serial_port = self.transceiver.take().and_then(|transceiver| {
-            transceiver
-                .join()
-                .inspect_err(|_| error!("Failed to join transceiver thread."))
-                .ok()
-        });
-
-        // Finally stop the frame splitter and callback handler.
-        self.splitter.abort();
-        serial_port
-    }
-}
-
-/// Tear down the threads for the UART communication.
-impl<T> Drop for Threads<T> {
-    fn drop(&mut self) {
-        self.try_terminate();
+        (ash_proxy, response_rx, instance)
     }
 }

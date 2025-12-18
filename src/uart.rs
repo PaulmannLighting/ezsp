@@ -4,7 +4,7 @@ use core::fmt::Debug;
 use core::num::TryFromIntError;
 use std::sync::Arc;
 
-use ashv2::SerialPort;
+use ashv2::TTYPort;
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
@@ -30,33 +30,28 @@ mod threads;
 
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
-pub struct Uart<T> {
+pub struct Uart {
     protocol_version: u8,
     state: Arc<NpRwLock<State>>,
     responses: Receiver<Result<Parameters, Error>>,
     encoder: Encoder,
-    threads: Threads<T>,
+    #[expect(unused)]
+    threads: Threads,
     sequence: u8,
 }
 
-impl<T> Uart<T>
-where
-    T: SerialPort,
-{
+impl Uart {
     /// Creates an `ASHv2` host.
     ///
     /// A minimum protocol version of [`MIN_NON_LEGACY_VERSION`] is required
     /// to support non-legacy commands.
     #[must_use]
     pub fn new(
-        serial_port: T,
+        serial_port: TTYPort,
         callbacks: Sender<Callback>,
         protocol_version: u8,
         channel_size: usize,
-    ) -> Self
-    where
-        T: 'static,
-    {
+    ) -> Self {
         let state = Arc::new(NpRwLock::new(State::default()));
         let (frames_out, responses, threads) =
             Threads::spawn(serial_port, callbacks, state.clone(), channel_size);
@@ -134,18 +129,9 @@ where
             })
         }
     }
-
-    /// Terminate the UART threads and return the serial port.
-    #[must_use]
-    pub fn terminate(self) -> T {
-        self.threads.terminate()
-    }
 }
 
-impl<T> Ezsp for Uart<T>
-where
-    T: SerialPort,
-{
+impl Ezsp for Uart {
     async fn init(&mut self) -> Result<version::Response, Error> {
         let response = self.negotiate_version().await?;
         self.state.write().set_connection(Connection::Connected);
@@ -157,10 +143,7 @@ where
     }
 }
 
-impl<T> Transport for Uart<T>
-where
-    T: SerialPort,
-{
+impl Transport for Uart {
     async fn check_reset(&mut self) -> Result<(), Error> {
         // Use temporary variable, because we need to drop the lock before the match statement.
         let connection = self.state.read().connection();

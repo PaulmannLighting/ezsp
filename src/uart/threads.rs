@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ashv2::{Actor, Proxy, TTYPort};
+use ashv2::{Actor, Proxy, SerialPort, TryCloneNative};
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, Sender, channel};
 
@@ -22,12 +22,15 @@ pub struct Threads {
 
 impl Threads {
     /// Spawn the threads for the UART communication.
-    pub fn spawn(
-        serial_port: TTYPort,
+    pub fn spawn<T>(
+        serial_port: T,
         callbacks_tx: Sender<Callback>,
         state: Arc<NpRwLock<State>>,
         channel_size: usize,
-    ) -> (Proxy, Receiver<Result<Parameters, Error>>, Self) {
+    ) -> (Proxy, Receiver<Result<Parameters, Error>>, Self)
+    where
+        T: SerialPort + TryCloneNative + Sync + 'static,
+    {
         // `ASHv2` actor
         let (actor, ash_proxy, ash_rx) =
             Actor::new(serial_port, 64, 64).expect("Actor creation should succeed.");

@@ -4,7 +4,7 @@ use core::fmt::Debug;
 use core::num::TryFromIntError;
 use std::sync::Arc;
 
-use ashv2::TTYPort;
+use ashv2::{SerialPort, TryCloneNative};
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
@@ -46,12 +46,15 @@ impl Uart {
     /// A minimum protocol version of [`MIN_NON_LEGACY_VERSION`] is required
     /// to support non-legacy commands.
     #[must_use]
-    pub fn new(
-        serial_port: TTYPort,
+    pub fn new<T>(
+        serial_port: T,
         callbacks: Sender<Callback>,
         protocol_version: u8,
         channel_size: usize,
-    ) -> Self {
+    ) -> Self
+    where
+        T: SerialPort + TryCloneNative + Sync + 'static,
+    {
         let state = Arc::new(NpRwLock::new(State::default()));
         let (frames_out, responses, threads) =
             Threads::spawn(serial_port, callbacks, state.clone(), channel_size);

@@ -5,21 +5,24 @@ use core::num::TryFromIntError;
 use std::sync::Arc;
 use std::time::Duration;
 
-use ashv2::{SerialPort, TryCloneNative};
+use ashv2::{Payload, Proxy};
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
-use tokio::sync::mpsc::{Receiver, Sender};
+use tokio::spawn;
+use tokio::sync::mpsc::{Receiver, Sender, channel};
+use tokio::task::JoinHandle;
 use tokio::time::sleep;
 
 use self::connection::Connection;
 use self::encoder::Encoder;
 use self::np_rw_lock::NpRwLock;
 use self::state::State;
-use self::threads::Threads;
 use crate::error::Error;
 use crate::frame::{Command, Header, Parameter};
 use crate::parameters::configuration::version;
 use crate::transport::{MIN_NON_LEGACY_VERSION, Transport};
+use crate::uart::decoder::Decoder;
+use crate::uart::splitter::Splitter;
 use crate::{Callback, Configuration, Extended, Ezsp, Legacy, Parameters, ValueError};
 
 mod connection;
@@ -28,7 +31,6 @@ mod encoder;
 mod np_rw_lock;
 mod splitter;
 mod state;
-mod threads;
 
 const REQUEUE_GRACE_PERIOD: Duration = Duration::from_millis(100);
 
@@ -40,7 +42,7 @@ pub struct Uart {
     responses_tx: Sender<Result<Parameters, Error>>,
     responses_rx: Receiver<Result<Parameters, Error>>,
     encoder: Encoder,
-    threads: Threads,
+    splitter: JoinHandle<()>,
     sequence: u8,
 }
 
@@ -50,25 +52,33 @@ impl Uart {
     /// A minimum protocol version of [`MIN_NON_LEGACY_VERSION`] is required
     /// to support non-legacy commands.
     #[must_use]
-    pub fn new<T>(
-        serial_port: T,
+    pub fn new(
+        ash_proxy: Proxy,
+        ash_rx: Receiver<Payload>,
         callbacks: Sender<Callback>,
         protocol_version: u8,
         channel_size: usize,
-    ) -> Self
-    where
-        T: SerialPort + TryCloneNative + Sync + 'static,
-    {
+    ) -> Self {
         let state = Arc::new(NpRwLock::new(State::default()));
-        let (frames_out, responses_tx, responses_rx, threads) =
-            Threads::spawn(serial_port, callbacks, state.clone(), channel_size);
+        // Frame splitter
+        let (responses_tx, responses_rx) = channel(channel_size);
+        let splitter = spawn(
+            Splitter::new(
+                Decoder::new(ash_rx, state.clone()),
+                responses_tx.clone(),
+                callbacks,
+                state.clone(),
+            )
+            .run(),
+        );
+
         Self {
             protocol_version,
             state,
+            encoder: Encoder::new(ash_proxy),
             responses_tx,
             responses_rx,
-            encoder: Encoder::new(frames_out),
-            threads,
+            splitter,
             sequence: 0,
         }
     }
@@ -144,7 +154,8 @@ impl Uart {
     ///
     /// Returns a [`JoinError`] if any of the threads fail to abort.
     pub async fn abort(self) {
-        self.threads.abort().await;
+        self.splitter.abort();
+        let _ = self.splitter.await;
     }
 }
 

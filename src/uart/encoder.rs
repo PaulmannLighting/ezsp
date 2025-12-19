@@ -53,6 +53,7 @@ impl Encoder {
             self.send_chunk(&[]).await?;
         }
 
+        trace!("Sending chunks of {MAX_PAYLOAD_SIZE} bytes.");
         for chunk in self
             .parameters
             .chunks(MAX_PAYLOAD_SIZE.saturating_sub(self.header.len()))

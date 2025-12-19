@@ -60,7 +60,6 @@ impl Uart {
         channel_size: usize,
     ) -> Self {
         let state = Arc::new(NpRwLock::new(State::default()));
-        // Frame splitter
         let (responses_tx, responses_rx) = channel(channel_size);
         let splitter = spawn(
             Splitter::new(

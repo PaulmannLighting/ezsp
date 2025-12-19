@@ -72,8 +72,10 @@ impl Encoder {
         payload.extend_from_slice(chunk).map_err(io::Error::other)?;
         trace!("Sending chunk: {:#04X}", HexSlice::new(&payload));
         self.sender
-            .communicate(payload)
+            .send(payload)
             .await
-            .map_err(io::Error::other)
+            .map_err(io::Error::other)?
+            .await
+            .map_err(io::Error::other)?
     }
 }

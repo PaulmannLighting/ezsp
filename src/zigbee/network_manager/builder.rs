@@ -244,9 +244,7 @@ impl<T> Builder<T> {
     }
 
     /// Starts the network manager on the given transport implementation.
-    pub async fn start(
-        mut self,
-    ) -> Result<(EzspNetworkManager<T>, tokio_mpmc::Receiver<Event>), Error>
+    pub async fn start(mut self) -> Result<(EzspNetworkManager<T>, Receiver<Event>), Error>
     where
         T: Transport,
     {

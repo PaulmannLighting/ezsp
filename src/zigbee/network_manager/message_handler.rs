@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use log::{debug, error, trace, warn};
 use tokio::sync::Mutex;
-use tokio::sync::mpsc::{Receiver, Sender};
-use tokio_mpmc::ChannelError;
+use tokio::sync::mpsc::error::SendError;
+use tokio::sync::mpsc::{Receiver, Sender, channel};
 use zigbee::Endpoint;
 use zigbee_nwk::Event;
 
@@ -22,15 +22,15 @@ pub type Handlers = Arc<Mutex<Vec<Sender<Callback>>>>;
 /// Handler for processing incoming messages.
 pub struct MessageHandler {
     handlers: Handlers,
-    outgoing: tokio_mpmc::Sender<Event>,
+    outgoing: Sender<Event>,
     transactions: Defragmenter<2>,
 }
 
 impl MessageHandler {
     /// Creates a new `MessageHandler` with the given outgoing channel size.
-    pub fn new(size: usize) -> (Self, Handlers, tokio_mpmc::Receiver<Event>) {
+    pub fn new(size: usize) -> (Self, Handlers, Receiver<Event>) {
         let handlers = Arc::new(Mutex::new(Vec::new()));
-        let (outgoing, rx) = tokio_mpmc::channel(size);
+        let (outgoing, rx) = channel(size);
         (
             Self {
                 handlers: handlers.clone(),
@@ -72,7 +72,7 @@ impl MessageHandler {
     }
 
     /// Translates EZSP callbacks into Zigbee events and sends them to the outgoing channel.
-    async fn forward_to_zigbee(&mut self, callback: Callback) -> Result<(), ChannelError> {
+    async fn forward_to_zigbee(&mut self, callback: Callback) -> Result<(), SendError<Event>> {
         match callback {
             Callback::Messaging(messaging) => self.handle_messaging_callbacks(messaging).await,
             Callback::Networking(networking) => self.handle_networking_callbacks(networking).await,
@@ -94,7 +94,7 @@ impl MessageHandler {
     async fn handle_networking_callbacks(
         &self,
         networking: Networking,
-    ) -> Result<(), ChannelError> {
+    ) -> Result<(), SendError<Event>> {
         match networking {
             Networking::StackStatus(status) => self.handle_stack_status(status.result()).await,
             Networking::ChildJoin(child_join) => self.handle_child_join(child_join).await,
@@ -116,7 +116,7 @@ impl MessageHandler {
     async fn handle_messaging_callbacks(
         &mut self,
         messaging: Messaging,
-    ) -> Result<(), ChannelError> {
+    ) -> Result<(), SendError<Event>> {
         match messaging {
             Messaging::IncomingMessage(incoming_message) => {
                 self.handle_incoming_message(incoming_message).await
@@ -141,7 +141,7 @@ impl MessageHandler {
     async fn handle_incoming_message(
         &mut self,
         incoming_message: IncomingMessage,
-    ) -> Result<(), ChannelError> {
+    ) -> Result<(), SendError<Event>> {
         debug!("Incoming message: {incoming_message:?}");
 
         let defragmented_message = match self.transactions.defragment(incoming_message) {
@@ -192,7 +192,7 @@ impl MessageHandler {
     async fn handle_stack_status(
         &self,
         status: Result<ember::Status, u8>,
-    ) -> Result<(), ChannelError> {
+    ) -> Result<(), SendError<Event>> {
         let status = match status {
             Ok(status) => status,
             Err(value) => {
@@ -213,7 +213,7 @@ impl MessageHandler {
         }
     }
 
-    async fn handle_child_join(&self, child_join: ChildJoin) -> Result<(), ChannelError> {
+    async fn handle_child_join(&self, child_join: ChildJoin) -> Result<(), SendError<Event>> {
         self.outgoing
             .send(if child_join.joining() {
                 Event::DeviceJoined {
@@ -232,7 +232,7 @@ impl MessageHandler {
     async fn handle_trust_center_join(
         &self,
         trust_center_join: TrustCenterJoin,
-    ) -> Result<(), ChannelError> {
+    ) -> Result<(), SendError<Event>> {
         let status = match trust_center_join.status() {
             Ok(status) => status,
             Err(value) => {

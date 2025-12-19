@@ -8,7 +8,7 @@ use log::{debug, info};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
 use zigbee::{Endpoint, Profile};
-use zigbee_nwk::{ApsMetadata, Frame, NetworkManager};
+use zigbee_nwk::{Actor, ApsMetadata, Frame};
 
 use self::builder::Builder;
 use self::collect_networks_found::CollectNetworksFound;
@@ -102,7 +102,7 @@ impl<T> EzspNetworkManager<T> {
     }
 }
 
-impl<T> NetworkManager for EzspNetworkManager<T>
+impl<T> Actor for EzspNetworkManager<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities,
 {

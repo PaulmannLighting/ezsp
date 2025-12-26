@@ -1,8 +1,13 @@
-
 # cargo-vet config file
 
 [cargo-vet]
 version = "0.10"
+
+[policy.ashv2]
+audit-as-crates-io = true
+
+[policy.silizium]
+audit-as-crates-io = true
 
 [imports.google]
 url = "https://raw.githubusercontent.com/google/supply-chain/main/audits.toml"

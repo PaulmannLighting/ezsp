@@ -75,14 +75,6 @@ impl<T> EzspNetworkManager<T> {
         seq
     }
 
-    /// Registers a new channel for receiving callbacks.
-    #[expect(clippy::needless_pass_by_ref_mut)]
-    async fn register_handler(&mut self, size: usize) -> Receiver<Callback> {
-        let (tx, rx) = tokio::sync::mpsc::channel(size);
-        self.handlers.lock().await.push(tx);
-        rx
-    }
-
     /// Creates a new APS frame with the given parameters.
     fn next_aps_frame(
         &mut self,
@@ -102,9 +94,21 @@ impl<T> EzspNetworkManager<T> {
     }
 }
 
+impl<T> EzspNetworkManager<T>
+where
+    T: Sync,
+{
+    /// Registers a new channel for receiving callbacks.
+    async fn register_handler(&self, size: usize) -> Receiver<Callback> {
+        let (tx, rx) = tokio::sync::mpsc::channel(size);
+        self.handlers.lock().await.push(tx);
+        rx
+    }
+}
+
 impl<T> Actor for EzspNetworkManager<T>
 where
-    T: Configuration + Security + Messaging + Networking + Utilities,
+    T: Configuration + Security + Messaging + Networking + Utilities + Sync,
 {
     fn next_transaction_seq(&mut self) -> u8 {
         let seq = self.transaction_seq;

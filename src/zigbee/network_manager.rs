@@ -78,7 +78,7 @@ impl<T> EzspNetworkManager<T> {
     /// Creates a new APS frame with the given parameters.
     fn next_aps_frame(
         &mut self,
-        aps_metadata: ApsMetadata,
+        aps_metadata: &ApsMetadata,
         destination_endpoint: Endpoint,
         group_id: u16,
     ) -> aps::Frame {
@@ -193,7 +193,7 @@ where
         let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
-        let aps_frame = self.next_aps_frame(aps_metadata, destination_endpoint, 0x0000);
+        let aps_frame = self.next_aps_frame(&aps_metadata, destination_endpoint, 0x0000);
         let destination = Destination::Direct(pan_id);
         debug!(
             "Sending unicast to: {destination:?}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
@@ -217,7 +217,7 @@ where
         let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
-        let aps_frame = self.next_aps_frame(aps_metadata, Endpoint::Data, group_id);
+        let aps_frame = self.next_aps_frame(&aps_metadata, Endpoint::Data, group_id);
         debug!(
             "Sending multicast: Hops: {hops}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
             message.as_slice()
@@ -239,7 +239,7 @@ where
         let message = ByteSizedVec::from_slice(&payload)
             .map_err(io::Error::other)
             .map_err(Error::from)?;
-        let aps_frame = self.next_aps_frame(aps_metadata, Endpoint::Broadcast, 0x0000);
+        let aps_frame = self.next_aps_frame(&aps_metadata, Endpoint::Broadcast, 0x0000);
         debug!(
             "Sending broadcast to: {pan_id:#06X}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
             message.as_slice()

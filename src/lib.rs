@@ -11,7 +11,7 @@ pub use self::commands::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GetValueExt, GreenPower, Messaging, Mfglib,
     Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
 };
-pub use self::constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
+pub use self::constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE, MIN_NON_LEGACY_VERSION};
 pub use self::defragmentation::{DefragmentationError, DefragmentedMessage, Defragmenter};
 pub use self::error::{Error, ValueError};
 pub use self::frame::{
@@ -19,7 +19,7 @@ pub use self::frame::{
     HighByte, Legacy, LowByte, Parameters, Parsable, Response, SleepMode, parameters,
 };
 pub use self::result::Result;
-pub use self::transport::{MIN_NON_LEGACY_VERSION, Transport};
+pub use self::transport::Transport;
 pub use self::types::SourceRouteDiscoveryMode;
 
 mod commands;

@@ -2,8 +2,8 @@ use core::fmt::Debug;
 
 use log::trace;
 
+use crate::constants::MIN_NON_LEGACY_VERSION;
 use crate::frame::Disambiguation;
-use crate::transport::MIN_NON_LEGACY_VERSION;
 use crate::uart::connection::Connection;
 
 /// Shared state of the `EZSP` UART.

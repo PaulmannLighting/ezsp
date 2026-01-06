@@ -7,9 +7,6 @@ use le_stream::ToLeStream;
 use crate::frame::Parameter;
 use crate::{Error, Parameters};
 
-/// The minimum protocol version that supports non-legacy commands.
-pub const MIN_NON_LEGACY_VERSION: u8 = 8;
-
 /// A transport layer to communicate with an NCP that supports the `EZSP` protocol.
 ///
 /// This trait is intended to facilitate the implementation of the `EZSP` protocol,

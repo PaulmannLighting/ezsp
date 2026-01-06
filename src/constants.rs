@@ -19,3 +19,6 @@ pub const MAX_HEADER_SIZE: usize = 5;
 /// - `inputClusterList` (255 * 2 = 510 bytes)
 /// - `outputClusterList` (255 * 2 = 510 bytes)
 pub const MAX_PARAMETER_SIZE: usize = 1028;
+
+/// The minimum protocol version that supports non-legacy commands.
+pub const MIN_NON_LEGACY_VERSION: u8 = 8;

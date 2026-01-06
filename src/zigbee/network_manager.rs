@@ -8,7 +8,7 @@ use log::{debug, info};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
 use zigbee::{Endpoint, Profile};
-use zigbee_nwk::{Actor, ApsMetadata, Frame};
+use zigbee_nwk::{Actor, Metadata, Frame};
 
 use self::builder::Builder;
 use self::collect_networks_found::CollectNetworksFound;
@@ -78,7 +78,7 @@ impl<T> EzspNetworkManager<T> {
     /// Creates a new APS frame with the given parameters.
     fn next_aps_frame(
         &mut self,
-        aps_metadata: &ApsMetadata,
+        aps_metadata: &Metadata,
         destination_endpoint: Endpoint,
         group_id: u16,
     ) -> aps::Frame {

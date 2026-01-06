@@ -8,7 +8,7 @@ use log::{debug, info};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::Receiver;
 use zigbee::{Endpoint, Profile};
-use zigbee_nwk::{Actor, Metadata, Frame};
+use zigbee_nwk::{Actor, Frame, Metadata};
 
 use self::builder::Builder;
 use self::collect_networks_found::CollectNetworksFound;

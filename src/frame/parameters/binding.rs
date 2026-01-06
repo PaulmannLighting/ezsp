@@ -10,7 +10,7 @@ pub mod set;
 pub mod set_remote_node_id;
 
 /// Response parameters for binding frames.
-#[expect(variant_size_differences)]
+#[cfg_attr(target_pointer_width = "64", expect(variant_size_differences))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Response {
     /// Response parameters for [`Binding::clear_binding_table()`](crate::Binding::clear_table).

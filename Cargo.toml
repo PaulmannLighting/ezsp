@@ -15,7 +15,7 @@ exclude = [".gitignore"]
 all-features = true
 
 [dependencies]
-ashv2 = { version = "3.0", path = "../ashv2", optional = true }
+ashv2 = { version = "3.0", git = "https://github.com/PaulmannLighting/ashv2/", optional = true }
 bitflags = "2.10"
 enum-iterator = "2.3"
 heapless = "0.9"
@@ -27,12 +27,12 @@ num-traits = "0.2"
 rand = { version = "0.10.0-rc.5", optional = true }
 repr-discriminant = { version = "3", features = ["derive"] }
 semver = { version = "1.0", optional = true }
-silizium = { version = "1.0", path = "../silizium", features = ["le-stream"] }
+silizium = { version = "1.0", git = "https://github.com/PaulmannLighting/silizium/", features = ["le-stream"] }
 tokio = { version = "1.48", optional = true }
-zcl = { version = "0.1.0", path = "../apis-saltans/zcl", optional = true }
-zdp = { version = "0.1.0", path = "../apis-saltans/zdp", optional = true }
-zigbee-nwk = { version = "0.1.0", path = "../apis-saltans/nwk", optional = true }
-zigbee = { version = "0.1.0", path = "../apis-saltans/zigbee", optional = true }
+zcl = { version = "0.1.0", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
+zdp = { version = "0.1.0", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
+zigbee-nwk = { version = "0.1.0", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
+zigbee = { version = "0.1.0", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
 
 [features]
 ashv2 = ["dep:ashv2", "tokio/rt", "tokio/time", "tokio/sync"]

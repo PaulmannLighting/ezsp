@@ -6,34 +6,34 @@ use core::fmt::Display;
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ZdpFrameFromIncomingMessageError {
     /// The source endpoint is invalid (must be 0 for ZDP commands).
-    InvalidSourceEndpoint(u8),
+    SourceEndpoint(u8),
     /// The destination endpoint is invalid (must be 0 for ZDP commands).
-    InvalidDestinationEndpoint(u8),
+    DestinationEndpoint(u8),
     /// The cluster ID could not be parsed into a ZDP frame.
-    InvalidClusterId(u16),
+    ClusterId(u16),
     /// The ZDP frame is invalid.
-    InvalidZdpFrame,
+    ZdpFrame,
 }
 
 impl Display for ZdpFrameFromIncomingMessageError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidSourceEndpoint(endpoint) => {
+            Self::SourceEndpoint(endpoint) => {
                 write!(
                     f,
                     "Source endpoint must be 0 for ZDP commands, got {endpoint}"
                 )
             }
-            Self::InvalidDestinationEndpoint(endpoint) => {
+            Self::DestinationEndpoint(endpoint) => {
                 write!(
                     f,
                     "Destination endpoint must be 0 for ZDP commands, got {endpoint}",
                 )
             }
-            Self::InvalidClusterId(cluster_id) => {
+            Self::ClusterId(cluster_id) => {
                 write!(f, "Invalid cluster ID for ZDP frame: {cluster_id:#06X}")
             }
-            Self::InvalidZdpFrame => write!(f, "Invalid ZDP frame"),
+            Self::ZdpFrame => write!(f, "Invalid ZDP frame"),
         }
     }
 }

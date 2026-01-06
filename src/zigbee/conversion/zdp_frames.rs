@@ -10,17 +10,15 @@ impl TryFrom<DefragmentedMessage> for Frame<Command> {
         let aps_frame = frame.aps_frame();
 
         if aps_frame.source_endpoint() != 0 {
-            return Err(Self::Error::InvalidSourceEndpoint(
-                aps_frame.source_endpoint(),
-            ));
+            return Err(Self::Error::SourceEndpoint(aps_frame.source_endpoint()));
         } else if aps_frame.destination_endpoint() != 0 {
-            return Err(Self::Error::InvalidDestinationEndpoint(
+            return Err(Self::Error::DestinationEndpoint(
                 aps_frame.source_endpoint(),
             ));
         }
 
         Self::parse_with_cluster_id(aps_frame.cluster_id(), frame.into_message().drain(..))
-            .map_err(Self::Error::InvalidClusterId)?
-            .ok_or(Self::Error::InvalidZdpFrame)
+            .map_err(Self::Error::ClusterId)?
+            .ok_or(Self::Error::ZdpFrame)
     }
 }

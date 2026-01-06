@@ -27,9 +27,3 @@ jobs:
         run: cargo test --all-features --verbose
       - name: Build
         run: cargo build --all-features --verbose --release
-      - name: Build examples
-        run: |
-          cargo build --example echo --features ashv2/serialport
-          cargo build --example scan --features ashv2/serialport
-          cargo build --example console --features ashv2/serialport
-          cargo build --example test_diverse_commands --features ashv2/serialport

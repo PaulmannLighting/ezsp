@@ -289,7 +289,7 @@ impl<T> Builder<T> {
                 events
                     .network_down()
                     .await
-                    .map_err(|_| io::Error::other("Events channel closed."))?;
+                    .map_err(|()| io::Error::other("Events channel closed."))?;
                 info!("Left existing network.");
             }
 
@@ -322,7 +322,7 @@ impl<T> Builder<T> {
         events
             .network_up()
             .await
-            .map_err(|_| io::Error::other("Events channel closed."))?;
+            .map_err(|()| io::Error::other("Events channel closed."))?;
         info!("Network is up.");
 
         debug!("Setting radio power to {}", self.radio_power);

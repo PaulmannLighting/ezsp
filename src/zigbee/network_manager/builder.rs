@@ -331,6 +331,10 @@ impl<T> Builder<T> {
         let network_state = self.transport.network_state().await?;
         info!("Final network state: {network_state:?}");
 
+        let (typ, parameters) = self.transport.get_network_parameters().await?;
+        info!("Device type: {typ}");
+        info!("Network parameters: {parameters}");
+
         let security_state = self.transport.get_current_security_state().await?;
         info!("Current security state: {security_state:?}");
         for (name, _) in security_state.bitmask().iter_names() {

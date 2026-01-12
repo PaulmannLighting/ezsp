@@ -333,7 +333,7 @@ impl<T> Builder<T> {
 
         let (typ, parameters) = self.transport.get_network_parameters().await?;
         info!("Device type: {typ}");
-        info!("Network parameters: {parameters}");
+        info!("Network parameters:\n{parameters}");
 
         let security_state = self.transport.get_current_security_state().await?;
         info!("Current security state: {security_state:?}");

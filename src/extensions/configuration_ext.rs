@@ -2,10 +2,12 @@ use std::collections::BTreeMap;
 use std::fmt::Display;
 
 use enum_iterator::all;
+use log::{debug, warn};
 
+use crate::error::Status;
 use crate::extensions::Displayable;
 use crate::ezsp::config;
-use crate::{Configuration, Error};
+use crate::{Configuration, Error, ember, ezsp};
 
 /// Extension trait for retrieving all configuration values.
 pub trait ConfigurationExt {
@@ -23,7 +25,23 @@ where
         let mut configuration = BTreeMap::new();
 
         for id in all::<config::Id>() {
-            configuration.insert(id, self.get_configuration_value(id).await?);
+            match self.get_configuration_value(id).await {
+                Ok(value) => {
+                    configuration.insert(id, value);
+                }
+                Err(error) => {
+                    if matches!(
+                        error,
+                        Error::Status(Status::Ezsp(Ok(ezsp::Status::Error(
+                            ezsp::Error::InvalidId,
+                        ))))
+                    ) {
+                        debug!("Failed to get configuration value for {id:?}: {error}");
+                    } else {
+                        return Err(error);
+                    }
+                }
+            }
         }
 
         Ok(configuration)

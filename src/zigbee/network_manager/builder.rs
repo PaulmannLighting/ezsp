@@ -336,11 +336,11 @@ impl<T> Builder<T> {
         info!("Device type: {typ}");
         info!("Network parameters:\n{parameters}");
 
-        info!(
+        debug!(
             "Configuration:\n{}",
             self.transport.get_configuration().await?.displayable()
         );
-        info!(
+        debug!(
             "Policies:\n{}",
             self.transport.get_policies().await?.displayable()
         );

@@ -2,12 +2,12 @@ use std::collections::BTreeMap;
 use std::fmt::Display;
 
 use enum_iterator::all;
-use log::{debug, warn};
+use log::debug;
 
 use crate::error::Status;
 use crate::extensions::Displayable;
 use crate::ezsp::config;
-use crate::{Configuration, Error, ember, ezsp};
+use crate::{Configuration, Error, ezsp};
 
 /// Extension trait for retrieving all configuration values.
 pub trait ConfigurationExt {
@@ -36,7 +36,10 @@ where
                             ezsp::Error::InvalidId,
                         ))))
                     ) {
-                        debug!("Failed to get configuration value for {id:?}: {error}");
+                        debug!(
+                            "Unsupported configuration ID: {id:?} ({:#04X})",
+                            u8::from(id)
+                        );
                     } else {
                         return Err(error);
                     }

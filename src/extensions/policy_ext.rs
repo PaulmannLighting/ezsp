@@ -2,10 +2,11 @@ use std::collections::BTreeMap;
 use std::fmt::Display;
 
 use enum_iterator::all;
+use log::debug;
 
 use crate::extensions::Displayable;
 use crate::ezsp::{decision, policy};
-use crate::{Configuration, Error};
+use crate::{Configuration, Error, ValueError};
 
 /// Extension trait for retrieving all policy values.
 pub trait PolicyExt {
@@ -23,7 +24,18 @@ where
         let mut policy = BTreeMap::new();
 
         for id in all::<policy::Id>() {
-            policy.insert(id, self.get_policy(id).await?);
+            match self.get_policy(id).await {
+                Ok(value) => {
+                    policy.insert(id, value);
+                }
+                Err(error) => {
+                    if matches!(error, Error::ValueError(ValueError::DecisionId(_))) {
+                        debug!("Unsupported policy ID: {id:?} ({:#04X})", u8::from(id));
+                    } else {
+                        return Err(error);
+                    }
+                }
+            }
         }
 
         Ok(policy)

@@ -18,7 +18,8 @@ use crate::ezsp::{config, policy};
 use crate::zigbee::EzspNetworkManager;
 use crate::zigbee::network_manager::message_handler::MessageHandler;
 use crate::{
-    Callback, Configuration, Error, Messaging, Networking, Security, Transport, Utilities,
+    Callback, Configuration, ConfigurationExt, Displayable, Error, Messaging, Networking,
+    PolicyExt, Security, Transport, Utilities,
 };
 
 const HOME_GATEWAY: u16 = 0x0050;
@@ -334,6 +335,15 @@ impl<T> Builder<T> {
         let (typ, parameters) = self.transport.get_network_parameters().await?;
         info!("Device type: {typ}");
         info!("Network parameters:\n{parameters}");
+
+        info!(
+            "Configuration:\n{}",
+            self.transport.get_configuration().await?.displayable()
+        );
+        info!(
+            "Policies:\n{}",
+            self.transport.get_policies().await?.displayable()
+        );
 
         let security_state = self.transport.get_current_security_state().await?;
         info!("Current security state: {security_state:?}");

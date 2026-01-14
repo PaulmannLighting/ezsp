@@ -6,6 +6,7 @@ pub mod beacon;
 pub mod binding;
 pub mod child;
 pub mod concentrator;
+pub mod config;
 pub mod constants;
 pub mod counter;
 pub mod device;

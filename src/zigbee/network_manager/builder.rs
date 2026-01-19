@@ -347,7 +347,7 @@ impl<T> Builder<T> {
         );
 
         info!(
-            "Current security state: {}",
+            "Current security state:\n{}",
             self.transport.get_current_security_state().await?
         );
 

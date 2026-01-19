@@ -79,7 +79,7 @@ impl Display for State {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "Bitmask:")?;
         for (name, bitmask) in self.bitmask().iter_names() {
-            writeln!(f, "\t{name}: {bitmask:#06X}")?;
+            writeln!(f, "{name}: {bitmask:#06X}")?;
         }
 
         writeln!(

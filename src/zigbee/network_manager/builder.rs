@@ -346,11 +346,10 @@ impl<T> Builder<T> {
             self.transport.get_policies().await?.displayable()
         );
 
-        let security_state = self.transport.get_current_security_state().await?;
-        info!("Current security state: {security_state:?}");
-        for (name, _) in security_state.bitmask().iter_names() {
-            info!("  Security bitmask: {name}");
-        }
+        info!(
+            "Current security state: {}",
+            self.transport.get_current_security_state().await?
+        );
 
         info!("Sending many-to-one route request");
         let radius = self

@@ -1,5 +1,7 @@
 //! Ember current security state.
 
+use std::fmt::Display;
+
 use bitflags::bitflags;
 use le_stream::{FromLeStream, ToLeStream};
 
@@ -70,5 +72,20 @@ impl State {
     #[must_use]
     pub const fn trust_center_long_address(&self) -> Eui64 {
         self.trust_center_long_address
+    }
+}
+
+impl Display for State {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Bitmask:")?;
+        for (name, bitmask) in self.bitmask().iter_names() {
+            writeln!(f, "\t{name}: {bitmask:#06X}")?;
+        }
+
+        writeln!(
+            f,
+            "Trust Center Long Address: {}",
+            self.trust_center_long_address
+        )
     }
 }

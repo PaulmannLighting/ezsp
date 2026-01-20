@@ -18,6 +18,8 @@ use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCent
 use crate::{Callback, ember};
 
 /// Type alias for a thread-safe list of callback handlers.
+///
+/// TODO: Refactor this away by e.g. using the actor model.
 pub type Handlers = Arc<Mutex<Vec<Sender<Callback>>>>;
 
 /// Handler for processing incoming messages.

@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use log::{debug, error, trace, warn};
@@ -7,7 +8,7 @@ use tokio::sync::mpsc::{Receiver, Sender, channel};
 use zigbee::Endpoint;
 use zigbee_nwk::Event;
 
-use crate::defragmentation::Defragmenter;
+use crate::defragmentation::{Defragment, Transaction};
 use crate::ember::device::Update;
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
@@ -23,7 +24,7 @@ pub type Handlers = Arc<Mutex<Vec<Sender<Callback>>>>;
 pub struct MessageHandler {
     handlers: Handlers,
     outgoing: Sender<Event>,
-    transactions: Defragmenter<2>,
+    transactions: BTreeMap<u8, Transaction>,
 }
 
 impl MessageHandler {
@@ -35,7 +36,7 @@ impl MessageHandler {
             Self {
                 handlers: handlers.clone(),
                 outgoing,
-                transactions: Defragmenter::default(),
+                transactions: BTreeMap::new(),
             },
             handlers,
             rx,

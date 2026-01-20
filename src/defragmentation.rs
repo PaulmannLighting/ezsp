@@ -4,20 +4,17 @@ use log::{error, trace, warn};
 
 pub use self::defragmentation_error::DefragmentationError;
 pub use self::defragmented_message::DefragmentedMessage;
-use self::transaction::Transaction;
+pub use self::transaction::Transaction;
 use crate::parameters::messaging::handler::IncomingMessage;
 
 mod defragmentation_error;
 mod defragmented_message;
 mod transaction;
 
-/// Defragments potentially fragmented EZSP frames.
-#[derive(Clone, Debug, Default, Eq, PartialEq, Hash)]
-pub struct Defragmenter<const BACKPRESSURE_THRESHOLD: usize> {
-    inner: BTreeMap<u8, Transaction>,
-}
+const BACKPRESSURE_THRESHOLD: usize = 2;
 
-impl<const BACKPRESSURE_THRESHOLD: usize> Defragmenter<BACKPRESSURE_THRESHOLD> {
+/// Defragment potentially fragmented EZSP frames.
+pub trait Defragment {
     /// Attempt to defragment the given frame.
     ///
     /// # Returns
@@ -30,14 +27,21 @@ impl<const BACKPRESSURE_THRESHOLD: usize> Defragmenter<BACKPRESSURE_THRESHOLD> {
     ///
     /// - [`DefragmentationError::StrayFragment`] if a follow-up fragment is received without an initial fragment.
     /// - [`DefragmentationError::DuplicateFragment`] if a duplicate fragment is received.
-    pub fn defragment(
+    fn defragment(
+        &mut self,
+        incoming_message: IncomingMessage,
+    ) -> Result<Option<DefragmentedMessage>, DefragmentationError>;
+}
+
+impl Defragment for BTreeMap<u8, Transaction> {
+    fn defragment(
         &mut self,
         incoming_message: IncomingMessage,
     ) -> Result<Option<DefragmentedMessage>, DefragmentationError> {
-        if self.inner.len() > BACKPRESSURE_THRESHOLD {
+        if self.len() > BACKPRESSURE_THRESHOLD {
             warn!(
                 "Defragmenter backpressure threshold exceeded: {} transactions in progress.",
-                self.inner.len()
+                self.len()
             );
         }
 
@@ -48,8 +52,7 @@ impl<const BACKPRESSURE_THRESHOLD: usize> Defragmenter<BACKPRESSURE_THRESHOLD> {
                 trace!("Received initial fragment.");
 
                 if size > 1 {
-                    self.inner
-                        .insert(seq, Transaction::new(size, index, incoming_message));
+                    self.insert(seq, Transaction::new(size, index, incoming_message));
                     return Ok(None);
                 }
 
@@ -59,13 +62,13 @@ impl<const BACKPRESSURE_THRESHOLD: usize> Defragmenter<BACKPRESSURE_THRESHOLD> {
             Some((index, None)) => {
                 trace!("Received follow-up fragment.");
 
-                let Some(transaction) = self.inner.get_mut(&seq) else {
+                let Some(transaction) = self.get_mut(&seq) else {
                     return Err(DefragmentationError::StrayFragment { seq, index });
                 };
 
                 if let Some(message) = transaction.update(index, incoming_message) {
                     error!("Duplicate fragment received. Previous was: {message:?}");
-                    self.inner.remove(&seq);
+                    self.remove(&seq);
                     return Err(DefragmentationError::DuplicateFragment { seq, index });
                 }
 
@@ -77,7 +80,7 @@ impl<const BACKPRESSURE_THRESHOLD: usize> Defragmenter<BACKPRESSURE_THRESHOLD> {
                     return Ok(None);
                 };
 
-                self.inner.remove(&seq);
+                self.remove(&seq);
                 Ok(Some(defragmented_message))
             }
             None => {

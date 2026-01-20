@@ -12,7 +12,7 @@ pub use self::commands::{
     Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
 };
 pub use self::constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE, MIN_NON_LEGACY_VERSION};
-pub use self::defragmentation::{DefragmentationError, DefragmentedMessage, Defragmenter};
+pub use self::defragmentation::{Defragment, DefragmentationError, DefragmentedMessage};
 pub use self::error::{Error, ValueError};
 pub use self::extensions::{ConfigurationExt, Displayable, PolicyExt};
 pub use self::frame::{

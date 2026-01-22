@@ -10,26 +10,31 @@ use crate::{Error, MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 
 /// Encode `EZSP` frames into `ASHv2` frames.
 #[derive(Debug)]
-pub struct Encoder {
-    sender: Proxy,
+pub struct Encoder<T> {
+    proxy: T,
     header: heapless::Vec<u8, MAX_HEADER_SIZE>,
     parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
 }
 
-impl Encoder {
+impl<T> Encoder<T> {
     /// Create a new `Encoder`.
-    pub const fn new(sender: Proxy) -> Self {
+    pub const fn new(proxy: T) -> Self {
         Self {
-            sender,
+            proxy,
             header: heapless::Vec::new(),
             parameters: heapless::Vec::new(),
         }
     }
+}
 
+impl<T> Encoder<T>
+where
+    T: Proxy,
+{
     /// Encode an `EZSP` header and parameters into a `ASHv2` frames.
-    pub async fn send<T>(&mut self, header: Header, parameters: T) -> Result<(), Error>
+    pub async fn send<P>(&mut self, header: Header, parameters: P) -> Result<(), Error>
     where
-        T: Debug + ToLeStream + Send,
+        P: Debug + ToLeStream + Send,
     {
         self.header.clear();
         self.parameters.clear();
@@ -71,7 +76,7 @@ impl Encoder {
             .map_err(io::Error::other)?;
         payload.extend_from_slice(chunk).map_err(io::Error::other)?;
         trace!("Sending chunk: {:#04X}", HexSlice::new(&payload));
-        self.sender
+        self.proxy
             .send(payload)
             .await
             .map_err(io::Error::other)?

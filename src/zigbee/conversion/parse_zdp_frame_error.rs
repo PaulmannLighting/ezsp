@@ -4,7 +4,7 @@ use core::fmt::Display;
 
 /// Errors that can occur when converting an incoming message to a ZDP frame.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum ZdpFrameFromIncomingMessageError {
+pub enum ParseZdpFrameError {
     /// The source endpoint is invalid (must be 0 for ZDP commands).
     SourceEndpoint(u8),
     /// The destination endpoint is invalid (must be 0 for ZDP commands).
@@ -15,7 +15,7 @@ pub enum ZdpFrameFromIncomingMessageError {
     ZdpFrame,
 }
 
-impl Display for ZdpFrameFromIncomingMessageError {
+impl Display for ParseZdpFrameError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::SourceEndpoint(endpoint) => {
@@ -38,4 +38,4 @@ impl Display for ZdpFrameFromIncomingMessageError {
     }
 }
 
-impl Error for ZdpFrameFromIncomingMessageError {}
+impl Error for ParseZdpFrameError {}

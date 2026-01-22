@@ -1,10 +1,10 @@
 use zdp::{Command, Frame};
 
-pub use super::zdp_frame_from_incoming_message_error::ZdpFrameFromIncomingMessageError;
+pub use super::parse_zdp_frame_error::ParseZdpFrameError;
 use crate::defragmentation::DefragmentedMessage;
 
 impl TryFrom<DefragmentedMessage> for Frame<Command> {
-    type Error = ZdpFrameFromIncomingMessageError;
+    type Error = ParseZdpFrameError;
 
     fn try_from(frame: DefragmentedMessage) -> Result<Self, Self::Error> {
         let aps_frame = frame.aps_frame();

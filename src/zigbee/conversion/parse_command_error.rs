@@ -2,13 +2,13 @@ use core::fmt;
 use std::error::Error;
 use std::fmt::Display;
 
-use super::zdp_frame_from_incoming_message_error::ZdpFrameFromIncomingMessageError;
+use super::parse_zdp_frame_error::ParseZdpFrameError;
 
 /// Errors that can occur when parsing a Zigbee command.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ParseCommandError {
     /// The ZDP frame is invalid.
-    ParseZdpFrameError(ZdpFrameFromIncomingMessageError),
+    ParseZdpFrameError(ParseZdpFrameError),
     /// The ZCL frame is invalid.
     ParseZclFrameError(zcl::ParseFrameError),
     /// The profile ID is invalid.

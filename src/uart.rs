@@ -183,7 +183,7 @@ impl<T> Transport for Uart<T>
 where
     T: Proxy + Send + Sync,
 {
-    async fn check_reset(&mut self) -> Result<(), Error> {
+    async fn ensure_connection(&mut self) -> Result<(), Error> {
         // Use temporary variable, because we need to drop the lock before the match statement.
         let connection = self.state.read().connection();
 

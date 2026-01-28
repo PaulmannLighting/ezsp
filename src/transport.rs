@@ -14,8 +14,8 @@ use crate::{Error, Parameters};
 ///
 /// Unless you know what you are doing, you should not use the methods of this trait directly.
 pub trait Transport: Send {
-    /// Check if the `EZSP` connection needs to be reset and reset it if necessary.
-    fn check_reset(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
+    /// Ensure that an `EZSP` connection is established and reset it if necessary.
+    fn ensure_connection(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Send a command to the NCP.
     fn send<T>(&mut self, command: T) -> impl Future<Output = Result<u16, Error>> + Send
@@ -38,7 +38,7 @@ pub trait Transport: Send {
         <R as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
     {
         async {
-            self.check_reset().await?;
+            self.ensure_connection().await?;
             self.send::<C>(command).await?;
             self.receive().await
         }

@@ -1,8 +1,0 @@
-[net]
-git-fetch-with-cli = true
-
-[target.armv7-unknown-linux-musleabi]
-linker = "rust-lld"
-
-[target.armv7-unknown-linux-musleabihf]
-linker = "rust-lld"

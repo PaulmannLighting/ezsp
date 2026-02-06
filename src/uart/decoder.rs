@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use ashv2::{HexSlice, Payload};
+use ashv2::Payload;
 use le_stream::FromLeStream;
 use log::trace;
 use tokio::sync::mpsc::Receiver;
@@ -82,7 +82,7 @@ impl Decoder {
     ///
     /// Returns an [`Error`] if the frame fragment could not be parsed.
     fn try_parse_frame_fragment(&mut self, frame: Payload) -> Result<Option<Frame>, Error> {
-        trace!("Decoding ASHv2 frame: {:#04X}", HexSlice::new(&frame));
+        trace!("Decoding ASHv2 frame: {frame:#04X?}");
 
         let mut stream = frame.into_iter();
         let next_header = self.read_header(&mut stream).ok_or(Decode::TooFewBytes)?;
@@ -99,10 +99,7 @@ impl Decoder {
         }
 
         self.parameters.extend(stream);
-        trace!(
-            "Accumulated parameters: {:#04X}",
-            HexSlice::new(&self.parameters)
-        );
+        trace!("Accumulated parameters: {:#04X?}", self.parameters);
         let disambiguation = self.state.read().disambiguation().unwrap_or_default();
 
         match Parameters::parse_from_le_stream(

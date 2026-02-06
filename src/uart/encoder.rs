@@ -1,7 +1,7 @@
 use core::fmt::Debug;
 use std::io;
 
-use ashv2::{HexSlice, MAX_PAYLOAD_SIZE, Payload, Proxy};
+use ashv2::{MAX_PAYLOAD_SIZE, Payload, Proxy};
 use le_stream::ToLeStream;
 use log::trace;
 
@@ -43,14 +43,11 @@ where
             Header::Legacy(header) => self.header.extend(header.to_le_stream()),
             Header::Extended(header) => self.header.extend(header.to_le_stream()),
         }
-        trace!("Sending header: {:#04X}", HexSlice::new(&self.header));
+        trace!("Sending header: {:#04X?}", self.header);
 
         trace!("Sending parameters (type): {parameters:?}");
         self.parameters.extend(parameters.to_le_stream());
-        trace!(
-            "Sending parameters (bytes): {:#04X}",
-            HexSlice::new(&self.parameters)
-        );
+        trace!("Sending parameters (bytes): {:#04X?}", self.parameters);
 
         if self.parameters.is_empty() {
             // If there are no parameters to send, e.g. on `nop`, a call to `.chunks()`
@@ -75,7 +72,7 @@ where
             .extend_from_slice(&self.header)
             .map_err(io::Error::other)?;
         payload.extend_from_slice(chunk).map_err(io::Error::other)?;
-        trace!("Sending chunk: {:#04X}", HexSlice::new(&payload));
+        trace!("Sending chunk: {:#04X?}", payload);
         self.proxy
             .send(payload)
             .await

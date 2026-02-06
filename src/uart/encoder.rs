@@ -34,7 +34,7 @@ where
     /// Encode an `EZSP` header and parameters into a `ASHv2` frames.
     pub async fn send<P>(&mut self, header: Header, parameters: P) -> Result<(), Error>
     where
-        P: Debug + ToLeStream + Send,
+        P: Debug + ToLeStream + Send + Sync,
     {
         self.header.clear();
         self.parameters.clear();

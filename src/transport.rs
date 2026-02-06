@@ -20,7 +20,7 @@ pub trait Transport: Send {
     /// Send a command to the NCP.
     fn send<T>(&mut self, command: T) -> impl Future<Output = Result<u16, Error>> + Send
     where
-        T: Parameter + ToLeStream;
+        T: Parameter + Send + Sync + ToLeStream;
 
     /// Receive a response from the NCP.
     fn receive<T>(&mut self) -> impl Future<Output = Result<T, Error>> + Send
@@ -33,7 +33,7 @@ pub trait Transport: Send {
     /// This assumes that `C::ID` and `R::ID` are the same.
     fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
     where
-        C: Parameter + ToLeStream,
+        C: Parameter + Send + Sync + ToLeStream,
         R: TryFrom<Parameters> + Send,
         <R as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
     {

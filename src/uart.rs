@@ -205,7 +205,7 @@ where
 
     async fn send<C>(&mut self, command: C) -> Result<u16, Error>
     where
-        C: Parameter + ToLeStream,
+        C: Parameter + Send + Sync + ToLeStream,
     {
         let header = self
             .next_header(C::ID)

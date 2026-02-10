@@ -29,12 +29,12 @@ impl<T> Encoder<T> {
 
 impl<T> Encoder<T>
 where
-    T: Proxy,
+    T: Proxy + Sync,
 {
     /// Encode an `EZSP` header and parameters into a `ASHv2` frames.
     pub async fn send<P>(&mut self, header: Header, parameters: P) -> Result<(), Error>
     where
-        P: Debug + ToLeStream + Send + Sync,
+        P: Debug + ToLeStream,
     {
         self.header.clear();
         self.parameters.clear();
@@ -72,7 +72,7 @@ where
             .extend_from_slice(&self.header)
             .map_err(io::Error::other)?;
         payload.extend_from_slice(chunk).map_err(io::Error::other)?;
-        trace!("Sending chunk: {:#04X?}", payload);
+        trace!("Sending chunk: {payload:#04X?}");
         self.proxy
             .send(payload)
             .await

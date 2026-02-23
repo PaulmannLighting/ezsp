@@ -10,27 +10,22 @@ use crate::{Error, MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 
 /// Encode `EZSP` frames into `ASHv2` frames.
 #[derive(Debug)]
-pub struct Encoder<T> {
-    proxy: T,
+pub struct Encoder {
+    proxy: Proxy,
     header: heapless::Vec<u8, MAX_HEADER_SIZE>,
     parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
 }
 
-impl<T> Encoder<T> {
+impl Encoder {
     /// Create a new `Encoder`.
-    pub const fn new(proxy: T) -> Self {
+    pub const fn new(proxy: Proxy) -> Self {
         Self {
             proxy,
             header: heapless::Vec::new(),
             parameters: heapless::Vec::new(),
         }
     }
-}
 
-impl<T> Encoder<T>
-where
-    T: Proxy + Sync,
-{
     /// Encode an `EZSP` header and parameters into a `ASHv2` frames.
     pub async fn send<P>(&mut self, header: Header, parameters: P) -> Result<(), Error>
     where

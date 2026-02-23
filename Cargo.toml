@@ -15,7 +15,7 @@ exclude = [".gitignore"]
 all-features = true
 
 [dependencies]
-ashv2 = { version = "4.0", git = "https://github.com/PaulmannLighting/ashv2/", optional = true }
+ashv2 = { version = "5.0", git = "https://github.com/PaulmannLighting/ashv2/", optional = true }
 bitflags = "2.11"
 enum-iterator = "2.3"
 heapless = "0.9"

@@ -37,24 +37,24 @@ const REQUEUE_GRACE_PERIOD: Duration = Duration::from_millis(100);
 
 /// An `EZSP` host using `ASHv2` on the transport layer.
 #[derive(Debug)]
-pub struct Uart<T> {
+pub struct Uart {
     protocol_version: u8,
     state: Arc<NpRwLock<State>>,
     responses_tx: Sender<Result<Parameters, Error>>,
     responses_rx: Receiver<Result<Parameters, Error>>,
-    encoder: Encoder<T>,
+    encoder: Encoder,
     splitter: JoinHandle<()>,
     sequence: u8,
 }
 
-impl<T> Uart<T> {
+impl Uart {
     /// Creates an `ASHv2` host.
     ///
     /// A minimum protocol version of [`MIN_NON_LEGACY_VERSION`] is required
     /// to support non-legacy commands.
     #[must_use]
     pub fn new(
-        ash_proxy: T,
+        ash_proxy: Proxy,
         ash_rx: Receiver<Payload>,
         callbacks: Sender<Callback>,
         protocol_version: u8,
@@ -82,12 +82,7 @@ impl<T> Uart<T> {
             sequence: 0,
         }
     }
-}
 
-impl<T> Uart<T>
-where
-    T: Proxy + Send + Sync,
-{
     /// Return the next header.
     ///
     /// This method is used to determine the next header to be used in the communication.
@@ -164,10 +159,7 @@ where
     }
 }
 
-impl<T> Ezsp for Uart<T>
-where
-    T: Proxy + Send + Sync,
-{
+impl Ezsp for Uart {
     async fn init(&mut self) -> Result<version::Response, Error> {
         let response = self.negotiate_version().await?;
         self.state.write().set_connection(Connection::Connected);
@@ -179,10 +171,7 @@ where
     }
 }
 
-impl<T> Transport for Uart<T>
-where
-    T: Proxy + Send + Sync,
-{
+impl Transport for Uart {
     async fn ensure_connection(&mut self) -> Result<(), Error> {
         // Use temporary variable, because we need to drop the lock before the match statement.
         let connection = self.state.read().connection();

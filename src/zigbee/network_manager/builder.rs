@@ -251,7 +251,7 @@ impl<T> Builder<T> {
         T: Transport,
     {
         let handlers = Handlers::default();
-        let (events_tx, mut events_rx) = channel(1024);
+        let (events_tx, mut events_rx) = channel(self.callbacks_rx.max_capacity());
         let message_handler = MessageHandler::new(handlers.clone(), events_tx);
         spawn(message_handler.process(self.callbacks_rx));
 

@@ -31,6 +31,7 @@ pub struct MessageHandler {
 
 impl MessageHandler {
     /// Creates a new `MessageHandler` with the given outgoing channel size.
+    #[must_use]
     pub const fn new(handlers: Handlers, outgoing: Sender<Event>) -> Self {
         Self {
             handlers,

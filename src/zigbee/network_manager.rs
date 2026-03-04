@@ -108,7 +108,7 @@ where
 
 impl<T> Actor for EzspNetworkManager<T>
 where
-    T: Configuration + Security + Messaging + Networking + Utilities + Sync,
+    T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync,
 {
     fn next_transaction_seq(&mut self) -> u8 {
         let seq = self.transaction_seq;

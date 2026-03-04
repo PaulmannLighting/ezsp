@@ -273,7 +273,7 @@ impl MessageHandler {
             Security::ZigbeeKeyEstablishment(zigbee_key_establishment) => {
                 match zigbee_key_establishment.partner() {
                     Ok(partner) => {
-                        debug!("Zigbee key establishment with partner: IEEE Address: {partner}");
+                        debug!("Zigbee key establishment with partner: IEEE address: {partner}");
                     }
                     Err(value) => {
                         warn!(

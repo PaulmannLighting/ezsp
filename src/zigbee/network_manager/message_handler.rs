@@ -4,7 +4,7 @@ use std::sync::Arc;
 use log::{debug, error, trace, warn};
 use tokio::sync::Mutex;
 use tokio::sync::mpsc::error::SendError;
-use tokio::sync::mpsc::{Receiver, Sender, channel};
+use tokio::sync::mpsc::{Receiver, Sender};
 use zigbee::Endpoint;
 use zigbee_nwk::Event;
 
@@ -31,18 +31,12 @@ pub struct MessageHandler {
 
 impl MessageHandler {
     /// Creates a new `MessageHandler` with the given outgoing channel size.
-    pub fn new(size: usize) -> (Self, Handlers, Receiver<Event>) {
-        let handlers = Arc::new(Mutex::new(Vec::new()));
-        let (outgoing, rx) = channel(size);
-        (
-            Self {
-                handlers: handlers.clone(),
-                outgoing,
-                transactions: BTreeMap::new(),
-            },
-            handlers,
-            rx,
-        )
+    pub fn new(handlers: Handlers, outgoing: Sender<Event>) -> Self {
+        Self {
+            handlers: handlers.clone(),
+            outgoing,
+            transactions: BTreeMap::new(),
+        }
     }
 
     /// Processes incoming messages and sends events to the outgoing channel.

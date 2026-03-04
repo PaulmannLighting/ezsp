@@ -7,7 +7,7 @@ use macaddr::MacAddr8;
 use rand::random;
 use silizium::zigbee::security::man::Key;
 use tokio::spawn;
-use tokio::sync::mpsc::Receiver;
+use tokio::sync::mpsc::{Receiver, channel};
 use zigbee::Profile;
 use zigbee_nwk::{Event, Waiter};
 
@@ -16,7 +16,7 @@ use crate::ember::{aps, concentrator, join, network};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
 use crate::zigbee::EzspNetworkManager;
-use crate::zigbee::network_manager::message_handler::MessageHandler;
+use crate::zigbee::network_manager::message_handler::{Handlers, MessageHandler};
 use crate::{
     Callback, Configuration, ConfigurationExt, Displayable, Error, Messaging, Networking,
     PolicyExt, Security, Transport, Utilities,
@@ -245,11 +245,14 @@ impl<T> Builder<T> {
     }
 
     /// Starts the network manager on the given transport implementation.
+    #[expect(clippy::too_many_lines)]
     pub async fn start(mut self) -> Result<(EzspNetworkManager<T>, Receiver<Event>), Error>
     where
         T: Transport,
     {
-        let (message_handler, handlers, mut events) = MessageHandler::new(1024);
+        let handlers = Handlers::default();
+        let (events_tx, mut events_rx) = channel(1024);
+        let message_handler = MessageHandler::new(handlers.clone(), events_tx);
         spawn(message_handler.process(self.callbacks_rx));
 
         debug!("Setting concentrator");
@@ -287,7 +290,7 @@ impl<T> Builder<T> {
 
         if self.reinitialize {
             if self.transport.leave_network().await.is_ok() {
-                events
+                events_rx
                     .network_down()
                     .await
                     .map_err(|()| io::Error::other("Events channel closed."))?;
@@ -320,7 +323,7 @@ impl<T> Builder<T> {
             self.transport.network_init(self.init_bitmask).await?;
         }
 
-        events
+        events_rx
             .network_up()
             .await
             .map_err(|()| io::Error::other("Events channel closed."))?;
@@ -362,7 +365,7 @@ impl<T> Builder<T> {
 
         Ok((
             EzspNetworkManager::new(self.transport, self.profile, self.aps_options, handlers),
-            events,
+            events_rx,
         ))
     }
 }

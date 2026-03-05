@@ -19,7 +19,7 @@ ashv2 = { version = "6.0", git = "https://github.com/PaulmannLighting/ashv2/", o
 bitflags = "2.11"
 enum-iterator = "2.3"
 heapless = "0.9"
-le-stream = { version = "6", features = ["derive", "macaddr", "heapless"] }
+le-stream = { version = "7", features = ["derive", "macaddr", "heapless"] }
 log = "0.4"
 macaddr = "1.0"
 num-derive = "0.4"

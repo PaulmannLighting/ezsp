@@ -132,9 +132,11 @@ impl ListEntry {
     /// Returns the payload of the list entry.
     ///
     /// # Returns
-    /// [`Some(Payload)`] if it is a valid type.
+    ///
+    /// [`Payload`] if it is a valid type.
     ///
     /// # Errors
+    ///
     /// Returns `None` if the type is [`Type::Unused`].
     #[must_use]
     pub fn payload(&self) -> Option<Payload> {

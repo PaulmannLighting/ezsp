@@ -90,7 +90,7 @@ pub enum Id {
     /// `EMBER_REJOIN_DUE_TO_APP_EVENT_1`.
     ///
     /// If the application wishes to denote its own rejoin reasons it can do so by calling
-    /// [`Configuration::set_value(Id::LastRejoinReason, EMBER_REJOIN_DUE_TO_APP_EVENT_X)`](crate::commands::configuration::Configuration::set_value).
+    /// [`Configuration::set_value(Id::LastRejoinReason, EMBER_REJOIN_DUE_TO_APP_EVENT_X)`](crate::commands::Configuration::set_value).
     /// X is a number corresponding to one of the app events defined.
     ///
     /// The currently defined application events are:
@@ -102,7 +102,7 @@ pub enum Id {
     /// * `EMBER_REJOIN_DUE_TO_APP_EVENT_5` = 0xFB
     ///
     /// If the NCP initiated a rejoin it will record this value internally for retrieval by
-    /// [`Configuration::get_value(Id::LastRejoinReason)`](crate::commands::configuration::Configuration::get_value).
+    /// [`Configuration::get_value(Id::LastRejoinReason)`](crate::commands::Configuration::get_value).
     LastRejoinReason = 0x13,
     /// The next Zigbee sequence number.
     NextZigbeeSequenceNumber = 0x14,

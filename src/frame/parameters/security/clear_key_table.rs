@@ -26,7 +26,7 @@ impl Parameter for Response {
     const ID: u16 = ID;
 }
 
-/// Convert the response into [`()`] or an appropriate [`Error`] depending on its status.
+/// Convert the response into `()` or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for () {
     type Error = Error;
 

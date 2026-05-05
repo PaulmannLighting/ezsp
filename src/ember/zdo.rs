@@ -11,7 +11,7 @@ pub mod configuration {
     /// the application must check the APS options bitfield within the
     /// [`IncomingMessage`](crate::parameters::messaging::handler::IncomingMessage)
     /// callback to see if the
-    /// [`ZdoResponseRequired`](crate::ember::aps::Option::ZdoResponseRequired)
+    /// [`ZDO_RESPONSE_REQUIRED`](crate::ember::aps::Options::ZDO_RESPONSE_REQUIRED)
     /// flag is set.
     #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, FromPrimitive, ToPrimitive)]
     pub enum Flags {

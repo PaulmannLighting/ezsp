@@ -10,7 +10,7 @@ use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, Sender, channel};
-use tokio::task::JoinHandle;
+use tokio::task::{JoinError, JoinHandle};
 use tokio::time::sleep;
 
 use self::connection::Connection;
@@ -153,9 +153,9 @@ impl Uart {
     /// # Errors
     ///
     /// Returns a [`JoinError`] if any of the threads fail to abort.
-    pub async fn abort(self) {
+    pub async fn abort(self) -> Result<(), JoinError> {
         self.splitter.abort();
-        let _ = self.splitter.await;
+        self.splitter.await
     }
 }
 

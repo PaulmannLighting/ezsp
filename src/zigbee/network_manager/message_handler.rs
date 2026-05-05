@@ -164,7 +164,7 @@ impl MessageHandler {
                 self.outgoing
                     .send(Event::MessageReceived {
                         src_address,
-                        aps_frame,
+                        aps_frame: Box::new(aps_frame),
                     })
                     .await
             }

@@ -37,7 +37,7 @@ impl StackVersion {
 
 impl Display for StackVersion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}.{}", self.major(), self.minor(), self.patch(),)?;
+        write!(f, "{}.{}.{}", self.major(), self.minor(), self.patch())?;
 
         if self.release() != 0 {
             write!(f, "-{}", self.release())?;

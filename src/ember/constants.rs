@@ -15,8 +15,8 @@ pub const MAX_END_DEVICE_CHILDREN: usize = 32;
 
 /// The default amount of time that the MAC will hold a
 /// message for indirect transmission to a child.
-pub const INDIRECT_TRANSMISSION_TIMEOUT: Duration = Duration::from_millis(3_000);
+pub const INDIRECT_TRANSMISSION_TIMEOUT: Duration = Duration::from_secs(3);
 
 /// The maximum amount of time that the MAC  will hold a
 /// message for indirect transmission to a child.
-pub const MAX_INDIRECT_TRANSMISSION_TIMEOUT: Duration = Duration::from_millis(30_000);
+pub const MAX_INDIRECT_TRANSMISSION_TIMEOUT: Duration = Duration::from_secs(30);

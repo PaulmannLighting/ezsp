@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
+use aps::data::Frame;
 use log::{debug, error, trace, warn};
 use tokio::sync::Mutex;
 use tokio::sync::mpsc::error::SendError;
@@ -159,12 +160,12 @@ impl MessageHandler {
 
         let src_address = defragmented_message.sender();
 
-        match defragmented_message.try_into() {
+        match Frame::try_from(defragmented_message) {
             Ok(aps_frame) => {
                 self.outgoing
                     .send(Event::MessageReceived {
                         src_address,
-                        aps_frame: Box::new(aps_frame),
+                        aps_frame: aps_frame.into(),
                     })
                     .await
             }

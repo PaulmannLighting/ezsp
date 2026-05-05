@@ -12,7 +12,7 @@ The goal is to provide a Rust implementation of the `EZSP` library as documented
 
 The official documentation can be found at
 
-- <https://www.silabs.com/documents/public/user-guides/ug100-ezsp-reference-guide.pdf>
+- <https://docs.silabs.com/zigbee/latest/sisdk-ezsp-reference-guide/>
 - <https://docs.silabs.com/zigbee/6.6/em35x/>
 
 ## Usage

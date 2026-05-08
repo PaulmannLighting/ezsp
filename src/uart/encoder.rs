@@ -68,11 +68,6 @@ impl Encoder {
             .map_err(io::Error::other)?;
         payload.extend_from_slice(chunk).map_err(io::Error::other)?;
         trace!("Sending chunk: {payload:#04X?}");
-        self.proxy
-            .send(payload)
-            .await
-            .map_err(io::Error::other)?
-            .await
-            .map_err(io::Error::other)?
+        self.proxy.send(payload).await
     }
 }

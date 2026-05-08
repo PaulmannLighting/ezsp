@@ -16,7 +16,7 @@ all-features = true
 
 [dependencies]
 aps = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
-ashv2 = { version = "6.0", git = "https://github.com/PaulmannLighting/ashv2/", optional = true }
+ashv2 = { version = "7.0", git = "https://github.com/PaulmannLighting/ashv2/", optional = true }
 bitflags = "2.11"
 enum-iterator = "2.3"
 heapless = "0.9"

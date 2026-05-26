@@ -17,6 +17,7 @@ use tokio::sync::mpsc::{Receiver, Sender, channel};
 use tokio::task::{JoinError, JoinHandle};
 use tokio::time::sleep;
 
+pub use self::channel_sizes::ChannelSizes;
 use self::connection::Connection;
 use self::encoder::Encoder;
 use self::np_rw_lock::NpRwLock;
@@ -30,6 +31,7 @@ use crate::uart::decoder::Decoder;
 use crate::uart::splitter::Splitter;
 use crate::{Callback, Configuration, Extended, Ezsp, Legacy, Parameters, ValueError};
 
+mod channel_sizes;
 mod connection;
 mod decoder;
 mod encoder;
@@ -95,20 +97,24 @@ impl Uart {
     pub fn from_serial_port<P>(
         serial_port: P,
         protocol_version: u8,
-        channel_size: usize,
-        message_queue_len: usize,
-        callback_channel_size: usize,
+        channel_sizes: &ChannelSizes,
     ) -> Result<(Self, Tasks<P>, Receiver<Callback>), Error>
     where
         P: SerialPort + TryCloneNative + Sync + 'static,
     {
-        let (tx, rx) = channel(channel_size);
-        let (tasks, proxy) = Actor::new(serial_port, tx, message_queue_len)
+        let (tx, rx) = channel(channel_sizes.payload);
+        let (tasks, proxy) = Actor::new(serial_port, tx, channel_sizes.message_queue)
             .map_err(|error| Error::Io(error.into()))?
             .spawn();
-        let (callbacks_tx, callbacks_rx) = channel(callback_channel_size);
+        let (callbacks_tx, callbacks_rx) = channel(channel_sizes.callbacks);
         Ok((
-            Self::new(proxy, rx, callbacks_tx, protocol_version, channel_size),
+            Self::new(
+                proxy,
+                rx,
+                callbacks_tx,
+                protocol_version,
+                channel_sizes.responses,
+            ),
             tasks,
             callbacks_rx,
         ))
@@ -124,9 +130,7 @@ impl Uart {
         baud_rate: BaudRate,
         flow_control: FlowControl,
         protocol_version: u8,
-        channel_size: usize,
-        message_queue_len: usize,
-        callback_channel_size: usize,
+        channel_sizes: &ChannelSizes,
     ) -> Result<(Self, Tasks<NativeSerialPort>, Receiver<Callback>), Error>
     where
         P: Into<Cow<'a, str>>,
@@ -134,9 +138,7 @@ impl Uart {
         Self::from_serial_port(
             open(path, baud_rate, flow_control).map_err(|error| Error::Io(error.into()))?,
             protocol_version,
-            channel_size,
-            message_queue_len,
-            callback_channel_size,
+            channel_sizes,
         )
     }
 

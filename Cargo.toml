@@ -34,6 +34,7 @@ zcl = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans
 zdp = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
 zigbee-nwk = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
 zigbee = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
+clap = { version = "4.6.1", features = ["derive"] }
 
 [features]
 ashv2 = ["dep:ashv2", "tokio/rt", "tokio/time", "tokio/sync"]

@@ -179,13 +179,13 @@ where
             .await?)
     }
 
-    async fn get_ieee_address(&mut self, pan_id: u16) -> Result<MacAddr8, zigbee_nwk::Error> {
-        Ok(self.transport.lookup_eui64_by_node_id(pan_id).await?)
+    async fn get_ieee_address(&mut self, short_id: u16) -> Result<MacAddr8, zigbee_nwk::Error> {
+        Ok(self.transport.lookup_eui64_by_node_id(short_id).await?)
     }
 
     async fn unicast(
         &mut self,
-        pan_id: u16,
+        short_id: u16,
         destination_endpoint: Endpoint,
         frame: Frame,
     ) -> Result<u8, zigbee_nwk::Error> {
@@ -195,7 +195,7 @@ where
             .map_err(io::Error::other)
             .map_err(Error::from)?;
         let aps_frame = self.next_aps_frame(&aps_metadata, destination_endpoint, 0x0000);
-        let destination = Destination::Direct(pan_id);
+        let destination = Destination::Direct(short_id);
         debug!(
             "Sending unicast to: {destination:?}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
             message.as_slice()
@@ -231,7 +231,7 @@ where
 
     async fn broadcast(
         &mut self,
-        pan_id: u16,
+        short_id: u16,
         radius: u8,
         frame: Frame,
     ) -> Result<u8, zigbee_nwk::Error> {
@@ -242,12 +242,12 @@ where
             .map_err(Error::from)?;
         let aps_frame = self.next_aps_frame(&aps_metadata, Endpoint::Broadcast, 0x0000);
         debug!(
-            "Sending broadcast to: {pan_id:#06X}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
+            "Sending broadcast to: {short_id:#06X}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
             message.as_slice()
         );
         Ok(self
             .transport
-            .send_broadcast(pan_id, aps_frame, radius, tag, message)
+            .send_broadcast(short_id, aps_frame, radius, tag, message)
             .await?)
     }
 }

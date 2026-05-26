@@ -26,28 +26,28 @@ impl ChannelSizes {
 
     /// Set the payload.
     #[must_use]
-    pub const fn with_payload(mut self, payload: usize) -> Self {
+    pub const fn with_payload(&mut self, payload: usize) -> &mut Self {
         self.payload = payload;
         self
     }
 
     /// Set the message queue length.
     #[must_use]
-    pub const fn with_message_queue(mut self, message_queue: usize) -> Self {
+    pub const fn with_message_queue(&mut self, message_queue: usize) -> &mut Self {
         self.message_queue = message_queue;
         self
     }
 
     /// Set the callbacks channel size.
     #[must_use]
-    pub const fn with_callbacks(mut self, callbacks: usize) -> Self {
+    pub const fn with_callbacks(&mut self, callbacks: usize) -> &mut Self {
         self.callbacks = callbacks;
         self
     }
 
     /// Set the response channel size.
     #[must_use]
-    pub const fn with_responses(mut self, responses: usize) -> Self {
+    pub const fn with_responses(&mut self, responses: usize) -> &mut Self {
         self.responses = responses;
         self
     }

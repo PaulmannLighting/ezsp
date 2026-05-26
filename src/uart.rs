@@ -2,10 +2,14 @@
 
 use core::fmt::Debug;
 use core::num::TryFromIntError;
+use std::borrow::Cow;
 use std::sync::Arc;
 use std::time::Duration;
 
-use ashv2::{Payload, Proxy};
+use ashv2::{
+    Actor, BaudRate, FlowControl, NativeSerialPort, Payload, Proxy, SerialPort, Tasks,
+    TryCloneNative, open,
+};
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
 use tokio::spawn;
@@ -81,6 +85,59 @@ impl Uart {
             splitter,
             sequence: 0,
         }
+    }
+
+    /// Open a new UART from a serial port.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if any I/O operations fail.
+    pub fn from_serial_port<P>(
+        serial_port: P,
+        protocol_version: u8,
+        channel_size: usize,
+        message_queue_len: usize,
+        callback_channel_size: usize,
+    ) -> Result<(Self, Tasks<P>, Receiver<Callback>), Error>
+    where
+        P: SerialPort + TryCloneNative + Sync + 'static,
+    {
+        let (tx, rx) = channel(channel_size);
+        let (tasks, proxy) = Actor::new(serial_port, tx, message_queue_len)
+            .map_err(|error| Error::Io(error.into()))?
+            .spawn();
+        let (callbacks_tx, callbacks_rx) = channel(callback_channel_size);
+        Ok((
+            Self::new(proxy, rx, callbacks_tx, protocol_version, channel_size),
+            tasks,
+            callbacks_rx,
+        ))
+    }
+
+    /// Open a new UART from a serial port's path.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if any I/O operations fail.
+    pub fn open<'a, P>(
+        path: P,
+        baud_rate: BaudRate,
+        flow_control: FlowControl,
+        protocol_version: u8,
+        channel_size: usize,
+        message_queue_len: usize,
+        callback_channel_size: usize,
+    ) -> Result<(Self, Tasks<NativeSerialPort>, Receiver<Callback>), Error>
+    where
+        P: Into<Cow<'a, str>>,
+    {
+        Self::from_serial_port(
+            open(path, baud_rate, flow_control).map_err(|error| Error::Io(error.into()))?,
+            protocol_version,
+            channel_size,
+            message_queue_len,
+            callback_channel_size,
+        )
     }
 
     /// Return the next header.

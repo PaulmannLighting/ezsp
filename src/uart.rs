@@ -7,8 +7,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use ashv2::{
-    Actor, BaudRate, FlowControl, NativeSerialPort, Payload, Proxy, SerialPort, Tasks,
-    TryCloneNative, open,
+    Actor, FlowControl, NativeSerialPort, Payload, Proxy, SerialPort, Tasks, TryCloneNative, open,
 };
 use le_stream::ToLeStream;
 use log::{debug, info, trace, warn};
@@ -127,7 +126,6 @@ impl Uart {
     /// Returns an [`Error`] if any I/O operations fail.
     pub fn open<'a, P>(
         path: P,
-        baud_rate: BaudRate,
         flow_control: FlowControl,
         protocol_version: u8,
         channel_sizes: &ChannelSizes,
@@ -136,7 +134,7 @@ impl Uart {
         P: Into<Cow<'a, str>>,
     {
         Self::from_serial_port(
-            open(path, baud_rate, flow_control).map_err(|error| Error::Io(error.into()))?,
+            open(path, flow_control).map_err(|error| Error::Io(error.into()))?,
             protocol_version,
             channel_sizes,
         )

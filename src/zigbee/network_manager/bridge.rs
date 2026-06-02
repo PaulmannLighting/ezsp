@@ -1,4 +1,4 @@
-use log::error;
+use log::trace;
 use tokio::sync::mpsc::{Receiver, Sender};
 
 /// Bridge two channels.
@@ -14,7 +14,7 @@ where
 {
     while let Some(msg) = input.recv().await {
         if let Err(error) = output.send(msg.into()).await {
-            error!("Target channel closed: {error}");
+            trace!("Target channel closed: {error}");
             break;
         }
     }

@@ -33,8 +33,8 @@ pub struct EzspNetworkManager<T> {
     message_tag: u8,
     aps_seq: u8,
     transaction_seq: u8,
-    message_handler_proxy: Sender<Message>,
-    message_handler_handle: JoinHandle<()>,
+    event_mux_proxy: Sender<Message>,
+    event_mux_handle: JoinHandle<()>,
 }
 
 impl<T> EzspNetworkManager<T> {
@@ -44,8 +44,8 @@ impl<T> EzspNetworkManager<T> {
         transport: T,
         profile: Profile,
         aps_options: aps::Options,
-        message_handler_proxy: Sender<Message>,
-        message_handler_handle: JoinHandle<()>,
+        event_mux_proxy: Sender<Message>,
+        event_mux_handle: JoinHandle<()>,
     ) -> Self {
         Self {
             transport,
@@ -54,8 +54,8 @@ impl<T> EzspNetworkManager<T> {
             message_tag: 0,
             aps_seq: 0,
             transaction_seq: 0,
-            message_handler_proxy,
-            message_handler_handle,
+            event_mux_proxy,
+            event_mux_handle,
         }
     }
 
@@ -107,11 +107,11 @@ impl<T> EzspNetworkManager<T> {
     ///
     /// This method may panic, if the termination signal cannot be sent to the message handler.
     pub async fn terminate(self) -> Result<T, JoinError> {
-        self.message_handler_proxy
+        self.event_mux_proxy
             .send(Message::Terminate)
             .await
             .expect("Failed to send terminate message to message handler actor");
-        self.message_handler_handle.await.map(|()| self.transport)
+        self.event_mux_handle.await.map(|()| self.transport)
     }
 }
 
@@ -135,7 +135,7 @@ where
         duration: u8,
     ) -> Result<Vec<zigbee_hw::FoundNetwork>, zigbee_hw::Error> {
         let (tx, rx) = oneshot::channel();
-        self.message_handler_proxy.send(tx.into()).await?;
+        self.event_mux_proxy.send(tx.into()).await?;
         self.transport
             .start_scan(scan::Type::ActiveScan, channel_mask, duration)
             .await?;
@@ -148,7 +148,7 @@ where
         duration: u8,
     ) -> Result<Vec<zigbee_hw::ScannedChannel>, zigbee_hw::Error> {
         let (tx, rx) = oneshot::channel();
-        self.message_handler_proxy.send(tx.into()).await?;
+        self.event_mux_proxy.send(tx.into()).await?;
         self.transport
             .start_scan(scan::Type::EnergyScan, channel_mask, duration)
             .await?;
@@ -240,7 +240,7 @@ where
 
     async fn subscribe(&mut self, buffer: usize) -> Result<Receiver<Event>, zigbee_hw::Error> {
         let (tx, rx) = channel(buffer);
-        self.message_handler_proxy.send(tx.into()).await?;
+        self.event_mux_proxy.send(tx.into()).await?;
         Ok(rx)
     }
 

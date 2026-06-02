@@ -7,6 +7,7 @@ use std::time::Duration;
 use log::{debug, error, info};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::{Receiver, Sender, channel};
+use tokio::sync::oneshot;
 use zigbee::{Endpoint, Profile};
 use zigbee_hw::{Event, Frame, Metadata, NcpDriver};
 
@@ -114,19 +115,12 @@ where
         channel_mask: u32,
         duration: u8,
     ) -> Result<Vec<zigbee_hw::FoundNetwork>, zigbee_hw::Error> {
-        let (tx, mut rx) = channel(16);
+        let (tx, rx) = oneshot::channel();
         self.message_handler_proxy.send(tx.into()).await?;
         self.transport
             .start_scan(scan::Type::ActiveScan, channel_mask, duration)
             .await?;
-
-        while let Some(event) = rx.recv().await {
-            if let Event::ScanResult { networks, .. } = event {
-                return Ok(networks);
-            }
-        }
-
-        Ok(Vec::new())
+        Ok(rx.await?)
     }
 
     async fn scan_channels(
@@ -134,19 +128,12 @@ where
         channel_mask: u32,
         duration: u8,
     ) -> Result<Vec<zigbee_hw::ScannedChannel>, zigbee_hw::Error> {
-        let (tx, mut rx) = channel(16);
+        let (tx, rx) = oneshot::channel();
         self.message_handler_proxy.send(tx.into()).await?;
         self.transport
             .start_scan(scan::Type::EnergyScan, channel_mask, duration)
             .await?;
-
-        while let Some(event) = rx.recv().await {
-            if let Event::ScanResult { channels, .. } = event {
-                return Ok(channels);
-            }
-        }
-
-        Ok(Vec::new())
+        Ok(rx.await?)
     }
 
     async fn allow_joins(&mut self, duration: Duration) -> Result<(), zigbee_hw::Error> {

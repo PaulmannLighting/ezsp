@@ -4,9 +4,9 @@ use std::collections::BTreeMap;
 use std::io;
 use std::time::Duration;
 
-use log::{debug, error, info};
+use log::{debug, info};
 use macaddr::MacAddr8;
-use tokio::sync::mpsc::Sender;
+use tokio::sync::mpsc::{Receiver, Sender, channel};
 use tokio::sync::oneshot;
 use tokio::task::{JoinError, JoinHandle};
 use zigbee::{Endpoint, Profile};
@@ -238,10 +238,10 @@ where
             .await?)
     }
 
-    async fn subscribe(&mut self, sender: Sender<Event>) {
-        if let Err(error) = self.message_handler_proxy.send(sender.into()).await {
-            error!("Failed to subscribe with message handler actor: {error}");
-        }
+    async fn subscribe(&mut self, buffer: usize) -> Result<Receiver<Event>, zigbee_hw::Error> {
+        let (tx, rx) = channel(buffer);
+        self.message_handler_proxy.send(tx.into()).await?;
+        Ok(rx)
     }
 
     async fn broadcast(

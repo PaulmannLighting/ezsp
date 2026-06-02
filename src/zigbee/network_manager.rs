@@ -120,8 +120,10 @@ where
             .start_scan(scan::Type::ActiveScan, channel_mask, duration)
             .await?;
 
-        while let Some(_event) = rx.recv().await {
-            todo!("Add event for found network.");
+        while let Some(event) = rx.recv().await {
+            if let Event::ScanResult { networks, .. } = event {
+                return Ok(networks);
+            }
         }
 
         Ok(Vec::new())
@@ -138,8 +140,10 @@ where
             .start_scan(scan::Type::EnergyScan, channel_mask, duration)
             .await?;
 
-        while let Some(_event) = rx.recv().await {
-            todo!("Add event for scanned channel.");
+        while let Some(event) = rx.recv().await {
+            if let Event::ScanResult { channels, .. } = event {
+                return Ok(channels);
+            }
         }
 
         Ok(Vec::new())

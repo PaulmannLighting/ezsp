@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use aps::data::Frame;
 use log::{debug, error, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
-use zigbee_hw::Event;
+use zigbee_hw::{Event, FoundNetwork, ScannedChannel};
 
 pub use self::message::Message;
 use crate::defragmentation::{Defragment, Transaction};
@@ -20,6 +20,8 @@ mod message;
 pub struct MessageHandler {
     handlers: Vec<Sender<Event>>,
     transactions: BTreeMap<u8, Transaction>,
+    found_networks: Vec<FoundNetwork>,
+    scanned_channels: Vec<ScannedChannel>,
 }
 
 impl MessageHandler {
@@ -29,6 +31,8 @@ impl MessageHandler {
         Self {
             handlers: Vec::new(),
             transactions: BTreeMap::new(),
+            found_networks: Vec::new(),
+            scanned_channels: Vec::new(),
         }
     }
 
@@ -73,11 +77,18 @@ impl MessageHandler {
             Networking::ChildJoin(child_join) => {
                 self.forward_to_handlers(child_join.into()).await;
             }
-            Networking::NetworkFound(_) => {
-                trace!("Network found events are handled by the network scanner.");
+            Networking::NetworkFound(network_found) => {
+                self.found_networks.push(network_found.into());
+            }
+            Networking::EnergyScanResult(energy_scan_result) => {
+                self.scanned_channels.push(energy_scan_result.into());
             }
             Networking::ScanComplete(_) => {
-                trace!("Scan complete events are handled by the network scanner.");
+                let networks = self.found_networks.drain(..).collect();
+                let channels = self.scanned_channels.drain(..).collect();
+
+                self.forward_to_handlers(Event::ScanResult { channels, networks })
+                    .await;
             }
             other => {
                 warn!("Received unsupported networking callback: {other:?}");

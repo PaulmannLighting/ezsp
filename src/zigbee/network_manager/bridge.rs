@@ -8,6 +8,9 @@ use tokio::time::sleep;
 ///
 /// This function will read all messages from `input`, convert them to the message type of `output`
 /// and send it to the output channel.
+///
+/// If the output channel is congested, this function will retry until sending succeeds after
+/// sleeping for the duration as specified in `burst` if specified.
 pub async fn bridge<T, U>(mut input: Receiver<T>, output: Sender<U>, burst: Option<Duration>)
 where
     T: Into<U>,

@@ -12,11 +12,10 @@ use crate::{Error, MIN_NON_LEGACY_VERSION};
 
 impl Builder<Uart> {
     /// Create a new builder using an `ASHv2` UART on the given serial port.
-    pub fn ashv2<T>(serial_port: T, buffers: Option<Buffers>) -> Result<Self, Error>
+    pub fn ashv2<T>(serial_port: T, buffers: Buffers) -> Result<Self, Error>
     where
         T: SerialPort + TryCloneNative + Sync + 'static,
     {
-        let buffers = buffers.unwrap_or_default();
         let (ash_tx, ash_rx) = channel(buffers.ash_receiver);
         let (_ashv2_tasks, proxy) = Actor::new(serial_port, ash_tx, buffers.ash_transmitter)
             .map_err(io::Error::from)?

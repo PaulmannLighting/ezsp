@@ -7,10 +7,10 @@ impl TryFrom<Status> for Event {
 
     fn try_from(status: Status) -> Result<Self, Self::Error> {
         match status {
-            Status::NetworkUp => Ok(Event::NetworkUp),
-            Status::NetworkDown => Ok(Event::NetworkDown),
-            Status::NetworkOpened => Ok(Event::NetworkOpened),
-            Status::NetworkClosed => Ok(Event::NetworkClosed),
+            Status::NetworkUp => Ok(Self::NetworkUp),
+            Status::NetworkDown => Ok(Self::NetworkDown),
+            Status::NetworkOpened => Ok(Self::NetworkOpened),
+            Status::NetworkClosed => Ok(Self::NetworkClosed),
             other => Err(other),
         }
     }

@@ -12,21 +12,21 @@ impl TryFrom<TrustCenterJoin> for Event {
         };
 
         Ok(match status {
-            Update::StandardSecurityUnsecuredJoin => Event::DeviceJoined {
+            Update::StandardSecurityUnsecuredJoin => Self::DeviceJoined {
                 ieee_address: trust_center_join.new_node_eui64(),
                 short_id: trust_center_join.new_node_id(),
             },
-            Update::StandardSecurityUnsecuredRejoin => Event::DeviceRejoined {
+            Update::StandardSecurityUnsecuredRejoin => Self::DeviceRejoined {
                 ieee_address: trust_center_join.new_node_eui64(),
                 short_id: trust_center_join.new_node_id(),
                 secured: false,
             },
-            Update::StandardSecuritySecuredRejoin => Event::DeviceRejoined {
+            Update::StandardSecuritySecuredRejoin => Self::DeviceRejoined {
                 ieee_address: trust_center_join.new_node_eui64(),
                 short_id: trust_center_join.new_node_id(),
                 secured: true,
             },
-            Update::DeviceLeft => Event::DeviceLeft {
+            Update::DeviceLeft => Self::DeviceLeft {
                 ieee_address: trust_center_join.new_node_eui64(),
                 short_id: trust_center_join.new_node_id(),
             },

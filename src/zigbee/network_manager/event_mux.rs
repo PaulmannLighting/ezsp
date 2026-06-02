@@ -7,6 +7,7 @@ use zigbee_hw::Event;
 
 pub use self::message::Message;
 use self::scans::Scans;
+pub use self::subscribe::Subscribe;
 use crate::defragmentation::{Defragment, Transaction};
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
@@ -16,32 +17,23 @@ use crate::{Callback, ember};
 
 mod message;
 mod scans;
+mod subscribe;
 
 /// Handler for processing incoming messages.
-#[derive(Debug)]
-pub struct MessageHandler {
+#[derive(Debug, Default)]
+pub struct EventMux {
     handlers: Vec<Sender<Event>>,
     transactions: BTreeMap<u8, Transaction>,
     scans: Scans,
 }
 
-impl MessageHandler {
-    /// Creates a new `MessageHandler` with the given outgoing channel size.
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {
-            handlers: Vec::new(),
-            transactions: BTreeMap::new(),
-            scans: Scans::new(),
-        }
-    }
-
+impl EventMux {
     /// Processes incoming messages and sends events to the outgoing channel.
     pub async fn run(mut self, mut callbacks: Receiver<Message>) {
         while let Some(message) = callbacks.recv().await {
             match message {
                 Message::Callback(callback) => {
-                    self.process_callback(callback).await;
+                    self.process_callback(*callback).await;
                 }
                 Message::Subscribe(sender) => {
                     debug!("Received subscription request from handler: {sender:?}");
@@ -52,6 +44,10 @@ impl MessageHandler {
                 }
                 Message::NetworkScan(sender) => {
                     self.scans.push(sender.into());
+                }
+                Message::Terminate => {
+                    trace!("Received termination message.");
+                    return;
                 }
             }
         }
@@ -90,7 +86,7 @@ impl MessageHandler {
                 self.scans.add_channel(energy_scan_result.into());
             }
             Networking::ScanComplete(_) => {
-                self.scans.pop().await;
+                self.scans.pop();
             }
             other => {
                 warn!("Received unsupported networking callback: {other:?}");
@@ -101,7 +97,7 @@ impl MessageHandler {
     async fn handle_messaging_callbacks(&mut self, messaging: Messaging) {
         match messaging {
             Messaging::IncomingMessage(incoming_message) => {
-                self.handle_incoming_message(incoming_message).await
+                self.handle_incoming_message(incoming_message).await;
             }
             Messaging::MessageSent(message_sent) => {
                 Self::handle_message_sent(&message_sent);
@@ -143,7 +139,7 @@ impl MessageHandler {
                     src_address,
                     aps_frame: aps_frame.into(),
                 })
-                .await
+                .await;
             }
             Err(error) => {
                 warn!("Ignoring unknown APS frame type: {error}");
@@ -195,7 +191,7 @@ impl MessageHandler {
             Err(handler) => {
                 warn!("Ignoring trust center join event with invalid status: {handler:?}");
             }
-        };
+        }
     }
 
     fn handle_security_callbacks(security: Security) {

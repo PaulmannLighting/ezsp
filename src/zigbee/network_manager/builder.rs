@@ -7,19 +7,19 @@ use macaddr::MacAddr8;
 use rand::random;
 use silizium::zigbee::security::man::Key;
 use tokio::spawn;
-use tokio::sync::mpsc::{Receiver, channel};
+use tokio::sync::mpsc::channel;
 use zigbee::Profile;
-use zigbee_hw::{Event, Waiter};
+use zigbee_hw::AwaitEvent;
 
 use crate::ember::security::initial;
 use crate::ember::{aps, concentrator, join, network};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
 use crate::zigbee::EzspNetworkManager;
-use crate::zigbee::network_manager::message_handler::{Events, MessageHandler};
+use crate::zigbee::network_manager::event_mux::{EventMux, Subscribe};
 use crate::{
-    Callback, Configuration, ConfigurationExt, Displayable, Error, Messaging, Networking,
-    PolicyExt, Security, Transport, Utilities,
+    Configuration, ConfigurationExt, Displayable, Error, Messaging, Networking, PolicyExt,
+    Security, Transport, Utilities,
 };
 
 const HOME_GATEWAY: u16 = 0x0050;
@@ -32,7 +32,6 @@ const ENDPOINT_ID: u8 = 1;
 /// Builder for Zigbee device configuration.
 pub struct Builder<T> {
     transport: T,
-    callbacks_rx: Receiver<Callback>,
     policy: BTreeMap<policy::Id, u8>,
     configuration: BTreeMap<config::Id, u16>,
     concentrator: Option<concentrator::Parameters>,
@@ -57,10 +56,9 @@ pub struct Builder<T> {
 impl<T> Builder<T> {
     /// Creates a new `Builder` with the given transport.
     #[must_use]
-    pub fn new(transport: T, callbacks_rx: Receiver<Callback>) -> Self {
+    pub fn new(transport: T) -> Self {
         Self {
             transport,
-            callbacks_rx,
             policy: BTreeMap::new(),
             configuration: BTreeMap::new(),
             concentrator: None,
@@ -245,14 +243,12 @@ impl<T> Builder<T> {
     }
 
     /// Starts the network manager on the given transport implementation.
-    pub async fn start(mut self) -> Result<(EzspNetworkManager<T>, Receiver<Event>), Error>
+    pub async fn start(mut self) -> Result<EzspNetworkManager<T>, Error>
     where
         T: Transport,
     {
-        let handlers = Events::default();
-        let (events_tx, mut events_rx) = channel(self.callbacks_rx.max_capacity());
-        let message_handler = MessageHandler::new(handlers.clone(), events_tx);
-        spawn(message_handler.run(self.callbacks_rx));
+        let (mut message_tx, message_rx) = channel(100);
+        let message_handler = spawn(EventMux::default().run(message_rx));
 
         debug!("Setting concentrator");
         self.transport.set_concentrator(self.concentrator).await?;
@@ -289,7 +285,10 @@ impl<T> Builder<T> {
 
         if self.reinitialize {
             if self.transport.leave_network().await.is_ok() {
-                events_rx
+                message_tx
+                    .subscribe(16)
+                    .await
+                    .expect("Failed to subscribe to message handler.")
                     .network_down()
                     .await
                     .map_err(|()| io::Error::other("Events channel closed."))?;
@@ -322,7 +321,10 @@ impl<T> Builder<T> {
             self.transport.network_init(self.init_bitmask).await?;
         }
 
-        events_rx
+        message_tx
+            .subscribe(16)
+            .await
+            .expect("Failed to subscribe to message handler.")
             .network_up()
             .await
             .map_err(|()| io::Error::other("Events channel closed."))?;
@@ -350,9 +352,12 @@ impl<T> Builder<T> {
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
-        Ok((
-            EzspNetworkManager::new(self.transport, self.profile, self.aps_options, handlers),
-            events_rx,
+        Ok(EzspNetworkManager::new(
+            self.transport,
+            self.profile,
+            self.aps_options,
+            message_tx,
+            message_handler,
         ))
     }
 }

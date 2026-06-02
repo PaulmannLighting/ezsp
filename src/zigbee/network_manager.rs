@@ -6,24 +6,23 @@ use std::time::Duration;
 
 use log::{debug, error, info};
 use macaddr::MacAddr8;
-use tokio::sync::mpsc::{Receiver, Sender, channel};
+use tokio::sync::mpsc::Sender;
 use tokio::sync::oneshot;
+use tokio::task::{JoinError, JoinHandle};
 use zigbee::{Endpoint, Profile};
 use zigbee_hw::{Event, Frame, Metadata, NcpDriver};
 
 use self::builder::Builder;
-use self::collect_networks_found::CollectNetworksFound;
-use self::message_handler::Message;
+use self::event_mux::Message;
 use crate::ember::message::Destination;
 use crate::ember::{aps, concentrator};
 use crate::error::Status;
 use crate::ezsp::network::scan;
 use crate::types::ByteSizedVec;
-use crate::{Callback, Configuration, Error, Messaging, Networking, Security, Utilities, ember};
+use crate::{Configuration, Error, Messaging, Networking, Security, Utilities, ember};
 
 mod builder;
-mod collect_networks_found;
-mod message_handler;
+mod event_mux;
 
 /// Network manager for Zigbee networks.
 #[derive(Debug)]
@@ -35,6 +34,7 @@ pub struct EzspNetworkManager<T> {
     aps_seq: u8,
     transaction_seq: u8,
     message_handler_proxy: Sender<Message>,
+    message_handler_handle: JoinHandle<()>,
 }
 
 impl<T> EzspNetworkManager<T> {
@@ -45,6 +45,7 @@ impl<T> EzspNetworkManager<T> {
         profile: Profile,
         aps_options: aps::Options,
         message_handler_proxy: Sender<Message>,
+        message_handler_handle: JoinHandle<()>,
     ) -> Self {
         Self {
             transport,
@@ -54,13 +55,14 @@ impl<T> EzspNetworkManager<T> {
             aps_seq: 0,
             transaction_seq: 0,
             message_handler_proxy,
+            message_handler_handle,
         }
     }
 
     /// Creates a new `Builder` for constructing a `NetworkManager`.
     #[must_use]
-    pub fn build(transport: T, callbacks_rx: Receiver<Callback>) -> Builder<T> {
-        Builder::new(transport, callbacks_rx)
+    pub fn build(transport: T) -> Builder<T> {
+        Builder::new(transport)
     }
 
     /// Returns the next message tag and increments the internal counter.
@@ -93,6 +95,23 @@ impl<T> EzspNetworkManager<T> {
             group_id,
             self.next_aps_seq(),
         )
+    }
+
+    /// Terminate the network manager.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`JoinError`] if joining the message handler fails.
+    ///
+    /// # Panics
+    ///
+    /// This method may panic, if the termination signal cannot be sent to the message handler.
+    pub async fn terminate(self) -> Result<T, JoinError> {
+        self.message_handler_proxy
+            .send(Message::Terminate)
+            .await
+            .expect("Failed to send terminate message to message handler actor");
+        self.message_handler_handle.await.map(|()| self.transport)
     }
 }
 

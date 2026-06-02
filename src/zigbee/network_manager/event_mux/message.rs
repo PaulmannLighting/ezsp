@@ -8,18 +8,26 @@ use crate::Callback;
 #[derive(Debug)]
 pub enum Message {
     /// An incoming callback.
-    Callback(Callback),
+    Callback(Box<Callback>),
     /// An incoming subscription request.
     Subscribe(Sender<Event>),
     /// A request to scan networks.
     NetworkScan(oneshot::Sender<Vec<FoundNetwork>>),
     /// A request to scan channels.
     ChannelScan(oneshot::Sender<Vec<ScannedChannel>>),
+    /// Termination signal.
+    Terminate,
+}
+
+impl From<Box<Callback>> for Message {
+    fn from(callback: Box<Callback>) -> Self {
+        Self::Callback(callback)
+    }
 }
 
 impl From<Callback> for Message {
     fn from(callback: Callback) -> Self {
-        Self::Callback(callback)
+        Self::from(Box::new(callback))
     }
 }
 

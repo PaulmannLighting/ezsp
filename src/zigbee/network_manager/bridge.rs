@@ -11,7 +11,7 @@ where
 {
     while let Some(msg) = input.recv().await {
         if let Err(error) = output.send(msg.into()).await {
-            error!("Callback to message translation channel is congested: {error}");
+            error!("Target channel is congested: {error}");
         }
     }
 }

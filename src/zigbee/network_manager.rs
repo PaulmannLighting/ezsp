@@ -12,7 +12,7 @@ use zigbee_hw::{Event, Frame, Metadata, NcpDriver};
 
 use self::builder::Builder;
 use self::collect_networks_found::CollectNetworksFound;
-use self::message_handler::Handlers;
+use self::message_handler::Events;
 use crate::ember::message::Destination;
 use crate::ember::{aps, concentrator};
 use crate::error::Status;
@@ -30,11 +30,10 @@ pub struct EzspNetworkManager<T> {
     transport: T,
     profile: Profile,
     aps_options: aps::Options,
-    handlers: Handlers,
+    handlers: Events,
     message_tag: u8,
     aps_seq: u8,
     transaction_seq: u8,
-    senders: Vec<Sender<Event>>,
 }
 
 impl<T> EzspNetworkManager<T> {
@@ -44,7 +43,7 @@ impl<T> EzspNetworkManager<T> {
         transport: T,
         profile: Profile,
         aps_options: aps::Options,
-        handlers: Handlers,
+        handlers: Events,
     ) -> Self {
         Self {
             transport,
@@ -102,7 +101,7 @@ where
 {
     /// Registers a new channel for receiving callbacks.
     async fn register_handler(&self, size: usize) -> Receiver<Callback> {
-        let (tx, rx) = tokio::sync::mpsc::channel(size);
+        let (tx, rx) = channel(size);
         self.handlers.lock().await.push(tx);
         rx
     }
@@ -118,9 +117,8 @@ where
         seq
     }
 
-    async fn get_pan_id(&mut self) -> Result<u16, zigbee_hw::Error> {
-        let (_, parameters) = self.transport.get_network_parameters().await?;
-        Ok(parameters.pan_id())
+    async fn get_short_id(&mut self) -> Result<u16, zigbee_hw::Error> {
+        Err(zigbee_hw::Error::NotImplemented)
     }
 
     async fn scan_networks(
@@ -230,6 +228,10 @@ where
             .await?)
     }
 
+    async fn subscribe(&mut self, sender: Sender<Event>) {
+        todo!()
+    }
+
     async fn broadcast(
         &mut self,
         short_id: u16,
@@ -250,13 +252,5 @@ where
             .transport
             .send_broadcast(short_id, aps_frame, radius, tag, message)
             .await?)
-    }
-
-    async fn get_short_id(&mut self) -> Result<u16, zigbee_hw::Error> {
-        Err(zigbee_hw::Error::NotImplemented)
-    }
-
-    async fn subscribe(&mut self, sender: Sender<Event>) {
-        self.senders.push(sender);
     }
 }

@@ -16,7 +16,7 @@ use crate::ember::{aps, concentrator, join, network};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
 use crate::zigbee::EzspNetworkManager;
-use crate::zigbee::network_manager::message_handler::{Handlers, MessageHandler};
+use crate::zigbee::network_manager::message_handler::{Events, MessageHandler};
 use crate::{
     Callback, Configuration, ConfigurationExt, Displayable, Error, Messaging, Networking,
     PolicyExt, Security, Transport, Utilities,
@@ -249,10 +249,10 @@ impl<T> Builder<T> {
     where
         T: Transport,
     {
-        let handlers = Handlers::default();
+        let handlers = Events::default();
         let (events_tx, mut events_rx) = channel(self.callbacks_rx.max_capacity());
         let message_handler = MessageHandler::new(handlers.clone(), events_tx);
-        spawn(message_handler.process(self.callbacks_rx));
+        spawn(message_handler.run(self.callbacks_rx));
 
         debug!("Setting concentrator");
         self.transport.set_concentrator(self.concentrator).await?;

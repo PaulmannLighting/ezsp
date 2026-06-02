@@ -1,4 +1,4 @@
-use zigbee_nwk::ScannedChannel;
+use zigbee_hw::ScannedChannel;
 
 use crate::parameters::networking::handler::EnergyScanResult;
 

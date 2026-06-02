@@ -6,9 +6,9 @@ use std::time::Duration;
 
 use log::{debug, info};
 use macaddr::MacAddr8;
-use tokio::sync::mpsc::Receiver;
+use tokio::sync::mpsc::{Receiver, Sender, channel};
 use zigbee::{Endpoint, Profile};
-use zigbee_nwk::{Actor, Frame, Metadata};
+use zigbee_hw::{Event, Frame, Metadata, NcpDriver};
 
 use self::builder::Builder;
 use self::collect_networks_found::CollectNetworksFound;
@@ -34,6 +34,7 @@ pub struct EzspNetworkManager<T> {
     message_tag: u8,
     aps_seq: u8,
     transaction_seq: u8,
+    senders: Vec<Sender<Event>>,
 }
 
 impl<T> EzspNetworkManager<T> {
@@ -107,7 +108,7 @@ where
     }
 }
 
-impl<T> Actor for EzspNetworkManager<T>
+impl<T> NcpDriver for EzspNetworkManager<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync,
 {
@@ -117,7 +118,7 @@ where
         seq
     }
 
-    async fn get_pan_id(&mut self) -> Result<u16, zigbee_nwk::Error> {
+    async fn get_pan_id(&mut self) -> Result<u16, zigbee_hw::Error> {
         let (_, parameters) = self.transport.get_network_parameters().await?;
         Ok(parameters.pan_id())
     }
@@ -126,7 +127,7 @@ where
         &mut self,
         channel_mask: u32,
         duration: u8,
-    ) -> Result<Vec<zigbee_nwk::FoundNetwork>, zigbee_nwk::Error> {
+    ) -> Result<Vec<zigbee_hw::FoundNetwork>, zigbee_hw::Error> {
         let mut rx = self.register_handler(16).await;
         self.transport
             .start_scan(scan::Type::ActiveScan, channel_mask, duration)
@@ -138,7 +139,7 @@ where
         &mut self,
         channel_mask: u32,
         duration: u8,
-    ) -> Result<Vec<zigbee_nwk::ScannedChannel>, zigbee_nwk::Error> {
+    ) -> Result<Vec<zigbee_hw::ScannedChannel>, zigbee_hw::Error> {
         let mut rx = self.register_handler(16).await;
         self.transport
             .start_scan(scan::Type::EnergyScan, channel_mask, duration)
@@ -146,7 +147,7 @@ where
         Ok(rx.collect_scanned_channels().await?)
     }
 
-    async fn allow_joins(&mut self, duration: Duration) -> Result<(), zigbee_nwk::Error> {
+    async fn allow_joins(&mut self, duration: Duration) -> Result<(), zigbee_hw::Error> {
         info!("Allowing joins for {} seconds.", duration.as_secs());
         self.transport
             .permit_joining(u8::try_from(duration.as_secs()).unwrap_or(u8::MAX).into())
@@ -154,7 +155,7 @@ where
             .map_err(Into::into)
     }
 
-    async fn get_neighbors(&mut self) -> Result<BTreeMap<MacAddr8, u16>, zigbee_nwk::Error> {
+    async fn get_neighbors(&mut self) -> Result<BTreeMap<MacAddr8, u16>, zigbee_hw::Error> {
         let mut neighbors = BTreeMap::new();
 
         for index in 0..=u8::MAX {
@@ -172,14 +173,14 @@ where
         Ok(neighbors)
     }
 
-    async fn route_request(&mut self, radius: u8) -> Result<(), zigbee_nwk::Error> {
+    async fn route_request(&mut self, radius: u8) -> Result<(), zigbee_hw::Error> {
         Ok(self
             .transport
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius)
             .await?)
     }
 
-    async fn get_ieee_address(&mut self, short_id: u16) -> Result<MacAddr8, zigbee_nwk::Error> {
+    async fn get_ieee_address(&mut self, short_id: u16) -> Result<MacAddr8, zigbee_hw::Error> {
         Ok(self.transport.lookup_eui64_by_node_id(short_id).await?)
     }
 
@@ -188,7 +189,7 @@ where
         short_id: u16,
         destination_endpoint: Endpoint,
         frame: Frame,
-    ) -> Result<u8, zigbee_nwk::Error> {
+    ) -> Result<u8, zigbee_hw::Error> {
         let (aps_metadata, payload) = frame.into_parts();
         let tag = self.next_message_tag();
         let message = ByteSizedVec::from_slice(&payload)
@@ -212,7 +213,7 @@ where
         hops: u8,
         radius: u8,
         frame: Frame,
-    ) -> Result<u8, zigbee_nwk::Error> {
+    ) -> Result<u8, zigbee_hw::Error> {
         let (aps_metadata, payload) = frame.into_parts();
         let tag = self.next_message_tag();
         let message = ByteSizedVec::from_slice(&payload)
@@ -234,7 +235,7 @@ where
         short_id: u16,
         radius: u8,
         frame: Frame,
-    ) -> Result<u8, zigbee_nwk::Error> {
+    ) -> Result<u8, zigbee_hw::Error> {
         let (aps_metadata, payload) = frame.into_parts();
         let tag = self.next_message_tag();
         let message = ByteSizedVec::from_slice(&payload)
@@ -249,5 +250,13 @@ where
             .transport
             .send_broadcast(short_id, aps_frame, radius, tag, message)
             .await?)
+    }
+
+    async fn get_short_id(&mut self) -> Result<u16, zigbee_hw::Error> {
+        Err(zigbee_hw::Error::NotImplemented)
+    }
+
+    async fn subscribe(&mut self, sender: Sender<Event>) {
+        self.senders.push(sender);
     }
 }

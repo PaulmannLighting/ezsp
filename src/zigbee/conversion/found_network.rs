@@ -1,4 +1,4 @@
-use zigbee_nwk::FoundNetwork;
+use zigbee_hw::{FoundNetwork, Network};
 
 use crate::parameters::networking::handler::NetworkFound;
 
@@ -6,7 +6,7 @@ impl From<NetworkFound> for FoundNetwork {
     fn from(network_found: NetworkFound) -> Self {
         let network = network_found.network_found();
         Self::new(
-            zigbee_nwk::Network::new(
+            Network::new(
                 network.channel(),
                 network.pan_id(),
                 network.extended_pan_id(),

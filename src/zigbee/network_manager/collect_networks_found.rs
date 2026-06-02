@@ -1,7 +1,7 @@
 use std::io;
 
 use tokio::sync::mpsc::Receiver;
-use zigbee_nwk::{FoundNetwork, ScannedChannel};
+use zigbee_hw::{FoundNetwork, ScannedChannel};
 
 use crate::parameters::networking::handler::Handler as Networking;
 use crate::{Callback, Error};

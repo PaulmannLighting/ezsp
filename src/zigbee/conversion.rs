@@ -2,7 +2,7 @@
 
 use aps::Destination;
 use zigbee::Profile;
-use zigbee_nwk::Command;
+use zigbee_hw::Command;
 
 pub use self::error::ParseApsFrameError;
 use crate::DefragmentedMessage;

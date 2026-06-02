@@ -6,7 +6,7 @@ use log::{debug, error, trace, warn};
 use tokio::sync::Mutex;
 use tokio::sync::mpsc::error::SendError;
 use tokio::sync::mpsc::{Receiver, Sender};
-use zigbee_nwk::Event;
+use zigbee_hw::Event;
 
 use crate::defragmentation::{Defragment, Transaction};
 use crate::ember::device::Update;
@@ -213,12 +213,12 @@ impl MessageHandler {
             .send(if child_join.joining() {
                 Event::DeviceJoined {
                     ieee_address: child_join.child_eui64(),
-                    pan_id: child_join.child_id(),
+                    short_id: child_join.child_id(),
                 }
             } else {
                 Event::DeviceLeft {
                     ieee_address: child_join.child_eui64(),
-                    pan_id: child_join.child_id(),
+                    short_id: child_join.child_id(),
                 }
             })
             .await
@@ -240,21 +240,21 @@ impl MessageHandler {
             .send(match status {
                 Update::StandardSecurityUnsecuredJoin => Event::DeviceJoined {
                     ieee_address: trust_center_join.new_node_eui64(),
-                    pan_id: trust_center_join.new_node_id(),
+                    short_id: trust_center_join.new_node_id(),
                 },
                 Update::StandardSecurityUnsecuredRejoin => Event::DeviceRejoined {
                     ieee_address: trust_center_join.new_node_eui64(),
-                    pan_id: trust_center_join.new_node_id(),
+                    short_id: trust_center_join.new_node_id(),
                     secured: false,
                 },
                 Update::StandardSecuritySecuredRejoin => Event::DeviceRejoined {
                     ieee_address: trust_center_join.new_node_eui64(),
-                    pan_id: trust_center_join.new_node_id(),
+                    short_id: trust_center_join.new_node_id(),
                     secured: true,
                 },
                 Update::DeviceLeft => Event::DeviceLeft {
                     ieee_address: trust_center_join.new_node_eui64(),
-                    pan_id: trust_center_join.new_node_id(),
+                    short_id: trust_center_join.new_node_id(),
                 },
             })
             .await

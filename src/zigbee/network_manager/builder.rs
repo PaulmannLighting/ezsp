@@ -9,7 +9,7 @@ use silizium::zigbee::security::man::Key;
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, channel};
 use zigbee::Profile;
-use zigbee_nwk::{Event, Waiter};
+use zigbee_hw::{Event, Waiter};
 
 use crate::ember::security::initial;
 use crate::ember::{aps, concentrator, join, network};

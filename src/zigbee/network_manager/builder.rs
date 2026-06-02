@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::io;
 use std::iter::once;
+use std::time::Duration;
 
 use log::{debug, info};
 use macaddr::MacAddr8;
@@ -31,6 +32,7 @@ const OUTPUT_CLUSTERS: &[u16] = &[0x0000, 0x0006, 0x0008, 0x0300, 0x0403];
 const RADIO_CHANNEL: u8 = 11;
 const RADIO_POWER: i8 = 8;
 const ENDPOINT_ID: u8 = 1;
+const BURST: Duration = Duration::from_millis(100);
 
 /// Builder for Zigbee device configuration.
 pub struct Builder<T> {
@@ -254,7 +256,7 @@ impl<T> Builder<T> {
         T: Transport + Sync + 'static,
     {
         let (mut message_tx, message_rx) = channel(buffer);
-        spawn(bridge(self.callbacks, message_tx.clone()));
+        spawn(bridge(self.callbacks, message_tx.clone(), Some(BURST)));
         let event_mux_handle = spawn(EventMux::default().run(message_rx));
 
         debug!("Setting concentrator");

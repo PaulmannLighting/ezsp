@@ -7,19 +7,20 @@ use macaddr::MacAddr8;
 use rand::random;
 use silizium::zigbee::security::man::Key;
 use tokio::spawn;
-use tokio::sync::mpsc::channel;
+use tokio::sync::mpsc::{Receiver, channel};
 use zigbee::Profile;
 use zigbee_hw::AwaitEvent;
 
+use super::callbacks_to_messages::callbacks_to_messages;
+use super::event_mux::{EventMux, Subscribe};
 use crate::ember::security::initial;
 use crate::ember::{aps, concentrator, join, network};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
 use crate::zigbee::EzspNetworkManager;
-use crate::zigbee::network_manager::event_mux::{EventMux, Subscribe};
 use crate::{
-    Configuration, ConfigurationExt, Displayable, Error, Messaging, Networking, PolicyExt,
-    Security, Transport, Utilities,
+    Callback, Configuration, ConfigurationExt, Displayable, Error, Messaging, Networking,
+    PolicyExt, Security, Transport, Utilities,
 };
 
 const HOME_GATEWAY: u16 = 0x0050;
@@ -32,6 +33,7 @@ const ENDPOINT_ID: u8 = 1;
 /// Builder for Zigbee device configuration.
 pub struct Builder<T> {
     transport: T,
+    callbacks: Receiver<Callback>,
     policy: BTreeMap<policy::Id, u8>,
     configuration: BTreeMap<config::Id, u16>,
     concentrator: Option<concentrator::Parameters>,
@@ -56,9 +58,10 @@ pub struct Builder<T> {
 impl<T> Builder<T> {
     /// Creates a new `Builder` with the given transport.
     #[must_use]
-    pub fn new(transport: T) -> Self {
+    pub fn new(transport: T, callbacks: Receiver<Callback>) -> Self {
         Self {
             transport,
+            callbacks,
             policy: BTreeMap::new(),
             configuration: BTreeMap::new(),
             concentrator: None,
@@ -243,12 +246,13 @@ impl<T> Builder<T> {
     }
 
     /// Starts the network manager on the given transport implementation.
-    pub async fn start(mut self) -> Result<EzspNetworkManager<T>, Error>
+    pub async fn start(mut self, buffer: usize) -> Result<EzspNetworkManager<T>, Error>
     where
         T: Transport,
     {
-        let (mut message_tx, message_rx) = channel(100);
-        let message_handler = spawn(EventMux::default().run(message_rx));
+        let (mut message_tx, message_rx) = channel(buffer);
+        spawn(callbacks_to_messages(self.callbacks, message_tx.clone()));
+        let event_mux_handle = spawn(EventMux::default().run(message_rx));
 
         debug!("Setting concentrator");
         self.transport.set_concentrator(self.concentrator).await?;
@@ -357,7 +361,7 @@ impl<T> Builder<T> {
             self.profile,
             self.aps_options,
             message_tx,
-            message_handler,
+            event_mux_handle,
         ))
     }
 }

@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 
 use aps::data::Frame;
 use log::{debug, error, trace, warn};
@@ -24,7 +24,7 @@ pub struct MessageHandler {
     transactions: BTreeMap<u8, Transaction>,
     channels: Vec<ScannedChannel>,
     networks: Vec<FoundNetwork>,
-    scans: Vec<Scan>,
+    scans: VecDeque<Scan>,
 }
 
 impl MessageHandler {
@@ -36,7 +36,7 @@ impl MessageHandler {
             transactions: BTreeMap::new(),
             channels: Vec::new(),
             networks: Vec::new(),
-            scans: Vec::new(),
+            scans: VecDeque::new(),
         }
     }
 
@@ -52,10 +52,10 @@ impl MessageHandler {
                     self.handlers.push(sender);
                 }
                 Message::ChannelScan(sender) => {
-                    self.scans.push(sender.into());
+                    self.scans.push_back(sender.into());
                 }
                 Message::NetworkScan(sender) => {
-                    self.scans.push(sender.into());
+                    self.scans.push_back(sender.into());
                 }
             }
         }
@@ -94,7 +94,7 @@ impl MessageHandler {
                 self.channels.push(energy_scan_result.into());
             }
             Networking::ScanComplete(_) => {
-                if let Some(scan) = self.scans.pop() {
+                if let Some(scan) = self.scans.pop_front() {
                     match scan {
                         Scan::Channel(sender) => sender
                             .send(self.channels.drain(..).collect())

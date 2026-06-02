@@ -116,6 +116,21 @@ impl<T> EzspNetworkManager<T> {
     }
 }
 
+#[cfg(feature = "ashv2")]
+impl EzspNetworkManager<crate::uart::Uart> {
+    /// Creates a new `Builder` for constructing a `NetworkManager`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if the building of the UART fails.
+    pub fn ashv2<P>(serial_port: P) -> Result<Builder<crate::uart::Uart>, Error>
+    where
+        P: ashv2::SerialPort + ashv2::TryCloneNative + Sync + 'static,
+    {
+        Builder::ashv2(serial_port)
+    }
+}
+
 impl<T> NcpDriver for EzspNetworkManager<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync,

@@ -1,6 +1,7 @@
 use tokio::sync::oneshot::Sender;
 use zigbee_hw::{FoundNetwork, ScannedChannel};
 
+/// Types of scans that may be completed by a `ScanComplete` handler.
 #[derive(Debug)]
 pub enum Scan {
     /// A channel scan.

@@ -12,7 +12,15 @@ use crate::{Error, MIN_NON_LEGACY_VERSION};
 
 impl Builder<Uart> {
     /// Create a new builder using an `ASHv2` UART on the given serial port.
-    pub fn ashv2<T>(serial_port: T, buffers: Buffers) -> Result<Self, Error>
+    pub fn ashv2<T>(serial_port: T) -> Result<Self, Error>
+    where
+        T: SerialPort + TryCloneNative + Sync + 'static,
+    {
+        Self::ashv2_with_buffers(serial_port, Buffers::default())
+    }
+
+    /// Create a new builder using an `ASHv2` UART on the given serial port.
+    pub fn ashv2_with_buffers<T>(serial_port: T, buffers: Buffers) -> Result<Self, Error>
     where
         T: SerialPort + TryCloneNative + Sync + 'static,
     {

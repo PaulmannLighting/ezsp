@@ -19,7 +19,11 @@ mod message;
 mod scans;
 mod subscribe;
 
-/// Handler for processing incoming messages.
+/// Actor for processing incoming events.
+///
+/// This actor actually receives messages of type [`Message`] which can be wrapped raw EZSP events
+/// ("Callbacks"), subscription requests or requests to start a channel or network scan.
+/// Also, termination signals may be received.
 #[derive(Debug, Default)]
 pub struct EventMux {
     handlers: Vec<Sender<Event>>,

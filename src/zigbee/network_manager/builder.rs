@@ -11,7 +11,7 @@ use tokio::sync::mpsc::{Receiver, channel};
 use zigbee::Profile;
 use zigbee_hw::{AwaitEvent, Ncp, NcpDriver};
 
-use super::callbacks_to_messages::callbacks_to_messages;
+use super::bridge::bridge;
 use super::event_mux::{EventMux, Subscribe};
 use crate::ember::security::initial;
 use crate::ember::{aps, concentrator, join, network};
@@ -254,7 +254,7 @@ impl<T> Builder<T> {
         T: Transport + Sync + 'static,
     {
         let (mut message_tx, message_rx) = channel(buffer);
-        spawn(callbacks_to_messages(self.callbacks, message_tx.clone()));
+        spawn(bridge(self.callbacks, message_tx.clone()));
         let event_mux_handle = spawn(EventMux::default().run(message_rx));
 
         debug!("Setting concentrator");

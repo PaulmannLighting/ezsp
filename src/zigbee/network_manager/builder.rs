@@ -9,7 +9,7 @@ use silizium::zigbee::security::man::Key;
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, channel};
 use zigbee::Profile;
-use zigbee_hw::AwaitEvent;
+use zigbee_hw::{AwaitEvent, Ncp, NcpDriver};
 
 use super::callbacks_to_messages::callbacks_to_messages;
 use super::event_mux::{EventMux, Subscribe};
@@ -246,9 +246,10 @@ impl<T> Builder<T> {
     }
 
     /// Starts the network manager on the given transport implementation.
-    pub async fn start(mut self, buffer: usize) -> Result<EzspNetworkManager<T>, Error>
+    #[expect(clippy::too_many_lines)]
+    pub async fn start(mut self, buffer: usize) -> Result<impl Ncp + Clone + Send, Error>
     where
-        T: Transport,
+        T: Transport + Sync + 'static,
     {
         let (mut message_tx, message_rx) = channel(buffer);
         spawn(callbacks_to_messages(self.callbacks, message_tx.clone()));
@@ -292,7 +293,7 @@ impl<T> Builder<T> {
                 message_tx
                     .subscribe(16)
                     .await
-                    .expect("Failed to subscribe to message handler.")
+                    .map_err(|_| io::Error::other("Failed to subscribe to message handler."))?
                     .network_down()
                     .await
                     .map_err(|()| io::Error::other("Events channel closed."))?;
@@ -328,7 +329,7 @@ impl<T> Builder<T> {
         message_tx
             .subscribe(16)
             .await
-            .expect("Failed to subscribe to message handler.")
+            .map_err(|_| io::Error::other("Failed to subscribe to message handler."))?
             .network_up()
             .await
             .map_err(|()| io::Error::other("Events channel closed."))?;
@@ -356,13 +357,15 @@ impl<T> Builder<T> {
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
-        Ok(EzspNetworkManager::new(
+        let (_handle, ncp) = EzspNetworkManager::new(
             self.transport,
             self.profile,
             self.aps_options,
             message_tx,
             event_mux_handle,
-        ))
+        )
+        .spawn(buffer);
+        Ok(ncp)
     }
 }
 

@@ -8,9 +8,12 @@ pub use self::error::ParseApsFrameError;
 use crate::DefragmentedMessage;
 use crate::ember::message::Incoming;
 
+mod child_join;
 mod error;
 mod found_network;
 mod scanned_channel;
+mod status;
+mod trust_center_join;
 mod zcl_frame;
 mod zdp_frame;
 

@@ -1,12 +1,11 @@
 use std::collections::BTreeMap;
-use std::sync::Arc;
 
 use aps::data::Frame;
 use log::{debug, error, trace, warn};
-use tokio::sync::Mutex;
 use tokio::sync::mpsc::{Receiver, Sender};
 use zigbee_hw::Event;
 
+pub use self::message::Message;
 use crate::defragmentation::{Defragment, Transaction};
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
@@ -14,32 +13,37 @@ use crate::parameters::security::handler::Handler as Security;
 use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
 use crate::{Callback, ember};
 
-/// Type alias for a thread-safe list of callback handlers.
-///
-/// TODO: Refactor this away by e.g. using the actor model.
-pub type Events = Arc<Mutex<Vec<Sender<Event>>>>;
+mod message;
 
 /// Handler for processing incoming messages.
 #[derive(Debug)]
 pub struct MessageHandler {
-    handlers: Events,
+    handlers: Vec<Sender<Event>>,
     transactions: BTreeMap<u8, Transaction>,
 }
 
 impl MessageHandler {
     /// Creates a new `MessageHandler` with the given outgoing channel size.
     #[must_use]
-    pub const fn new(handlers: Events) -> Self {
+    pub const fn new() -> Self {
         Self {
-            handlers,
+            handlers: Vec::new(),
             transactions: BTreeMap::new(),
         }
     }
 
     /// Processes incoming messages and sends events to the outgoing channel.
-    pub async fn run(mut self, mut callbacks: Receiver<Callback>) {
-        while let Some(callback) = callbacks.recv().await {
-            self.process_callback(callback).await;
+    pub async fn run(mut self, mut callbacks: Receiver<Message>) {
+        while let Some(message) = callbacks.recv().await {
+            match message {
+                Message::Callback(callback) => {
+                    self.process_callback(callback).await;
+                }
+                Message::Subscribe(sender) => {
+                    debug!("Received subscription request from handler: {sender:?}");
+                    self.handlers.push(sender);
+                }
+            }
         }
 
         warn!("Callback channel closed. Message handler terminating.");
@@ -63,7 +67,7 @@ impl MessageHandler {
         }
     }
 
-    async fn handle_networking_callbacks(&self, networking: Networking) {
+    async fn handle_networking_callbacks(&mut self, networking: Networking) {
         match networking {
             Networking::StackStatus(status) => self.handle_stack_status(status.result()).await,
             Networking::ChildJoin(child_join) => {
@@ -135,13 +139,11 @@ impl MessageHandler {
     }
 
     /// Forward EZSP callbacks to registered handlers.
-    async fn forward_to_handlers(&self, event: Event) {
-        let mut lock = self.handlers.lock().await;
-
+    async fn forward_to_handlers(&mut self, event: Event) {
         trace!("Removing closed EZSP event handlers...");
-        lock.retain(|sender| !sender.is_closed());
+        self.handlers.retain(|sender| !sender.is_closed());
 
-        for sender in lock.iter() {
+        for sender in &self.handlers {
             trace!("Forwarding EZSP event to registered handler: {sender:?}");
             if let Err(error) = sender.send(event.clone()).await {
                 trace!("Failed to forward EZSP event to registered handler: {error}");
@@ -157,7 +159,7 @@ impl MessageHandler {
         }
     }
 
-    async fn handle_stack_status(&self, status: Result<ember::Status, u8>) {
+    async fn handle_stack_status(&mut self, status: Result<ember::Status, u8>) {
         let status = match status {
             Ok(status) => status,
             Err(value) => {
@@ -174,7 +176,7 @@ impl MessageHandler {
         }
     }
 
-    async fn handle_trust_center_join(&self, trust_center_join: TrustCenterJoin) {
+    async fn handle_trust_center_join(&mut self, trust_center_join: TrustCenterJoin) {
         match trust_center_join.try_into() {
             Ok(event) => self.forward_to_handlers(event).await,
             Err(handler) => {

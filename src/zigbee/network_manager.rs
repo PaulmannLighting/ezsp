@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::io;
 use std::time::Duration;
 
-use log::{debug, info};
+use log::{debug, error, info};
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::{Receiver, Sender, channel};
 use zigbee::{Endpoint, Profile};
@@ -12,7 +12,7 @@ use zigbee_hw::{Event, Frame, Metadata, NcpDriver};
 
 use self::builder::Builder;
 use self::collect_networks_found::CollectNetworksFound;
-use self::message_handler::Events;
+use self::message_handler::Message;
 use crate::ember::message::Destination;
 use crate::ember::{aps, concentrator};
 use crate::error::Status;
@@ -30,10 +30,10 @@ pub struct EzspNetworkManager<T> {
     transport: T,
     profile: Profile,
     aps_options: aps::Options,
-    handlers: Events,
     message_tag: u8,
     aps_seq: u8,
     transaction_seq: u8,
+    message_handler_proxy: Sender<Message>,
 }
 
 impl<T> EzspNetworkManager<T> {
@@ -43,16 +43,16 @@ impl<T> EzspNetworkManager<T> {
         transport: T,
         profile: Profile,
         aps_options: aps::Options,
-        handlers: Events,
+        message_handler_proxy: Sender<Message>,
     ) -> Self {
         Self {
             transport,
             profile,
             aps_options,
-            handlers,
             message_tag: 0,
             aps_seq: 0,
             transaction_seq: 0,
+            message_handler_proxy,
         }
     }
 
@@ -95,18 +95,6 @@ impl<T> EzspNetworkManager<T> {
     }
 }
 
-impl<T> EzspNetworkManager<T>
-where
-    T: Sync,
-{
-    /// Registers a new channel for receiving callbacks.
-    async fn register_handler(&self, size: usize) -> Receiver<Callback> {
-        let (tx, rx) = channel(size);
-        self.handlers.lock().await.push(tx);
-        rx
-    }
-}
-
 impl<T> NcpDriver for EzspNetworkManager<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync,
@@ -126,11 +114,17 @@ where
         channel_mask: u32,
         duration: u8,
     ) -> Result<Vec<zigbee_hw::FoundNetwork>, zigbee_hw::Error> {
-        let mut rx = self.register_handler(16).await;
+        let (tx, mut rx) = channel(16);
+        self.message_handler_proxy.send(tx.into()).await?;
         self.transport
             .start_scan(scan::Type::ActiveScan, channel_mask, duration)
             .await?;
-        Ok(rx.collect_networks_found().await?)
+
+        while let Some(_event) = rx.recv().await {
+            todo!("Add event for found network.");
+        }
+
+        Ok(Vec::new())
     }
 
     async fn scan_channels(
@@ -138,11 +132,17 @@ where
         channel_mask: u32,
         duration: u8,
     ) -> Result<Vec<zigbee_hw::ScannedChannel>, zigbee_hw::Error> {
-        let mut rx = self.register_handler(16).await;
+        let (tx, mut rx) = channel(16);
+        self.message_handler_proxy.send(tx.into()).await?;
         self.transport
             .start_scan(scan::Type::EnergyScan, channel_mask, duration)
             .await?;
-        Ok(rx.collect_scanned_channels().await?)
+
+        while let Some(_event) = rx.recv().await {
+            todo!("Add event for scanned channel.");
+        }
+
+        Ok(Vec::new())
     }
 
     async fn allow_joins(&mut self, duration: Duration) -> Result<(), zigbee_hw::Error> {
@@ -229,7 +229,9 @@ where
     }
 
     async fn subscribe(&mut self, sender: Sender<Event>) {
-        todo!()
+        if let Err(error) = self.message_handler_proxy.send(sender.into()).await {
+            error!("Failed to subscribe with message handler actor: {error}");
+        }
     }
 
     async fn broadcast(

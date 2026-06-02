@@ -1,12 +1,12 @@
-use std::collections::{BTreeMap, VecDeque};
+use std::collections::BTreeMap;
 
 use aps::data::Frame;
 use log::{debug, error, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
-use zigbee_hw::{Event, FoundNetwork, ScannedChannel};
+use zigbee_hw::Event;
 
 pub use self::message::Message;
-use self::scan::Scan;
+use self::scans::Scans;
 use crate::defragmentation::{Defragment, Transaction};
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
@@ -15,16 +15,14 @@ use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCent
 use crate::{Callback, ember};
 
 mod message;
-mod scan;
+mod scans;
 
 /// Handler for processing incoming messages.
 #[derive(Debug)]
 pub struct MessageHandler {
     handlers: Vec<Sender<Event>>,
     transactions: BTreeMap<u8, Transaction>,
-    channels: Vec<ScannedChannel>,
-    networks: Vec<FoundNetwork>,
-    scans: VecDeque<Scan>,
+    scans: Scans,
 }
 
 impl MessageHandler {
@@ -34,9 +32,7 @@ impl MessageHandler {
         Self {
             handlers: Vec::new(),
             transactions: BTreeMap::new(),
-            channels: Vec::new(),
-            networks: Vec::new(),
-            scans: VecDeque::new(),
+            scans: Scans::new(),
         }
     }
 
@@ -52,10 +48,10 @@ impl MessageHandler {
                     self.handlers.push(sender);
                 }
                 Message::ChannelScan(sender) => {
-                    self.scans.push_back(sender.into());
+                    self.scans.push(sender.into());
                 }
                 Message::NetworkScan(sender) => {
-                    self.scans.push_back(sender.into());
+                    self.scans.push(sender.into());
                 }
             }
         }
@@ -88,29 +84,13 @@ impl MessageHandler {
                 self.forward_to_handlers(child_join.into()).await;
             }
             Networking::NetworkFound(network_found) => {
-                self.networks.push(network_found.into());
+                self.scans.add_network(network_found.into());
             }
             Networking::EnergyScanResult(energy_scan_result) => {
-                self.channels.push(energy_scan_result.into());
+                self.scans.add_channel(energy_scan_result.into());
             }
             Networking::ScanComplete(_) => {
-                if let Some(scan) = self.scans.pop_front() {
-                    match scan {
-                        Scan::Channel(sender) => sender
-                            .send(self.channels.drain(..).collect())
-                            .unwrap_or_else(|error| {
-                                error!("Failed to send channel scan results: {error:?}");
-                            }),
-
-                        Scan::Network(sender) => {
-                            sender
-                                .send(self.networks.drain(..).collect())
-                                .unwrap_or_else(|error| {
-                                    error!("Failed to send network scan results: {error:?}");
-                                });
-                        }
-                    }
-                }
+                self.scans.pop().await;
             }
             other => {
                 warn!("Received unsupported networking callback: {other:?}");

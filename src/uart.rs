@@ -16,6 +16,7 @@ use tokio::sync::mpsc::{Receiver, Sender, channel};
 use tokio::task::{JoinError, JoinHandle};
 use tokio::time::sleep;
 
+pub use self::buffers::Buffers;
 pub use self::channel_sizes::ChannelSizes;
 use self::connection::Connection;
 use self::encoder::Encoder;
@@ -30,6 +31,7 @@ use crate::uart::decoder::Decoder;
 use crate::uart::splitter::Splitter;
 use crate::{Callback, Configuration, Extended, Ezsp, Legacy, Parameters, ValueError};
 
+mod buffers;
 mod channel_sizes;
 mod connection;
 mod decoder;

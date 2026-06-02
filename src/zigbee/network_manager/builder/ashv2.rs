@@ -6,29 +6,9 @@ use std::io;
 use ashv2::{Actor, SerialPort, TryCloneNative};
 use tokio::sync::mpsc::channel;
 
-use crate::uart::Uart;
+use crate::uart::{Buffers, Uart};
 use crate::zigbee::network_manager::builder::Builder;
 use crate::{Error, MIN_NON_LEGACY_VERSION};
-
-/// Buffer sizes to set up the `ASHv2` communication channels.
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct Buffers {
-    pub ash_receiver: usize,
-    pub ash_transmitter: usize,
-    pub ezsp_callbacks: usize,
-    pub ezsp_messages: usize,
-}
-
-impl Default for Buffers {
-    fn default() -> Self {
-        Self {
-            ash_receiver: 128,
-            ash_transmitter: 128,
-            ezsp_callbacks: 128,
-            ezsp_messages: 128,
-        }
-    }
-}
 
 impl Builder<Uart> {
     /// Create a new builder using an `ASHv2` UART on the given serial port.

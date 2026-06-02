@@ -23,7 +23,7 @@ use crate::{
     PolicyExt, Security, Transport, Utilities,
 };
 
-pub mod ashv2;
+mod ashv2;
 
 const HOME_GATEWAY: u16 = 0x0050;
 const INPUT_CLUSTERS: &[u16] = &[0x0000, 0x0006, 0x0008, 0x0300, 0x0403, 0x0201];

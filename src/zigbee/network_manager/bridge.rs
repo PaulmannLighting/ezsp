@@ -1,31 +1,21 @@
-use std::time::Duration;
-
-use log::{error, trace};
+use log::error;
 use tokio::sync::mpsc::{Receiver, Sender};
-use tokio::time::sleep;
 
 /// Bridge two channels.
 ///
 /// This function will read all messages from `input`, convert them to the message type of `output`
 /// and send it to the output channel.
 ///
-/// If the output channel is congested, this function will retry until sending succeeds after
-/// sleeping for the duration as specified in `burst` if specified.
-pub async fn bridge<T, U>(mut input: Receiver<T>, output: Sender<U>, burst: Option<Duration>)
+/// This function will terminate once either the input channel is exhausted or the output channel
+/// has been closed.
+pub async fn bridge<T, U>(mut input: Receiver<T>, output: Sender<U>)
 where
     T: Into<U>,
 {
-    while let Some(msg_in) = input.recv().await {
-        let mut msg_out = msg_in.into();
-
-        while let Err(error) = output.send(msg_out).await {
-            error!("Target channel is congested: {error}");
-            msg_out = error.0;
-
-            if let Some(duration) = burst {
-                trace!("Retrying in {duration:?}");
-                sleep(duration).await;
-            }
+    while let Some(msg) = input.recv().await {
+        if let Err(error) = output.send(msg.into()).await {
+            error!("Target channel closed: {error}");
+            break;
         }
     }
 }

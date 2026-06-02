@@ -1,5 +1,5 @@
 #![cfg(feature = "ashv2")]
-//! ASHv2 extensions for the builder.
+//! `ASHv2` extensions for the builder.
 
 use std::io;
 
@@ -16,11 +16,11 @@ impl Builder<Uart> {
     where
         T: SerialPort + TryCloneNative + Sync + 'static,
     {
-        Self::ashv2_with_buffers(serial_port, Buffers::default())
+        Self::ashv2_with_buffers(serial_port, &Buffers::default())
     }
 
     /// Create a new builder using an `ASHv2` UART on the given serial port.
-    pub fn ashv2_with_buffers<T>(serial_port: T, buffers: Buffers) -> Result<Self, Error>
+    pub fn ashv2_with_buffers<T>(serial_port: T, buffers: &Buffers) -> Result<Self, Error>
     where
         T: SerialPort + TryCloneNative + Sync + 'static,
     {

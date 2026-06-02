@@ -1,7 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::io;
 use std::iter::once;
-use std::time::Duration;
 
 use log::{debug, info};
 use macaddr::MacAddr8;

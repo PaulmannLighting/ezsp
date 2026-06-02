@@ -15,7 +15,9 @@ where
     while let Some(msg) = input.recv().await {
         if let Err(error) = output.send(msg.into()).await {
             trace!("Target channel closed: {error}");
-            break;
+            return;
         }
     }
+
+    trace!("Source channel closed.");
 }

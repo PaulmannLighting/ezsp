@@ -20,31 +20,28 @@ use crate::{Callback, ember};
 /// Type alias for a thread-safe list of callback handlers.
 ///
 /// TODO: Refactor this away by e.g. using the actor model.
-pub type Handlers = Arc<Mutex<Vec<Sender<Callback>>>>;
+pub type Events = Arc<Mutex<Vec<Sender<Event>>>>;
 
 /// Handler for processing incoming messages.
 #[derive(Debug)]
 pub struct MessageHandler {
-    handlers: Handlers,
-    outgoing: Sender<Event>,
+    handlers: Events,
     transactions: BTreeMap<u8, Transaction>,
 }
 
 impl MessageHandler {
     /// Creates a new `MessageHandler` with the given outgoing channel size.
     #[must_use]
-    pub const fn new(handlers: Handlers, outgoing: Sender<Event>) -> Self {
+    pub const fn new(handlers: Events) -> Self {
         Self {
             handlers,
-            outgoing,
             transactions: BTreeMap::new(),
         }
     }
 
     /// Processes incoming messages and sends events to the outgoing channel.
-    pub async fn process(mut self, mut callbacks: Receiver<Callback>) {
+    pub async fn run(mut self, mut callbacks: Receiver<Callback>) {
         while let Some(callback) = callbacks.recv().await {
-            self.forward_to_handlers(&callback).await;
             self.forward_to_zigbee(callback)
                 .await
                 .unwrap_or_else(|error| {
@@ -55,28 +52,14 @@ impl MessageHandler {
         warn!("Callback channel closed.");
     }
 
-    /// Forward EZSP callbacks to registered handlers.
-    async fn forward_to_handlers(&self, callback: &Callback) {
-        let mut lock = self.handlers.lock().await;
-
-        trace!("Removing closed EZSP event handlers...");
-        lock.retain(|sender| !sender.is_closed());
-
-        for sender in lock.iter() {
-            trace!("Forwarding EZSP event to registered handler: {sender:?}");
-            if let Err(error) = sender.send(callback.clone()).await {
-                trace!("Failed to forward EZSP event to registered handler: {error}");
-            }
-        }
-    }
-
     /// Translates EZSP callbacks into Zigbee events and sends them to the outgoing channel.
     async fn forward_to_zigbee(&mut self, callback: Callback) -> Result<(), SendError<Event>> {
         match callback {
             Callback::Messaging(messaging) => self.handle_messaging_callbacks(messaging).await,
             Callback::Networking(networking) => self.handle_networking_callbacks(networking).await,
             Callback::TrustCenter(TrustCenter::TrustCenterJoin(trust_center_join)) => {
-                self.handle_trust_center_join(trust_center_join).await
+                self.handle_trust_center_join(trust_center_join).await;
+                Ok(())
             }
             Callback::Security(security) => {
                 Self::handle_security_callbacks(security);
@@ -96,7 +79,10 @@ impl MessageHandler {
     ) -> Result<(), SendError<Event>> {
         match networking {
             Networking::StackStatus(status) => self.handle_stack_status(status.result()).await,
-            Networking::ChildJoin(child_join) => self.handle_child_join(child_join).await,
+            Networking::ChildJoin(child_join) => {
+                self.handle_child_join(child_join).await;
+                Ok(())
+            }
             Networking::NetworkFound(_) => {
                 trace!("Network found events are handled by the network scanner.");
                 Ok(())
@@ -162,16 +148,31 @@ impl MessageHandler {
 
         match Frame::try_from(defragmented_message) {
             Ok(aps_frame) => {
-                self.outgoing
-                    .send(Event::MessageReceived {
-                        src_address,
-                        aps_frame: aps_frame.into(),
-                    })
-                    .await
+                self.forward_to_handlers(Event::MessageReceived {
+                    src_address,
+                    aps_frame: aps_frame.into(),
+                })
+                .await
             }
             Err(error) => {
                 warn!("Ignoring unknown APS frame type: {error}");
-                Ok(())
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Forward EZSP callbacks to registered handlers.
+    async fn forward_to_handlers(&self, event: Event) {
+        let mut lock = self.handlers.lock().await;
+
+        trace!("Removing closed EZSP event handlers...");
+        lock.retain(|sender| !sender.is_closed());
+
+        for sender in lock.iter() {
+            trace!("Forwarding EZSP event to registered handler: {sender:?}");
+            if let Err(error) = sender.send(event.clone()).await {
+                trace!("Failed to forward EZSP event to registered handler: {error}");
             }
         }
     }
@@ -197,67 +198,63 @@ impl MessageHandler {
         };
 
         match status {
-            ember::Status::NetworkUp => self.outgoing.send(Event::NetworkUp).await,
-            ember::Status::NetworkDown => self.outgoing.send(Event::NetworkDown).await,
-            ember::Status::NetworkOpened => self.outgoing.send(Event::NetworkOpened).await,
-            ember::Status::NetworkClosed => self.outgoing.send(Event::NetworkClosed).await,
+            ember::Status::NetworkUp => self.forward_to_handlers(Event::NetworkUp).await,
+            ember::Status::NetworkDown => self.forward_to_handlers(Event::NetworkDown).await,
+            ember::Status::NetworkOpened => self.forward_to_handlers(Event::NetworkOpened).await,
+            ember::Status::NetworkClosed => self.forward_to_handlers(Event::NetworkClosed).await,
             other => {
                 warn!("Received unhandled stack status: {other:?}");
-                Ok(())
             }
         }
+
+        Ok(())
     }
 
-    async fn handle_child_join(&self, child_join: ChildJoin) -> Result<(), SendError<Event>> {
-        self.outgoing
-            .send(if child_join.joining() {
-                Event::DeviceJoined {
-                    ieee_address: child_join.child_eui64(),
-                    short_id: child_join.child_id(),
-                }
-            } else {
-                Event::DeviceLeft {
-                    ieee_address: child_join.child_eui64(),
-                    short_id: child_join.child_id(),
-                }
-            })
-            .await
+    async fn handle_child_join(&self, child_join: ChildJoin) {
+        self.forward_to_handlers(if child_join.joining() {
+            Event::DeviceJoined {
+                ieee_address: child_join.child_eui64(),
+                short_id: child_join.child_id(),
+            }
+        } else {
+            Event::DeviceLeft {
+                ieee_address: child_join.child_eui64(),
+                short_id: child_join.child_id(),
+            }
+        })
+        .await;
     }
 
-    async fn handle_trust_center_join(
-        &self,
-        trust_center_join: TrustCenterJoin,
-    ) -> Result<(), SendError<Event>> {
+    async fn handle_trust_center_join(&self, trust_center_join: TrustCenterJoin) {
         let status = match trust_center_join.status() {
             Ok(status) => status,
             Err(value) => {
                 warn!("Ignoring trust center join event with invalid status: {value}");
-                return Ok(());
+                return;
             }
         };
 
-        self.outgoing
-            .send(match status {
-                Update::StandardSecurityUnsecuredJoin => Event::DeviceJoined {
-                    ieee_address: trust_center_join.new_node_eui64(),
-                    short_id: trust_center_join.new_node_id(),
-                },
-                Update::StandardSecurityUnsecuredRejoin => Event::DeviceRejoined {
-                    ieee_address: trust_center_join.new_node_eui64(),
-                    short_id: trust_center_join.new_node_id(),
-                    secured: false,
-                },
-                Update::StandardSecuritySecuredRejoin => Event::DeviceRejoined {
-                    ieee_address: trust_center_join.new_node_eui64(),
-                    short_id: trust_center_join.new_node_id(),
-                    secured: true,
-                },
-                Update::DeviceLeft => Event::DeviceLeft {
-                    ieee_address: trust_center_join.new_node_eui64(),
-                    short_id: trust_center_join.new_node_id(),
-                },
-            })
-            .await
+        self.forward_to_handlers(match status {
+            Update::StandardSecurityUnsecuredJoin => Event::DeviceJoined {
+                ieee_address: trust_center_join.new_node_eui64(),
+                short_id: trust_center_join.new_node_id(),
+            },
+            Update::StandardSecurityUnsecuredRejoin => Event::DeviceRejoined {
+                ieee_address: trust_center_join.new_node_eui64(),
+                short_id: trust_center_join.new_node_id(),
+                secured: false,
+            },
+            Update::StandardSecuritySecuredRejoin => Event::DeviceRejoined {
+                ieee_address: trust_center_join.new_node_eui64(),
+                short_id: trust_center_join.new_node_id(),
+                secured: true,
+            },
+            Update::DeviceLeft => Event::DeviceLeft {
+                ieee_address: trust_center_join.new_node_eui64(),
+                short_id: trust_center_join.new_node_id(),
+            },
+        })
+        .await
     }
 
     fn handle_security_callbacks(security: Security) {

@@ -42,7 +42,7 @@ impl MessageHandler {
             self.process_callback(callback).await;
         }
 
-        warn!("Callback channel closed.");
+        warn!("Callback channel closed. Message handler terminating.");
     }
 
     /// Translates EZSP callbacks into Zigbee events and sends them to the outgoing channel.

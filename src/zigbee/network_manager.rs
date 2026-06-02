@@ -21,7 +21,7 @@ use crate::ezsp::network::scan;
 use crate::types::ByteSizedVec;
 use crate::{Callback, Configuration, Error, Messaging, Networking, Security, Utilities, ember};
 
-mod builder;
+pub mod builder;
 mod callbacks_to_messages;
 mod event_mux;
 

@@ -23,6 +23,8 @@ use crate::{
     PolicyExt, Security, Transport, Utilities,
 };
 
+pub mod ashv2;
+
 const HOME_GATEWAY: u16 = 0x0050;
 const INPUT_CLUSTERS: &[u16] = &[0x0000, 0x0006, 0x0008, 0x0300, 0x0403, 0x0201];
 const OUTPUT_CLUSTERS: &[u16] = &[0x0000, 0x0006, 0x0008, 0x0300, 0x0403];
@@ -366,46 +368,6 @@ impl<T> Builder<T> {
         )
         .spawn(buffer);
         Ok(ncp)
-    }
-}
-
-#[cfg(feature = "ashv2")]
-mod ashv2 {
-    use std::io;
-
-    use ashv2::{Actor, SerialPort, TryCloneNative};
-    use tokio::sync::mpsc::channel;
-
-    use crate::uart::Uart;
-    use crate::zigbee::network_manager::builder::Builder;
-    use crate::{Error, MIN_NON_LEGACY_VERSION};
-
-    impl Builder<Uart> {
-        /// Create a new builder using an `ASHv2` UART on the given serial port.
-        pub fn ashv2<T>(
-            serial_port: T,
-            ash_receiver_buffer: usize,
-            ash_transmitter_buffer: usize,
-            ezsp_callbacks_buffer: usize,
-            ezsp_message_buffer: usize,
-        ) -> Result<Self, Error>
-        where
-            T: SerialPort + TryCloneNative + Sync + 'static,
-        {
-            let (ash_tx, ash_rx) = channel(ash_receiver_buffer);
-            let (_ashv2_tasks, proxy) = Actor::new(serial_port, ash_tx, ash_transmitter_buffer)
-                .map_err(io::Error::from)?
-                .spawn();
-            let (callbacks_tx, callbacks_rx) = channel(ezsp_callbacks_buffer);
-            let uart = Uart::new(
-                proxy,
-                ash_rx,
-                callbacks_tx,
-                MIN_NON_LEGACY_VERSION,
-                ezsp_message_buffer,
-            );
-            Ok(Self::new(uart, callbacks_rx))
-        }
     }
 }
 

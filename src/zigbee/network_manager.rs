@@ -140,7 +140,7 @@ where
         seq
     }
 
-    async fn get_short_id(&mut self) -> Result<u16, zigbee_hw::Error> {
+    async fn get_pan_id(&mut self) -> Result<u16, zigbee_hw::Error> {
         Err(zigbee_hw::Error::NotImplemented)
     }
 
@@ -205,6 +205,10 @@ where
 
     async fn get_ieee_address(&mut self, short_id: u16) -> Result<MacAddr8, zigbee_hw::Error> {
         Ok(self.transport.lookup_eui64_by_node_id(short_id).await?)
+    }
+
+    async fn get_short_id(&mut self, ieee_address: MacAddr8) -> Result<u16, zigbee_hw::Error> {
+        Ok(self.transport.lookup_node_id_by_eui64(ieee_address).await?)
     }
 
     async fn unicast(

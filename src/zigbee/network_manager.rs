@@ -141,7 +141,7 @@ where
     }
 
     async fn get_pan_id(&mut self) -> Result<u16, zigbee_hw::Error> {
-        Err(zigbee_hw::Error::NotImplemented)
+        Ok(self.transport.get_node_id().await?)
     }
 
     async fn scan_networks(

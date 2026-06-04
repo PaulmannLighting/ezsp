@@ -1,5 +1,4 @@
 use std::collections::{BTreeMap, BTreeSet};
-use std::io;
 use std::iter::once;
 
 use log::{debug, info};
@@ -9,7 +8,7 @@ use silizium::zigbee::security::man::Key;
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, channel};
 use zigbee::Profile;
-use zigbee_hw::{AwaitEvent, Event, Ncp, NcpDriver};
+use zigbee_hw::{AwaitEvent, Event, Ncp, NcpDriver, Start};
 
 use super::bridge::bridge;
 use super::event_handler::EventHandler;
@@ -55,6 +54,7 @@ pub struct Builder<T> {
     radio_power: i8,
     endpoints: BTreeSet<u8>,
     reinitialize: bool,
+    buffers: usize,
 }
 
 impl<T> Builder<T> {
@@ -83,6 +83,7 @@ impl<T> Builder<T> {
             radio_power: RADIO_POWER,
             endpoints: once(ENDPOINT_ID).collect(),
             reinitialize: false,
+            buffers: 1024,
         }
     }
 
@@ -247,17 +248,25 @@ impl<T> Builder<T> {
         self
     }
 
+    /// Set the channels' buffer size.
+    #[must_use]
+    pub const fn with_buffers(mut self, buffers: usize) -> Self {
+        self.buffers = buffers;
+        self
+    }
+}
+
+impl<T> Start for Builder<T>
+where
+    T: Transport + Sync + 'static,
+{
     /// Starts the network manager on the given transport implementation.
-    pub async fn start(
+    async fn start(
         mut self,
-        buffer: usize,
-    ) -> Result<(impl Ncp + Clone + Send, Receiver<Event>), Error>
-    where
-        T: Transport + Sync + 'static,
-    {
-        let (message_tx, message_rx) = channel(buffer);
+    ) -> Result<(impl Ncp + Clone + Send, Receiver<Event>), zigbee_hw::Error> {
+        let (message_tx, message_rx) = channel(self.buffers);
         spawn(bridge(self.callbacks, message_tx.clone()));
-        let (events_tx, mut events_rx) = channel(buffer);
+        let (events_tx, mut events_rx) = channel(self.buffers);
         let event_mux_handle = spawn(EventHandler::new(events_tx).run(message_rx));
 
         debug!("Setting concentrator");
@@ -298,7 +307,7 @@ impl<T> Builder<T> {
                 events_rx
                     .network_down()
                     .await
-                    .map_err(|()| io::Error::other("Events channel closed."))?;
+                    .expect("Events channel must be open at this point.");
                 info!("Left existing network.");
             }
 
@@ -331,7 +340,7 @@ impl<T> Builder<T> {
         events_rx
             .network_up()
             .await
-            .map_err(|()| io::Error::other("Events channel closed."))?;
+            .expect("Events channel must be open at this point.");
         info!("Network is up.");
 
         debug!("Setting radio power to {}", self.radio_power);
@@ -363,7 +372,7 @@ impl<T> Builder<T> {
             message_tx,
             event_mux_handle,
         )
-        .spawn(buffer);
+        .spawn(self.buffers);
         Ok((ncp, events_rx))
     }
 }

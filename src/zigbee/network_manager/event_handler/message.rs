@@ -1,6 +1,5 @@
-use tokio::sync::mpsc::Sender;
 use tokio::sync::oneshot;
-use zigbee_hw::{Event, FoundNetwork, ScannedChannel};
+use zigbee_hw::{FoundNetwork, ScannedChannel};
 
 use crate::Callback;
 
@@ -9,8 +8,6 @@ use crate::Callback;
 pub enum Message {
     /// An incoming callback.
     Callback(Box<Callback>),
-    /// An incoming subscription request.
-    Subscribe(Sender<Event>),
     /// A request to scan networks.
     NetworkScan(oneshot::Sender<Vec<FoundNetwork>>),
     /// A request to scan channels.
@@ -28,12 +25,6 @@ impl From<Box<Callback>> for Message {
 impl From<Callback> for Message {
     fn from(callback: Callback) -> Self {
         Self::from(Box::new(callback))
-    }
-}
-
-impl From<Sender<Event>> for Message {
-    fn from(sender: Sender<Event>) -> Self {
-        Self::Subscribe(sender)
     }
 }
 

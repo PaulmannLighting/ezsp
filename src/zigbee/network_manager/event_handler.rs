@@ -7,7 +7,6 @@ use zigbee_hw::Event;
 
 pub use self::message::Message;
 use self::scans::Scans;
-pub use self::subscribe::Subscribe;
 use crate::defragmentation::{Defragment, Transaction};
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
@@ -17,31 +16,36 @@ use crate::{Callback, ember};
 
 mod message;
 mod scans;
-mod subscribe;
 
 /// Actor for processing incoming events.
 ///
 /// This actor actually receives messages of type [`Message`] which can be wrapped raw EZSP events
 /// ("Callbacks"), subscription requests or requests to start a channel or network scan.
 /// Also, termination signals may be received.
-#[derive(Debug, Default)]
-pub struct EventMux {
-    handlers: Vec<Sender<Event>>,
+#[derive(Debug)]
+pub struct EventHandler {
+    output: Sender<Event>,
     transactions: BTreeMap<u8, Transaction>,
     scans: Scans,
 }
 
-impl EventMux {
+impl EventHandler {
+    /// Create a new event handler.
+    #[must_use]
+    pub fn new(output: Sender<Event>) -> Self {
+        Self {
+            output,
+            transactions: BTreeMap::new(),
+            scans: Scans::default(),
+        }
+    }
+
     /// Processes incoming messages and sends events to the outgoing channel.
     pub async fn run(mut self, mut callbacks: Receiver<Message>) {
         while let Some(message) = callbacks.recv().await {
             match message {
                 Message::Callback(callback) => {
                     self.process_callback(*callback).await;
-                }
-                Message::Subscribe(sender) => {
-                    debug!("Received subscription request from handler: {sender:?}");
-                    self.handlers.push(sender);
                 }
                 Message::ChannelScan(sender) => {
                     self.scans.push(sender.into());
@@ -81,7 +85,7 @@ impl EventMux {
         match networking {
             Networking::StackStatus(status) => self.handle_stack_status(status.result()).await,
             Networking::ChildJoin(child_join) => {
-                self.forward_to_handlers(child_join.into()).await;
+                self.forward_event(child_join.into()).await;
             }
             Networking::NetworkFound(network_found) => {
                 self.scans.add_network(network_found.into());
@@ -139,7 +143,7 @@ impl EventMux {
 
         match Frame::try_from(defragmented_message) {
             Ok(aps_frame) => {
-                self.forward_to_handlers(Event::MessageReceived {
+                self.forward_event(Event::MessageReceived {
                     src_address,
                     aps_frame: aps_frame.into(),
                 })
@@ -152,15 +156,9 @@ impl EventMux {
     }
 
     /// Forward EZSP callbacks to registered handlers.
-    async fn forward_to_handlers(&mut self, event: Event) {
-        trace!("Removing closed EZSP event handlers...");
-        self.handlers.retain(|sender| !sender.is_closed());
-
-        for sender in &self.handlers {
-            trace!("Forwarding EZSP event to registered handler: {sender:?}");
-            if let Err(error) = sender.send(event.clone()).await {
-                trace!("Failed to forward EZSP event to registered handler: {error}");
-            }
+    async fn forward_event(&mut self, event: Event) {
+        if let Err(error) = self.output.send(event).await {
+            trace!("Failed to forward EZSP event to registered handler: {error}");
         }
     }
 
@@ -182,7 +180,7 @@ impl EventMux {
         };
 
         match status.try_into() {
-            Ok(event) => self.forward_to_handlers(event).await,
+            Ok(event) => self.forward_event(event).await,
             Err(status) => {
                 warn!("Received unhandled stack status: {status:?}");
             }
@@ -191,7 +189,7 @@ impl EventMux {
 
     async fn handle_trust_center_join(&mut self, trust_center_join: TrustCenterJoin) {
         match trust_center_join.try_into() {
-            Ok(event) => self.forward_to_handlers(event).await,
+            Ok(event) => self.forward_event(event).await,
             Err(handler) => {
                 warn!("Ignoring trust center join event with invalid status: {handler:?}");
             }

@@ -6,14 +6,14 @@ use std::time::Duration;
 
 use log::{debug, info};
 use macaddr::MacAddr8;
-use tokio::sync::mpsc::{Receiver, Sender, channel};
+use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::oneshot;
 use tokio::task::{JoinError, JoinHandle};
 use zigbee::{Endpoint, Profile};
-use zigbee_hw::{Event, Frame, Metadata, NcpDriver};
+use zigbee_hw::{Frame, Metadata, NcpDriver};
 
 use self::builder::Builder;
-use self::event_mux::Message;
+use self::event_handler::Message;
 use crate::ember::message::Destination;
 use crate::ember::{aps, concentrator};
 use crate::error::Status;
@@ -23,7 +23,7 @@ use crate::{Callback, Configuration, Error, Messaging, Networking, Security, Uti
 
 mod bridge;
 mod builder;
-mod event_mux;
+mod event_handler;
 
 /// Network manager for Zigbee networks.
 #[derive(Debug)]
@@ -34,8 +34,8 @@ pub struct EzspNetworkManager<T> {
     message_tag: u8,
     aps_seq: u8,
     transaction_seq: u8,
-    event_mux_proxy: Sender<Message>,
-    event_mux_handle: JoinHandle<()>,
+    event_handler_proxy: Sender<Message>,
+    event_handler_handle: JoinHandle<()>,
 }
 
 impl<T> EzspNetworkManager<T> {
@@ -45,8 +45,8 @@ impl<T> EzspNetworkManager<T> {
         transport: T,
         profile: Profile,
         aps_options: aps::Options,
-        event_mux_proxy: Sender<Message>,
-        event_mux_handle: JoinHandle<()>,
+        event_handler_proxy: Sender<Message>,
+        event_handler_handle: JoinHandle<()>,
     ) -> Self {
         Self {
             transport,
@@ -55,8 +55,8 @@ impl<T> EzspNetworkManager<T> {
             message_tag: 0,
             aps_seq: 0,
             transaction_seq: 0,
-            event_mux_proxy,
-            event_mux_handle,
+            event_handler_proxy,
+            event_handler_handle,
         }
     }
 
@@ -108,11 +108,11 @@ impl<T> EzspNetworkManager<T> {
     ///
     /// This method may panic, if the termination signal cannot be sent to the message handler.
     pub async fn terminate(self) -> Result<T, JoinError> {
-        self.event_mux_proxy
+        self.event_handler_proxy
             .send(Message::Terminate)
             .await
             .expect("Failed to send terminate message to message handler actor");
-        self.event_mux_handle.await.map(|()| self.transport)
+        self.event_handler_handle.await.map(|()| self.transport)
     }
 }
 
@@ -151,7 +151,7 @@ where
         duration: u8,
     ) -> Result<Vec<zigbee_hw::FoundNetwork>, zigbee_hw::Error> {
         let (tx, rx) = oneshot::channel();
-        self.event_mux_proxy.send(tx.into()).await?;
+        self.event_handler_proxy.send(tx.into()).await?;
         self.transport
             .start_scan(scan::Type::ActiveScan, channel_mask, duration)
             .await?;
@@ -164,7 +164,7 @@ where
         duration: u8,
     ) -> Result<Vec<zigbee_hw::ScannedChannel>, zigbee_hw::Error> {
         let (tx, rx) = oneshot::channel();
-        self.event_mux_proxy.send(tx.into()).await?;
+        self.event_handler_proxy.send(tx.into()).await?;
         self.transport
             .start_scan(scan::Type::EnergyScan, channel_mask, duration)
             .await?;
@@ -252,12 +252,6 @@ where
             .transport
             .send_multicast(aps_frame, hops, radius, tag, message)
             .await?)
-    }
-
-    async fn subscribe(&mut self, buffer: usize) -> Result<Receiver<Event>, zigbee_hw::Error> {
-        let (tx, rx) = channel(buffer);
-        self.event_mux_proxy.send(tx.into()).await?;
-        Ok(rx)
     }
 
     async fn broadcast(

@@ -8,7 +8,7 @@ use silizium::zigbee::security::man::Key;
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, channel};
 use zigbee::Profile;
-use zigbee_hw::{AwaitEvent, Event, Ncp, NcpDriver, Start, bridge};
+use zigbee_hw::{AwaitEvent, Event, NcpDriver, NcpHandle, Start, bridge};
 
 use super::event_handler::EventHandler;
 use crate::ember::security::initial;
@@ -260,9 +260,7 @@ where
     T: Transport + Sync + 'static,
 {
     /// Starts the network manager on the given transport implementation.
-    async fn start(
-        mut self,
-    ) -> Result<(impl Ncp + Clone + Send, Receiver<Event>), zigbee_hw::Error> {
+    async fn start(mut self) -> Result<(NcpHandle, Receiver<Event>), zigbee_hw::Error> {
         let (message_tx, message_rx) = channel(self.buffers);
         spawn(bridge(self.callbacks, message_tx.clone()));
         let (events_tx, mut events_rx) = channel(self.buffers);

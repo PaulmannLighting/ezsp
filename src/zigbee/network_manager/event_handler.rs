@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use aps::data::Frame;
 use log::{debug, error, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
-use zigbee_hw::Event;
+use zigbee_hw::{Event, EventTranslator};
 
 pub use self::message::Message;
 use self::scans::Scans;
@@ -30,39 +30,6 @@ pub struct EventHandler {
 }
 
 impl EventHandler {
-    /// Create a new event handler.
-    #[must_use]
-    pub fn new(output: Sender<Event>) -> Self {
-        Self {
-            output,
-            transactions: BTreeMap::new(),
-            scans: Scans::default(),
-        }
-    }
-
-    /// Processes incoming messages and sends events to the outgoing channel.
-    pub async fn run(mut self, mut callbacks: Receiver<Message>) {
-        while let Some(message) = callbacks.recv().await {
-            match message {
-                Message::Callback(callback) => {
-                    self.process_callback(*callback).await;
-                }
-                Message::ChannelScan(sender) => {
-                    self.scans.push(sender.into());
-                }
-                Message::NetworkScan(sender) => {
-                    self.scans.push(sender.into());
-                }
-                Message::Terminate => {
-                    trace!("Received termination message.");
-                    return;
-                }
-            }
-        }
-
-        warn!("Callback channel closed. Message handler terminating.");
-    }
-
     /// Translates EZSP callbacks into Zigbee events and sends them to the outgoing channel.
     async fn process_callback(&mut self, callback: Callback) {
         match callback {
@@ -217,5 +184,38 @@ impl EventHandler {
                 );
             }
         }
+    }
+}
+impl EventTranslator for EventHandler {
+    type Input = Message;
+
+    fn new(output: Sender<Event>) -> Self {
+        Self {
+            output,
+            transactions: BTreeMap::new(),
+            scans: Scans::default(),
+        }
+    }
+
+    async fn run(mut self, mut callbacks: Receiver<Self::Input>) {
+        while let Some(message) = callbacks.recv().await {
+            match message {
+                Message::Callback(callback) => {
+                    self.process_callback(*callback).await;
+                }
+                Message::ChannelScan(sender) => {
+                    self.scans.push(sender.into());
+                }
+                Message::NetworkScan(sender) => {
+                    self.scans.push(sender.into());
+                }
+                Message::Terminate => {
+                    trace!("Received termination message.");
+                    return;
+                }
+            }
+        }
+
+        warn!("Callback channel closed. Message handler terminating.");
     }
 }

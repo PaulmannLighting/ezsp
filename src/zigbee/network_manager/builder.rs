@@ -8,7 +8,7 @@ use silizium::zigbee::security::man::Key;
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, channel};
 use zigbee::Profile;
-use zigbee_hw::{AwaitEvent, Event, NcpDriver, NcpHandle, Start, bridge};
+use zigbee_hw::{AwaitEvent, Event, EventTranslator, NcpDriver, NcpHandle, Start, bridge};
 
 use super::event_handler::EventHandler;
 use crate::ember::security::initial;

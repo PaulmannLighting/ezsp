@@ -1,4 +1,4 @@
-use tokio::sync::oneshot;
+use tokio::sync::oneshot::Sender;
 use zigbee_hw::{FoundNetwork, ScannedChannel};
 
 use crate::Callback;
@@ -9,9 +9,9 @@ pub enum Message {
     /// An incoming callback.
     Callback(Box<Callback>),
     /// A request to scan networks.
-    NetworkScan(oneshot::Sender<Vec<FoundNetwork>>),
+    NetworkScan(Sender<Vec<FoundNetwork>>),
     /// A request to scan channels.
-    ChannelScan(oneshot::Sender<Vec<ScannedChannel>>),
+    ChannelScan(Sender<Vec<ScannedChannel>>),
     /// Termination signal.
     Terminate,
 }
@@ -28,14 +28,14 @@ impl From<Callback> for Message {
     }
 }
 
-impl From<oneshot::Sender<Vec<FoundNetwork>>> for Message {
-    fn from(sender: oneshot::Sender<Vec<FoundNetwork>>) -> Self {
+impl From<Sender<Vec<FoundNetwork>>> for Message {
+    fn from(sender: Sender<Vec<FoundNetwork>>) -> Self {
         Self::NetworkScan(sender)
     }
 }
 
-impl From<oneshot::Sender<Vec<ScannedChannel>>> for Message {
-    fn from(sender: oneshot::Sender<Vec<ScannedChannel>>) -> Self {
+impl From<Sender<Vec<ScannedChannel>>> for Message {
+    fn from(sender: Sender<Vec<ScannedChannel>>) -> Self {
         Self::ChannelScan(sender)
     }
 }

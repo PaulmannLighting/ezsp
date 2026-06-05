@@ -156,7 +156,7 @@ impl EventHandler {
     }
 
     /// Forward EZSP callbacks to registered handlers.
-    async fn forward_event(&mut self, event: Event) {
+    async fn forward_event(&self, event: Event) {
         if let Err(error) = self.output.send(event).await {
             trace!("Failed to forward EZSP event to registered handler: {error}");
         }
@@ -170,7 +170,7 @@ impl EventHandler {
         }
     }
 
-    async fn handle_stack_status(&mut self, status: Result<ember::Status, u8>) {
+    async fn handle_stack_status(&self, status: Result<ember::Status, u8>) {
         let status = match status {
             Ok(status) => status,
             Err(value) => {
@@ -187,7 +187,7 @@ impl EventHandler {
         }
     }
 
-    async fn handle_trust_center_join(&mut self, trust_center_join: TrustCenterJoin) {
+    async fn handle_trust_center_join(&self, trust_center_join: TrustCenterJoin) {
         match trust_center_join.try_into() {
             Ok(event) => self.forward_event(event).await,
             Err(handler) => {

@@ -130,23 +130,6 @@ impl EzspNetworkManager<crate::uart::Uart> {
     }
 }
 
-impl<T> EzspNetworkManager<T>
-where
-    T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync,
-{
-    /// Translate an [`Address`] into a [`u16`] node ID.
-    ///
-    /// # Errors
-    ///
-    /// Returns a [`zigbee::Error`] if the short ID cannot be retrieved.
-    async fn address_to_node_id(&mut self, address: Address) -> Result<u16, zigbee_hw::Error> {
-        match address {
-            Address::IeeeAddress(ieee_address) => self.get_short_id(ieee_address).await,
-            Address::ShortAddress(node_id) => Ok(node_id),
-        }
-    }
-}
-
 impl<T> NcpDriver for EzspNetworkManager<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync,
@@ -240,7 +223,7 @@ where
             .map_err(io::Error::other)
             .map_err(Error::from)?;
         let aps_frame = self.next_aps_frame(&aps_metadata, destination_endpoint, 0x0000);
-        let destination = Destination::Direct(self.address_to_node_id(address).await?);
+        let destination = Destination::Direct(address.short_id());
         debug!(
             "Sending unicast to: {destination:?}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
             message.as_slice()

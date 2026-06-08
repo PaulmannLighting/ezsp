@@ -105,7 +105,7 @@ impl<T> EzspNetworkManager<T> {
     ///
     /// # Panics
     ///
-    /// This method may panic, if the termination signal cannot be sent to the message handler.
+    /// This method may panic if the termination signal cannot be sent to the message handler.
     pub async fn terminate(self) -> Result<T, JoinError> {
         self.event_handler_proxy
             .send(Message::Terminate)

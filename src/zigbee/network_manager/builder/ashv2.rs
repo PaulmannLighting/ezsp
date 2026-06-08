@@ -12,6 +12,10 @@ use crate::{Error, MIN_NON_LEGACY_VERSION};
 
 impl Builder<Uart> {
     /// Create a new builder using an `ASHv2` UART on the given serial port.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if the serial port cannot be used for `ASHv2` communication.
     pub fn ashv2<T>(serial_port: T) -> Result<Self, Error>
     where
         T: SerialPort + TryCloneNative + Sync + 'static,
@@ -20,6 +24,10 @@ impl Builder<Uart> {
     }
 
     /// Create a new builder using an `ASHv2` UART on the given serial port.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if the serial port cannot be used for `ASHv2` communication.
     pub fn ashv2_with_buffers<T>(serial_port: T, buffers: &Buffers) -> Result<Self, Error>
     where
         T: SerialPort + TryCloneNative + Sync + 'static,

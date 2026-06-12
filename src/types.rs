@@ -3,7 +3,7 @@
 use le_stream::{FromLeStream, ToLeStream};
 
 /// A vector with a maximum of 255 elements.
-pub type ByteSizedVec<T> = heapless::Vec<T, { u8::MAX as usize }>;
+pub type ByteSizedVec<T> = heapless::Vec<T, { u8::MAX as usize }, u8>;
 
 /// Discovery mode for source routes.
 ///

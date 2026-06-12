@@ -5,15 +5,9 @@ use crate::parameters::networking::handler::ChildJoin;
 impl From<ChildJoin> for Event {
     fn from(child_join: ChildJoin) -> Self {
         if child_join.joining() {
-            Self::DeviceJoined {
-                ieee_address: child_join.child_eui64(),
-                short_id: child_join.child_id(),
-            }
+            Self::DeviceJoined(child_join.into())
         } else {
-            Self::DeviceLeft {
-                ieee_address: child_join.child_eui64(),
-                short_id: child_join.child_id(),
-            }
+            Self::DeviceLeft(child_join.into())
         }
     }
 }

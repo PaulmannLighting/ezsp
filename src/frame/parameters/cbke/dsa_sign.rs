@@ -1,6 +1,6 @@
 //! Parameters for the [`Cbke::dsa_sign`](crate::Cbke::dsa_sign) command.
 
-use le_stream::{FromLeStream, Prefixed, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -12,15 +12,13 @@ const ID: u16 = 0x00A6;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
-    message: Prefixed<u8, ByteSizedVec<u8>>,
+    message: ByteSizedVec<u8>,
 }
 
 impl Command {
     #[must_use]
-    pub fn new(message: ByteSizedVec<u8>) -> Self {
-        Self {
-            message: message.into(),
-        }
+    pub const fn new(message: ByteSizedVec<u8>) -> Self {
+        Self { message }
     }
 }
 

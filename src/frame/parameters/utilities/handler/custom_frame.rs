@@ -1,6 +1,6 @@
 //! Custom frame handler.
 
-use le_stream::{FromLeStream, Prefixed};
+use le_stream::FromLeStream;
 
 use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
@@ -10,7 +10,7 @@ const ID: u16 = 0x0054;
 /// A callback indicating a custom `EZSP` message has been received.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
-    payload: Prefixed<u8, ByteSizedVec<u8>>,
+    payload: ByteSizedVec<u8>,
 }
 
 impl Handler {

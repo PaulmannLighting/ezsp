@@ -1,6 +1,6 @@
 //! Parameters for the [`Configuration::set_value`](crate::Configuration::set_value) command.
 
-use le_stream::{FromLeStream, Prefixed, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -14,15 +14,15 @@ const ID: u16 = 0x00AB;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
     value_id: u8,
-    value: Prefixed<u8, ByteSizedVec<u8>>,
+    value: ByteSizedVec<u8>,
 }
 
 impl Command {
     #[must_use]
-    pub fn new(value_id: Id, value: ByteSizedVec<u8>) -> Self {
+    pub const fn new(value_id: Id, value: ByteSizedVec<u8>) -> Self {
         Self {
-            value_id: value_id.into(),
-            value: value.into(),
+            value_id: value_id as u8,
+            value,
         }
     }
 }

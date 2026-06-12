@@ -1,6 +1,6 @@
 //! Parameters for the [`Configuration::write_attribute`](crate::Configuration::write_attribute) command.
 
-use le_stream::{FromLeStream, Prefixed, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -19,7 +19,7 @@ pub(crate) struct Command {
     manufacturer_code: u16,
     just_test: bool,
     data_type: u8,
-    data: Prefixed<u8, ByteSizedVec<u8>>,
+    data: ByteSizedVec<u8>,
 }
 
 impl Command {
@@ -33,7 +33,7 @@ impl Command {
             manufacturer_code: attribute.manufacturer_code,
             just_test,
             data_type: attribute.data_type,
-            data: attribute.data.into(),
+            data: attribute.data,
         }
     }
 }

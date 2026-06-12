@@ -1,6 +1,6 @@
 //! Parameters for the [`Bootloader::send_bootload_message()`](crate::Bootloader::send_bootload_message) command.
 
-use le_stream::{FromLeStream, Prefixed, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -14,16 +14,16 @@ const ID: u16 = 0x0090;
 pub(crate) struct Command {
     broadcast: bool,
     dest_eui64: Eui64,
-    message: Prefixed<u8, ByteSizedVec<u8>>,
+    message: ByteSizedVec<u8>,
 }
 
 impl Command {
     #[must_use]
-    pub fn new(broadcast: bool, dest_eui64: Eui64, message: ByteSizedVec<u8>) -> Self {
+    pub const fn new(broadcast: bool, dest_eui64: Eui64, message: ByteSizedVec<u8>) -> Self {
         Self {
             broadcast,
             dest_eui64,
-            message: message.into(),
+            message,
         }
     }
 }

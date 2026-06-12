@@ -1,6 +1,6 @@
 //! Parameters for the [`Utilities::set_mfg_token`](crate::Utilities::set_mfg_token) command.
 
-use le_stream::{FromLeStream, Prefixed, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -14,7 +14,7 @@ const ID: u16 = 0x000C;
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
     token_id: u8,
-    token_data: Prefixed<u8, ByteSizedVec<u8>>,
+    token_data: ByteSizedVec<u8>,
 }
 
 impl Command {
@@ -22,7 +22,7 @@ impl Command {
     pub fn new(token_id: Id, token_data: ByteSizedVec<u8>) -> Self {
         Self {
             token_id: token_id.into(),
-            token_data: token_data.into(),
+            token_data,
         }
     }
 }

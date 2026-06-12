@@ -1,6 +1,6 @@
 //! Parameters for the [`Utilities::get_mfg_token`](crate::Utilities::get_mfg_token) command.
 
-use le_stream::{FromLeStream, Prefixed, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ezsp::mfg_token::Id;
 use crate::frame::Parameter;
@@ -29,7 +29,7 @@ impl Parameter for Command {
 /// Response parameters.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
-    token_data: Prefixed<u8, ByteSizedVec<u8>>,
+    token_data: ByteSizedVec<u8>,
 }
 
 impl Parameter for Response {
@@ -39,6 +39,6 @@ impl Parameter for Response {
 /// Convert the response into the token data.
 impl From<Response> for ByteSizedVec<u8> {
     fn from(response: Response) -> Self {
-        response.token_data.into_data()
+        response.token_data
     }
 }

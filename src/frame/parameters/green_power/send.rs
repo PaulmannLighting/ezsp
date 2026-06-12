@@ -1,6 +1,6 @@
 //! Parameters for the [`GreenPower::send`](crate::GreenPower::send) command.
 
-use le_stream::{FromLeStream, Prefixed, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -17,13 +17,13 @@ pub(crate) struct Command {
     use_cca: bool,
     addr: Address,
     gpd_command_id: u8,
-    gpd_asdu: Prefixed<u8, ByteSizedVec<u8>>,
+    gpd_asdu: ByteSizedVec<u8>,
     gpep_handle: u8,
     gp_tx_queue_entry_lifetime_ms: u16,
 }
 
 impl Command {
-    pub fn new(
+    pub const fn new(
         action: bool,
         use_cca: bool,
         addr: Address,
@@ -37,7 +37,7 @@ impl Command {
             use_cca,
             addr,
             gpd_command_id,
-            gpd_asdu: gpd_asdu.into(),
+            gpd_asdu,
             gpep_handle,
             gp_tx_queue_entry_lifetime_ms,
         }

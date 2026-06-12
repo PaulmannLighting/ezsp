@@ -1,6 +1,6 @@
 //! Parameters for the [`Mfglib::send_packet`](crate::Mfglib::send_packet) command.
 
-use le_stream::{FromLeStream, Prefixed, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -12,7 +12,7 @@ const ID: u16 = 0x0089;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
-    content: Prefixed<u8, ByteSizedVec<u8>>,
+    content: ByteSizedVec<u8>,
 }
 
 impl Parameter for Command {
@@ -21,10 +21,8 @@ impl Parameter for Command {
 
 impl Command {
     #[must_use]
-    pub fn new(content: ByteSizedVec<u8>) -> Self {
-        Self {
-            content: content.into(),
-        }
+    pub const fn new(content: ByteSizedVec<u8>) -> Self {
+        Self { content }
     }
 }
 

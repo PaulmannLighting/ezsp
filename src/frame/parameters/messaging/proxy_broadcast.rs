@@ -1,6 +1,6 @@
 //! Parameters for the [`Messaging::proxy_broadcast`](crate::Messaging::proxy_broadcast) command.
 
-use le_stream::{FromLeStream, Prefixed, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -19,12 +19,12 @@ pub(crate) struct Command {
     aps_frame: Frame,
     radius: u8,
     message_tag: u8,
-    content: Prefixed<u8, ByteSizedVec<u8>>,
+    content: ByteSizedVec<u8>,
 }
 
 impl Command {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         source: NodeId,
         destination: NodeId,
         nwk_sequence: u8,
@@ -40,7 +40,7 @@ impl Command {
             aps_frame,
             radius,
             message_tag,
-            content: content.into(),
+            content,
         }
     }
 }

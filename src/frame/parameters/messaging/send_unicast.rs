@@ -1,6 +1,6 @@
 //! Parameters for the [`Messaging::send_unicast`](crate::Messaging::send_unicast) command.
 
-use le_stream::{FromLeStream, Prefixed, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -18,12 +18,12 @@ pub(crate) struct Command {
     index_or_destination: NodeId,
     aps_frame: Frame,
     tag: u8,
-    message: Prefixed<u8, ByteSizedVec<u8>>,
+    message: ByteSizedVec<u8>,
 }
 
 impl Command {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         destination: Destination,
         aps_frame: Frame,
         tag: u8,
@@ -37,7 +37,7 @@ impl Command {
             },
             aps_frame,
             tag,
-            message: message.into(),
+            message,
         }
     }
 }

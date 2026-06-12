@@ -1,4 +1,4 @@
-use le_stream::{FromLeStream, Prefixed};
+use le_stream::FromLeStream;
 use num_traits::FromPrimitive;
 
 use crate::ember::NodeId;
@@ -20,7 +20,7 @@ pub struct Handler {
     pub(crate) sender: NodeId,
     pub(crate) binding_index: u8,
     pub(crate) address_index: u8,
-    pub(crate) message: Prefixed<u8, ByteSizedVec<u8>>,
+    pub(crate) message: ByteSizedVec<u8>,
     // FIXME: There appears to be one byte more at the end than specified in the docs in most cases.
     // Assume optional node type for now.
     pub(crate) node_type: Option<u8>,
@@ -101,7 +101,7 @@ impl Handler {
     /// Consumes the handler and returns the incoming message.
     #[must_use]
     pub fn into_message(self) -> ByteSizedVec<u8> {
-        self.message.into_data()
+        self.message
     }
 }
 

@@ -27,7 +27,7 @@ impl DefragmentedMessage {
             sender: incoming_message.sender,
             binding_index: incoming_message.binding_index,
             address_index: incoming_message.address_index,
-            message: incoming_message.message.into_data().drain(..).collect(),
+            message: incoming_message.message.into_iter().collect(),
         }
     }
 

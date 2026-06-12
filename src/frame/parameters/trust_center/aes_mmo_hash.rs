@@ -1,6 +1,6 @@
 //! Parameters for the [`TrustCenter::aes_mmo_hash`](crate::TrustCenter::aes_mmo_hash) command.
 
-use le_stream::{FromLeStream, Prefixed, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -15,16 +15,16 @@ const ID: u16 = 0x006F;
 pub(crate) struct Command {
     context: MmoHashContext,
     finalize: bool,
-    data: Prefixed<u8, ByteSizedVec<u8>>,
+    data: ByteSizedVec<u8>,
 }
 
 impl Command {
     #[must_use]
-    pub fn new(context: MmoHashContext, finalize: bool, data: ByteSizedVec<u8>) -> Self {
+    pub const fn new(context: MmoHashContext, finalize: bool, data: ByteSizedVec<u8>) -> Self {
         Self {
             context,
             finalize,
-            data: data.into(),
+            data,
         }
     }
 }

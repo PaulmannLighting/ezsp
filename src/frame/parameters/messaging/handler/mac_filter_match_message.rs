@@ -1,4 +1,4 @@
-use le_stream::{FromLeStream, Prefixed};
+use le_stream::FromLeStream;
 
 use crate::ember::mac::PassThroughType;
 use crate::frame::Parameter;
@@ -14,7 +14,7 @@ pub struct Handler {
     legacy_passthrough_type: u8,
     last_hop_lqi: u8,
     last_hop_rssi: i8,
-    message: Prefixed<u8, ByteSizedVec<u8>>,
+    message: ByteSizedVec<u8>,
 }
 
 impl Handler {

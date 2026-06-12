@@ -1,6 +1,6 @@
 //! Parameters for the [`Utilities::custom_frame`](crate::Utilities::custom_frame) command.
 
-use le_stream::{FromLeStream, Prefixed, ToLeStream};
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -12,15 +12,13 @@ const ID: u16 = 0x0047;
 
 #[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
 pub(crate) struct Command {
-    payload: Prefixed<u8, ByteSizedVec<u8>>,
+    payload: ByteSizedVec<u8>,
 }
 
 impl Command {
     #[must_use]
-    pub fn new(payload: ByteSizedVec<u8>) -> Self {
-        Self {
-            payload: payload.into(),
-        }
+    pub const fn new(payload: ByteSizedVec<u8>) -> Self {
+        Self { payload }
     }
 }
 
@@ -32,7 +30,7 @@ impl Parameter for Command {
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Response {
     status: u8,
-    reply: Prefixed<u8, ByteSizedVec<u8>>,
+    reply: ByteSizedVec<u8>,
 }
 
 impl Parameter for Response {
@@ -45,7 +43,7 @@ impl TryFrom<Response> for ByteSizedVec<u8> {
 
     fn try_from(response: Response) -> Result<Self, Self::Error> {
         match Status::from_u8(response.status).ok_or(response.status) {
-            Ok(Status::Success) => Ok(response.reply.into_data()),
+            Ok(Status::Success) => Ok(response.reply),
             other => Err(other.into()),
         }
     }

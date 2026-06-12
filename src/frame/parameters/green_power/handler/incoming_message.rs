@@ -1,4 +1,4 @@
-use le_stream::{FromLeStream, Prefixed};
+use le_stream::FromLeStream;
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -46,7 +46,7 @@ pub struct Payload {
     mic: u32,
     proxy_table_index: u8,
     #[expect(clippy::struct_field_names)]
-    gpd_command_payload: Prefixed<u8, ByteSizedVec<u8>>,
+    gpd_command_payload: ByteSizedVec<u8>,
 }
 
 impl Payload {

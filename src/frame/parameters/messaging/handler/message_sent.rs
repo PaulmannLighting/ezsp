@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use le_stream::{FromLeStream, Prefixed};
+use le_stream::FromLeStream;
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -20,7 +20,7 @@ pub struct Handler {
     aps_frame: Frame,
     message_tag: u8,
     status: u8,
-    message: Prefixed<u8, ByteSizedVec<u8>>,
+    message: ByteSizedVec<u8>,
 }
 
 impl Handler {

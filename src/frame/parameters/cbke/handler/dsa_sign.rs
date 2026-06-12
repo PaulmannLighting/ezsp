@@ -1,4 +1,4 @@
-use le_stream::{FromLeStream, Prefixed};
+use le_stream::FromLeStream;
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -16,7 +16,7 @@ const ID: u16 = 0x00A7;
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
 pub struct Handler {
     status: u8,
-    message: Prefixed<u8, ByteSizedVec<u8>>,
+    message: ByteSizedVec<u8>,
 }
 
 impl Parameter for Handler {
@@ -30,7 +30,7 @@ impl TryFrom<Handler> for ByteSizedVec<u8> {
 
     fn try_from(handler: Handler) -> Result<Self, Self::Error> {
         match Status::from_u8(handler.status).ok_or(handler.status) {
-            Ok(Status::Success) => Ok(handler.message.into_data()),
+            Ok(Status::Success) => Ok(handler.message),
             other => Err(other.into()),
         }
     }

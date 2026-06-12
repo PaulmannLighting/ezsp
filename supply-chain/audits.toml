@@ -1,4 +1,136 @@
 
 # cargo-vet audits file
 
-[audits]
+[[audits.ashv2]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.2.7 -> 8.1.0"
+notes = "AI-assisted: reviewed major diff 1.2.7 -> 8.1.0; no new unsafe code in src (unsafe removed from old helper), protocol logic refactored to actor architecture"
+
+[[audits.ashv2]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "8.1.0 -> 8.1.0@git:7ba6f59dbc9d31cbc261d923f173e65e210280cb"
+importable = false
+notes = "AI-assisted: reviewed git delta 8.1.0 -> 8.1.0@git (empty diff)"
+
+[[audits.autocfg]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.5.0 -> 1.5.1"
+notes = "AI-assisted: reviewed diff 1.5.0 -> 1.5.1"
+
+[[audits.enum-iterator]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "2.1.0 -> 2.3.0"
+notes = "AI-assisted: reviewed diff 2.1.0 -> 2.3.0"
+
+[[audits.enum-iterator-derive]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.4.0 -> 1.5.0"
+notes = "AI-assisted: reviewed diff 1.4.0 -> 1.5.0"
+
+[[audits.iana-time-zone]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.64 -> 0.1.65"
+notes = "AI-assisted: reviewed diff 0.1.64 -> 0.1.65"
+
+[[audits.id-arena]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "2.2.1 -> 2.3.0"
+notes = "AI-assisted: reviewed diff 2.2.1 -> 2.3.0"
+
+[[audits.log]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.4.29 -> 0.4.32"
+notes = "AI-assisted: reviewed diff 0.4.29 -> 0.4.32"
+
+[[audits.memchr]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "2.7.5 -> 2.8.2"
+notes = "AI-assisted: reviewed diff 2.7.5 -> 2.8.2"
+
+[[audits.rand_core]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.10.0 -> 0.10.1"
+notes = "AI-assisted: reviewed diff 0.10.0 -> 0.10.1"
+
+[[audits.repr-discriminant]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "3.0.1"
+notes = "AI-assisted: inspected full source 3.0.1"
+
+[[audits.repr-discriminant-derive]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "2.0.0"
+notes = "AI-assisted: inspected full source 2.0.0"
+
+[[audits.silizium]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.0.5 -> 2.1.0"
+notes = "AI-assisted: reviewed major diff 1.0.5 -> 2.1.0; no unsafe code paths, primarily status/enum API and dependency updates"
+
+[[audits.silizium]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "2.1.0 -> 2.1.0@git:b75d856f8ee616c77238eeaebf81724bfe44d54f"
+importable = false
+notes = "AI-assisted: reviewed git delta 2.1.0 -> 2.1.0@git (empty diff)"
+
+[[audits.slab]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.4.11 -> 0.4.12"
+notes = "AI-assisted: reviewed diff 0.4.11 -> 0.4.12"
+
+[[audits.stable_deref_trait]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.2.0 -> 1.2.1"
+notes = "AI-assisted: reviewed diff 1.2.0 -> 1.2.1"
+
+[[audits.thiserror]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "2.0.16 -> 2.0.17"
+notes = "AI-assisted: reviewed diff 2.0.16 -> 2.0.17"
+
+[[audits.thiserror]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "2.0.17 -> 2.0.18"
+notes = "AI-assisted: reviewed diff 2.0.17 -> 2.0.18"
+
+[[audits.thiserror-impl]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "2.0.16 -> 2.0.17"
+notes = "AI-assisted: reviewed diff 2.0.16 -> 2.0.17"
+
+[[audits.thiserror-impl]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "2.0.17 -> 2.0.18"
+notes = "AI-assisted: reviewed diff 2.0.17 -> 2.0.18"
+
+[[audits.unescaper]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.6 -> 0.1.8"
+notes = "AI-assisted: reviewed diff 0.1.6 -> 0.1.8"
+
+[[audits.zmij]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.0.20 -> 1.0.21"
+notes = "AI-assisted: reviewed diff 1.0.20 -> 1.0.21"

@@ -144,6 +144,10 @@ where
         Ok(self.transport.get_node_id().await?)
     }
 
+    async fn get_ieee_address(&mut self) -> Result<MacAddr8, zigbee_hw::Error> {
+        Ok(self.transport.get_eui64().await?)
+    }
+
     async fn scan_networks(
         &mut self,
         channel_mask: u32,
@@ -203,11 +207,17 @@ where
             .await?)
     }
 
-    async fn get_ieee_address(&mut self, short_id: u16) -> Result<MacAddr8, zigbee_hw::Error> {
+    async fn short_id_to_ieee_address(
+        &mut self,
+        short_id: u16,
+    ) -> Result<MacAddr8, zigbee_hw::Error> {
         Ok(self.transport.lookup_eui64_by_node_id(short_id).await?)
     }
 
-    async fn get_short_id(&mut self, ieee_address: MacAddr8) -> Result<u16, zigbee_hw::Error> {
+    async fn ieee_address_to_short_id(
+        &mut self,
+        ieee_address: MacAddr8,
+    ) -> Result<u16, zigbee_hw::Error> {
         Ok(self.transport.lookup_node_id_by_eui64(ieee_address).await?)
     }
 

@@ -61,7 +61,7 @@ impl<T> EzspNetworkManager<T> {
 
     /// Creates a new `Builder` for constructing a `NetworkManager`.
     #[must_use]
-    pub fn build(transport: T, callbacks: Receiver<Callback>) -> Builder<T> {
+    pub const fn build(transport: T, callbacks: Receiver<Callback>) -> Builder<T> {
         Builder::new(transport, callbacks)
     }
 

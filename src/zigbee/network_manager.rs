@@ -174,12 +174,10 @@ where
         Ok(rx.await?)
     }
 
-    async fn allow_joins(&mut self, duration: Duration) -> Result<(), zigbee_hw::Error> {
-        info!("Allowing joins for {} seconds.", duration.as_secs());
-        self.transport
-            .permit_joining(u8::try_from(duration.as_secs()).unwrap_or(u8::MAX).into())
-            .await
-            .map_err(Into::into)
+    async fn allow_joins(&mut self, duration: Duration) -> Result<Duration, zigbee_hw::Error> {
+        let seconds = u8::try_from(duration.as_secs()).unwrap_or(u8::MAX);
+        self.transport.permit_joining(seconds.into()).await?;
+        Ok(Duration::from_secs(u64::from(seconds)))
     }
 
     async fn get_neighbors(&mut self) -> Result<BTreeMap<MacAddr8, u16>, zigbee_hw::Error> {

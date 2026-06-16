@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::io;
 use std::time::Duration;
 
-use log::{debug, info};
+use log::debug;
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::oneshot;

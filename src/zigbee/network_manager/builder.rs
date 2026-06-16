@@ -1,5 +1,4 @@
 use std::collections::{BTreeMap, BTreeSet};
-use std::iter::once;
 
 use log::{debug, info};
 use macaddr::MacAddr8;
@@ -24,11 +23,8 @@ use crate::{
 mod ashv2;
 
 const HOME_GATEWAY: u16 = 0x0050;
-const INPUT_CLUSTERS: &[u16] = &[0x0000, 0x0006, 0x0008, 0x0300, 0x0403, 0x0201];
-const OUTPUT_CLUSTERS: &[u16] = &[0x0000, 0x0006, 0x0008, 0x0300, 0x0403];
 const RADIO_CHANNEL: u8 = 11;
 const RADIO_POWER: i8 = 8;
-const ENDPOINT_ID: u8 = 1;
 
 /// Builder for Zigbee device configuration.
 pub struct Builder<T> {
@@ -42,8 +38,8 @@ pub struct Builder<T> {
     aps_options: aps::Options,
     profile: Profile,
     device_id: u16,
-    input_clusters: Vec<u16>,
-    output_clusters: Vec<u16>,
+    input_clusters: BTreeSet<u16>,
+    output_clusters: BTreeSet<u16>,
     link_key: Option<Key>,
     network_key: Option<Key>,
     join_method: join::Method,
@@ -59,7 +55,7 @@ pub struct Builder<T> {
 impl<T> Builder<T> {
     /// Creates a new `Builder` with the given transport.
     #[must_use]
-    pub fn new(transport: T, callbacks: Receiver<Callback>) -> Self {
+    pub const fn new(transport: T, callbacks: Receiver<Callback>) -> Self {
         Self {
             transport,
             callbacks,
@@ -71,8 +67,8 @@ impl<T> Builder<T> {
             aps_options: aps::Options::empty(),
             profile: Profile::ZigbeeHomeAutomation,
             device_id: HOME_GATEWAY,
-            input_clusters: INPUT_CLUSTERS.to_vec(),
-            output_clusters: OUTPUT_CLUSTERS.to_vec(),
+            input_clusters: BTreeSet::new(),
+            output_clusters: BTreeSet::new(),
             link_key: None,
             network_key: None,
             join_method: join::Method::MacAssociation,
@@ -80,7 +76,7 @@ impl<T> Builder<T> {
             ieee_address: None,
             radio_channel: RADIO_CHANNEL,
             radio_power: RADIO_POWER,
-            endpoints: once(ENDPOINT_ID).collect(),
+            endpoints: BTreeSet::new(),
             reinitialize: false,
             buffers: 1024,
         }
@@ -152,28 +148,28 @@ impl<T> Builder<T> {
     /// Adds an input cluster to the configuration.
     #[must_use]
     pub fn with_input_cluster(mut self, input_cluster: u16) -> Self {
-        self.input_clusters.push(input_cluster);
+        self.input_clusters.insert(input_cluster);
         self
     }
 
     /// Adds multiple input clusters to the configuration.
     #[must_use]
     pub fn with_input_clusters(mut self, input_clusters: &[u16]) -> Self {
-        self.input_clusters.extend_from_slice(input_clusters);
+        self.input_clusters.extend(input_clusters);
         self
     }
 
     /// Adds an output cluster to the configuration.
     #[must_use]
     pub fn with_output_cluster(mut self, output_cluster: u16) -> Self {
-        self.output_clusters.push(output_cluster);
+        self.output_clusters.insert(output_cluster);
         self
     }
 
     /// Adds multiple output clusters to the configuration.
     #[must_use]
     pub fn with_output_clusters(mut self, output_clusters: &[u16]) -> Self {
-        self.output_clusters.extend_from_slice(output_clusters);
+        self.output_clusters.extend(output_clusters);
         self
     }
 
@@ -260,6 +256,7 @@ where
     T: Transport + Sync + 'static,
 {
     /// Starts the network manager on the given transport implementation.
+    #[expect(clippy::too_many_lines)]
     async fn start(mut self) -> Result<(NcpHandle, Receiver<Event>), zigbee_hw::Error> {
         let (message_tx, message_rx) = channel(self.buffers);
         spawn(bridge(self.callbacks, message_tx.clone()));

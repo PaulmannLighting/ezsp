@@ -280,13 +280,20 @@ where
         }
 
         for endpoint in self.endpoints {
-            debug!("Adding endpoint: {endpoint:#04X}");
+            debug!(
+                "Adding endpoint: {endpoint:#04X}, profile: {:?}, device_id: {:#04X}, app_flags: {:#04X}, input clusters: {:X?}, output clusters: {:X?}",
+                self.profile,
+                self.device_id,
+                self.app_flags,
+                self.input_clusters,
+                self.output_clusters
+            );
             self.transport
                 .add_endpoint(
                     endpoint,
                     self.profile.into(),
                     self.device_id,
-                    0,
+                    self.app_flags,
                     self.input_clusters.iter().copied().collect(),
                     self.output_clusters.iter().copied().collect(),
                 )

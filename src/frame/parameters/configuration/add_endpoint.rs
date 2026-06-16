@@ -1,5 +1,7 @@
 //! Parameters for the [`Configuration::add_endpoint`](crate::Configuration::add_endpoint) command.
 
+use std::iter::{Chain, FlatMap};
+
 use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
@@ -40,7 +42,7 @@ impl Command {
 }
 
 /// Helper struct to deal with special serialization of the cluster lists.
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct Clusters {
     input_cluster_counts: u8,
     output_cluster_counts: u8,
@@ -61,6 +63,41 @@ impl Clusters {
             input_clusters,
             output_clusters,
         }
+    }
+}
+
+impl ToLeStream for Clusters {
+    type Iter = Chain<
+        Chain<
+            Chain<<u8 as ToLeStream>::Iter, <u8 as ToLeStream>::Iter>,
+            FlatMap<
+                <ByteSizedVec<u16> as IntoIterator>::IntoIter,
+                <u16 as ToLeStream>::Iter,
+                fn(u16) -> <u16 as ToLeStream>::Iter,
+            >,
+        >,
+        FlatMap<
+            <ByteSizedVec<u16> as IntoIterator>::IntoIter,
+            <u16 as ToLeStream>::Iter,
+            fn(u16) -> <u16 as ToLeStream>::Iter,
+        >,
+    >;
+
+    fn to_le_stream(self) -> Self::Iter {
+        #[expect(trivial_casts)]
+        self.input_cluster_counts
+            .to_le_stream()
+            .chain(self.output_cluster_counts.to_le_stream())
+            .chain(
+                self.input_clusters
+                    .into_iter()
+                    .flat_map(ToLeStream::to_le_stream as _),
+            )
+            .chain(
+                self.output_clusters
+                    .into_iter()
+                    .flat_map(ToLeStream::to_le_stream as _),
+            )
     }
 }
 

@@ -8,7 +8,7 @@ const ON: u8 = 0xFF;
 pub enum Duration {
     /// Joining is disabled.
     Disable,
-    /// Joining is enabled for a specific amount of seconds.
+    /// Joining is enabled for a specific number of seconds.
     #[expect(private_interfaces)]
     Seconds(Seconds),
     /// Joining is enabled indefinitely.

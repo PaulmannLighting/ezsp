@@ -1,4 +1,5 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
+use std::sync::Arc;
 
 use log::{debug, info};
 use macaddr::MacAddr8;
@@ -6,7 +7,7 @@ use rand::random;
 use silizium::zigbee::security::man::Key;
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, channel};
-use zigbee::Profile;
+use zdp::SimpleDescriptor;
 use zigbee_hw::{AwaitEvent, Event, EventTranslator, NcpDriver, NcpHandle, Start, bridge};
 
 use super::event_handler::EventHandler;
@@ -22,7 +23,6 @@ use crate::{
 
 mod ashv2;
 
-const HOME_GATEWAY: u16 = 0x0050;
 const RADIO_CHANNEL: u8 = 11;
 const RADIO_POWER: i8 = 8;
 
@@ -34,12 +34,7 @@ pub struct Builder<T> {
     configuration: BTreeMap<config::Id, u16>,
     concentrator: Option<concentrator::Parameters>,
     init_bitmask: InitBitmask,
-    app_flags: u8,
     aps_options: aps::Options,
-    profile: Profile,
-    device_id: u16,
-    input_clusters: BTreeSet<u16>,
-    output_clusters: BTreeSet<u16>,
     link_key: Option<Key>,
     network_key: Option<Key>,
     join_method: join::Method,
@@ -47,7 +42,6 @@ pub struct Builder<T> {
     ieee_address: Option<MacAddr8>,
     radio_channel: u8,
     radio_power: i8,
-    endpoints: BTreeSet<u8>,
     reinitialize: bool,
     buffers: usize,
 }
@@ -63,12 +57,7 @@ impl<T> Builder<T> {
             configuration: BTreeMap::new(),
             concentrator: None,
             init_bitmask: InitBitmask::NO_OPTIONS,
-            app_flags: 0,
             aps_options: aps::Options::empty(),
-            profile: Profile::ZigbeeHomeAutomation,
-            device_id: HOME_GATEWAY,
-            input_clusters: BTreeSet::new(),
-            output_clusters: BTreeSet::new(),
             link_key: None,
             network_key: None,
             join_method: join::Method::MacAssociation,
@@ -76,7 +65,6 @@ impl<T> Builder<T> {
             ieee_address: None,
             radio_channel: RADIO_CHANNEL,
             radio_power: RADIO_POWER,
-            endpoints: BTreeSet::new(),
             reinitialize: false,
             buffers: 1024,
         }
@@ -117,59 +105,10 @@ impl<T> Builder<T> {
         self
     }
 
-    /// Sets the application flags for the configuration.
-    #[must_use]
-    pub const fn with_app_flags(mut self, flags: u8) -> Self {
-        self.app_flags = flags;
-        self
-    }
-
     /// Sets the APS options.
     #[must_use]
     pub const fn with_aps_options(mut self, options: aps::Options) -> Self {
         self.aps_options = options;
-        self
-    }
-
-    /// Sets the profile ID for the configuration.
-    #[must_use]
-    pub const fn with_profile(mut self, profile: Profile) -> Self {
-        self.profile = profile;
-        self
-    }
-
-    /// Sets the device ID for the configuration.
-    #[must_use]
-    pub const fn with_device_id(mut self, device_id: u16) -> Self {
-        self.device_id = device_id;
-        self
-    }
-
-    /// Adds an input cluster to the configuration.
-    #[must_use]
-    pub fn with_input_cluster(mut self, input_cluster: u16) -> Self {
-        self.input_clusters.insert(input_cluster);
-        self
-    }
-
-    /// Adds multiple input clusters to the configuration.
-    #[must_use]
-    pub fn with_input_clusters(mut self, input_clusters: &[u16]) -> Self {
-        self.input_clusters.extend(input_clusters);
-        self
-    }
-
-    /// Adds an output cluster to the configuration.
-    #[must_use]
-    pub fn with_output_cluster(mut self, output_cluster: u16) -> Self {
-        self.output_clusters.insert(output_cluster);
-        self
-    }
-
-    /// Adds multiple output clusters to the configuration.
-    #[must_use]
-    pub fn with_output_clusters(mut self, output_clusters: &[u16]) -> Self {
-        self.output_clusters.extend(output_clusters);
         self
     }
 
@@ -222,20 +161,6 @@ impl<T> Builder<T> {
         self
     }
 
-    /// Sets the endpoint ID for the configuration.
-    #[must_use]
-    pub fn with_endpoint(mut self, endpoint_id: u8) -> Self {
-        self.endpoints.insert(endpoint_id);
-        self
-    }
-
-    /// Sets multiple endpoint IDs for the configuration.
-    #[must_use]
-    pub fn with_endpoints(mut self, endpoint_ids: &[u8]) -> Self {
-        self.endpoints.extend(endpoint_ids.iter().copied());
-        self
-    }
-
     /// Sets whether to reinitialize the network.
     #[must_use]
     pub const fn with_reinitialize(mut self, reinitialize: bool) -> Self {
@@ -257,7 +182,14 @@ where
 {
     /// Starts the network manager on the given transport implementation.
     #[expect(clippy::too_many_lines)]
-    async fn start(mut self) -> Result<(NcpHandle, Receiver<Event>), zigbee_hw::Error> {
+    async fn start(
+        mut self,
+        endpoints: &[SimpleDescriptor],
+    ) -> Result<(NcpHandle, Receiver<Event>), zigbee_hw::Error> {
+        if endpoints.is_empty() {
+            return Err(zigbee_hw::Error::NoEndpoints);
+        }
+
         let (message_tx, message_rx) = channel(self.buffers);
         spawn(bridge(self.callbacks, message_tx.clone()));
         let (events_tx, mut events_rx) = channel(self.buffers);
@@ -276,23 +208,23 @@ where
             self.transport.set_policy(key, value).await?;
         }
 
-        for endpoint in self.endpoints {
+        for (index, endpoint) in endpoints.iter().enumerate() {
             debug!(
-                "Adding endpoint: {endpoint:#04X}, profile: {:?}, device_id: {:#04X}, app_flags: {:#04X}, input clusters: {:X?}, output clusters: {:X?}",
-                self.profile,
-                self.device_id,
-                self.app_flags,
-                self.input_clusters,
-                self.output_clusters
+                "Adding endpoint: {index:#04X}, profile: {:?}, device_id: {:#04X}, app_flags: {:#04X}, input clusters: {:X?}, output clusters: {:X?}",
+                endpoint.profile_id(),
+                endpoint.device_id(),
+                endpoint.app_flags(),
+                endpoint.input_clusters(),
+                endpoint.output_clusters(),
             );
             self.transport
                 .add_endpoint(
-                    endpoint,
-                    self.profile.into(),
-                    self.device_id,
-                    self.app_flags,
-                    self.input_clusters.iter().copied().collect(),
-                    self.output_clusters.iter().copied().collect(),
+                    u8::try_from(index).map_err(implementation_error)?,
+                    endpoint.profile_id(),
+                    endpoint.device_id(),
+                    endpoint.app_flags(),
+                    endpoint.input_clusters().iter().copied().collect(),
+                    endpoint.output_clusters().iter().copied().collect(),
                 )
                 .await?;
         }
@@ -368,7 +300,11 @@ where
 
         let (_handle, ncp) = EzspNetworkManager::new(
             self.transport,
-            self.profile,
+            // FIXME: Use first valid endpoint for now.
+            endpoints
+                .iter()
+                .find_map(|endpoint| endpoint.profile().ok())
+                .ok_or(zigbee_hw::Error::NoEndpoints)?,
             self.aps_options,
             message_tx,
             event_mux_handle,
@@ -421,4 +357,11 @@ where
     );
 
     Ok(())
+}
+
+fn implementation_error<T>(error: T) -> zigbee_hw::Error
+where
+    T: std::error::Error + Send + Sync + 'static,
+{
+    zigbee_hw::Error::Implementation(Arc::new(error))
 }

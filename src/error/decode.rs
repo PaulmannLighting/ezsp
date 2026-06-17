@@ -5,11 +5,13 @@ use core::fmt::Display;
 pub enum Decode {
     /// Too few bytes to decode.
     TooFewBytes,
+
     /// Too many bytes to decode.
     TooManyBytes {
         /// The next byte in the stream.
         next: u8,
     },
+
     /// Frame ID mismatch.
     FrameIdMismatch {
         /// The expected frame ID.
@@ -17,6 +19,7 @@ pub enum Decode {
         /// The found frame ID.
         found: u16,
     },
+
     /// Invalid frame ID.
     InvalidFrameId(u16),
 }

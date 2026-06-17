@@ -8,8 +8,10 @@ use crate::{ember, ezsp};
 pub enum Status {
     /// The received [`ezsp::Status`] indicates an error.
     Ezsp(Result<ezsp::Status, u8>),
+
     /// The received [`ember::Status`] indicates an error.
     Ember(Result<ember::Status, u8>),
+
     /// The received [`silizium::Status`] indicates an error.
     Sl(Result<silizium::Status, u32>),
 }

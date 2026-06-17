@@ -6,16 +6,22 @@ use core::num::TryFromIntError;
 pub enum ValueError {
     /// An invalid frame ID for a legacy header was received.
     InvalidFrameId(TryFromIntError),
+
     /// An invalid [`State`](crate::ember::duty_cycle::State) was received.
     EmberDutyCycleState(u8),
+
     /// An invalid [`Status`](crate::ember::network::Status) was received.
     EmberNetworkStatus(u8),
+
     /// An invalid [`Type`](crate::ember::node::Type) was received.
     EmberNodeType(u8),
+
     /// The decision ID is invalid.
     DecisionId(u8),
+
     /// The decision ID is invalid.
     EntropySource(u8),
+
     /// Indicates that some expected payload was missing.
     MissingPayload,
 }

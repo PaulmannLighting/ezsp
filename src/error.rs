@@ -20,16 +20,21 @@ mod value_error;
 pub enum Error {
     /// An I/O error occurred.
     Io(std::io::Error),
+
     /// Decoding error.
     Decode(Decode),
-    /// A status related error.
+    /// A status-related error.
     Status(Status),
+
     /// An unexpected response was returned.
     UnexpectedResponse(Box<Parameters>),
+
     /// An invalid value was received.
     ValueError(ValueError),
+
     /// The NCP responded with `invalidCommand` (0x0058).
     InvalidCommand(invalid_command::Response),
+
     /// The protocol negotiation failed.
     ProtocolVersionMismatch {
         /// The version that was desired.
@@ -37,6 +42,7 @@ pub enum Error {
         /// The version that was received.
         negotiated: version::Response,
     },
+
     /// The NCP is not configured.
     NotConfigured,
 }

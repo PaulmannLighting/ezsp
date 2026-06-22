@@ -34,10 +34,10 @@ impl TryFrom<DefragmentedMessage> for aps::Data<Command> {
         Ok(Self::new(
             match typ {
                 Incoming::Broadcast | Incoming::BroadcastLoopback => {
-                    Destination::Broadcast(aps_frame.destination_endpoint())
+                    Destination::Broadcast(aps_frame.destination_endpoint().into())
                 }
                 Incoming::Unicast | Incoming::UnicastReply => {
-                    Destination::Unicast(aps_frame.destination_endpoint())
+                    Destination::Unicast(aps_frame.destination_endpoint().into())
                 }
                 Incoming::Multicast | Incoming::MulticastLoopback => {
                     Destination::Group(aps_frame.group_id())
@@ -46,7 +46,7 @@ impl TryFrom<DefragmentedMessage> for aps::Data<Command> {
             },
             aps_frame.cluster_id(),
             aps_frame.profile_id(),
-            aps_frame.source_endpoint(),
+            aps_frame.source_endpoint().into(),
             aps_frame.sequence(),
             None,
             match profile {

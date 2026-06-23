@@ -10,15 +10,63 @@ notes = "AI-assisted: reviewed major diff 1.2.7 -> 8.1.0; no new unsafe code in 
 [[audits.ashv2]]
 who = "Codex"
 criteria = "safe-to-deploy"
-delta = "8.1.0 -> 8.1.0@git:7ba6f59dbc9d31cbc261d923f173e65e210280cb"
+delta = "8.1.0 -> 8.1.0@git:a8a4c6f06dda9c07d440049892e761cb74e80fa6"
 importable = false
-notes = "AI-assisted: reviewed git delta 8.1.0 -> 8.1.0@git (empty diff)"
+notes = "AI-assisted: reviewed diff 8.1.0 -> 8.1.0@git:a8a4c6f06dda9c07d440049892e761cb74e80fa6"
 
 [[audits.autocfg]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "1.5.0 -> 1.5.1"
 notes = "AI-assisted: reviewed diff 1.5.0 -> 1.5.1"
+
+[[audits.bitflags]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "2.11.1 -> 2.13.0"
+notes = "AI-assisted: reviewed diff 2.11.1 -> 2.13.0"
+
+[[audits.cc]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.2.53 -> 1.2.65"
+notes = "AI-assisted: reviewed diff 1.2.53 -> 1.2.65"
+
+[[audits.chrono]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.4.45"
+notes = "AI-assisted: inspected full source 0.4.45"
+
+[[audits.const_env]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.1.5"
+notes = "AI-assisted: inspected full source 0.1.5"
+
+[[audits.const_env_impl]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.1.5"
+notes = "AI-assisted: inspected full source 0.1.5"
+
+[[audits.cpufeatures]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.2.2"
+notes = "AI-assisted: inspected full source 0.2.2"
+
+[[audits.cpufeatures]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.2 -> 0.3.0"
+notes = "AI-assisted: reviewed diff 0.2.2 -> 0.3.0"
+
+[[audits.crc-catalog]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "2.4.0 -> 2.5.0"
+notes = "AI-assisted: reviewed diff 2.4.0 -> 2.5.0"
 
 [[audits.enum-iterator]]
 who = "Codex"
@@ -32,6 +80,54 @@ criteria = "safe-to-deploy"
 delta = "1.4.0 -> 1.5.0"
 notes = "AI-assisted: reviewed diff 1.4.0 -> 1.5.0"
 
+[[audits.ezsp]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.2.4 -> 1.5.0"
+notes = "AI-assisted: reviewed diff 1.2.4 -> 1.5.0"
+
+[[audits.find-msvc-tools]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.8 -> 0.1.9"
+notes = "AI-assisted: reviewed diff 0.1.8 -> 0.1.9"
+
+[[audits.futures-task]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.3.31"
+notes = "AI-assisted: inspected full source 0.3.31"
+
+[[audits.futures-task]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.3.31 -> 0.3.32"
+notes = "AI-assisted: reviewed diff 0.3.31 -> 0.3.32"
+
+[[audits.futures-util]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.3.21"
+notes = "AI-assisted: inspected full source 0.3.21"
+
+[[audits.futures-util]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.3.21 -> 0.3.32"
+notes = "AI-assisted: reviewed diff 0.3.21 -> 0.3.32"
+
+[[audits.getrandom]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.4.3"
+notes = "AI-assisted: inspected full source 0.4.3"
+
+[[audits.heapless]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.9.1 -> 0.9.3"
+notes = "AI-assisted: reviewed diff 0.9.1 -> 0.9.3"
+
 [[audits.iana-time-zone]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -44,17 +140,71 @@ criteria = "safe-to-deploy"
 delta = "2.2.1 -> 2.3.0"
 notes = "AI-assisted: reviewed diff 2.2.1 -> 2.3.0"
 
+[[audits.intx]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.1.0"
+notes = "AI-assisted: inspected full source 0.1.0"
+
+[[audits.js-sys]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.3.77 -> 0.3.102"
+notes = "AI-assisted: reviewed diff 0.3.77 -> 0.3.102"
+
+[[audits.le-stream]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "5.0.0 -> 10.1.2"
+notes = "AI-assisted: reviewed diff 5.0.0 -> 10.1.2"
+
+[[audits.le-stream-derive]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.3.2 -> 1.3.8"
+notes = "AI-assisted: reviewed diff 1.3.2 -> 1.3.8"
+
 [[audits.log]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.4.29 -> 0.4.32"
 notes = "AI-assisted: reviewed diff 0.4.29 -> 0.4.32"
 
+[[audits.log]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.4.32 -> 0.4.33"
+notes = "AI-assisted: reviewed diff 0.4.32 -> 0.4.33"
+
 [[audits.memchr]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "2.7.5 -> 2.8.2"
 notes = "AI-assisted: reviewed diff 2.7.5 -> 2.8.2"
+
+[[audits.once_cell]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "1.12.0"
+notes = "AI-assisted: inspected full source 1.12.0"
+
+[[audits.once_cell]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.12.0 -> 1.21.4"
+notes = "AI-assisted: reviewed diff 1.12.0 -> 1.21.4"
+
+[[audits.pin-project-lite]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.16 -> 0.2.17"
+notes = "AI-assisted: reviewed diff 0.2.16 -> 0.2.17"
+
+[[audits.r-efi]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "6.0.0"
+notes = "AI-assisted: inspected full source 6.0.0"
 
 [[audits.rand_core]]
 who = "Codex"
@@ -74,6 +224,18 @@ criteria = "safe-to-deploy"
 version = "2.0.0"
 notes = "AI-assisted: inspected full source 2.0.0"
 
+[[audits.serialport]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "4.7.2 -> 4.9.0"
+notes = "AI-assisted: reviewed diff 4.7.2 -> 4.9.0"
+
+[[audits.shlex]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.3.0 -> 2.0.1"
+notes = "AI-assisted: reviewed diff 1.3.0 -> 2.0.1"
+
 [[audits.silizium]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -83,9 +245,9 @@ notes = "AI-assisted: reviewed major diff 1.0.5 -> 2.1.0; no unsafe code paths, 
 [[audits.silizium]]
 who = "Codex"
 criteria = "safe-to-deploy"
-delta = "2.1.0 -> 2.1.0@git:b75d856f8ee616c77238eeaebf81724bfe44d54f"
+delta = "2.1.0 -> 3.0.0@git:955fe5e81eb466a5134188b660dddcdd9c881591"
 importable = false
-notes = "AI-assisted: reviewed git delta 2.1.0 -> 2.1.0@git (empty diff)"
+notes = "AI-assisted: reviewed diff 2.1.0 -> 3.0.0@git:955fe5e81eb466a5134188b660dddcdd9c881591"
 
 [[audits.slab]]
 who = "Codex"
@@ -129,8 +291,182 @@ criteria = "safe-to-deploy"
 delta = "0.1.6 -> 0.1.8"
 notes = "AI-assisted: reviewed diff 0.1.6 -> 0.1.8"
 
+[[audits.wasm-bindgen]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.100 -> 0.2.125"
+notes = "AI-assisted: reviewed diff 0.2.100 -> 0.2.125"
+
+[[audits.wasm-bindgen-macro]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.105 -> 0.2.125"
+notes = "AI-assisted: reviewed diff 0.2.105 -> 0.2.125"
+
+[[audits.wasm-bindgen-macro-support]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.100 -> 0.2.125"
+notes = "AI-assisted: reviewed diff 0.2.100 -> 0.2.125"
+
+[[audits.wasm-bindgen-shared]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.100 -> 0.2.125"
+notes = "AI-assisted: reviewed diff 0.2.100 -> 0.2.125"
+
 [[audits.zmij]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "1.0.20 -> 1.0.21"
 notes = "AI-assisted: reviewed diff 1.0.20 -> 1.0.21"
+
+[[trusted.cc]]
+criteria = "safe-to-deploy"
+user-id = 55123 # rust-lang-owner
+start = "2022-10-29"
+end = "2027-06-23"
+
+[[trusted.find-msvc-tools]]
+criteria = "safe-to-deploy"
+user-id = 539 # Josh Stone (cuviper)
+start = "2025-08-29"
+end = "2027-06-23"
+
+[[trusted.js-sys]]
+criteria = "safe-to-deploy"
+user-id = 1 # Alex Crichton (alexcrichton)
+start = "2019-03-04"
+end = "2027-06-23"
+
+[[trusted.libc]]
+criteria = "safe-to-deploy"
+user-id = 55123 # rust-lang-owner
+start = "2024-08-15"
+end = "2027-06-23"
+
+[[trusted.quote]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-04-09"
+end = "2027-06-23"
+
+[[trusted.semver]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2021-05-25"
+end = "2027-06-23"
+
+[[trusted.syn]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-03-01"
+end = "2027-06-23"
+
+[[trusted.thiserror]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-10-09"
+end = "2027-06-23"
+
+[[trusted.thiserror-impl]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-10-09"
+end = "2027-06-23"
+
+[[trusted.tokio]]
+criteria = "safe-to-deploy"
+user-id = 6741 # Alice Ryhl (Darksonn)
+start = "2020-12-25"
+end = "2027-06-23"
+
+[[trusted.unicode-ident]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2021-10-02"
+end = "2027-06-23"
+
+[[trusted.wasm-bindgen]]
+criteria = "safe-to-deploy"
+user-id = 1 # Alex Crichton (alexcrichton)
+start = "2019-03-04"
+end = "2027-06-23"
+
+[[trusted.wasm-bindgen-macro]]
+criteria = "safe-to-deploy"
+user-id = 1 # Alex Crichton (alexcrichton)
+start = "2019-03-04"
+end = "2027-06-23"
+
+[[trusted.wasm-bindgen-macro-support]]
+criteria = "safe-to-deploy"
+user-id = 1 # Alex Crichton (alexcrichton)
+start = "2019-03-04"
+end = "2027-06-23"
+
+[[trusted.wasm-bindgen-shared]]
+criteria = "safe-to-deploy"
+user-id = 1 # Alex Crichton (alexcrichton)
+start = "2019-03-04"
+end = "2027-06-23"
+
+[[trusted.windows-core]]
+criteria = "safe-to-deploy"
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2021-11-15"
+end = "2027-06-23"
+
+[[trusted.windows-implement]]
+criteria = "safe-to-deploy"
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2022-01-27"
+end = "2027-06-23"
+
+[[trusted.windows-interface]]
+criteria = "safe-to-deploy"
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2022-02-18"
+end = "2027-06-23"
+
+[[trusted.windows-result]]
+criteria = "safe-to-deploy"
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2024-02-02"
+end = "2027-06-23"
+
+[[trusted.windows-strings]]
+criteria = "safe-to-deploy"
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2024-02-02"
+end = "2027-06-23"
+
+[[trusted.windows-sys]]
+criteria = "safe-to-deploy"
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2021-11-15"
+end = "2027-06-23"
+
+[[trusted.windows-targets]]
+criteria = "safe-to-deploy"
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2022-09-09"
+end = "2027-06-23"
+
+[[trusted.windows_aarch64_gnullvm]]
+criteria = "safe-to-deploy"
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2022-09-01"
+end = "2027-06-23"
+
+[[trusted.windows_i686_gnullvm]]
+criteria = "safe-to-deploy"
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2024-04-02"
+end = "2027-06-23"
+
+[[trusted.windows_x86_64_gnullvm]]
+criteria = "safe-to-deploy"
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2022-09-01"
+end = "2027-06-23"

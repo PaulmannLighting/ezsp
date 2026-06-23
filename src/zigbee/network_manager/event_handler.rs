@@ -112,7 +112,7 @@ impl EventHandler {
             Ok(aps_frame) => {
                 self.forward_event(Event::MessageReceived {
                     src_address,
-                    aps_frame: aps_frame.into(),
+                    aps_frame,
                 })
                 .await;
             }

@@ -30,7 +30,6 @@ repr-discriminant = { version = "3", features = ["derive"] }
 semver = { version = "1", optional = true }
 silizium = { version = "3", git = "https://github.com/PaulmannLighting/silizium/", features = ["le-stream"] }
 tokio = { version = "1", optional = true }
-zcl = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
 zdp = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
 zigbee-hw = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
 zigbee = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
@@ -38,7 +37,7 @@ zigbee = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-salt
 [features]
 ashv2 = ["dep:ashv2", "tokio/rt", "tokio/time", "tokio/sync"]
 semver = ["dep:semver"]
-zigbee = ["dep:aps", "dep:zigbee", "dep:zigbee-hw", "dep:rand", "dep:zcl", "dep:zdp", "tokio/rt", "tokio/sync"]
+zigbee = ["dep:aps", "dep:zigbee", "dep:zigbee-hw", "dep:rand", "dep:zdp", "tokio/rt", "tokio/sync"]
 
 [profile.release]
 opt-level = 3

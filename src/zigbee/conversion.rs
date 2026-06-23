@@ -1,8 +1,6 @@
 //! Conversion implementations from EZSP data structures to Zigbee Nwk data structures.
 
 use aps::Destination;
-use zigbee::Profile;
-use zigbee_hw::Command;
 
 pub use self::error::ParseApsFrameError;
 use crate::DefragmentedMessage;
@@ -15,10 +13,8 @@ mod found_network;
 mod scanned_channel;
 mod status;
 mod trust_center_join;
-mod zcl_frame;
-mod zdp_frame;
 
-impl TryFrom<DefragmentedMessage> for aps::Data<Command> {
+impl TryFrom<DefragmentedMessage> for aps::Data<Vec<u8>> {
     type Error = ParseApsFrameError;
 
     fn try_from(message: DefragmentedMessage) -> Result<Self, Self::Error> {
@@ -28,8 +24,6 @@ impl TryFrom<DefragmentedMessage> for aps::Data<Command> {
         };
 
         let aps_frame = message.aps_frame();
-        let profile = Profile::try_from(aps_frame.profile_id())
-            .map_err(ParseApsFrameError::InvalidProfile)?;
 
         Ok(Self::new(
             match typ {
@@ -49,19 +43,7 @@ impl TryFrom<DefragmentedMessage> for aps::Data<Command> {
             aps_frame.source_endpoint().into(),
             aps_frame.sequence(),
             None,
-            match profile {
-                Profile::Network => zdp::Frame::<zdp::Command>::try_from(message)
-                    .map(Command::Zdp)
-                    .map_err(ParseApsFrameError::ParseZdpFrameError),
-                Profile::ZigbeeHomeAutomation
-                | Profile::SmartEnergy
-                | Profile::TouchLink
-                | Profile::BuildingAutomation
-                | Profile::HealthCare
-                | Profile::RemoteControl => zcl::Frame::<zcl::Cluster>::try_from(message)
-                    .map(Command::Zcl)
-                    .map_err(ParseApsFrameError::ParseZclFrameError),
-            }?,
+            message.into_message(),
         ))
     }
 }

@@ -43,7 +43,6 @@ flowchart TD
 - Transport abstraction: `Transport`
 - Frame model: `Frame`, `Header`, `Parameters`, `Response`, `Callback`, etc.
 - Extension traits: `ConfigurationExt`, `PolicyExt`, `Displayable`
-- Defragmentation API: `Defragment`, `DefragmentedMessage`, `DefragmentationError`
 
 ### Trait Composition: `Transport` + Command Traits
 
@@ -115,17 +114,6 @@ These are additive and do not alter transport semantics.
 - protocol/flow-specific failures (`InvalidCommand`, `ProtocolVersionMismatch`, etc.)
 
 Because command traits all return `Result<_, Error>`, failures propagate consistently across all layers.
-
-### Defragmentation Subsystem
-
-`Defragment` is implemented for `BTreeMap<u8, Transaction>` and reconstructs fragmented APS messages from EZSP incoming messaging callbacks.
-
-- Initial fragment creates a transaction.
-- Follow-up fragments update the transaction by sequence.
-- Completion yields `DefragmentedMessage`.
-- Invalid ordering or duplicates produce typed `DefragmentationError`.
-
-This subsystem is used by the Zigbee event translator path to rebuild full APS payloads before conversion.
 
 ## `ashv2` Feature Architecture
 
@@ -308,7 +296,7 @@ flowchart TD
     K --> L[Return NcpHandle and Event receiver]
 ```
 
-### Callback Translation and Defragmentation
+### Callback Translation
 
 EZSP callbacks are translated by `EventHandler`:
 
@@ -317,12 +305,12 @@ EZSP callbacks are translated by `EventHandler`:
   - network/energy scan results -> buffered scan results
   - scan complete -> flush buffered result set to waiting request
 - Messaging callbacks:
-  - incoming message -> defragmenter -> APS decode -> `Event::MessageReceived`
+  - incoming message -> APS decode -> `Event::MessageReceived`
   - message sent -> ACK diagnostics/logging
 - Trust center/security callbacks:
   - translated when supported, logged otherwise
 
-Defragmentation is critical: incoming APS fragments are reassembled before conversion to `aps::data::Frame`.
+APS defragmentation is no longer handled in this crate and is now handled by `zigbee-coorinator`.
 
 ### Request/Response vs Event Planes
 
@@ -339,7 +327,7 @@ flowchart LR
     B --> C[Transport]
 
     D[EZSP callbacks] --> E[EventHandler]
-    E --> F[Defragmentation and conversions]
+    E --> F[Conversions]
     F --> G[zigbee_hw::Event stream]
 ```
 

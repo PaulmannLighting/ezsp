@@ -20,6 +20,20 @@ impl TryFrom<IncomingMessage> for aps::Data<Vec<u8>> {
 
     fn try_from(message: IncomingMessage) -> Result<Self, Self::Error> {
         let aps_frame = message.aps_frame();
+        let typ = message.typ().map_err(ParseApsFrameError::MessageType)?;
+
+        let destination = match typ {
+            Incoming::Broadcast | Incoming::BroadcastLoopback => {
+                Destination::Broadcast(aps_frame.destination_endpoint().into())
+            }
+            Incoming::Unicast | Incoming::UnicastReply => {
+                Destination::Unicast(aps_frame.destination_endpoint().into())
+            }
+            Incoming::Multicast | Incoming::MulticastLoopback => {
+                Destination::Group(aps_frame.group_id())
+            }
+            Incoming::ManyToOneRouteRequest => unreachable!("EZSP does not allow this."),
+        };
 
         let extended = match aps_frame.fragmentation() {
             Some((0, Some(size))) => {
@@ -38,21 +52,6 @@ impl TryFrom<IncomingMessage> for aps::Data<Vec<u8>> {
                 trace!("Received invalid fragmentation information: {index}/{size:?}");
                 return Err(ParseApsFrameError::Fragmentation { index, size });
             }
-        };
-
-        let typ = message.typ().map_err(ParseApsFrameError::MessageType)?;
-
-        let destination = match typ {
-            Incoming::Broadcast | Incoming::BroadcastLoopback => {
-                Destination::Broadcast(aps_frame.destination_endpoint().into())
-            }
-            Incoming::Unicast | Incoming::UnicastReply => {
-                Destination::Unicast(aps_frame.destination_endpoint().into())
-            }
-            Incoming::Multicast | Incoming::MulticastLoopback => {
-                Destination::Group(aps_frame.group_id())
-            }
-            Incoming::ManyToOneRouteRequest => unreachable!("EZSP does not allow this."),
         };
 
         Ok(Self::new(

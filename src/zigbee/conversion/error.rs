@@ -6,17 +6,29 @@ use std::fmt::Display;
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ParseApsFrameError {
     /// Invalid message type.
-    InvalidMessageType(u8),
+    MessageType(u8),
 
     /// The profile ID is invalid.
-    InvalidProfile(u16),
+    Profile(u16),
+
+    /// The fragmentation information is invalid.
+    Fragmentation {
+        /// The index of the fragment.
+        index: u8,
+        /// The total number of fragments.
+        size: Option<u8>,
+    },
 }
 
 impl Display for ParseApsFrameError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidMessageType(msg_type) => write!(f, "Invalid message type: {msg_type}"),
-            Self::InvalidProfile(profile) => write!(f, "Invalid profile ID: {profile}"),
+            Self::MessageType(msg_type) => write!(f, "Invalid message type: {msg_type}"),
+            Self::Profile(profile) => write!(f, "Invalid profile ID: {profile}"),
+            Self::Fragmentation { index, size } => write!(
+                f,
+                "Invalid fragmentation information: index: {index}, total_fragments: {size:?}"
+            ),
         }
     }
 }

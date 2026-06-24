@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use aps::data::Frame;
 use log::{debug, error, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
@@ -7,7 +5,6 @@ use zigbee_hw::{Event, EventTranslator};
 
 pub use self::message::Message;
 use self::scans::Scans;
-use crate::defragmentation::{Defragment, Transaction};
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
 use crate::parameters::security::handler::Handler as Security;
@@ -25,7 +22,6 @@ mod scans;
 #[derive(Debug)]
 pub struct EventHandler {
     output: Sender<Event>,
-    transactions: BTreeMap<u8, Transaction>,
     scans: Scans,
 }
 
@@ -69,7 +65,7 @@ impl EventHandler {
         }
     }
 
-    async fn handle_messaging_callbacks(&mut self, messaging: Messaging) {
+    async fn handle_messaging_callbacks(&self, messaging: Messaging) {
         match messaging {
             Messaging::IncomingMessage(incoming_message) => {
                 self.handle_incoming_message(incoming_message).await;
@@ -88,27 +84,12 @@ impl EventHandler {
         }
     }
 
-    async fn handle_incoming_message(&mut self, incoming_message: IncomingMessage) {
+    async fn handle_incoming_message(&self, incoming_message: IncomingMessage) {
         debug!("Incoming message: {incoming_message:?}");
 
-        let defragmented_message = match self.transactions.defragment(incoming_message) {
-            Ok(Some(defragmented_message)) => {
-                trace!("Defragmented frame: {defragmented_message:?}");
-                defragmented_message
-            }
-            Ok(None) => {
-                warn!("Frame defragmentation incomplete.");
-                return;
-            }
-            Err(error) => {
-                error!("Defragmentation error: {error}");
-                return;
-            }
-        };
+        let src_address = incoming_message.sender();
 
-        let src_address = defragmented_message.sender();
-
-        match Frame::try_from(defragmented_message) {
+        match Frame::try_from(incoming_message) {
             Ok(aps_frame) => {
                 self.forward_event(Event::MessageReceived {
                     src_address,
@@ -192,7 +173,6 @@ impl EventTranslator for EventHandler {
     fn new(output: Sender<Event>) -> Self {
         Self {
             output,
-            transactions: BTreeMap::new(),
             scans: Scans::default(),
         }
     }

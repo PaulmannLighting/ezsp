@@ -1,10 +1,11 @@
 //! Conversion implementations from EZSP data structures to Zigbee Nwk data structures.
 
-use aps::Destination;
+use aps::{Destination, Extended};
+use log::trace;
 
 pub use self::error::ParseApsFrameError;
-use crate::DefragmentedMessage;
 use crate::ember::message::Incoming;
+use crate::parameters::messaging::handler::IncomingMessage;
 
 mod address;
 mod child_join;
@@ -14,16 +15,35 @@ mod scanned_channel;
 mod status;
 mod trust_center_join;
 
-impl TryFrom<DefragmentedMessage> for aps::Data<Vec<u8>> {
+impl TryFrom<IncomingMessage> for aps::Data<Vec<u8>> {
     type Error = ParseApsFrameError;
 
-    fn try_from(message: DefragmentedMessage) -> Result<Self, Self::Error> {
+    fn try_from(message: IncomingMessage) -> Result<Self, Self::Error> {
         let typ = match message.typ() {
             Ok(typ) => typ,
-            Err(id) => return Err(ParseApsFrameError::InvalidMessageType(id)),
+            Err(id) => return Err(ParseApsFrameError::MessageType(id)),
         };
 
         let aps_frame = message.aps_frame();
+
+        let extended = match aps_frame.fragmentation() {
+            Some((0, Some(size))) => {
+                trace!("Received initial fragment.");
+                Some(Extended::first_fragment(size))
+            }
+            Some((index, None)) => {
+                trace!("Received follow-up fragment.");
+                Some(Extended::followup_fragment(index))
+            }
+            None => {
+                trace!("Received non-fragmented frame.");
+                None
+            }
+            Some((index, size)) => {
+                trace!("Received invalid fragmentation information: {index}/{size:?}");
+                return Err(ParseApsFrameError::Fragmentation { index, size });
+            }
+        };
 
         Ok(Self::new(
             match typ {
@@ -42,8 +62,8 @@ impl TryFrom<DefragmentedMessage> for aps::Data<Vec<u8>> {
             aps_frame.profile_id(),
             aps_frame.source_endpoint().into(),
             aps_frame.sequence(),
-            None,
-            message.into_message(),
+            extended,
+            message.into_message().into_iter().collect(),
         ))
     }
 }

@@ -14,7 +14,7 @@ dependencies = [
 [[package]]
 name = "aps"
 version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans/#a0b0cd2e9efcd45fe72cc542280bd8a115edd64a"
+source = "git+https://github.com/PaulmannLighting/apis-saltans/#55f3d058297a716ad7f7a6146276d35737bd596d"
 dependencies = [
  "bitflags 2.13.0",
  "le-stream",
@@ -26,7 +26,7 @@ dependencies = [
 [[package]]
 name = "ashv2"
 version = "8.1.0"
-source = "git+https://github.com/PaulmannLighting/ashv2/#a8a4c6f06dda9c07d440049892e761cb74e80fa6"
+source = "git+https://github.com/PaulmannLighting/ashv2/#f7e0939942aa78fd15aa38366945efb4e3a9cf88"
 dependencies = [
  "bitflags 2.13.0",
  "const_env",
@@ -88,9 +88,9 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
 name = "chacha20"
-version = "0.10.0"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f8d983286843e49675a4b7a2d174efe136dc93a18d69130dd18198a6c167601"
+checksum = "d524456ba66e72eb8b115ff89e01e497f8e6d11d78b70b1aa13c0fbd97540a81"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -787,7 +787,7 @@ checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
 [[package]]
 name = "zcl"
 version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans/#a0b0cd2e9efcd45fe72cc542280bd8a115edd64a"
+source = "git+https://github.com/PaulmannLighting/apis-saltans/#55f3d058297a716ad7f7a6146276d35737bd596d"
 dependencies = [
  "aps",
  "bitflags 2.13.0",
@@ -806,7 +806,7 @@ dependencies = [
 [[package]]
 name = "zdp"
 version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans/#a0b0cd2e9efcd45fe72cc542280bd8a115edd64a"
+source = "git+https://github.com/PaulmannLighting/apis-saltans/#55f3d058297a716ad7f7a6146276d35737bd596d"
 dependencies = [
  "aps",
  "bitflags 2.13.0",
@@ -822,7 +822,7 @@ dependencies = [
 [[package]]
 name = "zigbee"
 version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans/#a0b0cd2e9efcd45fe72cc542280bd8a115edd64a"
+source = "git+https://github.com/PaulmannLighting/apis-saltans/#55f3d058297a716ad7f7a6146276d35737bd596d"
 dependencies = [
  "bitflags 2.13.0",
  "chrono",
@@ -839,7 +839,7 @@ dependencies = [
 [[package]]
 name = "zigbee-hw"
 version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans/#a0b0cd2e9efcd45fe72cc542280bd8a115edd64a"
+source = "git+https://github.com/PaulmannLighting/apis-saltans/#55f3d058297a716ad7f7a6146276d35737bd596d"
 dependencies = [
  "aps",
  "le-stream",
@@ -854,7 +854,7 @@ dependencies = [
 [[package]]
 name = "zigbee-macros"
 version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans/#a0b0cd2e9efcd45fe72cc542280bd8a115edd64a"
+source = "git+https://github.com/PaulmannLighting/apis-saltans/#55f3d058297a716ad7f7a6146276d35737bd596d"
 dependencies = [
  "proc-macro2",
  "quote",

@@ -8,12 +8,10 @@ use crate::ember::message::Incoming;
 use crate::parameters::messaging::handler::IncomingMessage;
 
 mod address;
-mod child_join;
 mod error;
+mod event;
 mod found_network;
 mod scanned_channel;
-mod status;
-mod trust_center_join;
 
 impl TryFrom<IncomingMessage> for aps::Data<Vec<u8>> {
     type Error = ParseApsFrameError;

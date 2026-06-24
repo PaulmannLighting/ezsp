@@ -16,7 +16,7 @@ pub enum ParseApsFrameError {
         /// The index of the fragment.
         index: u8,
         /// The total number of fragments.
-        size: Option<u8>,
+        size: u8,
     },
 }
 
@@ -27,7 +27,7 @@ impl Display for ParseApsFrameError {
             Self::Profile(profile) => write!(f, "Invalid profile ID: {profile}"),
             Self::Fragmentation { index, size } => write!(
                 f,
-                "Invalid fragmentation information: index: {index}, total_fragments: {size:?}"
+                "Invalid fragmentation information: index: {index}, total fragments: {size}"
             ),
         }
     }

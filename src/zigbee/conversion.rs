@@ -48,8 +48,8 @@ impl TryFrom<IncomingMessage> for aps::Data<Vec<u8>> {
                 trace!("Received non-fragmented frame.");
                 None
             }
-            Some((index, size)) => {
-                trace!("Received invalid fragmentation information: {index}/{size:?}");
+            Some((index, Some(size))) => {
+                trace!("Received invalid fragmentation information: {index}/{size}");
                 return Err(ParseApsFrameError::Fragmentation { index, size });
             }
         };

@@ -2,6 +2,10 @@
 
 use le_stream::{FromLeStream, ToLeStream};
 
+pub use self::resilient_payload::ResilientPayload;
+
+mod resilient_payload;
+
 /// A vector with a maximum of 255 elements.
 pub type ByteSizedVec<T> = heapless::Vec<T, { u8::MAX as usize }, u8>;
 

@@ -157,8 +157,7 @@ impl Frame {
             let index = (self.group_id & 0x00FF) as u8;
 
             if index == 0 {
-                let total_fragments = (self.group_id >> 8) as u8;
-                Some((index, Some(total_fragments)))
+                Some((index, Some(((self.group_id & 0xFF00) >> 8) as u8)))
             } else {
                 Some((index, None))
             }

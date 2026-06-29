@@ -13,29 +13,39 @@ bitflags! {
     impl Options: u16 {
         /// No options.
         const NONE = 0x0000;
+
         /// Send the message using APS Encryption, using the Link Key shared with the
         /// destination node to encrypt the data at the APS Level.
         const ENCRYPTION = 0x0020;
+
         /// Resend the message using the APS retry mechanism.
         const RETRY = 0x0040;
+
         /// Causes a route discovery to be initiated if no route to the destination is known.
         const ENABLE_ROUTE_DISCOVERY = 0x0100;
+
         /// Causes a route discovery to be initiated even if one is known.
         const FORCE_ROUTE_DISCOVERY = 0x0200;
+
         /// Include the source EUI64 in the network frame.
         const SOURCE_EUI64 = 0x0400;
+
         /// Include the destination EUI64 in the network frame.
         const DESTINATION_EUI64 = 0x0800;
+
         /// Send a ZDO request to discover the node ID of the destination if it is not already know.
         const ENABLE_ADDRESS_DISCOVERY = 0x1000;
+
         /// Reserved.
         const POLL_RESPONSE = 0x2000;
+
         /// This incoming message is a ZDO request not handled by the `EmberZNet` stack,
         /// and the application is responsible for sending a ZDO response.
         ///
         /// This flag is used only when the ZDO is configured to have requests handled by the application.
         /// See the [`ApplicationZdoFlags`](crate::ezsp::config::Id::ApplicationZdoFlags) configuration parameter for more information.
         const ZDO_RESPONSE_REQUIRED = 0x4000;
+
         /// This message is part of a fragmented message. This option may only be set for unicasts.
         ///
         /// The `groupId` field gives the index of this fragment in the low-order byte.

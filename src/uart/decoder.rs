@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use ashv2::Payload;
 use le_stream::FromLeStream;
-use log::trace;
+use log::{debug, info, trace, warn};
 use tokio::sync::mpsc::Receiver;
 
 use crate::error::Decode;
@@ -88,9 +88,20 @@ impl Decoder {
         let next_header = self.read_header(&mut stream).ok_or(Decode::TooFewBytes)?;
         trace!("Next header: {next_header}");
 
+        if let LowByte::Response(response) = next_header.low_byte() {
+            if response.is_truncated() {
+                warn!("HEADER IS TRUNCATED");
+            }
+
+            if response.has_overflowed() {
+                warn!("HEADER HAS OVERFLOWED");
+            }
+        }
+
         if let Some(header) = self.header.take()
             && header != next_header
         {
+            self.parameters.clear();
             return Err(Decode::FrameIdMismatch {
                 expected: header.id(),
                 found: next_header.id(),

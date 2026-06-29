@@ -4,7 +4,7 @@ use crate::ember::NodeId;
 use crate::ember::aps::Frame;
 use crate::ember::message::Incoming;
 use crate::frame::Parameter;
-use crate::types::ResilientPayload;
+use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x0045;
 
@@ -18,7 +18,8 @@ pub struct Handler {
     pub(crate) sender: NodeId,
     pub(crate) binding_index: u8,
     pub(crate) address_index: u8,
-    pub(crate) message: ResilientPayload,
+    pub(crate) message: ByteSizedVec<u8>,
+    pub(crate) _unknown: Option<u8>,
 }
 
 impl Handler {
@@ -85,8 +86,8 @@ impl Handler {
 
     /// Consumes the handler and returns the incoming message.
     #[must_use]
-    pub fn into_message(self) -> Box<[u8]> {
-        self.message.into_payload()
+    pub fn into_message(self) -> ByteSizedVec<u8> {
+        self.message
     }
 }
 

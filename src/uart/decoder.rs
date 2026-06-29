@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use ashv2::Payload;
 use le_stream::FromLeStream;
-use log::{debug, info, trace, warn};
+use log::trace;
 use tokio::sync::mpsc::Receiver;
 
 use crate::error::Decode;
@@ -90,11 +90,11 @@ impl Decoder {
 
         if let LowByte::Response(response) = next_header.low_byte() {
             if response.is_truncated() {
-                warn!("HEADER IS TRUNCATED");
+                return Err(ezsp::Status::Error(ezsp::Error::Truncated).into());
             }
 
             if response.has_overflowed() {
-                warn!("HEADER HAS OVERFLOWED");
+                return Err(ezsp::Status::Error(ezsp::Error::Overflow).into());
             }
         }
 
@@ -152,16 +152,6 @@ impl Decoder {
         if error != Decode::TooFewBytes {
             trace!("Received and error during frame parsing: {error:?}");
             return Err(error.into());
-        }
-
-        if let LowByte::Response(response) = next_header.low_byte() {
-            if response.is_truncated() {
-                return Err(ezsp::Status::Error(ezsp::Error::Truncated).into());
-            }
-
-            if response.has_overflowed() {
-                return Err(ezsp::Status::Error(ezsp::Error::Overflow).into());
-            }
         }
 
         trace!("Frame appears fragmented. Waiting for more data...");

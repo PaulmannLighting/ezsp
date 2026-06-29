@@ -20,10 +20,8 @@ pub struct Handler {
     pub(crate) sender: NodeId,
     pub(crate) binding_index: u8,
     pub(crate) address_index: u8,
-    pub(crate) message: ByteSizedVec<u8>,
-    // FIXME: There appears to be one byte more at the end than specified in the docs in most cases.
-    // Assume optional node type for now.
-    pub(crate) node_type: Option<u8>,
+    pub(crate) message_length: u8,
+    pub(crate) message: Box<[u8]>,
 }
 
 impl Handler {
@@ -88,19 +86,9 @@ impl Handler {
         self.message.as_ref()
     }
 
-    /// The type of the sender node.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the value is not a valid node type.
-    #[must_use]
-    pub fn node_type(&self) -> Option<Type> {
-        self.node_type.and_then(Type::from_u8)
-    }
-
     /// Consumes the handler and returns the incoming message.
     #[must_use]
-    pub fn into_message(self) -> ByteSizedVec<u8> {
+    pub fn into_message(self) -> Box<[u8]> {
         self.message
     }
 }

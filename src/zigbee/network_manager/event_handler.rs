@@ -98,7 +98,7 @@ impl EventHandler {
                 .await;
             }
             Err(error) => {
-                warn!("Ignoring unknown APS frame type: {error}");
+                warn!("Ignoring malformed APS frame: {error}");
             }
         }
     }

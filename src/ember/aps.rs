@@ -26,7 +26,7 @@ bitflags! {
         const SOURCE_EUI64 = 0x0400;
         /// Include the destination EUI64 in the network frame.
         const DESTINATION_EUI64 = 0x0800;
-        /// Send a ZDO request to discover the node ID of the destination, if it is not already know.
+        /// Send a ZDO request to discover the node ID of the destination if it is not already know.
         const ENABLE_ADDRESS_DISCOVERY = 0x1000;
         /// Reserved.
         const POLL_RESPONSE = 0x2000;
@@ -39,7 +39,7 @@ bitflags! {
         /// This message is part of a fragmented message. This option may only be set for unicasts.
         ///
         /// The `groupId` field gives the index of this fragment in the low-order byte.
-        /// If the low-order byte is zero this is the first fragment and the high-order byte
+        /// If the low-order byte is zero, this is the first fragment, and the high-order byte
         /// contains the number of fragments in the message.
          const FRAGMENT = 0x8000;
     }
@@ -122,7 +122,7 @@ impl Frame {
         self.options
     }
 
-    /// Return the group ID for this message, if it is multicast mode.
+    /// Return the group ID for this message if it is a multicast mode.
     #[must_use]
     pub const fn group_id(&self) -> u16 {
         self.group_id
@@ -134,7 +134,7 @@ impl Frame {
         self.sequence
     }
 
-    /// Return fragmentation information, if the message is fragmented.
+    /// Return fragmentation information if the message is fragmented.
     ///
     /// # Returns
     ///

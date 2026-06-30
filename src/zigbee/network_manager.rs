@@ -7,7 +7,7 @@ use std::time::Duration;
 use log::debug;
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::{Receiver, Sender};
-use tokio::sync::oneshot;
+use tokio::sync::oneshot::channel;
 use tokio::task::{JoinError, JoinHandle};
 use zigbee::{Endpoint, Profile};
 use zigbee_hw::{Frame, Metadata, NcpDriver};
@@ -153,7 +153,7 @@ where
         channel_mask: u32,
         duration: u8,
     ) -> Result<Vec<zigbee_hw::FoundNetwork>, zigbee_hw::Error> {
-        let (tx, rx) = oneshot::channel();
+        let (tx, rx) = channel();
         self.event_handler_proxy.send(tx.into()).await?;
         self.transport
             .start_scan(scan::Type::ActiveScan, channel_mask, duration)
@@ -166,7 +166,7 @@ where
         channel_mask: u32,
         duration: u8,
     ) -> Result<Vec<zigbee_hw::ScannedChannel>, zigbee_hw::Error> {
-        let (tx, rx) = oneshot::channel();
+        let (tx, rx) = channel();
         self.event_handler_proxy.send(tx.into()).await?;
         self.transport
             .start_scan(scan::Type::EnergyScan, channel_mask, duration)
@@ -232,14 +232,27 @@ where
             .map_err(Error::from)?;
         let aps_frame = self.next_aps_frame(&aps_metadata, destination_endpoint, 0x0000);
         let destination = Destination::Direct(short_id);
+
         debug!(
             "Sending unicast to: {destination:?}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
             message.as_slice()
         );
-        Ok(self
+
+        let (tx, rx) = channel();
+
+        self.event_handler_proxy
+            .send(Message::MessageSent { tag, sender: tx })
+            .await?;
+
+        let seq = self
             .transport
             .send_unicast(destination, aps_frame, tag, message)
-            .await?)
+            .await?;
+
+        match rx.await? {
+            Ok(ember::Status::Success) => Ok(seq),
+            other => Err(Error::Status(Status::Ember(other)).into()),
+        }
     }
 
     async fn multicast(
@@ -255,14 +268,27 @@ where
             .map_err(io::Error::other)
             .map_err(Error::from)?;
         let aps_frame = self.next_aps_frame(&aps_metadata, Endpoint::Data, group_id);
+
         debug!(
             "Sending multicast: Hops: {hops}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
             message.as_slice()
         );
-        Ok(self
+
+        let (tx, rx) = channel();
+
+        self.event_handler_proxy
+            .send(Message::MessageSent { tag, sender: tx })
+            .await?;
+
+        let seq = self
             .transport
             .send_multicast(aps_frame, hops, radius, tag, message)
-            .await?)
+            .await?;
+
+        match rx.await? {
+            Ok(ember::Status::Success) => Ok(seq),
+            other => Err(Error::Status(Status::Ember(other)).into()),
+        }
     }
 
     async fn broadcast(
@@ -281,9 +307,21 @@ where
             "Sending broadcast to: {short_id:#06X}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
             message.as_slice()
         );
-        Ok(self
+
+        let (tx, rx) = channel();
+
+        self.event_handler_proxy
+            .send(Message::MessageSent { tag, sender: tx })
+            .await?;
+
+        let seq = self
             .transport
             .send_broadcast(short_id, aps_frame, radius, tag, message)
-            .await?)
+            .await?;
+
+        match rx.await? {
+            Ok(ember::Status::Success) => Ok(seq),
+            other => Err(Error::Status(Status::Ember(other)).into()),
+        }
     }
 }

@@ -57,6 +57,15 @@ impl Handler {
         self.message_tag
     }
 
+    /// Return the status.
+    ///
+    /// # Errors
+    ///
+    /// Returns the raw status value if it is not a valid status.
+    pub fn status(&self) -> Result<Status, u8> {
+        Status::from_u8(self.status).ok_or(self.status)
+    }
+
     /// Returns `true` if an ACK was received from the destination or `false` if no ACK was received.
     ///
     /// # Errors
@@ -64,7 +73,7 @@ impl Handler {
     /// Returns an [`Error`] if the status is not [`Status::Success`] or [`Status::DeliveryFailed`]
     /// or if the value is not a valid status.
     pub fn ack_received(&self) -> Result<bool, Error> {
-        match Status::from_u8(self.status).ok_or(self.status) {
+        match self.status() {
             Ok(Status::Success) => Ok(true),
             Ok(Status::DeliveryFailed) => Ok(false),
             other => Err(other.into()),

@@ -1,15 +1,19 @@
+use std::collections::BTreeMap;
+
 use aps::data::Frame;
 use log::{debug, error, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
+use tokio::sync::oneshot;
 use zigbee_hw::{Event, EventTranslator};
 
 pub use self::message::Message;
 use self::scans::Scans;
+use crate::Callback;
+use crate::ember::Status;
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
 use crate::parameters::security::handler::Handler as Security;
 use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
-use crate::{Callback, ember};
 
 mod message;
 mod scans;
@@ -23,6 +27,7 @@ mod scans;
 pub struct EventHandler {
     output: Sender<Event>,
     scans: Scans,
+    responses: BTreeMap<u8, oneshot::Sender<Result<Status, u8>>>,
 }
 
 impl EventHandler {
@@ -65,13 +70,13 @@ impl EventHandler {
         }
     }
 
-    async fn handle_messaging_callbacks(&self, messaging: Messaging) {
+    async fn handle_messaging_callbacks(&mut self, messaging: Messaging) {
         match messaging {
             Messaging::IncomingMessage(incoming_message) => {
                 self.handle_incoming_message(incoming_message).await;
             }
             Messaging::MessageSent(message_sent) => {
-                Self::handle_message_sent(&message_sent);
+                self.handle_message_sent(&message_sent);
             }
             Messaging::IncomingSenderEui64(incoming_sender_eui64) => {
                 trace!(
@@ -110,15 +115,21 @@ impl EventHandler {
         }
     }
 
-    fn handle_message_sent(message_sent: &MessageSent) {
+    fn handle_message_sent(&mut self, message_sent: &MessageSent) {
+        if let Some(response) = self.responses.remove(&message_sent.message_tag())
+            && let Err(error) = response.send(message_sent.status())
+        {
+            warn!("Failed to send message sent status: {error:?}");
+        }
+
         match message_sent.ack_received() {
-            Ok(true) => debug!("ACK received for sent message: {message_sent}"),
+            Ok(true) => trace!("ACK received for sent message: {message_sent}"),
             Ok(false) => warn!("No ACK received for sent message: {message_sent}"),
             Err(error) => error!("{error}: {message_sent}"),
         }
     }
 
-    async fn handle_stack_status(&self, status: Result<ember::Status, u8>) {
+    async fn handle_stack_status(&self, status: Result<Status, u8>) {
         let status = match status {
             Ok(status) => status,
             Err(value) => {
@@ -174,6 +185,7 @@ impl EventTranslator for EventHandler {
         Self {
             output,
             scans: Scans::default(),
+            responses: BTreeMap::new(),
         }
     }
 
@@ -183,11 +195,16 @@ impl EventTranslator for EventHandler {
                 Message::Callback(callback) => {
                     self.process_callback(*callback).await;
                 }
+                Message::NetworkScan(sender) => {
+                    self.scans.push(sender.into());
+                }
                 Message::ChannelScan(sender) => {
                     self.scans.push(sender.into());
                 }
-                Message::NetworkScan(sender) => {
-                    self.scans.push(sender.into());
+                Message::MessageSent { tag, sender } => {
+                    if self.responses.insert(tag, sender).is_some() {
+                        warn!("Overwrote response channel for message tag: {tag}");
+                    }
                 }
                 Message::Terminate => {
                     trace!("Received termination message.");

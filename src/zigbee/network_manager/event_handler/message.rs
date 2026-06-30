@@ -8,10 +8,13 @@ use crate::Callback;
 pub enum Message {
     /// An incoming callback.
     Callback(Box<Callback>),
+
     /// A request to scan networks.
     NetworkScan(Sender<Vec<FoundNetwork>>),
+
     /// A request to scan channels.
     ChannelScan(Sender<Vec<ScannedChannel>>),
+
     /// Termination signal.
     Terminate,
 }

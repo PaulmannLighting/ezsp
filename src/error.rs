@@ -23,6 +23,7 @@ pub enum Error {
 
     /// Decoding error.
     Decode(Decode),
+
     /// A status-related error.
     Status(Status),
 

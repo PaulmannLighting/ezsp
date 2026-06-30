@@ -288,11 +288,11 @@ where
 
         log_state(&mut self.transport).await?;
 
-        info!("Sending many-to-one route request");
         let radius = self
             .transport
             .get_configuration_value(config::Id::MaxHops)
             .await?;
+        info!("Sending many-to-one route request: {radius} hops");
         #[expect(clippy::cast_possible_truncation)]
         self.transport
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)

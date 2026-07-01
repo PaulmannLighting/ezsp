@@ -14,6 +14,7 @@ use tokio::task::{JoinError, JoinHandle};
 
 use self::builder::Builder;
 use self::event_handler::Message;
+use self::response_receiver::ResponseReceiver;
 use crate::ember::message::Destination;
 use crate::ember::{aps, concentrator};
 use crate::error::Status;
@@ -23,6 +24,7 @@ use crate::{Callback, Configuration, Error, Messaging, Networking, Security, Uti
 
 mod builder;
 mod event_handler;
+mod response_receiver;
 
 /// Network manager for Zigbee networks.
 #[derive(Debug)]
@@ -112,6 +114,77 @@ impl<T> EzspNetworkManager<T> {
             .await
             .expect("Failed to send terminate message to message handler actor");
         self.event_handler_handle.await.map(|()| self.transport)
+    }
+}
+
+impl<T> EzspNetworkManager<T>
+where
+    T: Messaging + Send + Sync,
+{
+    async fn send_unicast(
+        &mut self,
+        short_id: u16,
+        destination_endpoint: Endpoint,
+        frame: Frame,
+    ) -> Result<ResponseReceiver, apis_saltans_hw::Error> {
+        let (aps_metadata, payload) = frame.into_parts();
+        let tag = self.next_message_tag();
+        let message = ByteSizedVec::from_slice(&payload)
+            .map_err(io::Error::other)
+            .map_err(Error::from)?;
+        let aps_frame = self.next_aps_frame(&aps_metadata, destination_endpoint, 0x0000);
+        let destination = Destination::Direct(short_id);
+
+        debug!(
+            "Sending unicast to: {destination:?}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
+            message.as_slice()
+        );
+
+        let (tx, rx) = channel();
+
+        self.event_handler_proxy
+            .send(Message::Sent { tag, sender: tx })
+            .await?;
+
+        let seq = self
+            .transport
+            .send_unicast(destination, aps_frame, tag, message)
+            .await?;
+
+        Ok(ResponseReceiver::new(rx, seq))
+    }
+
+    async fn send_multicast(
+        &mut self,
+        group_id: u16,
+        hops: u8,
+        radius: u8,
+        frame: Frame,
+    ) -> Result<ResponseReceiver, apis_saltans_hw::Error> {
+        let (aps_metadata, payload) = frame.into_parts();
+        let tag = self.next_message_tag();
+        let message = ByteSizedVec::from_slice(&payload)
+            .map_err(io::Error::other)
+            .map_err(Error::from)?;
+        let aps_frame = self.next_aps_frame(&aps_metadata, Endpoint::Data, group_id);
+
+        debug!(
+            "Sending multicast: Hops: {hops}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
+            message.as_slice()
+        );
+
+        let (tx, rx) = channel();
+
+        self.event_handler_proxy
+            .send(Message::Sent { tag, sender: tx })
+            .await?;
+
+        let seq = self
+            .transport
+            .send_multicast(aps_frame, hops, radius, tag, message)
+            .await?;
+
+        Ok(ResponseReceiver::new(rx, seq))
     }
 }
 
@@ -228,34 +301,9 @@ where
         destination_endpoint: Endpoint,
         frame: Frame,
     ) -> Result<u8, apis_saltans_hw::Error> {
-        let (aps_metadata, payload) = frame.into_parts();
-        let tag = self.next_message_tag();
-        let message = ByteSizedVec::from_slice(&payload)
-            .map_err(io::Error::other)
-            .map_err(Error::from)?;
-        let aps_frame = self.next_aps_frame(&aps_metadata, destination_endpoint, 0x0000);
-        let destination = Destination::Direct(short_id);
-
-        debug!(
-            "Sending unicast to: {destination:?}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
-            message.as_slice()
-        );
-
-        let (tx, rx) = channel();
-
-        self.event_handler_proxy
-            .send(Message::Sent { tag, sender: tx })
-            .await?;
-
-        let seq = self
-            .transport
-            .send_unicast(destination, aps_frame, tag, message)
-            .await?;
-
-        match rx.await? {
-            Ok(ember::Status::Success) => Ok(seq),
-            other => Err(Error::Status(Status::Ember(other)).into()),
-        }
+        self.send_unicast(short_id, destination_endpoint, frame)
+            .await?
+            .await
     }
 
     async fn multicast(
@@ -265,33 +313,9 @@ where
         radius: u8,
         frame: Frame,
     ) -> Result<u8, apis_saltans_hw::Error> {
-        let (aps_metadata, payload) = frame.into_parts();
-        let tag = self.next_message_tag();
-        let message = ByteSizedVec::from_slice(&payload)
-            .map_err(io::Error::other)
-            .map_err(Error::from)?;
-        let aps_frame = self.next_aps_frame(&aps_metadata, Endpoint::Data, group_id);
-
-        debug!(
-            "Sending multicast: Hops: {hops}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
-            message.as_slice()
-        );
-
-        let (tx, rx) = channel();
-
-        self.event_handler_proxy
-            .send(Message::Sent { tag, sender: tx })
-            .await?;
-
-        let seq = self
-            .transport
-            .send_multicast(aps_frame, hops, radius, tag, message)
-            .await?;
-
-        match rx.await? {
-            Ok(ember::Status::Success) => Ok(seq),
-            other => Err(Error::Status(Status::Ember(other)).into()),
-        }
+        self.send_multicast(group_id, hops, radius, frame)
+            .await?
+            .await
     }
 
     async fn broadcast(
@@ -326,5 +350,29 @@ where
             Ok(ember::Status::Success) => Ok(seq),
             other => Err(Error::Status(Status::Ember(other)).into()),
         }
+    }
+
+    async fn parallel_unicast(
+        &mut self,
+        targets: BTreeMap<u16, Box<[Endpoint]>>,
+        frame: Frame,
+    ) -> Result<Vec<Result<u8, apis_saltans_hw::Error>>, apis_saltans_hw::Error> {
+        let mut responses = Vec::with_capacity(targets.len());
+
+        for (short_id, endpoint) in targets.into_iter().flat_map(|(short_id, endpoints)| {
+            endpoints
+                .into_iter()
+                .map(move |endpoint| (short_id, endpoint))
+        }) {
+            responses.push(self.send_unicast(short_id, endpoint, frame.clone()).await?);
+        }
+
+        let mut results = Vec::with_capacity(responses.len());
+
+        for response in responses {
+            results.push(response.await);
+        }
+
+        Ok(results)
     }
 }

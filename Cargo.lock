@@ -14,7 +14,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-aps"
 version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#9d009f813493e4722b28901acdf87156afaa8705"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#5c0918a5b2a0af3de31efee6304f43d4993b0752"
 dependencies = [
  "apis-saltans-core",
  "bitflags 2.13.0",
@@ -27,7 +27,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-core"
 version = "0.2.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#9d009f813493e4722b28901acdf87156afaa8705"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#5c0918a5b2a0af3de31efee6304f43d4993b0752"
 dependencies = [
  "bitflags 2.13.0",
  "chrono",
@@ -44,7 +44,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-hw"
 version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#9d009f813493e4722b28901acdf87156afaa8705"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#5c0918a5b2a0af3de31efee6304f43d4993b0752"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -59,7 +59,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-macros"
 version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#9d009f813493e4722b28901acdf87156afaa8705"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#5c0918a5b2a0af3de31efee6304f43d4993b0752"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -69,7 +69,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-zcl"
 version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#9d009f813493e4722b28901acdf87156afaa8705"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#5c0918a5b2a0af3de31efee6304f43d4993b0752"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -88,7 +88,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-zdp"
 version = "0.1.2"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#9d009f813493e4722b28901acdf87156afaa8705"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#5c0918a5b2a0af3de31efee6304f43d4993b0752"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -276,7 +276,7 @@ dependencies = [
 
 [[package]]
 name = "ezsp"
-version = "5.0.0"
+version = "5.1.0"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",

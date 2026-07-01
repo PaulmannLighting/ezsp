@@ -3,8 +3,6 @@
 use core::convert::Infallible;
 use core::fmt::{self, Debug, Display, Formatter};
 
-use tokio::sync::mpsc::error::SendError;
-
 pub use self::decode::Decode;
 pub use self::status::Status;
 pub use self::value_error::ValueError;
@@ -182,11 +180,5 @@ impl From<invalid_command::Response> for Error {
 impl From<Infallible> for Error {
     fn from(infallible: Infallible) -> Self {
         match infallible {}
-    }
-}
-
-impl<T> From<SendError<T>> for Error {
-    fn from(_: SendError<T>) -> Self {
-        Self::ChannelClosed
     }
 }

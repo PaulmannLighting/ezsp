@@ -248,22 +248,22 @@ impl Transport for Uart {
         }
     }
 
-    async fn send<C>(&mut self, command: C) -> Result<u16, Error>
+    async fn send<T>(&mut self, command: T) -> Result<u16, Error>
     where
-        C: Parameter + ToLeStream,
+        T: Parameter + ToLeStream,
     {
         let header = self
-            .next_header(C::ID)
+            .next_header(T::ID)
             .map_err(ValueError::InvalidFrameId)?;
         let id = header.id();
         self.encoder.send(header, command).await?;
         Ok(id)
     }
 
-    async fn receive<P>(&mut self) -> Result<P, Error>
+    async fn receive<T>(&mut self) -> Result<T, Error>
     where
-        P: TryFrom<Parameters> + Send,
-        <P as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
+        T: TryFrom<Parameters> + Send,
+        <T as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
     {
         let mut parameters;
 
@@ -274,7 +274,7 @@ impl Transport for Uart {
                 .await
                 .expect("Response channel should be open. This is a bug.")?;
 
-            match P::try_from(parameters) {
+            match T::try_from(parameters) {
                 Ok(frame) => return Ok(frame),
                 Err(error) => {
                     parameters = error.into();

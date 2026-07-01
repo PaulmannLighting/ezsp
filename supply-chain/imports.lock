@@ -2,7 +2,7 @@
 # cargo-vet imports lock
 
 [[unpublished.ezsp]]
-version = "4.0.0"
+version = "5.0.0"
 audited_as = "1.5.0"
 
 [[publisher.bumpalo]]

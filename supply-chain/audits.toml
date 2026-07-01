@@ -10,9 +10,9 @@ notes = "AI-assisted: reviewed major diff 1.2.7 -> 8.1.0; no new unsafe code in 
 [[audits.ashv2]]
 who = "Codex"
 criteria = "safe-to-deploy"
-delta = "8.1.0 -> 8.1.0@git:a8a4c6f06dda9c07d440049892e761cb74e80fa6"
+delta = "8.1.0 -> 8.1.0@git:f7e0939942aa78fd15aa38366945efb4e3a9cf88"
 importable = false
-notes = "AI-assisted: reviewed diff 8.1.0 -> 8.1.0@git:a8a4c6f06dda9c07d440049892e761cb74e80fa6"
+notes = "AI-assisted: reviewed diff 8.1.0 -> 8.1.0@git:f7e0939942aa78fd15aa38366945efb4e3a9cf88"
 
 [[audits.autocfg]]
 who = "Codex"
@@ -31,6 +31,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "1.2.53 -> 1.2.65"
 notes = "AI-assisted: reviewed diff 1.2.53 -> 1.2.65"
+
+[[audits.chacha20]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.10.0 -> 0.10.1"
+notes = "AI-assisted: reviewed diff 0.10.0 -> 0.10.1"
 
 [[audits.chrono]]
 who = "Codex"
@@ -151,6 +157,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.3.77 -> 0.3.102"
 notes = "AI-assisted: reviewed diff 0.3.77 -> 0.3.102"
+
+[[audits.js-sys]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.3.102 -> 0.3.103"
+notes = "AI-assisted: reviewed diff 0.3.102 -> 0.3.103"
 
 [[audits.le-stream]]
 who = "Codex"
@@ -285,6 +297,12 @@ criteria = "safe-to-deploy"
 delta = "2.0.17 -> 2.0.18"
 notes = "AI-assisted: reviewed diff 2.0.17 -> 2.0.18"
 
+[[audits.tokio-task-pool]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.1.8"
+notes = "AI-assisted: inspected full source 0.1.8"
+
 [[audits.unescaper]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -297,13 +315,37 @@ criteria = "safe-to-deploy"
 delta = "0.2.100 -> 0.2.125"
 notes = "AI-assisted: reviewed diff 0.2.100 -> 0.2.125"
 
+[[audits.wasm-bindgen]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.125 -> 0.2.126"
+notes = "AI-assisted: reviewed diff 0.2.125 -> 0.2.126"
+
 [[audits.wasm-bindgen-macro]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.2.105 -> 0.2.125"
 notes = "AI-assisted: reviewed diff 0.2.105 -> 0.2.125"
 
+[[audits.wasm-bindgen-macro]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.125 -> 0.2.126"
+notes = "AI-assisted: reviewed diff 0.2.125 -> 0.2.126"
+
 [[audits.wasm-bindgen-macro-support]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.100 -> 0.2.125"
+notes = "AI-assisted: reviewed diff 0.2.100 -> 0.2.125"
+
+[[audits.wasm-bindgen-macro-support]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.125 -> 0.2.126"
+notes = "AI-assisted: reviewed diff 0.2.125 -> 0.2.126"
+
+[[audits.wasm-bindgen-shared]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.2.100 -> 0.2.125"
@@ -312,8 +354,8 @@ notes = "AI-assisted: reviewed diff 0.2.100 -> 0.2.125"
 [[audits.wasm-bindgen-shared]]
 who = "Codex"
 criteria = "safe-to-deploy"
-delta = "0.2.100 -> 0.2.125"
-notes = "AI-assisted: reviewed diff 0.2.100 -> 0.2.125"
+delta = "0.2.125 -> 0.2.126"
+notes = "AI-assisted: reviewed diff 0.2.125 -> 0.2.126"
 
 [[audits.zmij]]
 who = "Codex"

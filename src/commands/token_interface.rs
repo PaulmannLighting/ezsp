@@ -77,9 +77,7 @@ where
     }
 
     async fn reset_node(&mut self) -> Result<(), crate::Error> {
-        self.communicate(reset_node::Command)
-            .await
-            .map(drop)
+        self.communicate(reset_node::Command).await.map(drop)
     }
 
     async fn set_token_data(
@@ -88,11 +86,9 @@ where
         index: u32,
         token_data: Data,
     ) -> Result<(), crate::Error> {
-        self.communicate(set_token_data::Command::new(
-            token, index, token_data,
-        ))
-        .await?
-        .try_into()
+        self.communicate(set_token_data::Command::new(token, index, token_data))
+            .await?
+            .try_into()
     }
 
     async fn token_factory_reset(

@@ -201,9 +201,9 @@ where
         &mut self,
         store_link_key: bool,
     ) -> Result<(), Error> {
-        self.communicate(
-            clear_temporary_data_maybe_store_link_key::Command::new(store_link_key),
-        )
+        self.communicate(clear_temporary_data_maybe_store_link_key::Command::new(
+            store_link_key,
+        ))
         .await?
         .try_into()
     }
@@ -268,9 +268,7 @@ where
     }
 
     async fn get_certificate(&mut self) -> Result<CertificateData, Error> {
-        self.communicate(get_certificate::Command)
-            .await?
-            .try_into()
+        self.communicate(get_certificate::Command).await?.try_into()
     }
 
     async fn get_certificate283k1(&mut self) -> Result<Certificate283k1Data, Error> {
@@ -280,11 +278,9 @@ where
     }
 
     async fn save_preinstalled_cbke_data283k1(&mut self) -> Result<(), Error> {
-        self.communicate(
-            save_preinstalled_cbke_data283k1::Command,
-        )
-        .await?
-        .try_into()
+        self.communicate(save_preinstalled_cbke_data283k1::Command)
+            .await?
+            .try_into()
     }
 
     async fn set_preinstalled_cbke_data(
@@ -293,9 +289,9 @@ where
         my_cert: CertificateData,
         my_key: PrivateKeyData,
     ) -> Result<(), Error> {
-        self.communicate(
-            set_preinstalled_cbke_data::Command::new(ca_public, my_cert, my_key),
-        )
+        self.communicate(set_preinstalled_cbke_data::Command::new(
+            ca_public, my_cert, my_key,
+        ))
         .await?
         .try_into()
     }

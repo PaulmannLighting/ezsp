@@ -84,9 +84,7 @@ where
     T: Transport,
 {
     async fn end(&mut self) -> Result<(), Error> {
-        self.communicate(end::Command)
-            .await?
-            .try_into()
+        self.communicate(end::Command).await?.try_into()
     }
 
     async fn get_channel(&mut self) -> Result<u8, Error> {
@@ -126,26 +124,18 @@ where
     }
 
     async fn start_stream(&mut self) -> Result<(), Error> {
-        self.communicate(start_stream::Command)
-            .await?
-            .try_into()
+        self.communicate(start_stream::Command).await?.try_into()
     }
 
     async fn start_tone(&mut self) -> Result<(), Error> {
-        self.communicate(start_tone::Command)
-            .await?
-            .try_into()
+        self.communicate(start_tone::Command).await?.try_into()
     }
 
     async fn stop_stream(&mut self) -> Result<(), Error> {
-        self.communicate(stop_stream::Command)
-            .await?
-            .try_into()
+        self.communicate(stop_stream::Command).await?.try_into()
     }
 
     async fn stop_tone(&mut self) -> Result<(), Error> {
-        self.communicate(stop_tone::Command)
-            .await?
-            .try_into()
+        self.communicate(stop_tone::Command).await?.try_into()
     }
 }

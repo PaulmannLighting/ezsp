@@ -173,12 +173,9 @@ where
         binary_message: bool,
         message: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
-        self.communicate(debug_write::Command::new(
-            binary_message,
-            message,
-        ))
-        .await?
-        .try_into()
+        self.communicate(debug_write::Command::new(binary_message, message))
+            .await?
+            .try_into()
     }
 
     async fn delay_test(&mut self, delay_millis: u16) -> Result<(), Error> {
@@ -194,20 +191,16 @@ where
     }
 
     async fn get_eui64(&mut self) -> Result<Eui64, Error> {
-        self.communicate(get_eui64::Command)
-            .await
-            .map(Into::into)
+        self.communicate(get_eui64::Command).await.map(Into::into)
     }
 
     async fn get_library_status(
         &mut self,
         library_id: library::Id,
     ) -> Result<library::Status, Error> {
-        self.communicate(get_library_status::Command::new(
-            library_id,
-        ))
-        .await
-        .map(Into::into)
+        self.communicate(get_library_status::Command::new(library_id))
+            .await
+            .map(Into::into)
     }
 
     async fn get_mfg_token(&mut self, token_id: Id) -> Result<ByteSizedVec<u8>, Error> {
@@ -217,9 +210,7 @@ where
     }
 
     async fn get_node_id(&mut self) -> Result<NodeId, Error> {
-        self.communicate(get_node_id::Command)
-            .await
-            .map(Into::into)
+        self.communicate(get_node_id::Command).await.map(Into::into)
     }
 
     async fn get_phy_interface_count(&mut self) -> Result<u8, Error> {
@@ -235,8 +226,7 @@ where
     }
 
     async fn get_timer(&mut self, timer_id: u8) -> Result<get_timer::Response, Error> {
-        self.communicate(get_timer::Command::new(timer_id))
-            .await
+        self.communicate(get_timer::Command::new(timer_id)).await
     }
 
     async fn get_token(&mut self, token_id: u8) -> Result<[u8; 8], Error> {
@@ -246,23 +236,17 @@ where
     }
 
     async fn get_true_random_entropy_source(&mut self) -> Result<Source, Error> {
-        self.communicate(
-            get_true_random_entropy_source::Command,
-        )
-        .await?
-        .try_into()
-    }
-
-    async fn get_xncp_info(&mut self) -> Result<get_xncp_info::Payload, Error> {
-        self.communicate(get_xncp_info::Command)
+        self.communicate(get_true_random_entropy_source::Command)
             .await?
             .try_into()
     }
 
+    async fn get_xncp_info(&mut self) -> Result<get_xncp_info::Payload, Error> {
+        self.communicate(get_xncp_info::Command).await?.try_into()
+    }
+
     async fn nop(&mut self) -> Result<(), Error> {
-        self.communicate(nop::Command)
-            .await
-            .map(drop)
+        self.communicate(nop::Command).await.map(drop)
     }
 
     async fn read_and_clear_counters(&mut self) -> Result<[u16; COUNTER_TYPE_COUNT], Error> {

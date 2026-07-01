@@ -75,27 +75,21 @@ where
         finalize: bool,
         data: ByteSizedVec<u8>,
     ) -> Result<MmoHashContext, Error> {
-        self.communicate(aes_mmo_hash::Command::new(
-            context, finalize, data,
-        ))
-        .await?
-        .try_into()
+        self.communicate(aes_mmo_hash::Command::new(context, finalize, data))
+            .await?
+            .try_into()
     }
 
     async fn broadcast_network_key_switch(&mut self) -> Result<(), Error> {
-        self.communicate(
-            broadcast_network_key_switch::Command,
-        )
-        .await?
-        .try_into()
+        self.communicate(broadcast_network_key_switch::Command)
+            .await?
+            .try_into()
     }
 
     async fn broadcast_next_network_key(&mut self, key: Data) -> Result<(), Error> {
-        self.communicate(
-            broadcast_next_network_key::Command::new(key),
-        )
-        .await?
-        .try_into()
+        self.communicate(broadcast_next_network_key::Command::new(key))
+            .await?
+            .try_into()
     }
 
     async fn remove_device(
@@ -119,9 +113,9 @@ where
         dest_long: Eui64,
         key: Data,
     ) -> Result<(), Error> {
-        self.communicate(
-            unicast_nwk_key_update::Command::new(dest_short, dest_long, key),
-        )
+        self.communicate(unicast_nwk_key_update::Command::new(
+            dest_short, dest_long, key,
+        ))
         .await?
         .try_into()
     }

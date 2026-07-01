@@ -58,17 +58,13 @@ where
     T: Transport,
 {
     async fn clear_all(&mut self) -> Result<(), Error> {
-        self.communicate(clear_all::Command)
-            .await
-            .map(drop)
+        self.communicate(clear_all::Command).await.map(drop)
     }
 
     async fn find_or_allocate_entry(&mut self, addr: Address) -> Result<u8, Error> {
-        self.communicate(
-            find_or_allocate_entry::Command::new(addr),
-        )
-        .await
-        .map(|response| response.index())
+        self.communicate(find_or_allocate_entry::Command::new(addr))
+            .await
+            .map(|response| response.index())
     }
 
     async fn get_entry(&mut self, sink_index: u8) -> Result<TableEntry, Error> {
@@ -78,9 +74,7 @@ where
     }
 
     async fn init(&mut self) -> Result<(), Error> {
-        self.communicate(init::Command)
-            .await
-            .map(drop)
+        self.communicate(init::Command).await.map(drop)
     }
 
     async fn lookup(&mut self, addr: Address) -> Result<u8, Error> {
@@ -108,10 +102,8 @@ where
     }
 
     async fn set_security_frame_counter(&mut self, index: u8, sfc: u32) -> Result<(), Error> {
-        self.communicate(
-            set_security_frame_counter::Command::new(index, sfc),
-        )
-        .await
-        .map(drop)
+        self.communicate(set_security_frame_counter::Command::new(index, sfc))
+            .await
+            .map(drop)
     }
 }

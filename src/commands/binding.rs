@@ -68,9 +68,7 @@ where
     }
 
     async fn clear_table(&mut self) -> Result<(), Error> {
-        self.communicate(clear_table::Command)
-            .await?
-            .try_into()
+        self.communicate(clear_table::Command).await?.try_into()
     }
 
     async fn delete(&mut self, index: u8) -> Result<(), Error> {
@@ -80,9 +78,7 @@ where
     }
 
     async fn get(&mut self, index: u8) -> Result<TableEntry, Error> {
-        self.communicate(get::Command::new(index))
-            .await?
-            .try_into()
+        self.communicate(get::Command::new(index)).await?.try_into()
     }
 
     async fn get_remote_node_id(&mut self, index: u8) -> Result<Option<NodeId>, Error> {
@@ -98,10 +94,8 @@ where
     }
 
     async fn set_remote_node_id(&mut self, index: u8, node_id: NodeId) -> Result<(), Error> {
-        self.communicate(set_remote_node_id::Command::new(
-            index, node_id,
-        ))
-        .await
-        .map(drop)
+        self.communicate(set_remote_node_id::Command::new(index, node_id))
+            .await
+            .map(drop)
     }
 }

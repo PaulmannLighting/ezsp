@@ -60,18 +60,14 @@ where
     async fn get_standalone_bootloader_version_plat_micro_phy(
         &mut self,
     ) -> Result<get_standalone_bootloader_version_plat_micro_phy::Response, Error> {
-        self.communicate(
-            get_standalone_bootloader_version_plat_micro_phy::Command,
-        )
-        .await
+        self.communicate(get_standalone_bootloader_version_plat_micro_phy::Command)
+            .await
     }
 
     async fn launch_standalone_bootloader(&mut self, mode: u8) -> Result<(), Error> {
-        self.communicate(
-            launch_standalone_bootloader::Command::new(mode),
-        )
-        .await?
-        .try_into()
+        self.communicate(launch_standalone_bootloader::Command::new(mode))
+            .await?
+            .try_into()
     }
 
     async fn send_bootload_message(

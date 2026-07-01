@@ -120,9 +120,7 @@ where
     T: Transport,
 {
     async fn clear_tokens(&mut self) -> Result<(), Error> {
-        self.communicate(clear_tokens::Command)
-            .await
-            .map(drop)
+        self.communicate(clear_tokens::Command).await.map(drop)
     }
 
     async fn get_primary_channel_mask(&mut self) -> Result<u32, Error> {
@@ -132,16 +130,13 @@ where
     }
 
     async fn get_secondary_channel_mask(&mut self) -> Result<u32, Error> {
-        self.communicate(
-            get_secondary_channel_mask::Command,
-        )
-        .await
-        .map(|response| response.zll_secondary_channel_mask())
+        self.communicate(get_secondary_channel_mask::Command)
+            .await
+            .map(|response| response.zll_secondary_channel_mask())
     }
 
     async fn get_tokens(&mut self) -> Result<get_tokens::Response, Error> {
-        self.communicate(get_tokens::Command)
-            .await
+        self.communicate(get_tokens::Command).await
     }
 
     async fn is_zll_network(&mut self) -> Result<bool, Error> {
@@ -156,13 +151,9 @@ where
         op: NetworkOperation,
         radio_tx_power: i8,
     ) -> Result<(), Error> {
-        self.communicate(network_ops::Command::new(
-            network_info,
-            op,
-            radio_tx_power,
-        ))
-        .await?
-        .try_into()
+        self.communicate(network_ops::Command::new(network_info, op, radio_tx_power))
+            .await?
+            .try_into()
     }
 
     async fn operation_in_progress(&mut self) -> Result<bool, Error> {
@@ -172,18 +163,14 @@ where
     }
 
     async fn rx_on_when_idle_get_active(&mut self) -> Result<bool, Error> {
-        self.communicate(
-            rx_on_when_idle_get_active::Command,
-        )
-        .await
-        .map(|response| response.zll_rx_on_when_idle_get_active())
+        self.communicate(rx_on_when_idle_get_active::Command)
+            .await
+            .map(|response| response.zll_rx_on_when_idle_get_active())
     }
     async fn set_additional_state(&mut self, state: u16) -> Result<(), Error> {
-        self.communicate(set_additional_state::Command::new(
-            state,
-        ))
-        .await
-        .map(drop)
+        self.communicate(set_additional_state::Command::new(state))
+            .await
+            .map(drop)
     }
 
     async fn set_data_token(&mut self, data: DataToken) -> Result<(), Error> {
@@ -197,9 +184,10 @@ where
         network_key: Data,
         security_state: InitialSecurityState,
     ) -> Result<(), Error> {
-        self.communicate(
-            set_initial_security_state::Command::new(network_key, security_state),
-        )
+        self.communicate(set_initial_security_state::Command::new(
+            network_key,
+            security_state,
+        ))
         .await?
         .try_into()
     }
@@ -217,46 +205,36 @@ where
     }
 
     async fn set_primary_channel_mask(&mut self, mask: u32) -> Result<(), Error> {
-        self.communicate(
-            set_primary_channel_mask::Command::new(mask),
-        )
-        .await
-        .map(drop)
+        self.communicate(set_primary_channel_mask::Command::new(mask))
+            .await
+            .map(drop)
     }
 
     async fn set_radio_idle_mode(&mut self, mode: PowerMode) -> Result<(), Error> {
-        self.communicate(set_radio_idle_mode::Command::new(
-            mode,
-        ))
-        .await
-        .map(drop)
+        self.communicate(set_radio_idle_mode::Command::new(mode))
+            .await
+            .map(drop)
     }
 
     async fn set_rx_on_when_idle(&mut self, duration_millis: u32) -> Result<(), Error> {
-        self.communicate(set_rx_on_when_idle::Command::new(
-            duration_millis,
-        ))
-        .await?
-        .try_into()
+        self.communicate(set_rx_on_when_idle::Command::new(duration_millis))
+            .await?
+            .try_into()
     }
 
     async fn set_secondary_channel_mask(&mut self, mask: u32) -> Result<(), Error> {
-        self.communicate(
-            set_secondary_channel_mask::Command::new(mask),
-        )
-        .await
-        .map(drop)
+        self.communicate(set_secondary_channel_mask::Command::new(mask))
+            .await
+            .map(drop)
     }
 
     async fn set_security_state_without_key(
         &mut self,
         security_state: InitialSecurityState,
     ) -> Result<(), Error> {
-        self.communicate(
-            set_security_state_without_key::Command::new(security_state),
-        )
-        .await?
-        .try_into()
+        self.communicate(set_security_state_without_key::Command::new(security_state))
+            .await?
+            .try_into()
     }
 
     async fn start_scan(

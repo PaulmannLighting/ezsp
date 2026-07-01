@@ -43,11 +43,9 @@ where
     T: Transport,
 {
     async fn get_parent_classification_enabled(&mut self) -> Result<bool, Error> {
-        self.communicate(
-            get_parent_classification_enabled::Command,
-        )
-        .await
-        .map(Into::into)
+        self.communicate(get_parent_classification_enabled::Command)
+            .await
+            .map(Into::into)
     }
 
     async fn is_hub_connected(&mut self) -> Result<bool, Error> {
@@ -63,26 +61,20 @@ where
     }
 
     async fn set_hub_connectivity(&mut self, connected: bool) -> Result<(), Error> {
-        self.communicate(set_hub_connectivity::Command::new(
-            connected,
-        ))
-        .await
-        .map(drop)
+        self.communicate(set_hub_connectivity::Command::new(connected))
+            .await
+            .map(drop)
     }
 
     async fn set_long_uptime(&mut self, has_long_uptime: bool) -> Result<(), Error> {
-        self.communicate(set_long_uptime::Command::new(
-            has_long_uptime,
-        ))
-        .await
-        .map(drop)
+        self.communicate(set_long_uptime::Command::new(has_long_uptime))
+            .await
+            .map(drop)
     }
 
     async fn set_parent_classification_enabled(&mut self, enabled: bool) -> Result<(), Error> {
-        self.communicate(
-            set_parent_classification_enabled::Command::new(enabled),
-        )
-        .await
-        .map(drop)
+        self.communicate(set_parent_classification_enabled::Command::new(enabled))
+            .await
+            .map(drop)
     }
 }

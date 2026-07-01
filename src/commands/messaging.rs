@@ -342,9 +342,9 @@ where
         &mut self,
         address_table_index: u8,
     ) -> Result<bool, Error> {
-        self.communicate(
-            address_table_entry_is_active::Command::new(address_table_index),
-        )
+        self.communicate(address_table_entry_is_active::Command::new(
+            address_table_index,
+        ))
         .await
         .map(|response| response.active())
     }
@@ -353,9 +353,9 @@ where
         &mut self,
         address_table_index: u8,
     ) -> Result<Eui64, Error> {
-        self.communicate(
-            get_address_table_remote_eui64::Command::new(address_table_index),
-        )
+        self.communicate(get_address_table_remote_eui64::Command::new(
+            address_table_index,
+        ))
         .await
         .map(|response| response.eui64())
     }
@@ -364,51 +364,41 @@ where
         &mut self,
         address_table_index: u8,
     ) -> Result<NodeId, Error> {
-        self.communicate(
-            get_address_table_remote_node_id::Command::new(address_table_index),
-        )
+        self.communicate(get_address_table_remote_node_id::Command::new(
+            address_table_index,
+        ))
         .await
         .map(|response| response.node_id())
     }
 
     async fn get_beacon_classification_params(&mut self) -> Result<ClassificationParams, Error> {
-        self.communicate(
-            get_beacon_classification_params::Command,
-        )
-        .await?
-        .try_into()
+        self.communicate(get_beacon_classification_params::Command)
+            .await?
+            .try_into()
     }
 
     async fn get_extended_timeout(&mut self, remote_eui64: Eui64) -> Result<bool, Error> {
-        self.communicate(get_extended_timeout::Command::new(
-            remote_eui64,
-        ))
-        .await
-        .map(|response| response.extended_timeout())
+        self.communicate(get_extended_timeout::Command::new(remote_eui64))
+            .await
+            .map(|response| response.extended_timeout())
     }
 
     async fn get_multicast_table_entry(&mut self, index: u8) -> Result<TableEntry, Error> {
-        self.communicate(
-            get_multicast_table_entry::Command::new(index),
-        )
-        .await?
-        .try_into()
+        self.communicate(get_multicast_table_entry::Command::new(index))
+            .await?
+            .try_into()
     }
 
     async fn lookup_eui64_by_node_id(&mut self, node_id: NodeId) -> Result<Eui64, Error> {
-        self.communicate(
-            lookup_eui64_by_node_id::Command::new(node_id),
-        )
-        .await?
-        .try_into()
+        self.communicate(lookup_eui64_by_node_id::Command::new(node_id))
+            .await?
+            .try_into()
     }
 
     async fn lookup_node_id_by_eui64(&mut self, eui64: Eui64) -> Result<NodeId, Error> {
-        self.communicate(
-            lookup_node_id_by_eui64::Command::new(eui64),
-        )
-        .await
-        .map(|response| response.node_id())
+        self.communicate(lookup_node_id_by_eui64::Command::new(eui64))
+            .await
+            .map(|response| response.node_id())
     }
 
     async fn maximum_payload_length(&mut self) -> Result<u8, Error> {
@@ -423,13 +413,9 @@ where
         units: Units,
         failure_limit: u8,
     ) -> Result<(), Error> {
-        self.communicate(poll_for_data::Command::new(
-            interval,
-            units,
-            failure_limit,
-        ))
-        .await?
-        .try_into()
+        self.communicate(poll_for_data::Command::new(interval, units, failure_limit))
+            .await?
+            .try_into()
     }
 
     async fn proxy_broadcast(
@@ -462,14 +448,12 @@ where
         new_id: NodeId,
         new_extended_timeout: bool,
     ) -> Result<replace_address_table_entry::PreviousEntry, Error> {
-        self.communicate(
-            replace_address_table_entry::Command::new(
-                address_table_index,
-                new_eui64,
-                new_id,
-                new_extended_timeout,
-            ),
-        )
+        self.communicate(replace_address_table_entry::Command::new(
+            address_table_index,
+            new_eui64,
+            new_id,
+            new_extended_timeout,
+        ))
         .await?
         .try_into()
     }
@@ -498,9 +482,10 @@ where
         concentrator_type: Type,
         radius: u8,
     ) -> Result<(), Error> {
-        self.communicate(
-            send_many_to_one_route_request::Command::new(concentrator_type, radius),
-        )
+        self.communicate(send_many_to_one_route_request::Command::new(
+            concentrator_type,
+            radius,
+        ))
         .await?
         .try_into()
     }
@@ -534,27 +519,23 @@ where
         message_tag: u8,
         message_contents: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
-        self.communicate(
-            send_multicast_with_alias::Command::new(
-                aps_frame,
-                hops,
-                nonmember_radius,
-                alias,
-                nwk_sequence,
-                message_tag,
-                message_contents,
-            ),
-        )
+        self.communicate(send_multicast_with_alias::Command::new(
+            aps_frame,
+            hops,
+            nonmember_radius,
+            alias,
+            nwk_sequence,
+            message_tag,
+            message_contents,
+        ))
         .await?
         .try_into()
     }
 
     async fn send_raw_message(&mut self, message_contents: ByteSizedVec<u8>) -> Result<(), Error> {
-        self.communicate(send_raw_message::Command::new(
-            message_contents,
-        ))
-        .await?
-        .try_into()
+        self.communicate(send_raw_message::Command::new(message_contents))
+            .await?
+            .try_into()
     }
 
     async fn send_raw_message_extended(
@@ -563,9 +544,9 @@ where
         priority: u8,
         use_cca: bool,
     ) -> Result<(), Error> {
-        self.communicate(
-            send_raw_message_extended::Command::new(message, priority, use_cca),
-        )
+        self.communicate(send_raw_message_extended::Command::new(
+            message, priority, use_cca,
+        ))
         .await?
         .try_into()
     }
@@ -576,11 +557,9 @@ where
         aps_frame: Frame,
         message: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
-        self.communicate(send_reply::Command::new(
-            sender, aps_frame, message,
-        ))
-        .await?
-        .try_into()
+        self.communicate(send_reply::Command::new(sender, aps_frame, message))
+            .await?
+            .try_into()
     }
 
     async fn send_unicast(
@@ -605,9 +584,10 @@ where
         address_table_index: u8,
         eui64: Eui64,
     ) -> Result<(), Error> {
-        self.communicate(
-            set_address_table_remote_eui64::Command::new(address_table_index, eui64),
-        )
+        self.communicate(set_address_table_remote_eui64::Command::new(
+            address_table_index,
+            eui64,
+        ))
         .await?
         .try_into()
     }
@@ -617,9 +597,10 @@ where
         address_table_index: u8,
         id: NodeId,
     ) -> Result<(), Error> {
-        self.communicate(
-            set_address_table_remote_node_id::Command::new(address_table_index, id),
-        )
+        self.communicate(set_address_table_remote_node_id::Command::new(
+            address_table_index,
+            id,
+        ))
         .await
         .map(drop)
     }
@@ -628,11 +609,9 @@ where
         &mut self,
         param: ClassificationParams,
     ) -> Result<(), Error> {
-        self.communicate(
-            set_beacon_classification_params::Command::new(param),
-        )
-        .await?
-        .try_into()
+        self.communicate(set_beacon_classification_params::Command::new(param))
+            .await?
+            .try_into()
     }
 
     async fn set_extended_timeout(
@@ -652,9 +631,9 @@ where
         &mut self,
         wait_before_retry_interval_ms: u8,
     ) -> Result<(), Error> {
-        self.communicate(
-            set_mac_poll_failure_wait_time::Command::new(wait_before_retry_interval_ms),
-        )
+        self.communicate(set_mac_poll_failure_wait_time::Command::new(
+            wait_before_retry_interval_ms,
+        ))
         .await
         .map(drop)
     }
@@ -664,22 +643,18 @@ where
         index: u8,
         value: TableEntry,
     ) -> Result<(), Error> {
-        self.communicate(
-            set_multicast_table_entry::Command::new(index, value),
-        )
-        .await?
-        .try_into()
+        self.communicate(set_multicast_table_entry::Command::new(index, value))
+            .await?
+            .try_into()
     }
 
     async fn set_source_route_discovery_mode(
         &mut self,
         mode: SourceRouteDiscoveryMode,
     ) -> Result<Option<Duration>, Error> {
-        self.communicate(
-            set_source_route_discovery_mode::Command::new(mode),
-        )
-        .await
-        .map(|response| response.remaining_time())
+        self.communicate(set_source_route_discovery_mode::Command::new(mode))
+            .await
+            .map(|response| response.remaining_time())
     }
 
     async fn unicast_current_network_key(
@@ -688,9 +663,11 @@ where
         target_long: Eui64,
         parent_short_id: NodeId,
     ) -> Result<(), Error> {
-        self.communicate(
-            unicast_current_network_key::Command::new(target_short, target_long, parent_short_id),
-        )
+        self.communicate(unicast_current_network_key::Command::new(
+            target_short,
+            target_long,
+            parent_short_id,
+        ))
         .await?
         .try_into()
     }

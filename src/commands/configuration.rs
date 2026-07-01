@@ -151,11 +151,9 @@ where
     }
 
     async fn get_configuration_value(&mut self, config_id: Id) -> Result<u16, Error> {
-        self.communicate(
-            get_configuration_value::Command::new(config_id),
-        )
-        .await?
-        .try_into()
+        self.communicate(get_configuration_value::Command::new(config_id))
+            .await?
+            .try_into()
     }
 
     async fn get_extended_value(
@@ -163,12 +161,9 @@ where
         value_id: ExtendedId,
         characteristics: u32,
     ) -> Result<ByteSizedVec<u8>, Error> {
-        self.communicate(get_extended_value::Command::new(
-            value_id,
-            characteristics,
-        ))
-        .await?
-        .try_into()
+        self.communicate(get_extended_value::Command::new(value_id, characteristics))
+            .await?
+            .try_into()
     }
 
     async fn get_policy(&mut self, policy_id: policy::Id) -> Result<decision::Id, Error> {
@@ -203,19 +198,15 @@ where
     }
 
     async fn send_pan_id_update(&mut self, new_pan: PanId) -> Result<bool, Error> {
-        self.communicate(send_pan_id_update::Command::new(
-            new_pan,
-        ))
-        .await
-        .map(Into::into)
+        self.communicate(send_pan_id_update::Command::new(new_pan))
+            .await
+            .map(Into::into)
     }
 
     async fn set_configuration_value(&mut self, config_id: Id, value: u16) -> Result<(), Error> {
-        self.communicate(
-            set_configuration_value::Command::new(config_id, value),
-        )
-        .await?
-        .try_into()
+        self.communicate(set_configuration_value::Command::new(config_id, value))
+            .await?
+            .try_into()
     }
 
     async fn set_passive_ack_config(
@@ -223,20 +214,18 @@ where
         config: u8,
         min_acks_needed: u8,
     ) -> Result<(), Error> {
-        self.communicate(
-            set_passive_ack_config::Command::new(config, min_acks_needed),
-        )
+        self.communicate(set_passive_ack_config::Command::new(
+            config,
+            min_acks_needed,
+        ))
         .await?
         .try_into()
     }
 
     async fn set_policy(&mut self, policy_id: policy::Id, decision_id: u8) -> Result<(), Error> {
-        self.communicate(set_policy::Command::new(
-            policy_id,
-            decision_id,
-        ))
-        .await?
-        .try_into()
+        self.communicate(set_policy::Command::new(policy_id, decision_id))
+            .await?
+            .try_into()
     }
 
     async fn set_value(

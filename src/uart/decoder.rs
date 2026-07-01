@@ -9,7 +9,7 @@ use tokio::sync::mpsc::Receiver;
 
 use crate::error::Decode;
 use crate::frame::parsable::Parsable;
-use crate::frame::{Disambiguation, Frame, Header};
+use crate::frame::{Frame, Header};
 use crate::parameters::utilities::invalid_command;
 use crate::uart::np_rw_lock::NpRwLock;
 use crate::uart::state::State;
@@ -111,13 +111,8 @@ impl Decoder {
 
         self.parameters.extend(stream);
         trace!("Accumulated parameters: {:#04X?}", self.parameters);
-        let disambiguation = self.state.read().disambiguation().unwrap_or_default();
 
-        match Parameters::parse_from_le_stream(
-            next_header.id(),
-            disambiguation,
-            self.parameters.iter().copied(),
-        ) {
+        match Parameters::parse_from_le_stream(next_header.id(), self.parameters.iter().copied()) {
             Ok(parameters) => {
                 trace!("Decoded parameters: {parameters:?}");
                 Ok(Some(Frame::new(next_header, parameters)))
@@ -142,7 +137,6 @@ impl Decoder {
     fn handle_error(&mut self, error: Decode, next_header: Header) -> Result<Option<Frame>, Error> {
         if let Ok(invalid_command) = invalid_command::Response::parse_from_le_stream(
             next_header.id(),
-            Disambiguation::None,
             self.parameters.drain(..),
         ) {
             trace!("Received invalid command error.");

@@ -4,7 +4,7 @@ use crate::ember::Eui64;
 use crate::error::Error;
 use crate::frame::parameters::bootloader::{
     aes_encrypt, get_standalone_bootloader_version_plat_micro_phy, launch_standalone_bootloader,
-    override_current_channel, send_bootload_message,
+    send_bootload_message,
 };
 use crate::transport::Transport;
 use crate::types::ByteSizedVec;
@@ -34,18 +34,6 @@ pub trait Bootloader {
     fn launch_standalone_bootloader(
         &mut self,
         mode: u8,
-    ) -> impl Future<Output = Result<(), Error>> + Send;
-
-    /// A bootloader method for selecting the radio channel.
-    ///
-    /// This routine only works for sending and receiving bootload packets.
-    /// Does not correctly do Zigbee stack changes.
-    ///
-    /// NOTE: this API is not safe to call on multi-network devices and it will return failure when so.
-    /// Use of the ember/ezspSetRadioChannel APIs are multi-network safe and are recommended instead.
-    fn override_current_channel(
-        &mut self,
-        channel: u8,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Transmits the given bootload message to a neighboring node using a specific 802.15.4 header
@@ -81,14 +69,6 @@ where
     async fn launch_standalone_bootloader(&mut self, mode: u8) -> Result<(), Error> {
         self.communicate::<_, launch_standalone_bootloader::Response>(
             launch_standalone_bootloader::Command::new(mode),
-        )
-        .await?
-        .try_into()
-    }
-
-    async fn override_current_channel(&mut self, channel: u8) -> Result<(), Error> {
-        self.communicate::<_, override_current_channel::Response>(
-            override_current_channel::Command::new(channel),
         )
         .await?
         .try_into()

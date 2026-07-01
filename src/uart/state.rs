@@ -3,7 +3,6 @@ use core::fmt::Debug;
 use log::trace;
 
 use crate::constants::MIN_NON_LEGACY_VERSION;
-use crate::frame::Disambiguation;
 use crate::uart::connection::Connection;
 
 /// Shared state of the `EZSP` UART.
@@ -11,7 +10,6 @@ use crate::uart::connection::Connection;
 pub struct State {
     negotiated_version: Option<u8>,
     connection: Connection,
-    disambiguation: Option<Disambiguation>,
 }
 
 impl State {
@@ -48,22 +46,5 @@ impl State {
     pub fn is_legacy(&self) -> bool {
         self.negotiated_version
             .is_none_or(|version| version < MIN_NON_LEGACY_VERSION)
-    }
-
-    /// Returns the disambiguation.
-    #[must_use]
-    pub const fn disambiguation(&self) -> Option<Disambiguation> {
-        self.disambiguation
-    }
-
-    /// Set the disambiguation.
-    pub const fn set_disambiguation(&mut self, disambiguation: Disambiguation) {
-        self.disambiguation.replace(disambiguation);
-    }
-
-    /// Returns `true` if a response is pending else `false`.
-    #[must_use]
-    pub const fn is_response_pending(&self) -> bool {
-        self.disambiguation().is_some()
     }
 }

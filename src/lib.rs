@@ -14,8 +14,8 @@ pub use self::constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE, MIN_NON_LEGACY_VE
 pub use self::error::{Error, ValueError};
 pub use self::extensions::{ConfigurationExt, Displayable, PolicyExt};
 pub use self::frame::{
-    Callback, CallbackType, Command, Disambiguation, Extended, FormatVersion, Frame, Header,
-    HighByte, Legacy, LowByte, Parameters, Parsable, Response, SleepMode, parameters,
+    Callback, CallbackType, Command, Extended, FormatVersion, Frame, Header, HighByte, Legacy,
+    LowByte, Parameters, Parsable, Response, SleepMode, parameters,
 };
 pub use self::result::Result;
 pub use self::transport::Transport;

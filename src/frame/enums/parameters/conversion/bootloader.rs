@@ -42,19 +42,6 @@ impl TryFrom<Parameters> for bootloader::launch_standalone_bootloader::Response 
     }
 }
 
-impl TryFrom<Parameters> for bootloader::override_current_channel::Response {
-    type Error = Parameters;
-
-    fn try_from(parameters: Parameters) -> Result<Self, Self::Error> {
-        match parameters {
-            Parameters::Response(Response::Bootloader(
-                bootloader::Response::OverrideCurrentChannel(response),
-            )) => Ok(response),
-            _ => Err(parameters),
-        }
-    }
-}
-
 impl TryFrom<Parameters> for bootloader::send_bootload_message::Response {
     type Error = Parameters;
 

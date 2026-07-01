@@ -50,13 +50,10 @@ impl Splitter {
                 }
                 Err(error) => {
                     warn!("Failed to decode frame: {error}");
-
-                    if self.state.read().is_response_pending() {
-                        self.responses
-                            .send(Err(error))
-                            .await
-                            .expect("Response channel should be open. This is a bug.");
-                    }
+                    self.responses
+                        .send(Err(error))
+                        .await
+                        .expect("Response channel should be open. This is a bug.");
                 }
             }
         }

@@ -6,7 +6,6 @@ use num_traits::FromPrimitive;
 use crate::Error;
 use crate::ember::Status;
 use crate::frame::Parameter;
-use crate::frame::disambiguation::Disambiguation;
 
 const ID: u16 = 0x0095;
 
@@ -24,7 +23,6 @@ impl Command {
 
 impl Parameter for Command {
     const ID: u16 = ID;
-    const DISAMBIGUATION: Disambiguation = Disambiguation::SetRadioIeee802154CcaMode;
 }
 
 /// Response parameters.
@@ -35,7 +33,6 @@ pub struct Response {
 
 impl Parameter for Response {
     const ID: u16 = ID;
-    const DISAMBIGUATION: Disambiguation = Disambiguation::SetRadioIeee802154CcaMode;
 }
 
 /// Convert the response into `()` or an appropriate [`Error`] depending on its status.

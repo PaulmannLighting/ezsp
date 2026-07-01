@@ -1,6 +1,5 @@
 use core::fmt::Debug;
 
-pub use self::disambiguation::Disambiguation;
 pub use self::enums::{Callback, Parameters, Response};
 pub use self::header::{
     CallbackType, Command, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
@@ -8,7 +7,6 @@ pub use self::header::{
 pub use self::parameter::Parameter;
 pub use self::parsable::Parsable;
 
-mod disambiguation;
 mod enums;
 mod header;
 mod parameter;

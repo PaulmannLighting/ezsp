@@ -3,7 +3,6 @@ use le_stream::FromLeStream;
 use crate::Callback;
 use crate::error::Decode;
 use crate::frame::Parameter;
-use crate::frame::disambiguation::Disambiguation;
 use crate::parameters::{
     binding, bootloader, cbke, green_power, messaging, mfglib, networking, security, trust_center,
     utilities, zll,
@@ -16,11 +15,7 @@ pub trait Parsable: Sized {
     /// # Errors
     ///
     /// Returns an [`Error`](crate::error::Error) if the parsing of the parameter failed.
-    fn parse_from_le_stream<T>(
-        id: u16,
-        disambiguation: Disambiguation,
-        stream: T,
-    ) -> Result<Self, Decode>
+    fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, Decode>
     where
         T: Iterator<Item = u8>;
 }
@@ -29,15 +24,11 @@ impl<T> Parsable for T
 where
     T: Parameter + FromLeStream,
 {
-    fn parse_from_le_stream<S>(
-        id: u16,
-        disambiguation: Disambiguation,
-        stream: S,
-    ) -> Result<Self, Decode>
+    fn parse_from_le_stream<S>(id: u16, stream: S) -> Result<Self, Decode>
     where
         S: Iterator<Item = u8>,
     {
-        if Self::ID != id && Self::DISAMBIGUATION != disambiguation {
+        if Self::ID != id {
             return Err(Decode::FrameIdMismatch {
                 expected: Self::ID,
                 found: id,
@@ -55,7 +46,7 @@ impl Parsable for Callback {
     ///
     /// Returns an error if the frame ID is not recognized.
     #[expect(clippy::too_many_lines)]
-    fn parse_from_le_stream<T>(id: u16, _: Disambiguation, stream: T) -> Result<Self, Decode>
+    fn parse_from_le_stream<T>(id: u16, stream: T) -> Result<Self, Decode>
     where
         T: Iterator<Item = u8>,
     {

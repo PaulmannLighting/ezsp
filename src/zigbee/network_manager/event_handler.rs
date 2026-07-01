@@ -201,7 +201,7 @@ impl EventTranslator for EventHandler {
                 Message::ChannelScan(sender) => {
                     self.scans.push(sender.into());
                 }
-                Message::MessageSent { tag, sender } => {
+                Message::Sent { tag, sender } => {
                     if self.responses.insert(tag, sender).is_some() {
                         warn!("Overwrote response channel for message tag: {tag}");
                     }

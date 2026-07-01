@@ -19,7 +19,8 @@ pub struct Handler {
     pub(crate) binding_index: u8,
     pub(crate) address_index: u8,
     pub(crate) message: ByteSizedVec<u8>,
-    pub(crate) _unknown: Option<u8>,
+    // Some incoming messages have a trailing byte that is not part of the message.
+    pub(crate) unknown: Option<u8>,
 }
 
 impl Handler {

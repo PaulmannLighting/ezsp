@@ -17,7 +17,7 @@ pub enum Message {
     ChannelScan(Sender<Vec<ScannedChannel>>),
 
     /// Register message sent
-    MessageSent {
+    Sent {
         /// The message tag.
         tag: u8,
         /// The result of the sending from the stack.

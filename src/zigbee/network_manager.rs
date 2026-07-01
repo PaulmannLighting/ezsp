@@ -241,7 +241,7 @@ where
         let (tx, rx) = channel();
 
         self.event_handler_proxy
-            .send(Message::MessageSent { tag, sender: tx })
+            .send(Message::Sent { tag, sender: tx })
             .await?;
 
         let seq = self
@@ -277,7 +277,7 @@ where
         let (tx, rx) = channel();
 
         self.event_handler_proxy
-            .send(Message::MessageSent { tag, sender: tx })
+            .send(Message::Sent { tag, sender: tx })
             .await?;
 
         let seq = self
@@ -311,7 +311,7 @@ where
         let (tx, rx) = channel();
 
         self.event_handler_proxy
-            .send(Message::MessageSent { tag, sender: tx })
+            .send(Message::Sent { tag, sender: tx })
             .await?;
 
         let seq = self

@@ -532,8 +532,9 @@ checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 
 [[package]]
 name = "silizium"
-version = "3.0.0"
-source = "git+https://github.com/PaulmannLighting/silizium/#955fe5e81eb466a5134188b660dddcdd9c881591"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "411796035cc37e31602e1573e579a0c4662b0373bd5cf4063d34f36d0a485491"
 dependencies = [
  "bitflags 2.13.0",
  "le-stream",

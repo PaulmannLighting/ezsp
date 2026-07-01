@@ -12,11 +12,12 @@ use ashv2::{
     Actor, FlowControl, NativeSerialPort, Payload, Proxy, SerialPort, Tasks, TryCloneNative, open,
 };
 use le_stream::ToLeStream;
-use log::{debug, info, trace, warn};
+use log::{debug, error, info, trace, warn};
 use tokio::spawn;
-use tokio::sync::mpsc::{Receiver, Sender, channel};
+use tokio::sync::mpsc::{Receiver, Sender, WeakSender, channel};
 use tokio::task::{JoinError, JoinHandle};
 use tokio::time::sleep;
+use tokio_task_pool::Pool;
 
 pub use self::buffers::Buffers;
 pub use self::channel_sizes::ChannelSizes;
@@ -51,6 +52,7 @@ pub struct Uart {
     encoder: Encoder,
     splitter: JoinHandle<()>,
     sequence: u8,
+    pool: Pool,
 }
 
 impl Uart {
@@ -86,6 +88,7 @@ impl Uart {
             responses_rx,
             splitter,
             sequence: 0,
+            pool: Pool::bounded(channel_size),
         }
     }
 
@@ -275,16 +278,35 @@ impl Transport for Uart {
                 Ok(frame) => return Ok(frame),
                 Err(error) => {
                     parameters = error.into();
-                    trace!(
+                    warn!(
                         "Received unexpected response: {parameters:?}, re-queueing and retrying in {REQUEUE_GRACE_PERIOD:?}."
                     );
-                    sleep(REQUEUE_GRACE_PERIOD).await;
-                    self.responses_tx
-                        .send(Ok(parameters))
+                    self.pool
+                        .spawn(requeue(self.responses_tx.downgrade(), parameters))
                         .await
-                        .expect("Re-queueing channel should be open. This is a bug.");
+                        .map_or_else(
+                            |error| {
+                                error!("Failed to re-queue response: {error:?}");
+                            },
+                            drop,
+                        );
                 }
             }
         }
     }
+}
+
+/// Async task to requeue in the background.
+async fn requeue(responses: WeakSender<Result<Parameters, Error>>, parameters: Parameters) {
+    sleep(REQUEUE_GRACE_PERIOD).await;
+
+    let Some(responses) = responses.upgrade() else {
+        trace!("Re-queueing channel is closed, aborting");
+        return;
+    };
+
+    responses
+        .send(Ok(parameters))
+        .await
+        .expect("Re-queueing channel should be open. This is a bug.");
 }

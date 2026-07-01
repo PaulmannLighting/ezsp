@@ -5,6 +5,55 @@
 version = "5.0.0"
 audited_as = "1.5.0"
 
+[[publisher.apis-saltans-aps]]
+version = "0.1.0"
+when = "2026-07-01"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
+
+[[publisher.apis-saltans-core]]
+version = "0.1.1"
+when = "2026-07-01"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
+
+[[publisher.apis-saltans-hw]]
+version = "0.1.0"
+when = "2026-07-01"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
+
+[[publisher.apis-saltans-macros]]
+version = "0.1.0"
+when = "2026-07-01"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
+
+[[publisher.apis-saltans-zcl]]
+version = "0.1.0"
+when = "2026-07-01"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
+
+[[publisher.apis-saltans-zdp]]
+version = "0.1.1"
+when = "2026-07-01"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
+
+[[publisher.ashv2]]
+version = "8.1.1"
+when = "2026-07-01"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
+
 [[publisher.bumpalo]]
 version = "3.20.3"
 when = "2026-05-22"
@@ -17,6 +66,13 @@ version = "1.2.30"
 when = "2025-07-18"
 user-id = 55123
 user-login = "rust-lang-owner"
+
+[[publisher.ezsp]]
+version = "1.5.0"
+when = "2025-11-27"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
 
 [[publisher.find-msvc-tools]]
 version = "0.1.0"
@@ -31,6 +87,20 @@ when = "2024-12-07"
 user-id = 1
 user-login = "alexcrichton"
 user-name = "Alex Crichton"
+
+[[publisher.le-stream]]
+version = "10.1.2"
+when = "2026-06-23"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
+
+[[publisher.le-stream-derive]]
+version = "1.3.8"
+when = "2026-06-23"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
 
 [[publisher.libc]]
 version = "0.2.186"

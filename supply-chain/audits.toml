@@ -10,9 +10,9 @@ notes = "AI-assisted: reviewed major diff 1.2.7 -> 8.1.0; no new unsafe code in 
 [[audits.ashv2]]
 who = "Codex"
 criteria = "safe-to-deploy"
-delta = "8.1.0 -> 8.1.0@git:f7e0939942aa78fd15aa38366945efb4e3a9cf88"
+delta = "8.1.1 -> 8.1.1@git:825689d127eb97ac2db295081755fc902f7e6006"
 importable = false
-notes = "AI-assisted: reviewed diff 8.1.0 -> 8.1.0@git:f7e0939942aa78fd15aa38366945efb4e3a9cf88"
+notes = "AI-assisted: reviewed diff 8.1.1 -> 8.1.1@git:825689d127eb97ac2db295081755fc902f7e6006 (0 files changed)"
 
 [[audits.autocfg]]
 who = "Codex"
@@ -356,11 +356,67 @@ criteria = "safe-to-deploy"
 delta = "1.0.20 -> 1.0.21"
 notes = "AI-assisted: reviewed diff 1.0.20 -> 1.0.21"
 
+[[trusted.apis-saltans-aps]]
+criteria = "safe-to-deploy"
+user-id = 290593 # Richard Neumann (neumann-paulmann)
+start = "2026-07-01"
+end = "2027-07-01"
+notes = "Trusted publisher neumann-paulmann"
+
+[[trusted.apis-saltans-core]]
+criteria = "safe-to-deploy"
+user-id = 290593 # Richard Neumann (neumann-paulmann)
+start = "2026-07-01"
+end = "2027-07-01"
+notes = "Trusted publisher neumann-paulmann"
+
+[[trusted.apis-saltans-hw]]
+criteria = "safe-to-deploy"
+user-id = 290593 # Richard Neumann (neumann-paulmann)
+start = "2026-07-01"
+end = "2027-07-01"
+notes = "Trusted publisher neumann-paulmann"
+
+[[trusted.apis-saltans-macros]]
+criteria = "safe-to-deploy"
+user-id = 290593 # Richard Neumann (neumann-paulmann)
+start = "2026-07-01"
+end = "2027-07-01"
+notes = "Trusted publisher neumann-paulmann"
+
+[[trusted.apis-saltans-zcl]]
+criteria = "safe-to-deploy"
+user-id = 290593 # Richard Neumann (neumann-paulmann)
+start = "2026-07-01"
+end = "2027-07-01"
+notes = "Trusted publisher neumann-paulmann"
+
+[[trusted.apis-saltans-zdp]]
+criteria = "safe-to-deploy"
+user-id = 290593 # Richard Neumann (neumann-paulmann)
+start = "2026-07-01"
+end = "2027-07-01"
+notes = "Trusted publisher neumann-paulmann"
+
+[[trusted.ashv2]]
+criteria = "safe-to-deploy"
+user-id = 290593 # Richard Neumann (neumann-paulmann)
+start = "2025-07-04"
+end = "2027-07-01"
+notes = "Trusted publisher neumann-paulmann"
+
 [[trusted.cc]]
 criteria = "safe-to-deploy"
 user-id = 55123 # rust-lang-owner
 start = "2022-10-29"
 end = "2027-06-23"
+
+[[trusted.ezsp]]
+criteria = "safe-to-deploy"
+user-id = 290593 # Richard Neumann (neumann-paulmann)
+start = "2025-07-04"
+end = "2027-07-01"
+notes = "Trusted publisher neumann-paulmann"
 
 [[trusted.find-msvc-tools]]
 criteria = "safe-to-deploy"
@@ -373,6 +429,20 @@ criteria = "safe-to-deploy"
 user-id = 1 # Alex Crichton (alexcrichton)
 start = "2019-03-04"
 end = "2027-06-23"
+
+[[trusted.le-stream]]
+criteria = "safe-to-deploy"
+user-id = 290593 # Richard Neumann (neumann-paulmann)
+start = "2024-09-18"
+end = "2027-07-01"
+notes = "Trusted publisher neumann-paulmann"
+
+[[trusted.le-stream-derive]]
+criteria = "safe-to-deploy"
+user-id = 290593 # Richard Neumann (neumann-paulmann)
+start = "2024-09-18"
+end = "2027-07-01"
+notes = "Trusted publisher neumann-paulmann"
 
 [[trusted.libc]]
 criteria = "safe-to-deploy"

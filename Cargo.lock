@@ -14,22 +14,9 @@ dependencies = [
 [[package]]
 name = "apis-saltans-aps"
 version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main#c5de68077338d3dac6c3ab1b715ec7af44b1a70c"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#9d009f813493e4722b28901acdf87156afaa8705"
 dependencies = [
- "apis-saltans-core 0.2.1 (git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main)",
- "bitflags 2.13.0",
- "le-stream",
- "log",
- "num-derive",
- "num-traits",
-]
-
-[[package]]
-name = "apis-saltans-aps"
-version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git#c5de68077338d3dac6c3ab1b715ec7af44b1a70c"
-dependencies = [
- "apis-saltans-core 0.2.1 (git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main)",
+ "apis-saltans-core",
  "bitflags 2.13.0",
  "le-stream",
  "log",
@@ -40,24 +27,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-core"
 version = "0.2.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main#c5de68077338d3dac6c3ab1b715ec7af44b1a70c"
-dependencies = [
- "bitflags 2.13.0",
- "chrono",
- "heapless",
- "intx",
- "le-stream",
- "log",
- "macaddr",
- "num-derive",
- "num-traits",
- "repr-discriminant",
-]
-
-[[package]]
-name = "apis-saltans-core"
-version = "0.2.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git#c5de68077338d3dac6c3ab1b715ec7af44b1a70c"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#9d009f813493e4722b28901acdf87156afaa8705"
 dependencies = [
  "bitflags 2.13.0",
  "chrono",
@@ -74,12 +44,12 @@ dependencies = [
 [[package]]
 name = "apis-saltans-hw"
 version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git#c5de68077338d3dac6c3ab1b715ec7af44b1a70c"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#9d009f813493e4722b28901acdf87156afaa8705"
 dependencies = [
- "apis-saltans-aps 0.1.1 (git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main)",
- "apis-saltans-core 0.2.1 (git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main)",
+ "apis-saltans-aps",
+ "apis-saltans-core",
  "apis-saltans-zcl",
- "apis-saltans-zdp 0.1.2 (git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main)",
+ "apis-saltans-zdp",
  "le-stream",
  "log",
  "macaddr",
@@ -89,7 +59,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-macros"
 version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main#c5de68077338d3dac6c3ab1b715ec7af44b1a70c"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#9d009f813493e4722b28901acdf87156afaa8705"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -99,10 +69,10 @@ dependencies = [
 [[package]]
 name = "apis-saltans-zcl"
 version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main#c5de68077338d3dac6c3ab1b715ec7af44b1a70c"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#9d009f813493e4722b28901acdf87156afaa8705"
 dependencies = [
- "apis-saltans-aps 0.1.1 (git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main)",
- "apis-saltans-core 0.2.1 (git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main)",
+ "apis-saltans-aps",
+ "apis-saltans-core",
  "apis-saltans-macros",
  "bitflags 2.13.0",
  "chrono",
@@ -118,26 +88,10 @@ dependencies = [
 [[package]]
 name = "apis-saltans-zdp"
 version = "0.1.2"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main#c5de68077338d3dac6c3ab1b715ec7af44b1a70c"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#9d009f813493e4722b28901acdf87156afaa8705"
 dependencies = [
- "apis-saltans-aps 0.1.1 (git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main)",
- "apis-saltans-core 0.2.1 (git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main)",
- "bitflags 2.13.0",
- "heapless",
- "le-stream",
- "macaddr",
- "num-derive",
- "num-traits",
- "repr-discriminant",
-]
-
-[[package]]
-name = "apis-saltans-zdp"
-version = "0.1.2"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git#c5de68077338d3dac6c3ab1b715ec7af44b1a70c"
-dependencies = [
- "apis-saltans-aps 0.1.1 (git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main)",
- "apis-saltans-core 0.2.1 (git+https://github.com/PaulmannLighting/apis-saltans.git?branch=main)",
+ "apis-saltans-aps",
+ "apis-saltans-core",
  "bitflags 2.13.0",
  "heapless",
  "le-stream",
@@ -324,10 +278,10 @@ dependencies = [
 name = "ezsp"
 version = "5.0.0"
 dependencies = [
- "apis-saltans-aps 0.1.1 (git+https://github.com/PaulmannLighting/apis-saltans.git)",
- "apis-saltans-core 0.2.1 (git+https://github.com/PaulmannLighting/apis-saltans.git)",
+ "apis-saltans-aps",
+ "apis-saltans-core",
  "apis-saltans-hw",
- "apis-saltans-zdp 0.1.2 (git+https://github.com/PaulmannLighting/apis-saltans.git)",
+ "apis-saltans-zdp",
  "ashv2",
  "bitflags 2.13.0",
  "enum-iterator",

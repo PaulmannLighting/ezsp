@@ -15,7 +15,10 @@ exclude = [".github", ".gitignore", "ARCHITECTURE.md"]
 all-features = true
 
 [dependencies]
-aps = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
+apis-saltans-aps = { version = "0.1", optional = true }
+apis-saltans-core = { version = "0.1", optional = true }
+apis-saltans-hw = { version = "0.1", optional = true }
+apis-saltans-zdp = { version = "0.1", optional = true }
 ashv2 = { version = "8", git = "https://github.com/PaulmannLighting/ashv2/", optional = true }
 bitflags = "2"
 enum-iterator = "2"
@@ -31,14 +34,11 @@ semver = { version = "1", optional = true }
 silizium = { version = "3", features = ["le-stream"] }
 tokio = { version = "1", optional = true }
 tokio-task-pool = { version = "0.1", optional = true }
-zdp = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
-zigbee = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
-zigbee-hw = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans/", optional = true }
 
 [features]
 ashv2 = ["dep:ashv2", "dep:tokio-task-pool", "tokio/rt", "tokio/time", "tokio/sync"]
 semver = ["dep:semver"]
-zigbee = ["dep:aps", "dep:zigbee", "dep:zigbee-hw", "dep:rand", "dep:zdp", "tokio/rt", "tokio/sync"]
+apis-saltans = ["dep:apis-saltans-aps", "dep:apis-saltans-core", "dep:apis-saltans-hw", "dep:apis-saltans-zdp", "dep:rand", "tokio/rt", "tokio/sync"]
 
 [profile.release]
 opt-level = 3

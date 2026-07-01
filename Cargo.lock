@@ -12,22 +12,105 @@ dependencies = [
 ]
 
 [[package]]
-name = "aps"
+name = "apis-saltans-aps"
 version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans/#f32ebe20069212ebf92c0ca4560ff03a937332f3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e88711b65a90b420cb3b96f04cc3b67b82c6a5137b60d285b28153ebde532642"
 dependencies = [
+ "apis-saltans-core",
  "bitflags 2.13.0",
  "le-stream",
  "log",
  "num-derive",
  "num-traits",
- "zigbee",
+]
+
+[[package]]
+name = "apis-saltans-core"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae17bf8fb771fa1fe87abd4886affcb04ad4a0a053690f4d68e892655c0b60af"
+dependencies = [
+ "bitflags 2.13.0",
+ "chrono",
+ "heapless",
+ "intx",
+ "le-stream",
+ "log",
+ "macaddr",
+ "num-derive",
+ "num-traits",
+ "repr-discriminant",
+]
+
+[[package]]
+name = "apis-saltans-hw"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "659f1bb72e92fc39ff3673b06532ddc8bb60c3e7d77b8eedb6827822261ee340"
+dependencies = [
+ "apis-saltans-aps",
+ "apis-saltans-core",
+ "apis-saltans-zcl",
+ "apis-saltans-zdp",
+ "le-stream",
+ "log",
+ "macaddr",
+ "tokio",
+]
+
+[[package]]
+name = "apis-saltans-macros"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b1d3ffe3f9f2852d67bc2f0ac237260b3487eb683c2e4cf6b474c3ef0923a6a"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "apis-saltans-zcl"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3cd32b3ab9ecf60fa5fbe4011bbf6bd6a044437eaac5bbac8f2cd82caba43d25"
+dependencies = [
+ "apis-saltans-aps",
+ "apis-saltans-core",
+ "apis-saltans-macros",
+ "bitflags 2.13.0",
+ "chrono",
+ "either",
+ "heapless",
+ "le-stream",
+ "macaddr",
+ "num-derive",
+ "num-traits",
+ "repr-discriminant",
+]
+
+[[package]]
+name = "apis-saltans-zdp"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "efabcc9374c7e8017bc44a4dbe9094fa9a69e12a25019834349e7d217002e9d5"
+dependencies = [
+ "apis-saltans-aps",
+ "apis-saltans-core",
+ "bitflags 2.13.0",
+ "heapless",
+ "le-stream",
+ "macaddr",
+ "num-derive",
+ "num-traits",
+ "repr-discriminant",
 ]
 
 [[package]]
 name = "ashv2"
-version = "8.1.0"
-source = "git+https://github.com/PaulmannLighting/ashv2/#f7e0939942aa78fd15aa38366945efb4e3a9cf88"
+version = "8.1.1"
+source = "git+https://github.com/PaulmannLighting/ashv2/#825689d127eb97ac2db295081755fc902f7e6006"
 dependencies = [
  "bitflags 2.13.0",
  "const_env",
@@ -201,7 +284,10 @@ dependencies = [
 name = "ezsp"
 version = "5.0.0"
 dependencies = [
- "aps",
+ "apis-saltans-aps",
+ "apis-saltans-core",
+ "apis-saltans-hw",
+ "apis-saltans-zdp",
  "ashv2",
  "bitflags 2.13.0",
  "enum-iterator",
@@ -217,9 +303,6 @@ dependencies = [
  "silizium",
  "tokio",
  "tokio-task-pool",
- "zdp",
- "zigbee",
- "zigbee-hw",
 ]
 
 [[package]]
@@ -795,80 +878,3 @@ name = "windows_x86_64_msvc"
 version = "0.52.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
-
-[[package]]
-name = "zcl"
-version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans/#f32ebe20069212ebf92c0ca4560ff03a937332f3"
-dependencies = [
- "aps",
- "bitflags 2.13.0",
- "chrono",
- "either",
- "heapless",
- "le-stream",
- "macaddr",
- "num-derive",
- "num-traits",
- "repr-discriminant",
- "zigbee",
- "zigbee-macros",
-]
-
-[[package]]
-name = "zdp"
-version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans/#f32ebe20069212ebf92c0ca4560ff03a937332f3"
-dependencies = [
- "aps",
- "bitflags 2.13.0",
- "heapless",
- "le-stream",
- "macaddr",
- "num-derive",
- "num-traits",
- "repr-discriminant",
- "zigbee",
-]
-
-[[package]]
-name = "zigbee"
-version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans/#f32ebe20069212ebf92c0ca4560ff03a937332f3"
-dependencies = [
- "bitflags 2.13.0",
- "chrono",
- "heapless",
- "intx",
- "le-stream",
- "log",
- "macaddr",
- "num-derive",
- "num-traits",
- "repr-discriminant",
-]
-
-[[package]]
-name = "zigbee-hw"
-version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans/#f32ebe20069212ebf92c0ca4560ff03a937332f3"
-dependencies = [
- "aps",
- "le-stream",
- "log",
- "macaddr",
- "tokio",
- "zcl",
- "zdp",
- "zigbee",
-]
-
-[[package]]
-name = "zigbee-macros"
-version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans/#f32ebe20069212ebf92c0ca4560ff03a937332f3"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]

@@ -1,4 +1,5 @@
 use core::future::Future;
+use std::num::NonZero;
 
 pub use self::binding::Binding;
 pub use self::bootloader::Bootloader;
@@ -61,5 +62,5 @@ pub trait Ezsp:
     fn init(&mut self) -> impl Future<Output = Result<version::Response, Error>> + Send;
 
     /// Returns the negotiated protocol version, if any.
-    fn negotiated_version(&self) -> Option<u8>;
+    fn negotiated_version(&self) -> Option<NonZero<u8>>;
 }

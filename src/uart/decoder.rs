@@ -1,6 +1,7 @@
 //! Decoding of `ASHv2` frames into `EZSP` frames.
 
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU8, Ordering};
 
 use ashv2::Payload;
 use le_stream::FromLeStream;
@@ -11,15 +12,15 @@ use crate::error::Decode;
 use crate::frame::parsable::Parsable;
 use crate::frame::{Frame, Header};
 use crate::parameters::utilities::invalid_command;
-use crate::uart::np_rw_lock::NpRwLock;
-use crate::uart::state::State;
-use crate::{Error, Extended, Legacy, LowByte, MAX_PARAMETER_SIZE, Parameters, ezsp};
+use crate::{
+    Error, Extended, Legacy, LowByte, MAX_PARAMETER_SIZE, MIN_NON_LEGACY_VERSION, Parameters, ezsp,
+};
 
 /// Decode `ASHv2` frames into `EZSP` frames.
 #[derive(Debug)]
 pub struct Decoder {
     source: Receiver<Payload>,
-    state: Arc<NpRwLock<State>>,
+    negotiated_version: Arc<AtomicU8>,
     header: Option<Header>,
     parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
 }
@@ -30,10 +31,10 @@ impl Decoder {
     /// Sets the source as a receiver for incoming `ASHv2` frames
     /// and the current state of the `EZSP` UART.
     #[must_use]
-    pub const fn new(source: Receiver<Payload>, state: Arc<NpRwLock<State>>) -> Self {
+    pub const fn new(source: Receiver<Payload>, negotiated_version: Arc<AtomicU8>) -> Self {
         Self {
             source,
-            state,
+            negotiated_version,
             header: None,
             parameters: heapless::Vec::new(),
         }
@@ -126,7 +127,7 @@ impl Decoder {
     where
         T: Iterator<Item = u8>,
     {
-        if self.state.read().is_legacy() {
+        if self.negotiated_version.load(Ordering::Relaxed) < MIN_NON_LEGACY_VERSION {
             Legacy::from_le_stream(stream).map(Header::Legacy)
         } else {
             Extended::from_le_stream(stream).map(Header::Extended)

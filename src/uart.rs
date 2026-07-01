@@ -3,7 +3,9 @@
 use core::fmt::Debug;
 use core::num::TryFromIntError;
 use std::borrow::Cow;
+use std::num::NonZero;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU8, Ordering};
 use std::time::Duration;
 
 use ashv2::{
@@ -20,8 +22,6 @@ pub use self::buffers::Buffers;
 pub use self::channel_sizes::ChannelSizes;
 use self::connection::Connection;
 use self::encoder::Encoder;
-use self::np_rw_lock::NpRwLock;
-use self::state::State;
 use crate::constants::MIN_NON_LEGACY_VERSION;
 use crate::error::Error;
 use crate::frame::{Command, Header, Parameter};
@@ -36,9 +36,7 @@ mod channel_sizes;
 mod connection;
 mod decoder;
 mod encoder;
-mod np_rw_lock;
 mod splitter;
-mod state;
 
 const REQUEUE_GRACE_PERIOD: Duration = Duration::from_millis(100);
 
@@ -46,7 +44,8 @@ const REQUEUE_GRACE_PERIOD: Duration = Duration::from_millis(100);
 #[derive(Debug)]
 pub struct Uart {
     protocol_version: u8,
-    state: Arc<NpRwLock<State>>,
+    negotiated_version: Arc<AtomicU8>,
+    connection: Connection,
     responses_tx: Sender<Result<Parameters, Error>>,
     responses_rx: Receiver<Result<Parameters, Error>>,
     encoder: Encoder,
@@ -67,21 +66,21 @@ impl Uart {
         protocol_version: u8,
         channel_size: usize,
     ) -> Self {
-        let state = Arc::new(NpRwLock::new(State::default()));
+        let negotiated_version = Arc::new(AtomicU8::new(0));
         let (responses_tx, responses_rx) = channel(channel_size);
         let splitter = spawn(
             Splitter::new(
-                Decoder::new(ash_rx, state.clone()),
+                Decoder::new(ash_rx, negotiated_version.clone()),
                 responses_tx.clone(),
                 callbacks,
-                state.clone(),
             )
             .run(),
         );
 
         Self {
             protocol_version,
-            state,
+            negotiated_version,
+            connection: Connection::Disconnected,
             encoder: Encoder::new(ash_proxy),
             responses_tx,
             responses_rx,
@@ -153,7 +152,7 @@ impl Uart {
     /// This method may return an error if `EZSP` is in legacy mode
     /// and the `id` cannot be converted into a `u8`.
     fn next_header(&mut self, id: u16) -> Result<Header, TryFromIntError> {
-        let header = if self.state.read().is_legacy() {
+        let header = if self.negotiated_version.load(Ordering::Relaxed) < MIN_NON_LEGACY_VERSION {
             Header::Legacy(Legacy::new(
                 self.sequence,
                 Command::default().into(),
@@ -180,16 +179,14 @@ impl Uart {
     async fn negotiate_version(&mut self) -> Result<version::Response, Error> {
         debug!("Negotiating legacy version");
         let mut response = self.version(self.protocol_version).await?;
-        self.state
-            .write()
-            .set_negotiated_version(response.protocol_version());
+        self.negotiated_version
+            .store(response.protocol_version(), Ordering::Relaxed);
 
         if response.protocol_version() >= MIN_NON_LEGACY_VERSION {
             debug!("Negotiating non-legacy version");
             response = self.version(response.protocol_version()).await?;
-            self.state
-                .write()
-                .set_negotiated_version(response.protocol_version());
+            self.negotiated_version
+                .store(response.protocol_version(), Ordering::Relaxed);
         }
 
         if response.protocol_version() == self.protocol_version {
@@ -199,7 +196,7 @@ impl Uart {
             );
             Ok(response)
         } else {
-            self.state.write().set_connection(Connection::Failed);
+            self.connection = Connection::Failed;
             Err(Error::ProtocolVersionMismatch {
                 desired: self.protocol_version,
                 negotiated: response,
@@ -221,21 +218,18 @@ impl Uart {
 impl Ezsp for Uart {
     async fn init(&mut self) -> Result<version::Response, Error> {
         let response = self.negotiate_version().await?;
-        self.state.write().set_connection(Connection::Connected);
+        self.connection = Connection::Connected;
         Ok(response)
     }
 
-    fn negotiated_version(&self) -> Option<u8> {
-        self.state.read().negotiated_version()
+    fn negotiated_version(&self) -> Option<NonZero<u8>> {
+        NonZero::<u8>::new(self.negotiated_version.load(Ordering::Relaxed))
     }
 }
 
 impl Transport for Uart {
     async fn ensure_connection(&mut self) -> Result<(), Error> {
-        // Use temporary variable, because we need to drop the lock before the match statement.
-        let connection = self.state.read().connection();
-
-        match connection {
+        match self.connection {
             Connection::Disconnected => {
                 info!("Initializing UART connection");
                 self.init().await.map(drop)

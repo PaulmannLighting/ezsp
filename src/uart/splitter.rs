@@ -1,12 +1,9 @@
 use std::fmt::Debug;
-use std::sync::Arc;
 
 use log::{trace, warn};
 use tokio::sync::mpsc::Sender;
 
 use super::decoder::Decoder;
-use super::np_rw_lock::NpRwLock;
-use super::state::State;
 use crate::error::Error;
 use crate::frame::{Callback, Frame, Parameters};
 
@@ -15,7 +12,6 @@ pub struct Splitter {
     incoming: Decoder,
     responses: Sender<Result<Parameters, Error>>,
     callbacks: Sender<Callback>,
-    state: Arc<NpRwLock<State>>,
 }
 
 impl Splitter {
@@ -28,13 +24,11 @@ impl Splitter {
         incoming: Decoder,
         responses: Sender<Result<Parameters, Error>>,
         callbacks: Sender<Callback>,
-        state: Arc<NpRwLock<State>>,
     ) -> Self {
         Self {
             incoming,
             responses,
             callbacks,
-            state,
         }
     }
 
@@ -100,7 +94,6 @@ impl Debug for Splitter {
             .field("incoming", &self.incoming)
             .field("responses", &self.responses)
             .field("callbacks", &"...")
-            .field("state", &self.state)
             .finish()
     }
 }

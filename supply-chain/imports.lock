@@ -2,25 +2,25 @@
 # cargo-vet imports lock
 
 [[unpublished.ezsp]]
-version = "5.0.0"
-audited_as = "1.5.0"
+version = "5.1.0"
+audited_as = "5.0.0"
 
 [[publisher.apis-saltans-aps]]
-version = "0.1.0"
-when = "2026-07-01"
-user-id = 290593
-user-login = "neumann-paulmann"
-user-name = "Richard Neumann"
-
-[[publisher.apis-saltans-core]]
 version = "0.1.1"
 when = "2026-07-01"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
+[[publisher.apis-saltans-core]]
+version = "0.2.1"
+when = "2026-07-01"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
+
 [[publisher.apis-saltans-hw]]
-version = "0.1.0"
+version = "0.1.1"
 when = "2026-07-01"
 user-id = 290593
 user-login = "neumann-paulmann"
@@ -34,14 +34,14 @@ user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-zcl]]
-version = "0.1.0"
+version = "0.1.1"
 when = "2026-07-01"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-zdp]]
-version = "0.1.1"
+version = "0.1.2"
 when = "2026-07-01"
 user-id = 290593
 user-login = "neumann-paulmann"
@@ -68,8 +68,8 @@ user-id = 55123
 user-login = "rust-lang-owner"
 
 [[publisher.ezsp]]
-version = "1.5.0"
-when = "2025-11-27"
+version = "5.0.0"
+when = "2026-07-01"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"

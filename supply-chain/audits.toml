@@ -1,6 +1,48 @@
 
 # cargo-vet audits file
 
+[[audits.apis-saltans-aps]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.1 -> 0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187"
+importable = false
+notes = "AI-assisted: reviewed diff 0.1.1 -> 0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187; dependency source changed from git branch to workspace path"
+
+[[audits.apis-saltans-core]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.1 -> 0.2.1@git:de0050ec889b5995faf57e4001e816e57241a187"
+importable = false
+notes = "AI-assisted: reviewed diff 0.2.1 -> 0.2.1@git:de0050ec889b5995faf57e4001e816e57241a187; adds optional smarthomelib feature and Limited impls only"
+
+[[audits.apis-saltans-hw]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.1 -> 0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187"
+importable = false
+notes = "AI-assisted: reviewed diff 0.1.1 -> 0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187; dependency sources changed from git branch to workspace paths"
+
+[[audits.apis-saltans-macros]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.0 -> 0.1.0@git:de0050ec889b5995faf57e4001e816e57241a187"
+importable = false
+notes = "AI-assisted: reviewed diff 0.1.0 -> 0.1.0@git:de0050ec889b5995faf57e4001e816e57241a187 (0 files changed)"
+
+[[audits.apis-saltans-zcl]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.1 -> 0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187"
+importable = false
+notes = "AI-assisted: reviewed diff 0.1.1 -> 0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187; dependency source changes plus optional smarthomelib conversion impl"
+
+[[audits.apis-saltans-zdp]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.2 -> 0.1.2@git:de0050ec889b5995faf57e4001e816e57241a187"
+importable = false
+notes = "AI-assisted: reviewed diff 0.1.2 -> 0.1.2@git:de0050ec889b5995faf57e4001e816e57241a187; dependency sources changed from git branch to workspace paths"
+
 [[audits.ashv2]]
 who = "Codex"
 criteria = "safe-to-deploy"

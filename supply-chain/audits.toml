@@ -254,13 +254,6 @@ criteria = "safe-to-deploy"
 delta = "1.0.5 -> 2.1.0"
 notes = "AI-assisted: reviewed major diff 1.0.5 -> 2.1.0; no unsafe code paths, primarily status/enum API and dependency updates"
 
-[[audits.silizium]]
-who = "Codex"
-criteria = "safe-to-deploy"
-delta = "2.1.0 -> 3.0.0@git:955fe5e81eb466a5134188b660dddcdd9c881591"
-importable = false
-notes = "AI-assisted: reviewed diff 2.1.0 -> 3.0.0@git:955fe5e81eb466a5134188b660dddcdd9c881591"
-
 [[audits.slab]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -398,6 +391,13 @@ criteria = "safe-to-deploy"
 user-id = 3618 # David Tolnay (dtolnay)
 start = "2021-05-25"
 end = "2027-06-23"
+
+[[trusted.silizium]]
+criteria = "safe-to-deploy"
+user-id = 290593 # Richard Neumann (neumann-paulmann)
+start = "2025-07-04"
+end = "2027-07-01"
+notes = "Trusted publisher neumann-paulmann"
 
 [[trusted.syn]]
 criteria = "safe-to-deploy"

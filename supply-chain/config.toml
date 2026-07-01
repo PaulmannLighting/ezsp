@@ -34,9 +34,6 @@ audit-as-crates-io = true
 [policy.ezsp]
 audit-as-crates-io = true
 
-[policy.silizium]
-audit-as-crates-io = true
-
 [[exemptions.ashv2]]
 version = "1.2.7"
 criteria = "safe-to-deploy"
@@ -103,10 +100,6 @@ criteria = "safe-to-deploy"
 
 [[exemptions.serialport]]
 version = "4.7.2"
-criteria = "safe-to-deploy"
-
-[[exemptions.silizium]]
-version = "1.0.5"
 criteria = "safe-to-deploy"
 
 [[exemptions.unescaper]]

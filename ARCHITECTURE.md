@@ -1,30 +1,31 @@
 # Architecture
 
-This document describes the internal architecture of the `ezsp` crate as currently implemented.
+This document describes the current internal architecture of the `ezsp` crate.
 
-## High-Level Structure
+## High-level structure
 
-The crate is split into three major layers:
+The crate has three layers:
 
-1. Core protocol layer (always available):
-   - EZSP command traits
-   - frame/header/parameter encoding and decoding
+1. Core EZSP layer (always enabled)
+   - typed EZSP command traits
+   - frame/header/parameter model and parsing
    - shared error/result/types
-   - transport abstraction
-2. `ashv2` transport layer (`feature = "ashv2"`):
+   - transport abstraction (`Transport`)
+
+2. ASHv2 transport layer (`feature = "ashv2"`)
    - concrete serial transport implementation (`uart::Uart`)
-   - connection lifecycle, protocol negotiation, TX/RX pipelines
-3. Zigbee integration layer (`feature = "zigbee"`):
+   - EZSP-over-ASHv2 encoding/decoding and frame routing
+
+3. Zigbee integration layer (`feature = "zigbee"`)
    - `zigbee_hw` driver integration (`zigbee::EzspNetworkManager`)
-   - callback-to-event translation
-   - network bootstrap/orchestration builder
+   - callback-to-event translation and network startup orchestration
 
 ```mermaid
 flowchart TD
-    A[User code] --> B[EZSP traits]
-    B --> C[Transport trait]
-    C --> D[ashv2::uart::Uart]
-    D --> E[ashv2 serial actor]
+    A[User code] --> B[EZSP command traits]
+    B --> C[Transport]
+    C --> D[uart::Uart]
+    D --> E[ASHv2 actor/proxy]
     E --> F[NCP]
 
     A --> G[zigbee::EzspNetworkManager]
@@ -32,310 +33,155 @@ flowchart TD
     G --> H[zigbee_hw::NcpDriver]
 ```
 
-## Core Library Architecture (Always Enabled)
+## Core layer
 
-### Public API Surface
+### Public API shape
 
-`src/lib.rs` re-exports the primary protocol API:
+`src/lib.rs` re-exports the primary API:
 
-- Command traits: `Configuration`, `Messaging`, `Networking`, `Security`, `Utilities`, etc.
-- Super-trait: `Ezsp`
-- Transport abstraction: `Transport`
-- Frame model: `Frame`, `Header`, `Parameters`, `Response`, `Callback`, etc.
-- Extension traits: `ConfigurationExt`, `PolicyExt`, `Displayable`
+- command traits: `Configuration`, `Messaging`, `Networking`, `Security`, `Utilities`, ...
+- convenience super-trait: `Ezsp`
+- transport trait: `Transport`
+- frame model: `Frame`, `Header`, `Parameters`, `Response`, `Callback`, ...
+- extension traits: `ConfigurationExt`, `PolicyExt`, `Displayable`
+- core error/result types
 
-### Trait Composition: `Transport` + Command Traits
+### Transport-first design
 
-The central architectural decision is that all command traits are blanket-implemented for any `T: Transport`.
+Command traits are blanket-implemented for any `T: Transport`.
 
-- `Transport` defines the low-level async communication primitives:
+`Transport` provides:
+
+- `connect()`
+- `state()`
+- `negotiated_version()`
+- `send(command)`
+- `receive::<R>()`
+- default helpers:
   - `ensure_connection()`
-  - `send(command)`
-  - `receive::<R>()`
-  - default `communicate::<C, R>()` (`ensure_connection` -> `send` -> `receive`)
-- Command traits (for example `Configuration`, `Messaging`, `Networking`) are high-level typed facades.
-- Each command method builds a typed command parameter object and calls `self.communicate::<_, ResponseType>(...)`.
-- Responses are converted into domain types through `TryFrom<Parameters>` / `TryInto<_>`.
+  - `communicate(command)`
 
-This creates a strict layering:
+Each typed command method builds a parameter struct and calls `communicate(...)`.
 
-1. Transport handles bytes/frame transport concerns.
-2. Command traits handle protocol semantics and typing.
-3. Callers only depend on typed command traits, not raw frame parsing.
+### `Ezsp` super-trait
 
-```mermaid
-flowchart LR
-    A[Configuration::get_value] --> B[Transport::communicate]
-    B --> C[Transport::ensure_connection]
-    B --> D[Transport::send]
-    B --> E[Transport::receive]
-    E --> F[TryFrom<Parameters> for typed response]
-```
+`Ezsp` in this crate is a convenience trait that combines all command traits.
+It does not add lifecycle methods beyond those provided by `Transport`.
 
-### `Ezsp` Super-Trait
+### Frame/parameter model
 
-`Ezsp` combines all command traits and adds connection/version lifecycle methods:
+The frame subsystem (`src/frame`) handles typed parsing and conversion:
 
-- `init()` for protocol version negotiation
-- `negotiated_version()` as state exposure
+- headers: legacy (3-byte) and extended (5-byte)
+- payload classification into `Parameters::Response` vs `Parameters::Callback`
+- per-command typed conversions via `TryFrom<Parameters>` / `TryInto<_>`
 
-In practice, a transport implementation (for example `Uart`) implements `Ezsp`, while command traits become available via blanket impls from `Transport`.
+Parameter parsing is ID-driven (`Parameters::parse_from_le_stream(id, ...)`) and maps frame IDs directly to typed response/callback structures.
 
-### Frame and Parameter Model
+### Error model
 
-The frame subsystem (`src/frame`) provides typed parsing and framing:
+`Error` is the crate-level error type used across command traits and transport code.
+It unifies transport I/O, decode failures, status conversion errors, and protocol flow errors.
 
-- `Header` can be `Legacy` or `Extended`.
-- `Parameters` discriminates protocol payload into `Response` or `Callback`.
-- `Parameter` trait is implemented by outgoing command parameter types.
-- `Parsable` trait drives inbound parsing from little-endian streams.
+## ASHv2 transport (`feature = "ashv2"`)
 
-The parser also uses `Disambiguation` to resolve ambiguous callback/response IDs where protocol context is required.
+This layer is implemented in `src/uart`.
 
-### Extension Traits
+### Main components
 
-The core extension traits build convenience APIs on top of base command traits:
+- `Uart`
+  - concrete `Transport` implementation
+  - tracks connection state and negotiated protocol version
+  - owns response queue and callback splitter task
+- `Encoder`
+  - serializes EZSP headers/parameters
+  - fragments large EZSP payloads into ASHv2 payload chunks
+- `Decoder`
+  - parses ASHv2 payload chunks back into EZSP frames
+  - supports fragmented EZSP frame reassembly across multiple ASHv2 payloads
+- `Splitter`
+  - routes decoded frames:
+    - responses -> response queue
+    - async callbacks -> callback queue
+    - non-async callbacks -> response queue
 
-- `ConfigurationExt` iterates all configuration IDs and gathers supported values.
-- `PolicyExt` iterates all policy IDs and gathers supported values.
-- `GetValueExt` provides typed convenience (`get_ember_version`).
-- `Displayable` wraps maps into printable adapters for diagnostics/logging.
+### Connection lifecycle
 
-These are additive and do not alter transport semantics.
+`Transport::ensure_connection()` drives initialization using `Connection` state:
 
-### Error Topology
+- `Disconnected` -> `connect()`
+- `Connected` -> no-op
+- `Failed` -> reconnect via `connect()`
 
-`Error` is the single crate-level error type and unifies:
+`Uart::connect()` negotiates protocol version by issuing `version` commands and updates internal state to `Connected` on success.
 
-- transport I/O (`Error::Io`)
-- decode failures (`Error::Decode`)
-- protocol status failures (`Error::Status`)
-- value conversion failures (`Error::ValueError`)
-- protocol/flow-specific failures (`InvalidCommand`, `ProtocolVersionMismatch`, etc.)
+### TX path
 
-Because command traits all return `Result<_, Error>`, failures propagate consistently across all layers.
+`Uart::send(command)`:
 
-## `ashv2` Feature Architecture
+1. select next EZSP header format (legacy/extended) from negotiated version
+2. serialize header + command parameters
+3. chunk payload to fit ASHv2 max payload size
+4. send chunks via `ashv2::Proxy`
 
-This section documents the code gated behind `feature = "ashv2"` (`src/uart`).
+### RX path
 
-### Purpose
+A background splitter task continuously:
 
-`uart::Uart` is the concrete transport implementation for EZSP over ASHv2 serial framing.
-It is currently the only transport implementation provided by this crate.
+1. receives ASHv2 payloads
+2. decodes/reassembles EZSP frame fragments
+3. parses typed parameters from frame ID
+4. routes frame contents into response or callback channels
 
-### Main Components
+### Response handling strategy
 
-- `Uart`: owns protocol state and implements `Transport` and `Ezsp`.
-- `Encoder`: serializes EZSP header + parameters into ASHv2 payload chunks and sends via `ashv2::Proxy`.
-- `Decoder`: incrementally decodes ASHv2 payloads into typed EZSP `Frame` values, including fragmented frame assembly.
-- `Splitter`: routes decoded frames into:
-  - response queue for request/response flow
-  - callback queue for async callbacks
-- `State` + `Connection`: shared mutable transport state:
-  - connection state (`Disconnected`/`Connected`/`Failed`)
-  - negotiated protocol version
-  - active `Disambiguation`
-- `NpRwLock`: non-poisoning lock wrapper used for shared state access.
+`Uart::receive::<T>()` consumes the response queue and attempts typed conversion.
+If conversion fails because the response belongs to a different waiter, it requeues the message after a short grace period using a bounded task pool (`tokio_task_pool::Pool`).
 
-### Connection and Version Negotiation
+## Zigbee integration (`feature = "zigbee"`)
 
-On first command (or after failure), `Transport::ensure_connection()` triggers `Ezsp::init()`.
+This layer is implemented in `src/zigbee`.
 
-`Uart::init()` calls `negotiate_version()`:
+### Main types
 
-1. send `version(desired)` in legacy format
-2. store negotiated version
-3. if negotiated version supports extended frames, renegotiate in non-legacy mode
-4. require exact match with desired version, otherwise fail with `ProtocolVersionMismatch`
-
-State transitions are tracked in `State::connection`.
-
-### TX Path (Command Send)
-
-`Uart::send` flow:
-
-1. Build next EZSP header (`Legacy` or `Extended`) from current state.
-2. Store command `Disambiguation` in shared state before sending.
-3. `Encoder` serializes header + parameter bytes.
-4. Large payload is chunked into ASHv2 max payload fragments.
-5. Fragments are sent through `ashv2::Proxy`.
-
-```mermaid
-sequenceDiagram
-    participant Caller
-    participant Uart
-    participant State
-    participant Encoder
-    participant Proxy
-
-    Caller->>Uart: send(command)
-    Uart->>State: set_disambiguation(command.disambiguation)
-    Uart->>Uart: next_header(command.id)
-    Uart->>Encoder: send(header, command)
-    Encoder->>Proxy: send(payload chunk 1)
-    Encoder->>Proxy: send(payload chunk N)
-```
-
-### RX Path (Decode and Routing)
-
-A background `Splitter` task is spawned in `Uart::new`.
-
-1. `Decoder` receives ASHv2 payloads.
-2. Header is parsed as legacy or extended depending on negotiated state.
-3. Parameter bytes are accumulated across fragments if needed.
-4. `Parameters::parse_from_le_stream(...)` uses current `Disambiguation`.
-5. Parsed `Frame` is routed by `Splitter`:
-   - response -> response queue
-   - async callback -> callback queue
-   - non-async callback -> response queue
-
-On decode errors, if a response is pending, the error is forwarded into the response queue.
-
-```mermaid
-flowchart TD
-    A[ASHv2 payload from receiver] --> B[Decoder.read_header]
-    B --> C[Accumulate parameter bytes]
-    C --> D[Parse Parameters with Disambiguation]
-    D --> E{Parsed?}
-    E -- No --> F[Handle decode error or wait for next fragment]
-    E -- Yes --> G[Frame]
-    G --> H{Response or Callback}
-    H -- Response --> I[responses channel]
-    H -- Async Callback --> J[callbacks channel]
-    H -- Non-async Callback --> I
-```
-
-### Response Matching Strategy
-
-`Uart::receive::<T>` reads from the shared response queue and attempts `T::try_from(Parameters)`.
-
-- On success: returns the typed response.
-- On type mismatch: re-queues the received parameters and retries after a short grace period.
-
-This strategy allows interleaved response traffic while preserving typed command APIs.
-
-### ASHv2 Construction APIs
-
-- `Uart::from_serial_port(...)` builds the ASHv2 actor and returns:
-  - `Uart`
-  - ASHv2 tasks handle
-  - EZSP callback receiver
-- `Uart::open(path, flow_control, ...)` is a path-based convenience wrapper.
-- `ChannelSizes` and `Buffers` provide channel sizing controls for runtime behavior tuning.
-
-## `zigbee` Feature Architecture
-
-This section documents `feature = "zigbee"` internals (`src/zigbee`).
-
-### Goal
-
-The Zigbee layer adapts EZSP command/callback mechanics to the `zigbee_hw` runtime model by:
-
-- implementing `zigbee_hw::NcpDriver` for `EzspNetworkManager<T>`
-- translating EZSP callbacks into `zigbee_hw::Event`
-- providing a `Start`-capable builder for network bootstrap
-
-### Main Types and Their Roles
-
-- `zigbee::EzspNetworkManager<T>`:
-  - owns EZSP transport
-  - tracks protocol-level sequencing (`message_tag`, APS seq, transaction seq)
-  - owns proxy channel to event handler actor
-  - implements `NcpDriver` for stack operations (scan, send, address lookup, etc.)
-- `zigbee::network_manager::Builder<T>`:
-  - configuration DSL for policy/config/security/radio options
+- `zigbee::EzspNetworkManager<T>`
+  - wraps EZSP transport and implements `zigbee_hw::NcpDriver`
+  - tracks message/APS/transaction sequence counters
+  - bridges request/response APIs with callback-driven events
+- `Builder<T>` (`src/zigbee/network_manager/builder.rs`)
+  - startup/configuration DSL for network bootstrap
   - implements `zigbee_hw::Start`
-- `EventHandler`:
-  - actor implementing `zigbee_hw::EventTranslator`
-  - consumes callback messages and emits translated `zigbee_hw::Event`
-- `conversion` module:
-  - EZSP-to-Zigbee type conversions (found networks, scanned channels, trust-center join, APS frame parsing)
+- `EventHandler`
+  - translates EZSP callbacks to `zigbee_hw::Event`
 
-### Trait Coupling
+### Trait coupling
 
-`EzspNetworkManager<T>` implements `NcpDriver` only if `T` supports the required EZSP command traits:
+`EzspNetworkManager<T>` implements `NcpDriver` when:
 
-- `Configuration + Security + Messaging + Networking + Utilities + Send + Sync`
+- `T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync`
 
-This keeps Zigbee integration transport-agnostic while still requiring the exact EZSP capabilities needed by the driver.
+`Builder<T>` implements `Start` when:
 
-`Builder<T>` implements `Start` for `T: Transport + Sync + 'static`, because startup requires issuing raw EZSP setup commands and spawning async tasks.
+- `T: Transport + Sync + 'static`
 
-### Startup Flow (`Builder::start`)
+### Startup flow (`Builder::start`)
 
-`Builder::start(endpoints)` performs orchestrated bootstrap:
+`start(endpoints)` performs:
 
-1. validate endpoints
-2. create internal channels
-3. spawn callback bridge and event translator actor
-4. apply concentrator, configuration, and policy settings via EZSP commands
-5. register endpoints via EZSP `add_endpoint`
-6. optionally reinitialize network:
-   - leave network
-   - set initial security state
-   - form network
-   else call `network_init`
-7. wait for `network_up` event
-8. apply runtime radio settings and route request
-9. spawn `EzspNetworkManager` actor and return `NcpHandle` + event stream
+1. endpoint validation
+2. callback bridge + event handler spawn
+3. concentrator/configuration/policy setup via EZSP commands
+4. endpoint registration via `add_endpoint`
+5. network init path:
+   - reinitialize path: leave network, set initial security, form network
+   - normal path: `network_init`
+6. wait for network-up event
+7. runtime radio and route-request setup
+8. spawn `EzspNetworkManager` actor and return `NcpHandle` + event receiver
 
-```mermaid
-flowchart TD
-    A[Builder::start] --> B[Validate endpoints]
-    B --> C[Spawn bridge and EventHandler]
-    C --> D[Apply EZSP config and policies]
-    D --> E[Add endpoints]
-    E --> F{Reinitialize?}
-    F -- Yes --> G[Leave, set security, form network]
-    F -- No --> H[network_init]
-    G --> I[Wait network_up]
-    H --> I
-    I --> J[Set radio power and route request]
-    J --> K[Spawn EzspNetworkManager]
-    K --> L[Return NcpHandle and Event receiver]
-```
+### Data planes
 
-### Callback Translation
+The Zigbee layer keeps two planes separate:
 
-EZSP callbacks are translated by `EventHandler`:
-
-- Networking callbacks:
-  - stack status -> network up/down events
-  - network/energy scan results -> buffered scan results
-  - scan complete -> flush buffered result set to waiting request
-- Messaging callbacks:
-  - incoming message -> APS decode -> `Event::MessageReceived`
-  - message sent -> ACK diagnostics/logging
-- Trust center/security callbacks:
-  - translated when supported, logged otherwise
-
-APS defragmentation is no longer handled in this crate and is now handled by `zigbee-coorinator`.
-
-### Request/Response vs Event Planes
-
-The Zigbee integration separates two data planes:
-
-1. Command plane (`NcpDriver` methods): direct EZSP calls over transport.
-2. Event plane (`EventHandler`): asynchronous callback stream converted to `zigbee_hw::Event`.
-
-This split keeps command latency and callback handling decoupled while still synchronized via shared channels and scan subscriptions.
-
-```mermaid
-flowchart LR
-    A[NcpDriver method] --> B[EZSP command traits]
-    B --> C[Transport]
-
-    D[EZSP callbacks] --> E[EventHandler]
-    E --> F[Conversions]
-    F --> G[zigbee_hw::Event stream]
-```
-
-## Notes on Feature Gating
-
-- Core protocol layer is always compiled.
-- `ashv2` module is compiled only with `feature = "ashv2"`.
-- `zigbee` module is compiled only with `feature = "zigbee"`.
-- Some Zigbee convenience constructors additionally require both (`zigbee` + `ashv2`), for example `EzspNetworkManager::ashv2(...)`.
-
-This keeps the crate usable both as a pure protocol library and as a full Zigbee NCP host stack.
+1. command plane (`NcpDriver` calls -> EZSP commands)
+2. event plane (EZSP callbacks -> translated `zigbee_hw::Event` stream)

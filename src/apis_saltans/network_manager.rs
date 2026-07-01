@@ -5,7 +5,7 @@ use std::io;
 use std::time::Duration;
 
 use apis_saltans_core::{Endpoint, Profile};
-use apis_saltans_hw::{Frame, Metadata, NcpDriver};
+use apis_saltans_hw::{Frame, Metadata, NcpDriver, ParallelUnicastResult};
 use log::debug;
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::{Receiver, Sender};
@@ -356,21 +356,24 @@ where
         &mut self,
         targets: BTreeMap<u16, Box<[Endpoint]>>,
         frame: Frame,
-    ) -> Result<Vec<Result<u8, apis_saltans_hw::Error>>, apis_saltans_hw::Error> {
-        let mut responses = Vec::with_capacity(targets.len());
+    ) -> ParallelUnicastResult {
+        let mut responses = BTreeMap::new();
 
         for (short_id, endpoint) in targets.into_iter().flat_map(|(short_id, endpoints)| {
             endpoints
                 .into_iter()
                 .map(move |endpoint| (short_id, endpoint))
         }) {
-            responses.push(self.send_unicast(short_id, endpoint, frame.clone()).await?);
+            responses.insert(
+                (short_id, endpoint),
+                self.send_unicast(short_id, endpoint, frame.clone()).await?,
+            );
         }
 
-        let mut results = Vec::with_capacity(responses.len());
+        let mut results = BTreeMap::new();
 
-        for response in responses {
-            results.push(response.await);
+        for (ident, response) in responses {
+            results.insert(ident, response.await);
         }
 
         Ok(results)

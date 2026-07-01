@@ -52,7 +52,7 @@ pub struct Uart {
     encoder: Encoder,
     splitter: JoinHandle<()>,
     sequence: u8,
-    pool: Pool,
+    tasks: Pool,
 }
 
 impl Uart {
@@ -88,7 +88,7 @@ impl Uart {
             responses_rx,
             splitter,
             sequence: 0,
-            pool: Pool::bounded(channel_size),
+            tasks: Pool::bounded(channel_size),
         }
     }
 
@@ -273,7 +273,7 @@ impl Transport for Uart {
             match T::try_from(parameters?) {
                 Ok(frame) => return Ok(frame),
                 Err(error) => {
-                    self.pool
+                    self.tasks
                         .spawn(requeue(
                             self.responses_tx.downgrade(),
                             error.into(),

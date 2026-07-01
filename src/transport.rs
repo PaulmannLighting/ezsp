@@ -4,7 +4,7 @@ use core::future::Future;
 
 use le_stream::ToLeStream;
 
-use crate::frame::Parameter;
+use crate::frame::{Parameter, RespondsWith};
 use crate::{Error, Parameters};
 
 /// A transport layer to communicate with an NCP that supports the `EZSP` protocol.
@@ -29,17 +29,16 @@ pub trait Transport: Send {
         <T as TryFrom<Parameters>>::Error: Into<Parameters> + Send;
 
     /// Communicate with the NCP.
-    ///
-    /// This assumes that `C::ID` and `R::ID` are the same.
-    fn communicate<C, R>(&mut self, command: C) -> impl Future<Output = Result<R, Error>> + Send
+    fn communicate<T>(
+        &mut self,
+        command: T,
+    ) -> impl Future<Output = Result<T::Response, Error>> + Send
     where
-        C: Parameter + ToLeStream,
-        R: TryFrom<Parameters> + Send,
-        <R as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
+        T: Parameter + RespondsWith + ToLeStream,
     {
         async {
             self.ensure_connection().await?;
-            self.send::<C>(command).await?;
+            self.send(command).await?;
             self.receive().await
         }
     }

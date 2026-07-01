@@ -7,6 +7,7 @@ use crate::Error;
 use crate::ember::Status;
 use crate::ember::duty_cycle::Limits;
 use crate::frame::Parameter;
+use crate::frame::responds_with::RespondsWith;
 
 const ID: u16 = 0x0040;
 
@@ -23,6 +24,10 @@ impl From<Limits> for Command {
 
 impl Parameter for Command {
     const ID: u16 = ID;
+}
+
+impl RespondsWith for Command {
+    type Response = Response;
 }
 
 /// Response parameters.

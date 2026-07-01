@@ -153,7 +153,7 @@ where
     T: Transport,
 {
     async fn callback(&mut self) -> Result<Option<Callback>, Error> {
-        match self.communicate::<_, Parameters>(callback::Command).await? {
+        match self.communicate(callback::Command).await? {
             Parameters::Callback(callback) => Ok(Some(callback)),
             Parameters::Response(Response::Utilities(utilities::Response::NoCallbacks(_))) => {
                 Ok(None)
@@ -163,7 +163,7 @@ where
     }
 
     async fn custom_frame(&mut self, payload: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
-        self.communicate::<_, custom_frame::Response>(custom_frame::Command::new(payload))
+        self.communicate(custom_frame::Command::new(payload))
             .await?
             .try_into()
     }
@@ -173,7 +173,7 @@ where
         binary_message: bool,
         message: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
-        self.communicate::<_, debug_write::Response>(debug_write::Command::new(
+        self.communicate(debug_write::Command::new(
             binary_message,
             message,
         ))
@@ -182,19 +182,19 @@ where
     }
 
     async fn delay_test(&mut self, delay_millis: u16) -> Result<(), Error> {
-        self.communicate::<_, delay_test::Response>(delay_test::Command::new(delay_millis))
+        self.communicate(delay_test::Command::new(delay_millis))
             .await
             .map(drop)
     }
 
     async fn echo(&mut self, data: ByteSizedVec<u8>) -> Result<ByteSizedVec<u8>, Error> {
-        self.communicate::<_, echo::Response>(echo::Command::new(data))
+        self.communicate(echo::Command::new(data))
             .await
             .map(echo::Response::echo)
     }
 
     async fn get_eui64(&mut self) -> Result<Eui64, Error> {
-        self.communicate::<_, get_eui64::Response>(get_eui64::Command)
+        self.communicate(get_eui64::Command)
             .await
             .map(Into::into)
     }
@@ -203,7 +203,7 @@ where
         &mut self,
         library_id: library::Id,
     ) -> Result<library::Status, Error> {
-        self.communicate::<_, get_library_status::Response>(get_library_status::Command::new(
+        self.communicate(get_library_status::Command::new(
             library_id,
         ))
         .await
@@ -211,42 +211,42 @@ where
     }
 
     async fn get_mfg_token(&mut self, token_id: Id) -> Result<ByteSizedVec<u8>, Error> {
-        self.communicate::<_, get_mfg_token::Response>(get_mfg_token::Command::new(token_id))
+        self.communicate(get_mfg_token::Command::new(token_id))
             .await
             .map(Into::into)
     }
 
     async fn get_node_id(&mut self) -> Result<NodeId, Error> {
-        self.communicate::<_, get_node_id::Response>(get_node_id::Command)
+        self.communicate(get_node_id::Command)
             .await
             .map(Into::into)
     }
 
     async fn get_phy_interface_count(&mut self) -> Result<u8, Error> {
-        self.communicate::<_, get_phy_interface_count::Response>(get_phy_interface_count::Command)
+        self.communicate(get_phy_interface_count::Command)
             .await
             .map(Into::into)
     }
 
     async fn get_random_number(&mut self) -> Result<u16, Error> {
-        self.communicate::<_, get_random_number::Response>(get_random_number::Command)
+        self.communicate(get_random_number::Command)
             .await?
             .try_into()
     }
 
     async fn get_timer(&mut self, timer_id: u8) -> Result<get_timer::Response, Error> {
-        self.communicate::<_, get_timer::Response>(get_timer::Command::new(timer_id))
+        self.communicate(get_timer::Command::new(timer_id))
             .await
     }
 
     async fn get_token(&mut self, token_id: u8) -> Result<[u8; 8], Error> {
-        self.communicate::<_, get_token::Response>(get_token::Command::new(token_id))
+        self.communicate(get_token::Command::new(token_id))
             .await?
             .try_into()
     }
 
     async fn get_true_random_entropy_source(&mut self) -> Result<Source, Error> {
-        self.communicate::<_, get_true_random_entropy_source::Response>(
+        self.communicate(
             get_true_random_entropy_source::Command,
         )
         .await?
@@ -254,31 +254,31 @@ where
     }
 
     async fn get_xncp_info(&mut self) -> Result<get_xncp_info::Payload, Error> {
-        self.communicate::<_, get_xncp_info::Response>(get_xncp_info::Command)
+        self.communicate(get_xncp_info::Command)
             .await?
             .try_into()
     }
 
     async fn nop(&mut self) -> Result<(), Error> {
-        self.communicate::<_, nop::Response>(nop::Command)
+        self.communicate(nop::Command)
             .await
             .map(drop)
     }
 
     async fn read_and_clear_counters(&mut self) -> Result<[u16; COUNTER_TYPE_COUNT], Error> {
-        self.communicate::<_, read_and_clear_counters::Response>(read_and_clear_counters::Command)
+        self.communicate(read_and_clear_counters::Command)
             .await
             .map(Into::into)
     }
 
     async fn read_counters(&mut self) -> Result<[u16; COUNTER_TYPE_COUNT], Error> {
-        self.communicate::<_, read_counters::Response>(read_counters::Command)
+        self.communicate(read_counters::Command)
             .await
             .map(Into::into)
     }
 
     async fn set_mfg_token(&mut self, token_id: Id, token: ByteSizedVec<u8>) -> Result<(), Error> {
-        self.communicate::<_, set_mfg_token::Response>(set_mfg_token::Command::new(token_id, token))
+        self.communicate(set_mfg_token::Command::new(token_id, token))
             .await?
             .try_into()
     }
@@ -289,7 +289,7 @@ where
         duration: event::Duration,
         repeat: bool,
     ) -> Result<(), Error> {
-        self.communicate::<_, set_timer::Response>(set_timer::Command::new(
+        self.communicate(set_timer::Command::new(
             timer_id,
             duration.time(),
             duration.units(),
@@ -300,7 +300,7 @@ where
     }
 
     async fn set_token(&mut self, token_id: u8, token: [u8; 8]) -> Result<(), Error> {
-        self.communicate::<_, set_token::Response>(set_token::Command::new(token_id, token))
+        self.communicate(set_token::Command::new(token_id, token))
             .await?
             .try_into()
     }

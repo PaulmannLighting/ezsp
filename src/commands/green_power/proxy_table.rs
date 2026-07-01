@@ -40,13 +40,13 @@ where
     T: Transport,
 {
     async fn get_entry(&mut self, proxy_index: u8) -> Result<TableEntry, Error> {
-        self.communicate::<_, get_entry::Response>(get_entry::Command::new(proxy_index))
+        self.communicate(get_entry::Command::new(proxy_index))
             .await?
             .try_into()
     }
 
     async fn lookup(&mut self, addr: Address) -> Result<u8, Error> {
-        self.communicate::<_, lookup::Response>(lookup::Command::new(addr))
+        self.communicate(lookup::Command::new(addr))
             .await
             .map(|response| response.index())
     }
@@ -64,7 +64,7 @@ where
         gpd_security_frame_counter: u32,
         forwarding_radius: u8,
     ) -> Result<bool, Error> {
-        self.communicate::<_, process_gp_pairing::Response>(process_gp_pairing::Command::new(
+        self.communicate(process_gp_pairing::Command::new(
             options,
             addr,
             comm_mode,

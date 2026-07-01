@@ -173,7 +173,7 @@ where
         partner_certificate: CertificateData,
         partner_ephemeral_public_key: PublicKeyData,
     ) -> Result<(), Error> {
-        self.communicate::<_, calculate_smacs::Response>(calculate_smacs::Command::new(
+        self.communicate(calculate_smacs::Command::new(
             am_initiator,
             partner_certificate,
             partner_ephemeral_public_key,
@@ -188,7 +188,7 @@ where
         partner_certificate: Certificate283k1Data,
         partner_ephemeral_public_key: PublicKey283k1Data,
     ) -> Result<(), Error> {
-        self.communicate::<_, calculate_smacs283k1::Response>(calculate_smacs283k1::Command::new(
+        self.communicate(calculate_smacs283k1::Command::new(
             am_initiator,
             partner_certificate,
             partner_ephemeral_public_key,
@@ -201,7 +201,7 @@ where
         &mut self,
         store_link_key: bool,
     ) -> Result<(), Error> {
-        self.communicate::<_, clear_temporary_data_maybe_store_link_key::Response>(
+        self.communicate(
             clear_temporary_data_maybe_store_link_key::Command::new(store_link_key),
         )
         .await?
@@ -212,7 +212,7 @@ where
         &mut self,
         store_link_key: bool,
     ) -> Result<(), Error> {
-        self.communicate::<_, clear_temporary_data_maybe_store_link_key283k1::Response>(
+        self.communicate(
             clear_temporary_data_maybe_store_link_key283k1::Command::new(store_link_key),
         )
         .await?
@@ -220,7 +220,7 @@ where
     }
 
     async fn dsa_sign(&mut self, message: ByteSizedVec<u8>) -> Result<(), Error> {
-        self.communicate::<_, dsa_sign::Response>(dsa_sign::Command::new(message))
+        self.communicate(dsa_sign::Command::new(message))
             .await
             .map(drop)
     }
@@ -231,7 +231,7 @@ where
         signer_certificate: CertificateData,
         received_sig: SignatureData,
     ) -> Result<(), Error> {
-        self.communicate::<_, dsa_verify::Response>(dsa_verify::Command::new(
+        self.communicate(dsa_verify::Command::new(
             digest,
             signer_certificate,
             received_sig,
@@ -246,7 +246,7 @@ where
         signer_certificate: Certificate283k1Data,
         received_sig: Signature283k1Data,
     ) -> Result<(), Error> {
-        self.communicate::<_, dsa_verify283k1::Response>(dsa_verify283k1::Command::new(
+        self.communicate(dsa_verify283k1::Command::new(
             digest,
             signer_certificate,
             received_sig,
@@ -256,31 +256,31 @@ where
     }
 
     async fn generate_cbke_keys(&mut self) -> Result<(), Error> {
-        self.communicate::<_, generate_cbke_keys::Response>(generate_cbke_keys::Command)
+        self.communicate(generate_cbke_keys::Command)
             .await?
             .try_into()
     }
 
     async fn generate_cbke_keys283k1(&mut self) -> Result<(), Error> {
-        self.communicate::<_, generate_cbke_keys283k1::Response>(generate_cbke_keys283k1::Command)
+        self.communicate(generate_cbke_keys283k1::Command)
             .await?
             .try_into()
     }
 
     async fn get_certificate(&mut self) -> Result<CertificateData, Error> {
-        self.communicate::<_, get_certificate::Response>(get_certificate::Command)
+        self.communicate(get_certificate::Command)
             .await?
             .try_into()
     }
 
     async fn get_certificate283k1(&mut self) -> Result<Certificate283k1Data, Error> {
-        self.communicate::<_, get_certificate283k1::Response>(get_certificate283k1::Command)
+        self.communicate(get_certificate283k1::Command)
             .await?
             .try_into()
     }
 
     async fn save_preinstalled_cbke_data283k1(&mut self) -> Result<(), Error> {
-        self.communicate::<_, save_preinstalled_cbke_data283k1::Response>(
+        self.communicate(
             save_preinstalled_cbke_data283k1::Command,
         )
         .await?
@@ -293,7 +293,7 @@ where
         my_cert: CertificateData,
         my_key: PrivateKeyData,
     ) -> Result<(), Error> {
-        self.communicate::<_, set_preinstalled_cbke_data::Response>(
+        self.communicate(
             set_preinstalled_cbke_data::Command::new(ca_public, my_cert, my_key),
         )
         .await?

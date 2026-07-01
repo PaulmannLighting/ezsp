@@ -8,6 +8,7 @@ use crate::ember::Status;
 use crate::ember::beacon::Data;
 use crate::ember::node::Type;
 use crate::frame::Parameter;
+use crate::frame::responds_with::RespondsWith;
 
 const ID: u16 = 0x003B;
 
@@ -38,6 +39,10 @@ impl Command {
 
 impl Parameter for Command {
     const ID: u16 = ID;
+}
+
+impl RespondsWith for Command {
+    type Response = Response;
 }
 
 /// Response parameters.

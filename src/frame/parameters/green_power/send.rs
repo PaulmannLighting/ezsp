@@ -7,6 +7,7 @@ use crate::Error;
 use crate::ember::Status;
 use crate::ember::gp::Address;
 use crate::frame::Parameter;
+use crate::frame::responds_with::RespondsWith;
 use crate::types::ByteSizedVec;
 
 const ID: u16 = 0x00C6;
@@ -46,6 +47,10 @@ impl Command {
 
 impl Parameter for Command {
     const ID: u16 = ID;
+}
+
+impl RespondsWith for Command {
+    type Response = Response;
 }
 
 /// Response parameters.

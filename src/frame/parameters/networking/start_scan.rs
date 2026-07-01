@@ -7,6 +7,7 @@ use silizium::Status;
 use crate::Error;
 use crate::ezsp::network::scan::Type;
 use crate::frame::Parameter;
+use crate::frame::responds_with::RespondsWith;
 use crate::types::VariableLengthU32;
 
 const ID: u16 = 0x001A;
@@ -31,6 +32,10 @@ impl Command {
 
 impl Parameter for Command {
     const ID: u16 = ID;
+}
+
+impl RespondsWith for Command {
+    type Response = Response;
 }
 
 /// Response parameters.

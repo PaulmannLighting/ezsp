@@ -52,7 +52,7 @@ where
     T: Transport,
 {
     async fn aes_encrypt(&mut self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
-        self.communicate::<_, aes_encrypt::Response>(aes_encrypt::Command::new(plaintext, key))
+        self.communicate(aes_encrypt::Command::new(plaintext, key))
             .await
             .map(|response| response.ciphertext())
     }
@@ -60,14 +60,14 @@ where
     async fn get_standalone_bootloader_version_plat_micro_phy(
         &mut self,
     ) -> Result<get_standalone_bootloader_version_plat_micro_phy::Response, Error> {
-        self.communicate::<_, get_standalone_bootloader_version_plat_micro_phy::Response>(
+        self.communicate(
             get_standalone_bootloader_version_plat_micro_phy::Command,
         )
         .await
     }
 
     async fn launch_standalone_bootloader(&mut self, mode: u8) -> Result<(), Error> {
-        self.communicate::<_, launch_standalone_bootloader::Response>(
+        self.communicate(
             launch_standalone_bootloader::Command::new(mode),
         )
         .await?
@@ -80,7 +80,7 @@ where
         dest_eui64: Eui64,
         message: ByteSizedVec<u8>,
     ) -> Result<(), Error> {
-        self.communicate::<_, send_bootload_message::Response>(send_bootload_message::Command::new(
+        self.communicate(send_bootload_message::Command::new(
             broadcast, dest_eui64, message,
         ))
         .await?

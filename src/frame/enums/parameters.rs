@@ -11,6 +11,7 @@ mod parsing;
 pub enum Parameters {
     /// A response.
     Response(Response),
+
     /// A callback.
     Callback(Callback),
 }

@@ -9,6 +9,7 @@ use crate::ember::network::Parameters;
 use crate::ember::node::Type;
 use crate::error::ValueError;
 use crate::frame::Parameter;
+use crate::frame::responds_with::RespondsWith;
 
 const ID: u16 = 0x0028;
 
@@ -17,6 +18,10 @@ pub(crate) struct Command;
 
 impl Parameter for Command {
     const ID: u16 = ID;
+}
+
+impl RespondsWith for Command {
+    type Response = Response;
 }
 
 /// Response parameters.

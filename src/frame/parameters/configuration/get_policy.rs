@@ -7,6 +7,7 @@ use crate::Error;
 use crate::error::ValueError;
 use crate::ezsp::{Status, decision, policy};
 use crate::frame::Parameter;
+use crate::frame::responds_with::RespondsWith;
 
 const ID: u16 = 0x0056;
 
@@ -26,6 +27,10 @@ impl Command {
 
 impl Parameter for Command {
     const ID: u16 = ID;
+}
+
+impl RespondsWith for Command {
+    type Response = Response;
 }
 
 /// Response parameters.

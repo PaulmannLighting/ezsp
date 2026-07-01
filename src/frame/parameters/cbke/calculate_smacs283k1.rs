@@ -6,6 +6,7 @@ use num_traits::FromPrimitive;
 use crate::Error;
 use crate::ember::{Certificate283k1Data, PublicKey283k1Data, Status};
 use crate::frame::Parameter;
+use crate::frame::responds_with::RespondsWith;
 
 const ID: u16 = 0x00EA;
 
@@ -33,6 +34,10 @@ impl Command {
 
 impl Parameter for Command {
     const ID: u16 = ID;
+}
+
+impl RespondsWith for Command {
+    type Response = Response;
 }
 
 /// Response parameters.

@@ -177,19 +177,19 @@ where
     T: Transport,
 {
     async fn check_key_context(&mut self, context: man::Context) -> Result<(), Error> {
-        self.communicate::<_, check_key_context::Response>(check_key_context::Command::new(context))
+        self.communicate(check_key_context::Command::new(context))
             .await?
             .try_into()
     }
 
     async fn clear_key_table(&mut self) -> Result<(), Error> {
-        self.communicate::<_, clear_key_table::Response>(clear_key_table::Command)
+        self.communicate(clear_key_table::Command)
             .await?
             .try_into()
     }
 
     async fn clear_transient_link_keys(&mut self) -> Result<(), Error> {
-        self.communicate::<_, clear_transient_link_keys::Response>(
+        self.communicate(
             clear_transient_link_keys::Command,
         )
         .await
@@ -197,7 +197,7 @@ where
     }
 
     async fn erase_key_table_entry(&mut self, index: u8) -> Result<(), Error> {
-        self.communicate::<_, erase_key_table_entry::Response>(erase_key_table_entry::Command::new(
+        self.communicate(erase_key_table_entry::Command::new(
             index,
         ))
         .await
@@ -205,7 +205,7 @@ where
     }
 
     async fn export_key(&mut self, man_context: man::Context) -> Result<man::Key, Error> {
-        self.communicate::<_, export_key::Response>(export_key::Command::new(man_context))
+        self.communicate(export_key::Command::new(man_context))
             .await?
             .try_into()
     }
@@ -214,7 +214,7 @@ where
         &mut self,
         eui: Eui64,
     ) -> Result<export_link_key_by_eui::Payload, Error> {
-        self.communicate::<_, export_link_key_by_eui::Response>(
+        self.communicate(
             export_link_key_by_eui::Command::new(eui),
         )
         .await?
@@ -225,7 +225,7 @@ where
         &mut self,
         index: u8,
     ) -> Result<export_link_key_by_index::Payload, Error> {
-        self.communicate::<_, export_link_key_by_index::Response>(
+        self.communicate(
             export_link_key_by_index::Command::new(index),
         )
         .await?
@@ -236,7 +236,7 @@ where
         &mut self,
         eui: Eui64,
     ) -> Result<export_transient_key::TransientKey, Error> {
-        self.communicate::<_, export_transient_key::by_eui::Response>(
+        self.communicate(
             export_transient_key::by_eui::Command::new(eui),
         )
         .await?
@@ -247,7 +247,7 @@ where
         &mut self,
         index: u8,
     ) -> Result<export_transient_key::TransientKey, Error> {
-        self.communicate::<_, export_transient_key::by_index::Response>(
+        self.communicate(
             export_transient_key::by_index::Command::new(index),
         )
         .await?
@@ -255,7 +255,7 @@ where
     }
 
     async fn find_key_table_entry(&mut self, address: Eui64, link_key: bool) -> Result<u8, Error> {
-        self.communicate::<_, find_key_table_entry::Response>(find_key_table_entry::Command::new(
+        self.communicate(find_key_table_entry::Command::new(
             address, link_key,
         ))
         .await
@@ -266,7 +266,7 @@ where
         &mut self,
         context_in: man::Context,
     ) -> Result<get_aps_key_info::KeyInfo, Error> {
-        self.communicate::<_, get_aps_key_info::Response>(get_aps_key_info::Command::new(
+        self.communicate(get_aps_key_info::Command::new(
             context_in,
         ))
         .await?
@@ -274,7 +274,7 @@ where
     }
 
     async fn get_current_security_state(&mut self) -> Result<security::current::State, Error> {
-        self.communicate::<_, get_current_security_state::Response>(
+        self.communicate(
             get_current_security_state::Command,
         )
         .await?
@@ -282,19 +282,19 @@ where
     }
 
     async fn get_key(&mut self, key: Type) -> Result<Struct, Error> {
-        self.communicate::<_, get_key::Response>(get_key::Command::new(key))
+        self.communicate(get_key::Command::new(key))
             .await?
             .try_into()
     }
 
     async fn get_network_key_info(&mut self) -> Result<man::NetworkKeyInfo, Error> {
-        self.communicate::<_, get_network_key_info::Response>(get_network_key_info::Command)
+        self.communicate(get_network_key_info::Command)
             .await?
             .try_into()
     }
 
     async fn import_key(&mut self, context: man::Context, key: man::Key) -> Result<(), Error> {
-        self.communicate::<_, import_key::Response>(import_key::Command::new(context, key))
+        self.communicate(import_key::Command::new(context, key))
             .await?
             .try_into()
     }
@@ -305,7 +305,7 @@ where
         address: Eui64,
         plaintext_key: man::Key,
     ) -> Result<(), Error> {
-        self.communicate::<_, import_link_key::Response>(import_link_key::Command::new(
+        self.communicate(import_link_key::Command::new(
             index,
             address,
             plaintext_key,
@@ -321,7 +321,7 @@ where
         plaintext_key: man::Key,
         flags: man::Flags,
     ) -> Result<(), Error> {
-        self.communicate::<_, import_transient_key::Response>(import_transient_key::Command::new(
+        self.communicate(import_transient_key::Command::new(
             context,
             eui64,
             plaintext_key,
@@ -332,7 +332,7 @@ where
     }
 
     async fn request_link_key(&mut self, partner: Eui64) -> Result<(), Error> {
-        self.communicate::<_, request_link_key::Response>(request_link_key::Command::new(partner))
+        self.communicate(request_link_key::Command::new(partner))
             .await?
             .try_into()
     }
@@ -342,7 +342,7 @@ where
         destination_node_id: NodeId,
         destination_eui64: Eui64,
     ) -> Result<(), Error> {
-        self.communicate::<_, send_trust_center_link_key::Response>(
+        self.communicate(
             send_trust_center_link_key::Command::new(destination_node_id, destination_eui64),
         )
         .await?
@@ -353,7 +353,7 @@ where
         &mut self,
         state: security::initial::State,
     ) -> Result<(), Error> {
-        self.communicate::<_, set_initial_security_state::Response>(
+        self.communicate(
             set_initial_security_state::Command::new(state),
         )
         .await?
@@ -361,7 +361,7 @@ where
     }
 
     async fn update_tc_link_key(&mut self, max_attempts: u8) -> Result<(), Error> {
-        self.communicate::<_, update_tc_link_key::Response>(update_tc_link_key::Command::new(
+        self.communicate(update_tc_link_key::Command::new(
             max_attempts,
         ))
         .await?

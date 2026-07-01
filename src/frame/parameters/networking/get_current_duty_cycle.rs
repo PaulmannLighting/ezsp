@@ -7,6 +7,7 @@ use num_traits::FromPrimitive;
 use crate::ember::{DeviceDutyCycles, MAX_END_DEVICE_CHILDREN, PerDeviceDutyCycle, Status};
 use crate::error::Error;
 use crate::frame::Parameter;
+use crate::frame::responds_with::RespondsWith;
 
 const ID: u16 = 0x004C;
 
@@ -24,6 +25,10 @@ impl Command {
 
 impl Parameter for Command {
     const ID: u16 = ID;
+}
+
+impl RespondsWith for Command {
+    type Response = Response;
 }
 
 /// Response parameters.

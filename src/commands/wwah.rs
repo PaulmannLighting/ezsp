@@ -43,7 +43,7 @@ where
     T: Transport,
 {
     async fn get_parent_classification_enabled(&mut self) -> Result<bool, Error> {
-        self.communicate::<_, get_parent_classification_enabled::Response>(
+        self.communicate(
             get_parent_classification_enabled::Command,
         )
         .await
@@ -51,19 +51,19 @@ where
     }
 
     async fn is_hub_connected(&mut self) -> Result<bool, Error> {
-        self.communicate::<_, is_hub_connected::Response>(is_hub_connected::Command)
+        self.communicate(is_hub_connected::Command)
             .await
             .map(Into::into)
     }
 
     async fn is_uptime_long(&mut self) -> Result<bool, Error> {
-        self.communicate::<_, is_uptime_long::Response>(is_uptime_long::Command)
+        self.communicate(is_uptime_long::Command)
             .await
             .map(Into::into)
     }
 
     async fn set_hub_connectivity(&mut self, connected: bool) -> Result<(), Error> {
-        self.communicate::<_, set_hub_connectivity::Response>(set_hub_connectivity::Command::new(
+        self.communicate(set_hub_connectivity::Command::new(
             connected,
         ))
         .await
@@ -71,7 +71,7 @@ where
     }
 
     async fn set_long_uptime(&mut self, has_long_uptime: bool) -> Result<(), Error> {
-        self.communicate::<_, set_long_uptime::Response>(set_long_uptime::Command::new(
+        self.communicate(set_long_uptime::Command::new(
             has_long_uptime,
         ))
         .await
@@ -79,7 +79,7 @@ where
     }
 
     async fn set_parent_classification_enabled(&mut self, enabled: bool) -> Result<(), Error> {
-        self.communicate::<_, set_parent_classification_enabled::Response>(
+        self.communicate(
             set_parent_classification_enabled::Command::new(enabled),
         )
         .await

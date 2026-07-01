@@ -406,13 +406,13 @@ where
     T: Transport,
 {
     async fn child_id(&mut self, child_index: u8) -> Result<Option<NodeId>, Error> {
-        self.communicate::<_, child_id::Response>(child_id::Command::new(child_index))
+        self.communicate(child_id::Command::new(child_index))
             .await
             .map(|response| response.child_id())
     }
 
     async fn clear_stored_beacons(&mut self) -> Result<(), Error> {
-        self.communicate::<_, clear_stored_beacons::Response>(clear_stored_beacons::Command)
+        self.communicate(clear_stored_beacons::Command)
             .await
             .map(drop)
     }
@@ -424,7 +424,7 @@ where
         scan_duration: u8,
         scan_count: u16,
     ) -> Result<(), Error> {
-        self.communicate::<_, energy_scan_request::Response>(energy_scan_request::Command::new(
+        self.communicate(energy_scan_request::Command::new(
             target,
             scan_channels,
             scan_duration,
@@ -439,7 +439,7 @@ where
         have_current_network_key: bool,
         channel_mask: u32,
     ) -> Result<(), Error> {
-        self.communicate::<_, find_and_rejoin_network::Response>(
+        self.communicate(
             find_and_rejoin_network::Command::new(have_current_network_key, channel_mask),
         )
         .await?
@@ -447,7 +447,7 @@ where
     }
 
     async fn find_unused_pan_id(&mut self, channel_mask: u32, duration: u8) -> Result<(), Error> {
-        self.communicate::<_, find_unused_pan_id::Response>(find_unused_pan_id::Command::new(
+        self.communicate(find_unused_pan_id::Command::new(
             channel_mask,
             duration,
         ))
@@ -456,13 +456,13 @@ where
     }
 
     async fn form_network(&mut self, parameters: network::Parameters) -> Result<(), Error> {
-        self.communicate::<_, form_network::Response>(form_network::Command::new(parameters))
+        self.communicate(form_network::Command::new(parameters))
             .await?
             .try_into()
     }
 
     async fn get_child_data(&mut self, index: u8) -> Result<child::Data, Error> {
-        self.communicate::<_, get_child_data::Response>(get_child_data::Command::new(index))
+        self.communicate(get_child_data::Command::new(index))
             .await?
             .try_into()
     }
@@ -471,7 +471,7 @@ where
         &mut self,
         max_devices: u8,
     ) -> Result<heapless::Vec<PerDeviceDutyCycle, MAX_END_DEVICE_CHILDREN>, Error> {
-        self.communicate::<_, get_current_duty_cycle::Response>(
+        self.communicate(
             get_current_duty_cycle::Command::new(max_devices),
         )
         .await?
@@ -479,37 +479,37 @@ where
     }
 
     async fn get_duty_cycle_limits(&mut self) -> Result<duty_cycle::Limits, Error> {
-        self.communicate::<_, get_duty_cycle_limits::Response>(get_duty_cycle_limits::Command)
+        self.communicate(get_duty_cycle_limits::Command)
             .await?
             .try_into()
     }
 
     async fn get_duty_cycle_state(&mut self) -> Result<duty_cycle::State, Error> {
-        self.communicate::<_, get_duty_cycle_state::Response>(get_duty_cycle_state::Command)
+        self.communicate(get_duty_cycle_state::Command)
             .await?
             .try_into()
     }
 
     async fn get_first_beacon(&mut self) -> Result<beacon::Iterator, Error> {
-        self.communicate::<_, get_first_beacon::Response>(get_first_beacon::Command)
+        self.communicate(get_first_beacon::Command)
             .await?
             .try_into()
     }
 
     async fn get_logical_channel(&mut self) -> Result<u8, Error> {
-        self.communicate::<_, get_logical_channel::Response>(get_logical_channel::Command)
+        self.communicate(get_logical_channel::Command)
             .await
             .map(|response| response.logical_channel())
     }
 
     async fn get_neighbor(&mut self, index: u8) -> Result<neighbor::TableEntry, Error> {
-        self.communicate::<_, get_neighbor::Response>(get_neighbor::Command::new(index))
+        self.communicate(get_neighbor::Command::new(index))
             .await?
             .try_into()
     }
 
     async fn get_neighbor_frame_counter(&mut self, eui64: Eui64) -> Result<u32, Error> {
-        self.communicate::<_, get_neighbor_frame_counter::Response>(
+        self.communicate(
             get_neighbor_frame_counter::Command::new(eui64),
         )
         .await?
@@ -517,19 +517,19 @@ where
     }
 
     async fn get_network_parameters(&mut self) -> Result<(node::Type, network::Parameters), Error> {
-        self.communicate::<_, get_network_parameters::Response>(get_network_parameters::Command)
+        self.communicate(get_network_parameters::Command)
             .await?
             .try_into()
     }
 
     async fn get_next_beacon(&mut self) -> Result<beacon::Data, Error> {
-        self.communicate::<_, get_next_beacon::Response>(get_next_beacon::Command)
+        self.communicate(get_next_beacon::Command)
             .await?
             .try_into()
     }
 
     async fn get_num_stored_beacons(&mut self) -> Result<u8, Error> {
-        self.communicate::<_, get_num_stored_beacons::Response>(get_num_stored_beacons::Command)
+        self.communicate(get_num_stored_beacons::Command)
             .await
             .map(|response| response.num_beacons())
     }
@@ -537,20 +537,20 @@ where
     async fn get_parent_child_parameters(
         &mut self,
     ) -> Result<get_parent_child_parameters::Response, Error> {
-        self.communicate::<_, get_parent_child_parameters::Response>(
+        self.communicate(
             get_parent_child_parameters::Command,
         )
         .await
     }
 
     async fn get_radio_channel(&mut self) -> Result<u8, Error> {
-        self.communicate::<_, get_radio_channel::Response>(get_radio_channel::Command)
+        self.communicate(get_radio_channel::Command)
             .await
             .map(|response| response.channel())
     }
 
     async fn get_radio_parameters(&mut self, phy_index: u8) -> Result<radio::Parameters, Error> {
-        self.communicate::<_, get_radio_parameters::Response>(get_radio_parameters::Command::new(
+        self.communicate(get_radio_parameters::Command::new(
             phy_index,
         ))
         .await?
@@ -558,7 +558,7 @@ where
     }
 
     async fn get_route_table_entry(&mut self, index: u8) -> Result<route::TableEntry, Error> {
-        self.communicate::<_, get_route_table_entry::Response>(get_route_table_entry::Command::new(
+        self.communicate(get_route_table_entry::Command::new(
             index,
         ))
         .await?
@@ -566,7 +566,7 @@ where
     }
 
     async fn get_routing_shortcut_threshold(&mut self) -> Result<u8, Error> {
-        self.communicate::<_, get_routing_shortcut_threshold::Response>(
+        self.communicate(
             get_routing_shortcut_threshold::Command,
         )
         .await
@@ -577,7 +577,7 @@ where
         &mut self,
         index: u8,
     ) -> Result<get_source_route_table_entry::Entry, Error> {
-        self.communicate::<_, get_source_route_table_entry::Response>(
+        self.communicate(
             get_source_route_table_entry::Command::new(index),
         )
         .await?
@@ -585,7 +585,7 @@ where
     }
 
     async fn get_source_route_table_filled_size(&mut self) -> Result<u8, Error> {
-        self.communicate::<_, get_source_route_table_filled_size::Response>(
+        self.communicate(
             get_source_route_table_filled_size::Command,
         )
         .await
@@ -593,7 +593,7 @@ where
     }
 
     async fn get_source_route_table_total_size(&mut self) -> Result<u8, Error> {
-        self.communicate::<_, get_source_route_table_total_size::Response>(
+        self.communicate(
             get_source_route_table_total_size::Command,
         )
         .await
@@ -601,7 +601,7 @@ where
     }
 
     async fn id(&mut self, child_id: NodeId) -> Result<u8, Error> {
-        self.communicate::<_, id::Response>(id::Command::new(child_id))
+        self.communicate(id::Command::new(child_id))
             .await
             .map(|response| response.child_index())
     }
@@ -611,7 +611,7 @@ where
         node_type: node::Type,
         parameters: network::Parameters,
     ) -> Result<(), Error> {
-        self.communicate::<_, join_network::Response>(join_network::Command::new(
+        self.communicate(join_network::Command::new(
             node_type, parameters,
         ))
         .await?
@@ -625,7 +625,7 @@ where
         radio_tx_power: i8,
         clear_beacons_after_network_up: bool,
     ) -> Result<(), Error> {
-        self.communicate::<_, join_network_directly::Response>(join_network_directly::Command::new(
+        self.communicate(join_network_directly::Command::new(
             local_node_type,
             beacon,
             radio_tx_power,
@@ -636,7 +636,7 @@ where
     }
 
     async fn leave_network(&mut self) -> Result<(), Error> {
-        self.communicate::<_, leave_network::Response>(leave_network::Command)
+        self.communicate(leave_network::Command)
             .await?
             .try_into()
     }
@@ -647,7 +647,7 @@ where
         page: u8,
         channel: u8,
     ) -> Result<(), Error> {
-        self.communicate::<_, multi_phy_set_radio_channel::Response>(
+        self.communicate(
             multi_phy_set_radio_channel::Command::new(phy_index, page, channel),
         )
         .await?
@@ -655,7 +655,7 @@ where
     }
 
     async fn multi_phy_set_radio_power(&mut self, phy_index: u8, power: i8) -> Result<(), Error> {
-        self.communicate::<_, multi_phy_set_radio_power::Response>(
+        self.communicate(
             multi_phy_set_radio_power::Command::new(phy_index, power),
         )
         .await?
@@ -670,7 +670,7 @@ where
         power: i8,
         bitmask: nwk::Config,
     ) -> Result<(), Error> {
-        self.communicate::<_, multi_phy_start::Response>(multi_phy_start::Command::new(
+        self.communicate(multi_phy_start::Command::new(
             phy_index, page, channel, power, bitmask,
         ))
         .await?
@@ -678,37 +678,37 @@ where
     }
 
     async fn multi_phy_stop(&mut self, phy_index: u8) -> Result<(), Error> {
-        self.communicate::<_, multi_phy_stop::Response>(multi_phy_stop::Command::new(phy_index))
+        self.communicate(multi_phy_stop::Command::new(phy_index))
             .await?
             .try_into()
     }
 
     async fn neighbor_count(&mut self) -> Result<u8, Error> {
-        self.communicate::<_, neighbor_count::Response>(neighbor_count::Command)
+        self.communicate(neighbor_count::Command)
             .await
             .map(|response| response.value())
     }
 
     async fn network_init(&mut self, bitmask: InitBitmask) -> Result<(), Error> {
-        self.communicate::<_, network_init::Response>(network_init::Command::new(bitmask))
+        self.communicate(network_init::Command::new(bitmask))
             .await?
             .try_into()
     }
 
     async fn network_state(&mut self) -> Result<network::Status, Error> {
-        self.communicate::<_, network_state::Response>(network_state::Command)
+        self.communicate(network_state::Command)
             .await?
             .try_into()
     }
 
     async fn permit_joining(&mut self, duration: network::Duration) -> Result<(), Error> {
-        self.communicate::<_, permit_joining::Response>(permit_joining::Command::new(duration))
+        self.communicate(permit_joining::Command::new(duration))
             .await?
             .try_into()
     }
 
     async fn send_link_power_delta_request(&mut self) -> Result<(), Error> {
-        self.communicate::<_, send_link_power_delta_request::Response>(
+        self.communicate(
             send_link_power_delta_request::Command,
         )
         .await?
@@ -716,7 +716,7 @@ where
     }
 
     async fn set_broken_route_error_code(&mut self, error_code: u8) -> Result<(), Error> {
-        self.communicate::<_, set_broken_route_error_code::Response>(
+        self.communicate(
             set_broken_route_error_code::Command::new(error_code),
         )
         .await?
@@ -724,7 +724,7 @@ where
     }
 
     async fn set_child_data(&mut self, index: u8, child_data: child::Data) -> Result<(), Error> {
-        self.communicate::<_, set_child_data::Response>(set_child_data::Command::new(
+        self.communicate(set_child_data::Command::new(
             index, child_data,
         ))
         .await?
@@ -735,7 +735,7 @@ where
         &mut self,
         parameters: Option<concentrator::Parameters>,
     ) -> Result<(), Error> {
-        self.communicate::<_, set_concentrator::Response>(set_concentrator::Command::from(
+        self.communicate(set_concentrator::Command::from(
             parameters,
         ))
         .await?
@@ -746,7 +746,7 @@ where
         &mut self,
         limits: duty_cycle::Limits,
     ) -> Result<(), Error> {
-        self.communicate::<_, set_duty_cycle_limits_in_stack::Response>(
+        self.communicate(
             set_duty_cycle_limits_in_stack::Command::from(limits),
         )
         .await?
@@ -754,7 +754,7 @@ where
     }
 
     async fn set_logical_and_radio_channel(&mut self, radio_channel: u8) -> Result<(), Error> {
-        self.communicate::<_, set_logical_and_radio_channel::Response>(
+        self.communicate(
             set_logical_and_radio_channel::Command::new(radio_channel),
         )
         .await?
@@ -762,7 +762,7 @@ where
     }
 
     async fn set_manufacturer_code(&mut self, code: u16) -> Result<(), Error> {
-        self.communicate::<_, set_manufacturer_code::Response>(set_manufacturer_code::Command::new(
+        self.communicate(set_manufacturer_code::Command::new(
             code,
         ))
         .await
@@ -774,7 +774,7 @@ where
         eui64: Eui64,
         frame_counter: u32,
     ) -> Result<(), Error> {
-        self.communicate::<_, set_neighbor_frame_counter::Response>(
+        self.communicate(
             set_neighbor_frame_counter::Command::new(eui64, frame_counter),
         )
         .await?
@@ -782,7 +782,7 @@ where
     }
 
     async fn set_power_descriptor(&mut self, power_descriptor: u16) -> Result<(), Error> {
-        self.communicate::<_, set_power_descriptor::Response>(set_power_descriptor::Command::new(
+        self.communicate(set_power_descriptor::Command::new(
             power_descriptor,
         ))
         .await
@@ -790,13 +790,13 @@ where
     }
 
     async fn set_radio_channel(&mut self, channel: u8) -> Result<(), Error> {
-        self.communicate::<_, set_radio_channel::Response>(set_radio_channel::Command::new(channel))
+        self.communicate(set_radio_channel::Command::new(channel))
             .await?
             .try_into()
     }
 
     async fn set_radio_ieee802154_cca_mode(&mut self, cca_mode: u8) -> Result<(), Error> {
-        self.communicate::<_, set_radio_ieee802154_cca_mode::Response>(
+        self.communicate(
             set_radio_ieee802154_cca_mode::Command::new(cca_mode),
         )
         .await?
@@ -804,13 +804,13 @@ where
     }
 
     async fn set_radio_power(&mut self, power: i8) -> Result<(), Error> {
-        self.communicate::<_, set_radio_power::Response>(set_radio_power::Command::new(power))
+        self.communicate(set_radio_power::Command::new(power))
             .await?
             .try_into()
     }
 
     async fn set_routing_shortcut_threshold(&mut self, cost_thresh: u8) -> Result<(), Error> {
-        self.communicate::<_, set_routing_shortcut_threshold::Response>(
+        self.communicate(
             set_routing_shortcut_threshold::Command::new(cost_thresh),
         )
         .await?
@@ -823,7 +823,7 @@ where
         channel_mask: u32,
         duration: u8,
     ) -> Result<(), Error> {
-        self.communicate::<_, start_scan::Response>(start_scan::Command::new(
+        self.communicate(start_scan::Command::new(
             scan_type,
             channel_mask,
             duration,
@@ -833,7 +833,7 @@ where
     }
 
     async fn stop_scan(&mut self) -> Result<(), Error> {
-        self.communicate::<_, stop_scan::Response>(stop_scan::Command)
+        self.communicate(stop_scan::Command)
             .await?
             .try_into()
     }

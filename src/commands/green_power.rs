@@ -53,7 +53,7 @@ where
         gpep_handle: u8,
         gp_tx_queue_entry_lifetime_millis: u16,
     ) -> Result<(), Error> {
-        self.communicate::<_, send::Response>(send::Command::new(
+        self.communicate(send::Command::new(
             action,
             use_cca,
             addr,
@@ -73,7 +73,7 @@ where
         gpm_addr_for_pairing: u16,
         sink_endpoint: u8,
     ) -> Result<(), Error> {
-        self.communicate::<_, sink_commission::Response>(sink_commission::Command::new(
+        self.communicate(sink_commission::Command::new(
             options,
             gpm_addr_for_security,
             gpm_addr_for_pairing,
@@ -84,7 +84,7 @@ where
     }
 
     async fn translation_table_clear(&mut self) -> Result<(), Error> {
-        self.communicate::<_, translation_table_clear::Response>(translation_table_clear::Command)
+        self.communicate(translation_table_clear::Command)
             .await
             .map(drop)
     }

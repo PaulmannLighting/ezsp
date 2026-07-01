@@ -4,6 +4,7 @@ use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::NodeId;
 use crate::frame::Parameter;
+use crate::frame::responds_with::RespondsWith;
 
 const ID: u16 = 0x0030;
 
@@ -15,6 +16,10 @@ pub(crate) struct Command {
 
 impl Parameter for Command {
     const ID: u16 = ID;
+}
+
+impl RespondsWith for Command {
+    type Response = Response;
 }
 
 impl Command {

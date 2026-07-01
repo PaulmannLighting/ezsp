@@ -6,12 +6,14 @@ pub use self::header::{
 };
 pub use self::parameter::Parameter;
 pub use self::parsable::Parsable;
+pub use self::responds_with::RespondsWith;
 
 mod enums;
 mod header;
 mod parameter;
 pub mod parameters;
 pub mod parsable;
+mod responds_with;
 
 /// A frame that contains a header and parameters.
 #[derive(Clone, Debug, Eq, PartialEq)]

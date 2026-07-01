@@ -4,6 +4,7 @@ use le_stream::{FromLeStream, ToLeStream};
 
 use crate::ember::Eui64;
 use crate::frame::Parameter;
+use crate::frame::responds_with::RespondsWith;
 
 const ID: u16 = 0x005E;
 
@@ -23,6 +24,10 @@ impl Command {
 
 impl Parameter for Command {
     const ID: u16 = ID;
+}
+
+impl RespondsWith for Command {
+    type Response = Response;
 }
 
 /// Response parameters.

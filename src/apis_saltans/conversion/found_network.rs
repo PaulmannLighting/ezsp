@@ -1,4 +1,4 @@
-use zigbee_hw::{FoundNetwork, Network};
+use apis_saltans_hw::{FoundNetwork, Network};
 
 use crate::parameters::networking::handler::NetworkFound;
 

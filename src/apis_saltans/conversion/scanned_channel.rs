@@ -1,4 +1,4 @@
-use zigbee_hw::ScannedChannel;
+use apis_saltans_hw::ScannedChannel;
 
 use crate::parameters::networking::handler::EnergyScanResult;
 

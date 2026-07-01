@@ -1,21 +1,21 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
+use apis_saltans_hw::{AwaitEvent, Event, EventTranslator, NcpDriver, NcpHandle, Start, bridge};
+use apis_saltans_zdp::SimpleDescriptor;
 use log::{debug, info};
 use macaddr::MacAddr8;
 use rand::random;
 use silizium::zigbee::security::man::Key;
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, channel};
-use zdp::SimpleDescriptor;
-use zigbee_hw::{AwaitEvent, Event, EventTranslator, NcpDriver, NcpHandle, Start, bridge};
 
 use super::event_handler::EventHandler;
+use crate::apis_saltans::EzspNetworkManager;
 use crate::ember::security::initial;
 use crate::ember::{aps, concentrator, join, network};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
-use crate::zigbee::EzspNetworkManager;
 use crate::{
     Callback, Configuration, ConfigurationExt, Displayable, Error, Messaging, Networking,
     PolicyExt, Security, Transport, Utilities,
@@ -185,9 +185,9 @@ where
     async fn start(
         mut self,
         endpoints: &[SimpleDescriptor],
-    ) -> Result<(NcpHandle, Receiver<Event>), zigbee_hw::Error> {
+    ) -> Result<(NcpHandle, Receiver<Event>), apis_saltans_hw::Error> {
         if endpoints.is_empty() {
-            return Err(zigbee_hw::Error::NoEndpoints);
+            return Err(apis_saltans_hw::Error::NoEndpoints);
         }
 
         let (message_tx, message_rx) = channel(self.buffers);
@@ -304,7 +304,7 @@ where
             endpoints
                 .iter()
                 .find_map(|endpoint| endpoint.profile().ok())
-                .ok_or(zigbee_hw::Error::NoEndpoints)?,
+                .ok_or(apis_saltans_hw::Error::NoEndpoints)?,
             self.aps_options,
             message_tx,
             event_mux_handle,
@@ -359,9 +359,9 @@ where
     Ok(())
 }
 
-fn implementation_error<T>(error: T) -> zigbee_hw::Error
+fn implementation_error<T>(error: T) -> apis_saltans_hw::Error
 where
     T: std::error::Error + Send + Sync + 'static,
 {
-    zigbee_hw::Error::Implementation(Arc::new(error))
+    apis_saltans_hw::Error::Implementation(Arc::new(error))
 }

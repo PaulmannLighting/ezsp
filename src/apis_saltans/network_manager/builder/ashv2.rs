@@ -6,8 +6,8 @@ use std::io;
 use ashv2::{Actor, SerialPort, TryCloneNative};
 use tokio::sync::mpsc::channel;
 
+use crate::apis_saltans::network_manager::builder::Builder;
 use crate::uart::{Buffers, Uart};
-use crate::zigbee::network_manager::builder::Builder;
 use crate::{Error, MIN_NON_LEGACY_VERSION};
 
 impl Builder<Uart> {

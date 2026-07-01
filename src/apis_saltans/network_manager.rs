@@ -4,13 +4,13 @@ use std::collections::BTreeMap;
 use std::io;
 use std::time::Duration;
 
+use apis_saltans_core::{Endpoint, Profile};
+use apis_saltans_hw::{Frame, Metadata, NcpDriver};
 use log::debug;
 use macaddr::MacAddr8;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::oneshot::channel;
 use tokio::task::{JoinError, JoinHandle};
-use zigbee::{Endpoint, Profile};
-use zigbee_hw::{Frame, Metadata, NcpDriver};
 
 use self::builder::Builder;
 use self::event_handler::Message;
@@ -140,11 +140,11 @@ where
         seq
     }
 
-    async fn get_pan_id(&mut self) -> Result<u16, zigbee_hw::Error> {
+    async fn get_pan_id(&mut self) -> Result<u16, apis_saltans_hw::Error> {
         Ok(self.transport.get_node_id().await?)
     }
 
-    async fn get_ieee_address(&mut self) -> Result<MacAddr8, zigbee_hw::Error> {
+    async fn get_ieee_address(&mut self) -> Result<MacAddr8, apis_saltans_hw::Error> {
         Ok(self.transport.get_eui64().await?)
     }
 
@@ -152,7 +152,7 @@ where
         &mut self,
         channel_mask: u32,
         duration: u8,
-    ) -> Result<Vec<zigbee_hw::FoundNetwork>, zigbee_hw::Error> {
+    ) -> Result<Vec<apis_saltans_hw::FoundNetwork>, apis_saltans_hw::Error> {
         let (tx, rx) = channel();
         self.event_handler_proxy.send(tx.into()).await?;
         self.transport
@@ -165,7 +165,7 @@ where
         &mut self,
         channel_mask: u32,
         duration: u8,
-    ) -> Result<Vec<zigbee_hw::ScannedChannel>, zigbee_hw::Error> {
+    ) -> Result<Vec<apis_saltans_hw::ScannedChannel>, apis_saltans_hw::Error> {
         let (tx, rx) = channel();
         self.event_handler_proxy.send(tx.into()).await?;
         self.transport
@@ -174,13 +174,16 @@ where
         Ok(rx.await?)
     }
 
-    async fn allow_joins(&mut self, duration: Duration) -> Result<Duration, zigbee_hw::Error> {
+    async fn allow_joins(
+        &mut self,
+        duration: Duration,
+    ) -> Result<Duration, apis_saltans_hw::Error> {
         let seconds = u8::try_from(duration.as_secs()).unwrap_or(u8::MAX);
         self.transport.permit_joining(seconds.into()).await?;
         Ok(Duration::from_secs(u64::from(seconds)))
     }
 
-    async fn get_neighbors(&mut self) -> Result<BTreeMap<MacAddr8, u16>, zigbee_hw::Error> {
+    async fn get_neighbors(&mut self) -> Result<BTreeMap<MacAddr8, u16>, apis_saltans_hw::Error> {
         let mut neighbors = BTreeMap::new();
 
         for index in 0..=u8::MAX {
@@ -198,7 +201,7 @@ where
         Ok(neighbors)
     }
 
-    async fn route_request(&mut self, radius: u8) -> Result<(), zigbee_hw::Error> {
+    async fn route_request(&mut self, radius: u8) -> Result<(), apis_saltans_hw::Error> {
         Ok(self
             .transport
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius)
@@ -208,14 +211,14 @@ where
     async fn short_id_to_ieee_address(
         &mut self,
         short_id: u16,
-    ) -> Result<MacAddr8, zigbee_hw::Error> {
+    ) -> Result<MacAddr8, apis_saltans_hw::Error> {
         Ok(self.transport.lookup_eui64_by_node_id(short_id).await?)
     }
 
     async fn ieee_address_to_short_id(
         &mut self,
         ieee_address: MacAddr8,
-    ) -> Result<u16, zigbee_hw::Error> {
+    ) -> Result<u16, apis_saltans_hw::Error> {
         Ok(self.transport.lookup_node_id_by_eui64(ieee_address).await?)
     }
 
@@ -224,7 +227,7 @@ where
         short_id: u16,
         destination_endpoint: Endpoint,
         frame: Frame,
-    ) -> Result<u8, zigbee_hw::Error> {
+    ) -> Result<u8, apis_saltans_hw::Error> {
         let (aps_metadata, payload) = frame.into_parts();
         let tag = self.next_message_tag();
         let message = ByteSizedVec::from_slice(&payload)
@@ -261,7 +264,7 @@ where
         hops: u8,
         radius: u8,
         frame: Frame,
-    ) -> Result<u8, zigbee_hw::Error> {
+    ) -> Result<u8, apis_saltans_hw::Error> {
         let (aps_metadata, payload) = frame.into_parts();
         let tag = self.next_message_tag();
         let message = ByteSizedVec::from_slice(&payload)
@@ -296,7 +299,7 @@ where
         short_id: u16,
         radius: u8,
         frame: Frame,
-    ) -> Result<u8, zigbee_hw::Error> {
+    ) -> Result<u8, apis_saltans_hw::Error> {
         let (aps_metadata, payload) = frame.into_parts();
         let tag = self.next_message_tag();
         let message = ByteSizedVec::from_slice(&payload)

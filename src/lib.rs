@@ -22,6 +22,8 @@ pub use self::result::Result;
 pub use self::transport::Transport;
 pub use self::types::SourceRouteDiscoveryMode;
 
+#[cfg(feature = "apis-saltans")]
+pub mod apis_saltans;
 mod commands;
 mod connection;
 mod constants;
@@ -35,5 +37,3 @@ mod transport;
 mod types;
 #[cfg(feature = "ashv2")]
 pub mod uart;
-#[cfg(feature = "zigbee")]
-pub mod zigbee;

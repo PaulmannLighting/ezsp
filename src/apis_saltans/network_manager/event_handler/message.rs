@@ -1,5 +1,5 @@
+use apis_saltans_hw::{FoundNetwork, ScannedChannel};
 use tokio::sync::oneshot::Sender;
-use zigbee_hw::{FoundNetwork, ScannedChannel};
 
 use crate::Callback;
 use crate::ember::Status;

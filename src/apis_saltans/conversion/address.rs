@@ -1,4 +1,4 @@
-use zigbee::Address;
+use apis_saltans_core::Address;
 
 use crate::parameters::networking::handler::ChildJoin;
 use crate::parameters::trust_center::handler::TrustCenterJoin;

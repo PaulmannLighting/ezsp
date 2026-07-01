@@ -1,6 +1,6 @@
 //! Conversion implementations from EZSP data structures to Zigbee Nwk data structures.
 
-use aps::{Destination, Extended};
+use apis_saltans_aps::{Data, Destination, Extended};
 use log::trace;
 
 pub use self::error::ParseApsFrameError;
@@ -13,7 +13,7 @@ mod event;
 mod found_network;
 mod scanned_channel;
 
-impl TryFrom<IncomingMessage> for aps::Data<Vec<u8>> {
+impl TryFrom<IncomingMessage> for Data<Vec<u8>> {
     type Error = ParseApsFrameError;
 
     fn try_from(message: IncomingMessage) -> Result<Self, Self::Error> {

@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 
+use apis_saltans_hw::{FoundNetwork, ScannedChannel};
 use log::error;
-use zigbee_hw::{FoundNetwork, ScannedChannel};
 
 use self::scan::Scan;
 

@@ -9,7 +9,7 @@ categories = ["hardware-support", "network-programming"]
 documentation = "https://docs.rs/ezsp"
 version = "5.0.0"
 edition = "2024"
-exclude = [".gitignore"]
+exclude = [".github", ".gitignore"]
 
 [package.metadata.docs.rs]
 all-features = true

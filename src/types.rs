@@ -1,10 +1,8 @@
 //! Types used in the `EZSP` protocol.
 
-pub use self::resilient_payload::ResilientPayload;
 pub use self::source_route_discovery_mode::SourceRouteDiscoveryMode;
 pub use self::variable_length_u32::VariableLengthU32;
 
-mod resilient_payload;
 mod source_route_discovery_mode;
 mod variable_length_u32;
 

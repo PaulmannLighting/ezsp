@@ -265,24 +265,20 @@ impl Transport for Uart {
         T: TryFrom<Parameters> + Send,
         <T as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
     {
-        let mut parameters;
-
         loop {
-            parameters = self
-                .responses_rx
-                .recv()
-                .await
-                .expect("Response channel should be open. This is a bug.")?;
+            let Some(parameters) = self.responses_rx.recv().await else {
+                return Err(Error::ChannelClosed);
+            };
 
-            match T::try_from(parameters) {
+            match T::try_from(parameters?) {
                 Ok(frame) => return Ok(frame),
                 Err(error) => {
-                    parameters = error.into();
-                    warn!(
-                        "Received unexpected response: {parameters:?}, re-queueing and retrying in {REQUEUE_GRACE_PERIOD:?}."
-                    );
                     self.pool
-                        .spawn(requeue(self.responses_tx.downgrade(), parameters))
+                        .spawn(requeue(
+                            self.responses_tx.downgrade(),
+                            error.into(),
+                            REQUEUE_GRACE_PERIOD,
+                        ))
                         .await
                         .map_or_else(
                             |error| {
@@ -297,8 +293,16 @@ impl Transport for Uart {
 }
 
 /// Async task to requeue in the background.
-async fn requeue(responses: WeakSender<Result<Parameters, Error>>, parameters: Parameters) {
-    sleep(REQUEUE_GRACE_PERIOD).await;
+async fn requeue(
+    responses: WeakSender<Result<Parameters, Error>>,
+    parameters: Parameters,
+    delay: Duration,
+) {
+    warn!(
+        "Received unexpected response: {parameters:?}, re-queueing in {}ms.",
+        delay.as_millis()
+    );
+    sleep(delay).await;
 
     let Some(responses) = responses.upgrade() else {
         trace!("Re-queueing channel is closed, aborting");

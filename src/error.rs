@@ -3,6 +3,8 @@
 use core::convert::Infallible;
 use core::fmt::{self, Debug, Display, Formatter};
 
+use tokio::sync::mpsc::error::SendError;
+
 pub use self::decode::Decode;
 pub use self::status::Status;
 pub use self::value_error::ValueError;
@@ -46,6 +48,9 @@ pub enum Error {
 
     /// The NCP is not configured.
     NotConfigured,
+
+    /// The response channel is closed.
+    ChannelClosed,
 }
 
 impl Display for Error {
@@ -68,6 +73,7 @@ impl Display for Error {
                 )
             }
             Self::NotConfigured => write!(f, "NCP is not configured"),
+            Self::ChannelClosed => write!(f, "Response channel is closed"),
         }
     }
 }
@@ -82,7 +88,8 @@ impl core::error::Error for Error {
             Self::UnexpectedResponse(_)
             | Self::InvalidCommand(_)
             | Self::ProtocolVersionMismatch { .. }
-            | Self::NotConfigured => None,
+            | Self::NotConfigured
+            | Self::ChannelClosed => None,
         }
     }
 }
@@ -175,5 +182,11 @@ impl From<invalid_command::Response> for Error {
 impl From<Infallible> for Error {
     fn from(infallible: Infallible) -> Self {
         match infallible {}
+    }
+}
+
+impl<T> From<SendError<T>> for Error {
+    fn from(_: SendError<T>) -> Self {
+        Self::ChannelClosed
     }
 }

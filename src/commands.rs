@@ -1,6 +1,3 @@
-use core::future::Future;
-use std::num::NonZero;
-
 pub use self::binding::Binding;
 pub use self::bootloader::Bootloader;
 pub use self::cbke::Cbke;
@@ -15,8 +12,6 @@ pub use self::trust_center::TrustCenter;
 pub use self::utilities::Utilities;
 pub use self::wwah::Wwah;
 pub use self::zll::Zll;
-use crate::Error;
-use crate::parameters::configuration::version;
 
 mod binding;
 mod bootloader;
@@ -52,15 +47,22 @@ pub trait Ezsp:
     + Wwah
     + Zll
 {
-    /// Initialize the `EZSP` connection.
-    ///
-    /// Negotiates the protocol version.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] on I/O errors or if the desired protocol version is not supported.
-    fn init(&mut self) -> impl Future<Output = Result<version::Response, Error>> + Send;
+}
 
-    /// Returns the negotiated protocol version, if any.
-    fn negotiated_version(&self) -> Option<NonZero<u8>>;
+impl<T> Ezsp for T where
+    T: Binding
+        + Bootloader
+        + Cbke
+        + Configuration
+        + GreenPower
+        + Messaging
+        + Mfglib
+        + Networking
+        + Security
+        + TokenInterface
+        + TrustCenter
+        + Utilities
+        + Wwah
+        + Zll
+{
 }

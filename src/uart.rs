@@ -21,7 +21,6 @@ use tokio_task_pool::Pool;
 
 pub use self::buffers::Buffers;
 pub use self::channel_sizes::ChannelSizes;
-use self::connection::Connection;
 use self::encoder::Encoder;
 use crate::constants::MIN_NON_LEGACY_VERSION;
 use crate::error::Error;
@@ -30,11 +29,10 @@ use crate::parameters::configuration::version;
 use crate::transport::Transport;
 use crate::uart::decoder::Decoder;
 use crate::uart::splitter::Splitter;
-use crate::{Callback, Configuration, Extended, Ezsp, Legacy, Parameters, ValueError};
+use crate::{Callback, Configuration, Connection, Extended, Legacy, Parameters, ValueError};
 
 mod buffers;
 mod channel_sizes;
-mod connection;
 mod decoder;
 mod encoder;
 mod splitter;
@@ -218,34 +216,19 @@ impl Uart {
     }
 }
 
-impl Ezsp for Uart {
-    async fn init(&mut self) -> Result<version::Response, Error> {
+impl Transport for Uart {
+    async fn connect(&mut self) -> Result<version::Response, Error> {
         let response = self.negotiate_version().await?;
         self.connection = Connection::Connected;
         Ok(response)
     }
 
+    fn state(&self) -> Connection {
+        self.connection
+    }
+
     fn negotiated_version(&self) -> Option<NonZero<u8>> {
         NonZero::<u8>::new(self.negotiated_version.load(Ordering::Relaxed))
-    }
-}
-
-impl Transport for Uart {
-    async fn ensure_connection(&mut self) -> Result<(), Error> {
-        match self.connection {
-            Connection::Disconnected => {
-                info!("Initializing UART connection");
-                self.init().await.map(drop)
-            }
-            Connection::Connected => {
-                trace!("UART is connected");
-                Ok(())
-            }
-            Connection::Failed => {
-                warn!("UART connection failed, reinitializing");
-                self.init().await.map(drop)
-            }
-        }
     }
 
     async fn send<T>(&mut self, command: T) -> Result<u16, Error>

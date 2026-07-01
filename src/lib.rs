@@ -10,6 +10,7 @@ pub use self::commands::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GetValueExt, GreenPower, Messaging, Mfglib,
     Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
 };
+pub use self::connection::Connection;
 pub use self::constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE, MIN_NON_LEGACY_VERSION};
 pub use self::error::{Error, ValueError};
 pub use self::extensions::{ConfigurationExt, Displayable, PolicyExt};
@@ -22,6 +23,7 @@ pub use self::transport::Transport;
 pub use self::types::SourceRouteDiscoveryMode;
 
 mod commands;
+mod connection;
 mod constants;
 pub mod ember;
 mod error;

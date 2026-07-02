@@ -144,7 +144,7 @@ impl Decoder {
             return Err(Error::InvalidCommand(invalid_command));
         }
 
-        if error == Decode::TooManyBytes {
+        if matches!(error, Decode::TooManyBytes { .. }) {
             trace!("Received too many bytes: {:#04X?}", self.parameters);
         }
 

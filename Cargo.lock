@@ -14,7 +14,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-aps"
 version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#085398b0805df7f0f911b577252680894fb63399"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#77753b3c02383d51c2e565e3cdb09caa551c7048"
 dependencies = [
  "apis-saltans-core",
  "bitflags 2.13.0",
@@ -27,7 +27,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-core"
 version = "0.2.3"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#085398b0805df7f0f911b577252680894fb63399"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#77753b3c02383d51c2e565e3cdb09caa551c7048"
 dependencies = [
  "bitflags 2.13.0",
  "chrono",
@@ -44,7 +44,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-hw"
 version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#085398b0805df7f0f911b577252680894fb63399"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#77753b3c02383d51c2e565e3cdb09caa551c7048"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -59,7 +59,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-macros"
 version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#085398b0805df7f0f911b577252680894fb63399"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#77753b3c02383d51c2e565e3cdb09caa551c7048"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -69,7 +69,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-zcl"
 version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#085398b0805df7f0f911b577252680894fb63399"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#77753b3c02383d51c2e565e3cdb09caa551c7048"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -88,7 +88,7 @@ dependencies = [
 [[package]]
 name = "apis-saltans-zdp"
 version = "0.1.2"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#085398b0805df7f0f911b577252680894fb63399"
+source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#77753b3c02383d51c2e565e3cdb09caa551c7048"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -530,9 +530,9 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
 name = "rand"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2e8e8bcc7961af1fdac401278c6a831614941f6164ee3bf4ce61b7edb162207"
+checksum = "c7f5fa3a058cd35567ef9bfa5e75732bee0f9e4c55fa90477bef2dfcdbc4be80"
 dependencies = [
  "chacha20",
  "getrandom",

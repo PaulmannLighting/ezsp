@@ -10,20 +10,27 @@ use super::values::Values;
 pub enum Phy {
     /// The transmit hardware buffer underflowed.
     TxUnderflow,
+
     /// The transmit hardware did not finish transmitting a packet.
     TxIncomplete,
+
     /// An unsupported channel setting was specified.
     InvalidChannel,
+
     /// An unsupported power setting was specified.
     InvalidPower,
+
     /// The packet cannot be transmitted because the physical MAC layer is currently transmitting a packet.
     ///
     /// (This is used for the MAC backoff algorithm.)
     TxBusy,
+
     /// The transmit attempt failed because all CCA attempts indicated that the channel was busy.
     TxCcaFail,
+
     /// The software installed on the hardware doesn't recognize the hardware radio type.
     OscillatorCheckFailed,
+
     /// The expected ACK was received after the last transmission.
     AckReceived,
 }

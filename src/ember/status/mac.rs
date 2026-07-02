@@ -10,27 +10,37 @@ use super::values::Values;
 pub enum Mac {
     /// No pending data exists for device doing a data poll.
     NoData,
+
     /// Attempt to scan when we are joined to a network.
     JoinedNetwork,
+
     /// Scan duration must be 0 to 14 inclusive.
     ///
     /// Attempt was made to scan with an incorrect duration value.
     BadScanDuration,
+
     /// `emberStartScan` was called with an incorrect scan type.
     IncorrectScanType,
+
     /// `emberStartScan` was called with an invalid channel mask.
     InvalidChannelMask,
+
     /// Failed to scan current channel because we were unable to transmit the relevant MAC command.
     CommandTransmitFailure,
+
     /// The MAC transmit queue is full.
     TransmitQueueFull,
+
     /// MAC header FCR error on receive.
     UnknownHeaderType,
+
     /// The MAC can't complete this task because it is scanning.
     Scanning,
+
     /// We expected to receive an ACK following the transmission,
     /// but the MAC level ACK was never received.
     NoAckReceived,
+
     /// Indirect data message timed out before polled.
     IndirectTimeout,
 }

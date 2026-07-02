@@ -12,34 +12,42 @@ pub enum Application {
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error0,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error1,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error2,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error3,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error4,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error5,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error6,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error7,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
@@ -48,26 +56,32 @@ pub enum Application {
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error9,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error10,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error11,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error12,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error13,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.
     Error14,
+
     /// This error is reserved for customer application use.
     ///
     /// This will never be returned from any portion of the network stack or HAL.

@@ -7,18 +7,25 @@ use super::super::values::Values;
 pub enum Error {
     /// Fatal error detected by NCP.
     NcpFatal,
+
     /// Incompatible ASH version.
     Version,
+
     /// Exceeded max ACK timeouts.
     Timeouts,
+
     /// Timed out waiting for RSTACK.
     ResetFail,
+
     /// Unexpected ncp reset.
     NcpReset,
+
     /// Invalid ncp processor type.
     NcpType,
+
     /// Invalid ncp reset method.
     ResetMethod,
+
     /// XON/XOFF not supported by host driver.
     XOnXOff,
 }

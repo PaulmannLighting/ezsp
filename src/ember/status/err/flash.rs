@@ -15,18 +15,21 @@ pub enum Flash {
     /// which is physically impossible and the write was therefore inhibited.
     /// The data in the flash cannot be trusted after this error.
     WriteInhibited,
+
     /// A fatal error has occurred while trying to write data to the Flash
     /// and the write verification has failed.
     ///
     /// The data in the flash cannot be trusted after this error,
     /// and it is possible this error is the result of exceeding the life cycles of the flash.
     VerifyFailed,
+
     /// A fatal error has occurred while trying to write data to the flash,
     /// possibly due to write protection or an invalid address.
     ///
     /// The data in the flash cannot be trusted after this error,
     /// and it is possible this error is the result of exceeding the life cycles of the flash.
     ProgFail,
+
     /// A fatal error has occurred while trying to erase flash, possibly due to write protection.
     ///
     /// The data in the flash cannot be trusted after this error,

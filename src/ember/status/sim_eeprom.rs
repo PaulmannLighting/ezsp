@@ -13,12 +13,14 @@ pub enum SimEeprom {
     /// The GREEN status means the current page has not filled above the `ERASE_CRITICAL_THRESHOLD`.
     /// The application should call the function `halSimEepromErasePage` when it can to erase a page.
     ErasePageGreen,
+
     /// The Simulated EEPROM is telling the application that there is at least one flash page to be erased.
     ///
     /// The RED status means the current page has filled above the `ERASE_CRITICAL_THRESHOLD`.
     /// Due to the shrinking availability of write space, there is a danger of data loss.
     /// The application must call the function `halSimEepromErasePage` as soon as possible to erase a page.
     ErasePageRed,
+
     /// The Simulated EEPROM has run out of room to write any new data and the data trying to be set
     /// has been lost.
     ///
@@ -26,16 +28,19 @@ pub enum SimEeprom {
     /// The application must call the function `halSimEepromErasePage` to make room for any
     /// further calls to set a token.
     Full,
+
     /// Attempt 1 to initialize the Simulated EEPROM has failed.
     ///
     /// This failure means the information already stored in Flash (or a lack thereof), is fatally
     /// incompatible with the token information compiled into the code image being run.
     Init1Failed,
+
     /// Attempt 2 to initialize the Simulated EEPROM has failed.
     ///
     /// This failure means Attempt 1 failed, and the token system failed to properly reload default
     /// tokens and reset the Simulated EEPROM.
     Init2Failed,
+
     /// Attempt 3 to initialize the Simulated EEPROM has failed.
     ///
     /// This failure means one or both of the tokens `TOKEN_MFG_NVDATA_VERSION` or

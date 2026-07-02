@@ -10,18 +10,25 @@ use super::values::Values;
 pub enum Serial {
     /// Specified an invalid baud rate.
     InvalidBaudRate,
+
     /// Specified an invalid serial port.
     InvalidPort,
+
     /// Tried to send too much data.
     TxOverflow,
+
     /// There was not enough space to store a received character and the character was dropped.
     RxOverflow,
+
     /// Detected a UART framing error.
     RxFrameError,
+
     /// Detected a UART parity error.
     RxParityError,
+
     /// There is no received data to process.
     RxEmpty,
+
     /// The receive interrupt was not handled in time, and a character was dropped.
     RxOverrunError,
 }

@@ -31,104 +31,147 @@ mod values;
 pub enum Status {
     /// The generic 'no error' message.
     Success,
+
     /// The generic 'fatal error' message.
     ErrFatal,
+
     /// An invalid value was passed as an argument to a function.
     BadArgument,
+
     /// EEPROM status.
     Eeprom(Eeprom),
+
     /// There are no more buffers.
     NoBuffers,
+
     /// Serial status.
     Serial(Serial),
+
     /// MAC status.
     Mac(Mac),
+
     /// Simulated EEPROM status.
     SimEeprom(SimEeprom),
+
     /// Erroneous messages.
     Err(Err),
+
     /// The APS layer attempted to send or deliver a message, but it failed.
     DeliveryFailed,
+
     /// This binding index is out of range of the current binding table.
     BindingIndexOutOfRange,
+
     /// This address table index is out of range for the current address table.
     AddressTableIndexOutOfRange,
+
     /// An invalid binding table index was given to a function.
     InvalidBindingIndex,
+
     /// The API call is not allowed given the current state of the stack.
     InvalidCall,
+
     /// The link cost to a node is not known.
     CostNotKnown,
+
     // TODO: Where is `EMBER_APS_UNICAST_MESSAGE_COUNT` defined?
     /// The maximum number of in-flight messages (i.e. `EMBER_APS_UNICAST_MESSAGE_COUNT`) has been reached.
     MaxMessageLimitReached,
+
     /// The message to be transmitted is too big to fit into a single over-the-air packet.
     MessageTooLong,
+
     /// The application is trying to delete or overwrite a binding that is in use.
     BindingIsActive,
+
     /// The application is trying to overwrite an address table entry that is in use.
     AddressTableEntryIsActive,
+
     /// ADC status.
     Adc(Adc),
+
     /// Sleeping (for a duration) has been abnormally interrupted and exited prematurely.
     SleepInterrupted,
+
     /// PHY status.
     Phy(Phy),
+
     /// The stack software has completed initialization and is ready to send and receive packets over the air.
     NetworkUp,
+
     /// The network is not operating.
     NetworkDown,
+
     /// The node has not joined a network.
     NotJoined,
+
     /// An attempt to join a network failed.
     JoinFailed,
+
     /// The chosen security level (the value of `EMBER_SECURITY_LEVEL`) is not supported by the stack.
     InvalidSecurityLevel,
+
     /// After moving, a mobile node's attempt to re-establish contact with the network failed.
     MoveFailed,
+
     /// An attempt to join as a router failed due to a Zigbee versus Zigbee Pro incompatibility.
     ///
     /// Zigbee devices joining Zigbee Pro networks (or vice versa) must join as End Devices, not Routers.
     CannotJoinAsRouter,
+
     /// The local node ID has changed.
     ///
     /// The application can obtain the new node ID by calling `emberGetNodeId()`.
     NodeIdChanged,
+
     /// The local PAN ID has changed.
     ///
     /// The application can obtain the new PAN ID by calling `emberGetPanId()`.
     PanIdChanged,
+
     /// The network has been opened for joining.
     NetworkOpened,
+
     /// The network has been closed for joining.
     NetworkClosed,
+
     /// An attempt to join or rejoin the network failed because
     /// no router beacons could be heard by the joining node.
     NoBeacons,
+
     /// An attempt was made to join a Secured Network using a pre-configured key,
     /// but the Trust Center sent back a Network Key in-the-clear when an encrypted
     /// Network Key was required.
     ReceivedKeyInTheClear,
+
     /// An attempt was made to join a Secured Network, but the device did not receive a Network Key.
     NoNetworkKeyReceived,
+
     /// After a device joined a Secured Network, a Link Key was requested but no response was ever received.
     NoLinkKeyReceived,
+
     /// An attempt was made to join a Secured Network without a pre-configured key,
     /// but the Trust Center sent encrypted data using a pre-configured key.
     PreconfiguredKeyRequired,
+
     /// The passed key data is not valid.
     ///
     /// A key of all zeros or all F's are reserved values and cannot be used.
     KeyInvalid,
+
     /// A message cannot be sent because the network is currently overloaded.
     NetworkBusy,
+
     /// The application tried to send a message using an endpoint that it has not defined.
     InvalidEndpoint,
+
     /// The application tried to use a binding that has been remotely modified
     /// and the change has not yet been reported to the application.
     BindingHasChanged,
+
     /// An attempt to generate random bytes failed because of insufficient random data from the radio.
     InsufficientRandomData,
+
     /// There was an error in trying to encrypt at the APS  Level.
     ///
     /// This could result from either an inability to determine the long address of the
@@ -136,53 +179,67 @@ pub enum Status {
     /// link key entry in the table associated with the destination, or there was a failure
     /// to load the correct key into the encryption core.
     ApsEncryptionError,
+
     /// There was an attempt to form or join a network with security
     /// without calling `emberSetInitialSecurityState()` first.
     SecurityStateNotSet,
+
     /// A Zigbee route error command frame was received indicating that
     /// a source routed message from this node failed en route
     SourceRouteFailure,
+
     /// A Zigbee route error command frame was received indicating that a message sent
     /// to this node along a many-to-one route failed en route.
     ///
     /// The route error frame was delivered by an ad-hoc search for a functioning route.
     ManyToOneRouteFailure,
+
     /// A critical and fatal error indicating that the version of the stack trying
     /// to run does not match with the chip it is running on.
     ///
     /// The software (stack) on the chip must be replaced with software
     /// that is compatible with the chip.
     StackAndHardwareMismatch,
+
     /// An index was passed into the function that was larger than the valid range.
     IndexOutOfRange,
+
     /// There was an attempt to set an entry in the key table  using an invalid long address.
     ///
     /// An entry cannot be set using either the local device's or Trust Center's IEEE address.
     /// Or an entry already exists in the table with the same IEEE address.
     /// An Address of all zeros or  all F's are not valid addresses in 802.15.4.
     KeyTableInvalidAddress,
+
     /// There are no empty entries left in the table.
     TableFull,
+
     /// The requested function cannot be executed because the library that contains
     /// the necessary functionality is not present.
     LibraryNotPresent,
+
     /// The requested table entry has been erased and contains no valid data.
     TableEntryErased,
+
     /// There was an attempt to set a security configuration that is not valid
     /// given the other security settings.
     SecurityConfigurationInvalid,
+
     /// There was an attempt to broadcast a key switch too quickly after broadcasting the next network key.
     ///
     /// The Trust Center must wait at least a period equal to the broadcast timeout
     /// so that all routers have a chance to receive the broadcast of the new network key.
     TooSoonForSwitchKey,
+
     /// The received signature corresponding to the message that was passed
     /// to the `CBKE` Library failed verification, it is not valid.
     SignatureVerifyFailure,
+
     /// The stack accepted the command and is currently processing the request.
     ///
     /// The results will be returned via an appropriate handler.
     OperationInProgress,
+
     /// The message could not be sent because the link key corresponding to the destination
     /// is not authorized for use in APS data messages.
     ///
@@ -190,8 +247,10 @@ pub enum Status {
     /// To use it for encryption of APS data messages it must be authorized using
     /// a key agreement protocol (such as `CBKE`).
     KeyNotAuthorized,
+
     /// The security data provided was not valid, or an integrity check failed.
     SecurityDataInvalid,
+
     /// Application status.
     Application(Application),
 }

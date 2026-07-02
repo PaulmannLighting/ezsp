@@ -11,9 +11,11 @@ pub enum Eeprom {
     /// The manufacturing and stack token format in non-volatile memory is different
     /// from what the stack expects (returned at initialization).
     MfgStackVersionMismatch,
+
     /// The manufacturing token format in non-volatile memory is different
     /// from what the stack expects (returned at initialization).
     MfgVersionMismatch,
+
     /// The stack token format in non-volatile memory is different
     /// from what the stack expects (returned at initialization).
     StackVersionMismatch,

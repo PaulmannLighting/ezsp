@@ -10,8 +10,10 @@ use super::super::values::Values;
 pub enum Bootloader {
     /// The bootloader received an invalid message (failed attempt to go into bootloader).
     TrapTableBad,
+
     /// Bootloader received an invalid message (failed attempt to go into bootloader).
     TrapUnknown,
+
     /// The bootloader cannot complete the bootload operation because either an image was not found
     /// or the image exceeded memory bounds.
     NoImage,

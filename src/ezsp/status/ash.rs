@@ -12,6 +12,7 @@ mod misc;
 pub enum Ash {
     /// Errors.
     Error(Error),
+
     /// Miscellaneous status.
     Misc(Misc),
 }

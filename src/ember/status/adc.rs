@@ -10,10 +10,13 @@ use super::values::Values;
 pub enum Adc {
     /// Conversion is complete.
     ConversionDone,
+
     /// Conversion cannot be done because a request is being processed.
     ConversionBusy,
+
     /// Conversion is deferred until the current request has been processed.
     ConversionDeferred,
+
     /// No results are pending.
     NoConversionPending,
 }

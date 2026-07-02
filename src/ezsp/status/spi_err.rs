@@ -7,38 +7,51 @@ use super::values::Values;
 pub enum SpiErr {
     /// Fatal error.
     Fatal,
+
     /// The Response frame of the current defragmentation indicates the NCP has reset.
     NcpReset,
+
     /// The NCP is reporting that the Command frame of the current defragmentation
     /// is oversized (the length byte is too large).
     OversizedEzspFrame,
+
     /// The Response frame of the current defragmentation indicates the
     /// previous defragmentation was aborted (nSSEL deasserted too soon).
     AbortedTransaction,
+
     /// The Response frame of the current defragmentation indicates the
     /// frame terminator is missing from the Command frame.
     MissingFrameTerminator,
+
     /// The NCP has not provided a Response within the time limit defined by `WAIT_SECTION_TIMEOUT`.
     WaitSectionTimeout,
+
     /// The Response frame from the NCP is missing the frame terminator.
     NoFrameTerminator,
+
     /// The Host attempted to send an oversized Command (the length byte is too large)
     /// and the AVR's spi-protocol.c blocked the transmission.
     EzspCommandOversized,
+
     /// The NCP attempted to send an oversized Response (the length byte is too large)
     /// and the AVR's spi-protocol.c blocked the reception.
     EzspResponseOversized,
+
     /// The Host has sent the Command and is still waiting for the NCP to send a Response.
     WaitingForResponse,
+
     /// The NCP has not asserted `nHOST_INT` within the time limit
     /// defined by `WAKE_HANDSHAKE_TIMEOUT`.
     HandshakeTimeout,
+
     /// The NCP has not asserted `nHOST_INT` after an NCP reset
     /// within the time limit defined by `STARTUP_TIMEOUT`.
     StartupTimeout,
+
     /// The Host attempted to verify the SPI Protocol activity and version number,
     /// and the verification failed.
     StartupFail,
+
     /// The Host has sent a command with a SPI Byte that is
     /// unsupported by the current mode the NCP is operating in.
     UnsupportedSpiCommand,

@@ -16,28 +16,40 @@ mod values;
 pub enum Status {
     /// Success.
     Success,
+
     /// SPI-related status.
     SpiErr(SpiErr),
+
     /// Fatal error detected by host.
     HostFatalError,
+
     /// Tried to send DATA frame too long.
     DataFrameTooLong,
+
     /// Tried to send DATA frame too short.
     DataFrameTooShort,
+
     /// No space for tx'ed DATA frame.
     NoTxSpace,
+
     /// No space for rec'd DATA frame.
     NoRxSpace,
+
     /// No receive data available.
     NoRxData,
+
     /// Not in Connected state.
     NotConnected,
+
     /// Errors status.
     Error(Error),
+
     /// ASH-related status.
     Ash(Ash),
+
     /// Failed to connect to CPC daemon or failed to open CPC endpoint.
     CpcErrorInit,
+
     /// No reset or error.
     NoError,
 }

@@ -15,6 +15,7 @@ mod flash;
 pub enum Err {
     /// Ember flash error status.
     Flash(Flash),
+
     /// Ember bootloader error status.
     Bootloader(Bootloader),
 }

@@ -16,9 +16,9 @@ The crate has three layers:
    - concrete serial transport implementation (`uart::Uart`)
    - EZSP-over-ASHv2 encoding/decoding and frame routing
 
-3. Zigbee integration layer (`feature = "zigbee"`)
-   - `zigbee_hw` driver integration (`zigbee::EzspNetworkManager`)
-   - callback-to-event translation and network startup orchestration
+3. `apis-saltans` integration layer (`feature = "apis-saltans"`)
+   - `apis_saltans_hw` driver integration (`apis_saltans::EzspNetworkManager`)
+   - callback-to-event translation, scan aggregation, and network startup orchestration
 
 ```mermaid
 flowchart TD
@@ -28,9 +28,9 @@ flowchart TD
     D --> E[ASHv2 actor/proxy]
     E --> F[NCP]
 
-    A --> G[zigbee::EzspNetworkManager]
+    A --> G[apis_saltans::EzspNetworkManager]
     G --> B
-    G --> H[zigbee_hw::NcpDriver]
+    G --> H[apis_saltans_hw::NcpDriver]
 ```
 
 ## Core layer
@@ -45,6 +45,7 @@ flowchart TD
 - frame model: `Frame`, `Header`, `Parameters`, `Response`, `Callback`, ...
 - extension traits: `ConfigurationExt`, `PolicyExt`, `Displayable`
 - core error/result types
+- protocol data modules under `ember` and `ezsp`
 
 ### Transport-first design
 
@@ -76,7 +77,7 @@ The frame subsystem (`src/frame`) handles typed parsing and conversion:
 - payload classification into `Parameters::Response` vs `Parameters::Callback`
 - per-command typed conversions via `TryFrom<Parameters>` / `TryInto<_>`
 
-Parameter parsing is ID-driven (`Parameters::parse_from_le_stream(id, ...)`) and maps frame IDs directly to typed response/callback structures.
+Parameter parsing is ID-driven (`Parameters::parse_from_le_stream(id, ...)`) and maps frame IDs directly to typed response/callback structures. Command and callback families live under `src/frame/parameters`, while the public command traits live under `src/commands`.
 
 ### Error model
 
@@ -113,7 +114,7 @@ This layer is implemented in `src/uart`.
 - `Connected` -> no-op
 - `Failed` -> reconnect via `connect()`
 
-`Uart::connect()` negotiates protocol version by issuing `version` commands and updates internal state to `Connected` on success.
+`Uart::connect()` negotiates protocol version by issuing `version` commands and updates internal state to `Connected` on success. The negotiated version is shared with the decoder so it can parse legacy and extended headers correctly.
 
 ### TX path
 
@@ -138,21 +139,28 @@ A background splitter task continuously:
 `Uart::receive::<T>()` consumes the response queue and attempts typed conversion.
 If conversion fails because the response belongs to a different waiter, it requeues the message after a short grace period using a bounded task pool (`tokio_task_pool::Pool`).
 
-## Zigbee integration (`feature = "zigbee"`)
+`Uart::abort()` aborts the splitter task and joins it.
 
-This layer is implemented in `src/zigbee`.
+## `apis-saltans` integration (`feature = "apis-saltans"`)
+
+This layer is implemented in `src/apis_saltans`.
 
 ### Main types
 
-- `zigbee::EzspNetworkManager<T>`
-  - wraps EZSP transport and implements `zigbee_hw::NcpDriver`
+- `apis_saltans::EzspNetworkManager<T>`
+  - wraps EZSP transport and implements `apis_saltans_hw::NcpDriver`
   - tracks message/APS/transaction sequence counters
   - bridges request/response APIs with callback-driven events
-- `Builder<T>` (`src/zigbee/network_manager/builder.rs`)
+- `Builder<T>` (`src/apis_saltans/network_manager/builder.rs`)
   - startup/configuration DSL for network bootstrap
-  - implements `zigbee_hw::Start`
+  - implements `apis_saltans_hw::Start`
 - `EventHandler`
-  - translates EZSP callbacks to `zigbee_hw::Event`
+  - translates EZSP callbacks to `apis_saltans_hw::Event`
+  - correlates outgoing message tags with `MessageSent` callbacks
+  - collects active and energy scan callback streams into one-shot scan responses
+- conversion modules (`src/apis_saltans/conversion`)
+  - map EZSP structures into `apis-saltans` address, APS data, event, found-network, and scanned-channel types
+  - convert `ChildJoin`, `StackStatus`, and `TrustCenterJoin` callbacks into join/leave/rejoin/network events
 
 ### Trait coupling
 
@@ -164,6 +172,8 @@ This layer is implemented in `src/zigbee`.
 
 - `T: Transport + Sync + 'static`
 
+When `ashv2` is also enabled, `EzspNetworkManager<uart::Uart>` exposes an `ashv2(serial_port)` convenience constructor. The builder also has an ASHv2 helper that accepts explicit `uart::Buffers`.
+
 ### Startup flow (`Builder::start`)
 
 `start(endpoints)` performs:
@@ -172,16 +182,22 @@ This layer is implemented in `src/zigbee`.
 2. callback bridge + event handler spawn
 3. concentrator/configuration/policy setup via EZSP commands
 4. endpoint registration via `add_endpoint`
-5. network init path:
+5. current IEEE address and network state lookup
+6. network init path:
    - reinitialize path: leave network, set initial security, form network
    - normal path: `network_init`
-6. wait for network-up event
-7. runtime radio and route-request setup
-8. spawn `EzspNetworkManager` actor and return `NcpHandle` + event receiver
+7. wait for network-up event
+8. runtime radio power, state logging, and many-to-one route-request setup
+9. spawn `EzspNetworkManager` actor and return `NcpHandle` + event receiver
+
+Builder configuration includes policy values, configuration values, concentrator parameters, APS options, link/network keys, join method, PAN ID, IEEE address, radio channel, radio power, reinitialization mode, and channel buffer size.
 
 ### Data planes
 
-The Zigbee layer keeps two planes separate:
+The `apis-saltans` layer keeps three planes separate:
 
 1. command plane (`NcpDriver` calls -> EZSP commands)
-2. event plane (EZSP callbacks -> translated `zigbee_hw::Event` stream)
+2. response-correlation plane (message tags -> `MessageSent` one-shot responses)
+3. event plane (EZSP callbacks -> translated `apis_saltans_hw::Event` stream)
+
+`EzspNetworkManager::terminate()` sends a termination message to the event handler and returns the underlying transport after the handler task exits.

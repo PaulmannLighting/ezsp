@@ -10,7 +10,7 @@ Rust implementation of the EmberZNet Serial Protocol (EZSP).
 ## Features
 
 - `ashv2`: enables the ASHv2 serial transport (`uart::Uart`).
-- `zigbee`: enables Zigbee host integration (`zigbee::EzspNetworkManager`) and pulls in Zigbee crates from `apis-saltans`.
+- `apis-saltans`: enables Zigbee host integration (`apis_saltans::EzspNetworkManager`) and pulls in `apis-saltans` APS/core/hardware/ZDP crates.
 - `semver`: enables `semver` support for EZSP version APIs.
 
 ## Core API
@@ -20,6 +20,7 @@ The crate is transport-first:
 - `Transport` defines the low-level async connection and request/response primitives.
 - EZSP command traits (`Configuration`, `Messaging`, `Networking`, `Security`, ...) are blanket-implemented for any `T: Transport`.
 - `Ezsp` is a convenience trait that combines all command traits.
+- Protocol types are exposed through `ember`, `ezsp`, and the typed frame/parameter model.
 
 Implementing `Transport` gives access to the full typed command surface.
 
@@ -36,11 +37,12 @@ The crate currently ships one concrete transport implementation: `uart::Uart` (`
   - `Uart::open(path, flow_control, protocol_version, &ChannelSizes)`
   - `Uart::from_serial_port(serial_port, protocol_version, &ChannelSizes)`
   - `Uart::new(proxy, ash_rx, callbacks_tx, protocol_version, channel_size)` (advanced integration)
+- `Uart::abort()` for aborting the background splitter task
 
 Additional types:
 
 - `uart::ChannelSizes` to tune queue capacities for `Uart::open` / `from_serial_port`
-- `uart::Buffers` for Zigbee builder ASHv2 helper constructors
+- `uart::Buffers` for ASHv2 queue sizing in integration helper constructors
 
 ### Minimal `ashv2` usage
 
@@ -63,20 +65,23 @@ async fn example() -> Result<(), ezsp::Error> {
 }
 ```
 
-## Zigbee integration (`zigbee` feature)
+## `apis-saltans` integration (`apis-saltans` feature)
 
-When `zigbee` is enabled, the crate exposes `zigbee::EzspNetworkManager<T>`.
+When `apis-saltans` is enabled, the crate exposes `apis_saltans::EzspNetworkManager<T>`.
 
-- `EzspNetworkManager<T>: zigbee_hw::NcpDriver` when
+- `EzspNetworkManager<T>: apis_saltans_hw::NcpDriver` when
   `T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync`.
 - `EzspNetworkManager::build(transport, callbacks)` returns `Builder<T>`.
-- `Builder<T>: zigbee_hw::Start` when `T: Transport + Sync + 'static`.
+- `Builder<T>: apis_saltans_hw::Start` when `T: Transport + Sync + 'static`.
 - `Start::start(...)` configures the NCP, starts callback translation, and returns
-  `(zigbee_hw::NcpHandle, tokio::sync::mpsc::Receiver<zigbee_hw::Event>)`.
+  `(apis_saltans_hw::NcpHandle, tokio::sync::mpsc::Receiver<apis_saltans_hw::Event>)`.
+- `EzspNetworkManager::terminate()` stops the event handler and returns the underlying transport.
 
-If both `zigbee` and `ashv2` are enabled, convenience constructors are available:
+The integration layer translates EZSP callbacks into `apis_saltans_hw::Event`, including network-up/down/open/closed events, child join/leave events, trust-center join/rejoin/leave events, and incoming APS messages. It separately aggregates scan callbacks for `NcpDriver` scan calls and correlates `MessageSent` callbacks with outgoing message tags.
 
-- `zigbee::EzspNetworkManager::ashv2(serial_port)`
+If both `apis-saltans` and `ashv2` are enabled, convenience constructors are available:
+
+- `apis_saltans::EzspNetworkManager::ashv2(serial_port)`
 
 ## Legal
 

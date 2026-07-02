@@ -5,7 +5,7 @@ use std::sync::atomic::{AtomicU8, Ordering};
 
 use ashv2::Payload;
 use le_stream::FromLeStream;
-use log::trace;
+use log::{debug, trace};
 use tokio::sync::mpsc::Receiver;
 
 use crate::error::Decode;
@@ -144,7 +144,7 @@ impl Decoder {
         }
 
         if matches!(error, Decode::TooManyBytes { .. }) {
-            trace!(
+            debug!(
                 "Received too many bytes for {header:?}: {:#04X?}",
                 self.parameters
             );

@@ -135,17 +135,19 @@ impl Decoder {
     }
 
     /// Handle an error that occurred during frame parsing.
-    fn handle_error(&mut self, error: Decode, next_header: Header) -> Result<Option<Frame>, Error> {
-        if let Ok(invalid_command) = invalid_command::Response::parse_from_le_stream(
-            next_header.id(),
-            self.parameters.drain(..),
-        ) {
+    fn handle_error(&mut self, error: Decode, header: Header) -> Result<Option<Frame>, Error> {
+        if let Ok(invalid_command) =
+            invalid_command::Response::parse_from_le_stream(header.id(), self.parameters.drain(..))
+        {
             trace!("Received invalid command error.");
             return Err(Error::InvalidCommand(invalid_command));
         }
 
         if matches!(error, Decode::TooManyBytes { .. }) {
-            trace!("Received too many bytes: {:#04X?}", self.parameters);
+            trace!(
+                "Received too many bytes for {header:?}: {:#04X?}",
+                self.parameters
+            );
         }
 
         if error != Decode::TooFewBytes {
@@ -154,7 +156,7 @@ impl Decoder {
         }
 
         trace!("Frame appears fragmented. Waiting for more data...");
-        self.header.replace(next_header);
+        self.header.replace(header);
         Ok(None)
     }
 }

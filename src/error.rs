@@ -104,12 +104,6 @@ impl From<Decode> for Error {
     }
 }
 
-impl<T> From<le_stream::Error<T>> for Error {
-    fn from(error: le_stream::Error<T>) -> Self {
-        Self::Decode(error.into())
-    }
-}
-
 impl From<Status> for Error {
     fn from(status: Status) -> Self {
         Self::Status(status)

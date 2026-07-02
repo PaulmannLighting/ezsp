@@ -144,6 +144,10 @@ impl Decoder {
             return Err(Error::InvalidCommand(invalid_command));
         }
 
+        if error == Decode::TooManyBytes {
+            trace!("Received too many bytes: {:#04X?}", self.parameters);
+        }
+
         if error != Decode::TooFewBytes {
             trace!("Received and error during frame parsing: {error:?}");
             return Err(error.into());

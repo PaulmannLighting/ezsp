@@ -121,7 +121,7 @@ impl<T> EzspNetworkManager<T>
 where
     T: Messaging + Send + Sync,
 {
-    async fn send_unicast(
+    async fn unicast_no_confirm(
         &mut self,
         short_id: u16,
         destination_endpoint: Endpoint,
@@ -154,7 +154,7 @@ where
         Ok(ResponseReceiver::new(rx, seq))
     }
 
-    async fn send_multicast(
+    async fn multicast_no_confirm(
         &mut self,
         group_id: u16,
         hops: u8,
@@ -301,7 +301,7 @@ where
         destination_endpoint: Endpoint,
         frame: Frame,
     ) -> Result<u8, apis_saltans_hw::Error> {
-        self.send_unicast(short_id, destination_endpoint, frame)
+        self.unicast_no_confirm(short_id, destination_endpoint, frame)
             .await?
             .await
     }
@@ -313,7 +313,7 @@ where
         radius: u8,
         frame: Frame,
     ) -> Result<u8, apis_saltans_hw::Error> {
-        self.send_multicast(group_id, hops, radius, frame)
+        self.multicast_no_confirm(group_id, hops, radius, frame)
             .await?
             .await
     }
@@ -366,7 +366,8 @@ where
         }) {
             responses.insert(
                 (short_id, endpoint),
-                self.send_unicast(short_id, endpoint, frame.clone()).await?,
+                self.unicast_no_confirm(short_id, endpoint, frame.clone())
+                    .await?,
             );
         }
 

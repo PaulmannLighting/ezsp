@@ -60,25 +60,7 @@ pub(crate) use response;
 
 macro_rules! handler {
     ($id:expr, { $($field:ident: $ty:ty),* $(,)? } $(, impl { $($impls:item)* })? $(,)?) => {
-        crate::frame::parameters::handler!(@struct { $($field: $ty),* });
-
-        impl crate::frame::Parameter for Handler {
-            const ID: u16 = $id;
-        }
-
-        $($($impls)*)?
-    };
-    (@struct {}) => {
-        /// Handler parameters.
-        #[derive(Clone, Copy, Debug, Eq, PartialEq, le_stream::FromLeStream)]
-        pub struct Handler;
-    };
-    (@struct { $($field:ident: $ty:ty),+ }) => {
-        /// Handler parameters.
-        #[derive(Clone, Debug, Eq, PartialEq, le_stream::FromLeStream)]
-        pub struct Handler {
-            $($field: $ty),+
-        }
+        crate::frame::parameters::parameter!(Handler, $id, { $($field: $ty),* } $(, impl { $($impls)* })?);
     };
 }
 pub(crate) use handler;

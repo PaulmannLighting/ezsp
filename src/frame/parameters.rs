@@ -81,6 +81,19 @@ macro_rules! frame {
 }
 pub(crate) use frame;
 
+#[allow(unused_macros)]
+macro_rules! ids {
+    ($name:ident, $($ty:ty),+ $(,)?) => {
+        macro_rules! $name {
+            () => {
+                $(<$ty as crate::frame::Parameter>::ID)|+
+            };
+        }
+    };
+}
+#[allow(unused_imports)]
+pub(crate) use ids;
+
 pub mod binding;
 pub mod bootloader;
 pub mod cbke;

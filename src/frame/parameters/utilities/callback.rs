@@ -1,18 +1,9 @@
 //! Parameters for the [`Utilities::callback`](crate::Utilities::callback) command.
 
-use le_stream::ToLeStream;
-
 use crate::Parameters;
-use crate::frame::{Parameter, RespondsWith};
+use crate::frame::RespondsWith;
 
-const ID: u16 = 0x0006;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
+crate::frame::parameters::command!(0x0006, {});
 
 impl RespondsWith for Command {
     type Response = Parameters;

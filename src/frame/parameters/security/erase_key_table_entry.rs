@@ -3,6 +3,7 @@
 crate::frame::parameters::frame!(0x0076, { index: u8 }, {});
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(index: u8) -> Self {
         Self { index }

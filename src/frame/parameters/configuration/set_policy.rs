@@ -8,6 +8,7 @@ use crate::ezsp::{Status, policy};
 crate::frame::parameters::frame!(0x0055, { policy_id: u8, decision_id: u8 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(policy_id: policy::Id, decision_id: u8) -> Self {
         Self {

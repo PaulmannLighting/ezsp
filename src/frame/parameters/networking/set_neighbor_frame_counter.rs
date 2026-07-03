@@ -8,6 +8,7 @@ use crate::ember::{Eui64, Status};
 crate::frame::parameters::frame!(0x00AD, { eui64: Eui64, frame_counter: u32 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(eui64: Eui64, frame_counter: u32) -> Self {
         Self {

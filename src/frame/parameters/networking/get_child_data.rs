@@ -9,6 +9,7 @@ use crate::ember::child::Data;
 crate::frame::parameters::frame!(0x004A, { index: u8 }, { status: u8, child_data: Data });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(index: u8) -> Self {
         Self { index }

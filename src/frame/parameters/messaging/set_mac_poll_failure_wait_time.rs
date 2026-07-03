@@ -3,6 +3,7 @@
 crate::frame::parameters::frame!(0x00F4, { wait_before_retry_interval_ms: u8 }, {});
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(wait_before_retry_interval_ms: u8) -> Self {
         Self {

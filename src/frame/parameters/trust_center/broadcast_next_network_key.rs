@@ -9,6 +9,7 @@ use crate::ember::key::Data;
 crate::frame::parameters::frame!(0x0073, { key: Data }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(key: Data) -> Self {
         Self { key }

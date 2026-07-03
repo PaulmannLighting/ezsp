@@ -8,6 +8,7 @@ use crate::ember::{CertificateData, PrivateKeyData, PublicKeyData, Status};
 crate::frame::parameters::frame!(0x00A2, { ca_public: PublicKeyData, my_cert: CertificateData, my_key: PrivateKeyData }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(
         ca_public: PublicKeyData,

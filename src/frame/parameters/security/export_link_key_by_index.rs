@@ -11,6 +11,7 @@ use crate::ember::Eui64;
 crate::frame::parameters::frame!(0x010F, { index: u8 }, { payload: Payload, status: u32 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(index: u8) -> Self {
         Self { index }

@@ -10,6 +10,7 @@ use crate::ember::Eui64;
 crate::frame::parameters::frame!(0x0111, { context: Context, eui64: Eui64, plaintext_key: Key, flags: u8 }, { status: u32 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(context: Context, eui64: Eui64, plaintext_key: Key, flags: Flags) -> Self {
         Self {

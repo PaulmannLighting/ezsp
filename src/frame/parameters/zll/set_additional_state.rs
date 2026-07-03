@@ -3,6 +3,7 @@
 crate::frame::parameters::frame!(0x00D6, { state: u16 }, {});
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(state: u16) -> Self {
         Self { state }

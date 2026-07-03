@@ -5,6 +5,7 @@ use crate::ember::NodeId;
 crate::frame::parameters::frame!(0x005D, { address_table_index: u8, id: NodeId }, {});
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(address_table_index: u8, id: NodeId) -> Self {
         Self {

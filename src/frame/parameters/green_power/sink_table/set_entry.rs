@@ -9,6 +9,7 @@ use crate::ember::gp::sink::TableEntry;
 crate::frame::parameters::frame!(0x00DF, { sink_index: u8, entry: TableEntry }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(sink_index: u8, entry: TableEntry) -> Self {
         Self { sink_index, entry }

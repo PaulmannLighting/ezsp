@@ -5,6 +5,7 @@ use crate::ember::Eui64;
 crate::frame::parameters::frame!(0x007E, { remote_eui64: Eui64, extended_timeout: bool }, {});
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(remote_eui64: Eui64, extended_timeout: bool) -> Self {
         Self {

@@ -9,6 +9,7 @@ use crate::ember::{Eui64, NodeId, Status};
 crate::frame::parameters::frame!(0x0082, { address_table_index: u8, new_eui64: Eui64, new_id: NodeId, new_extended_timeout: bool }, { status: u8, payload: PreviousEntry });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(
         address_table_index: u8,

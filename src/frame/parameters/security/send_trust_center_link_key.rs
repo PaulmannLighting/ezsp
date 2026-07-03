@@ -8,6 +8,7 @@ use crate::ember::{Eui64, NodeId, Status};
 crate::frame::parameters::frame!(0x0067, { destination_node_id: NodeId, destination_eui64: Eui64 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(destination_node_id: NodeId, destination_eui64: Eui64) -> Self {
         Self {

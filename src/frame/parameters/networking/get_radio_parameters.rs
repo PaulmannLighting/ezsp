@@ -9,6 +9,7 @@ use crate::ember::multi_phy::radio::Parameters;
 crate::frame::parameters::frame!(0x00FD, { phy_index: u8 }, { status: u8, parameters: Parameters });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(phy_index: u8) -> Self {
         Self { phy_index }

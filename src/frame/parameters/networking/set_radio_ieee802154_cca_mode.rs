@@ -8,6 +8,7 @@ use crate::ember::Status;
 crate::frame::parameters::frame!(0x0095, { cca_mode: u8 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(cca_mode: u8) -> Self {
         Self { cca_mode }

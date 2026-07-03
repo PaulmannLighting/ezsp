@@ -10,6 +10,7 @@ use crate::ezsp::zll::NetworkOperation;
 crate::frame::parameters::frame!(0x00B2, { network_info: Network, op: u8, radio_tx_power: i8 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(network_info: Network, op: NetworkOperation, radio_tx_power: i8) -> Self {
         Self {

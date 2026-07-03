@@ -5,6 +5,7 @@ use crate::ember::{NULL_NODE_ID, NodeId};
 crate::frame::parameters::frame!(0x0106, { child_index: u8 }, { child_id: NodeId });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(child_index: u8) -> Self {
         Self { child_index }

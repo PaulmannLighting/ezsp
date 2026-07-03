@@ -9,6 +9,7 @@ use crate::ember::route::TableEntry;
 crate::frame::parameters::frame!(0x007B, { index: u8 }, { status: u8, value: TableEntry });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(index: u8) -> Self {
         Self { index }

@@ -10,6 +10,7 @@ use crate::types::ByteSizedVec;
 crate::frame::parameters::frame!(0x00AA, { value_id: u8 }, { status: u8, value: ByteSizedVec<u8> });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(value_id: Id) -> Self {
         Self {

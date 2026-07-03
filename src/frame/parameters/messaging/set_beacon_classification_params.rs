@@ -9,6 +9,7 @@ use crate::ember::beacon::ClassificationParams;
 crate::frame::parameters::frame!(0x00EF, { param: ClassificationParams }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(param: ClassificationParams) -> Self {
         Self { param }

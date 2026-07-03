@@ -9,6 +9,7 @@ use crate::ember::security::initial::State;
 crate::frame::parameters::frame!(0x0068, { state: State }, { success: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(state: State) -> Self {
         Self { state }

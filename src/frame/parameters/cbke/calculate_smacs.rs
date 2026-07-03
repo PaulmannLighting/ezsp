@@ -8,6 +8,7 @@ use crate::ember::{CertificateData, PublicKeyData, Status};
 crate::frame::parameters::frame!(0x009F, { am_initiator: bool, partner_certificate: CertificateData, partner_ephemeral_public_key: PublicKeyData }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(
         am_initiator: bool,

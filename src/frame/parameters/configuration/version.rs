@@ -10,6 +10,7 @@ use crate::ezsp::StackVersion;
 crate::frame::parameters::frame!(0x0000, { desired_protocol_version: u8 }, { protocol_version: u8, stack_type: u8, stack_version: u16 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(desired_protocol_version: u8) -> Self {
         Self {

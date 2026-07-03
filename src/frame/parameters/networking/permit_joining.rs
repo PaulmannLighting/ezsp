@@ -9,6 +9,7 @@ use crate::ember::network::Duration;
 crate::frame::parameters::frame!(0x0022, { duration: u8 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(duration: Duration) -> Self {
         Self {

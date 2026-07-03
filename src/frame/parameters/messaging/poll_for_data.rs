@@ -9,6 +9,7 @@ use crate::ember::event::Units;
 crate::frame::parameters::frame!(0x0042, { interval: u16, units: u8, failure_limit: u8 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(interval: u16, units: Units, failure_limit: u8) -> Self {
         Self {

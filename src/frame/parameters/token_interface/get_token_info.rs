@@ -9,6 +9,7 @@ use crate::ember::token::Info;
 crate::frame::parameters::frame!(0x0101, { index: u8 }, { status: u8, token_info: Info });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(index: u8) -> Self {
         Self { index }

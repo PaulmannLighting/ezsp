@@ -8,6 +8,7 @@ use crate::ember::{NodeId, Status};
 crate::frame::parameters::frame!(0x009C, { target: NodeId, scan_channels: u32, scan_duration: u8, scan_count: u16 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(
         target: NodeId,

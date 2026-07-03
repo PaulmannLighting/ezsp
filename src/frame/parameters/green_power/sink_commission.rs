@@ -8,6 +8,7 @@ use crate::ember::Status;
 crate::frame::parameters::frame!(0x010A, { options: u8, gpm_addr_for_security: u16, gpm_addr_for_pairing: u16, sink_endpoint: u8 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(
         options: u8,

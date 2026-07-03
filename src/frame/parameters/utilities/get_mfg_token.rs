@@ -6,6 +6,7 @@ use crate::types::ByteSizedVec;
 crate::frame::parameters::frame!(0x000B, { token_id: u8 }, { token_data: ByteSizedVec<u8> });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(token_id: Id) -> Self {
         Self {

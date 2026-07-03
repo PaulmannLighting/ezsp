@@ -8,6 +8,7 @@ use crate::ember::Status;
 crate::frame::parameters::frame!(0x0105, { config: u8, min_acks_needed: u8 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(config: u8, min_acks_needed: u8) -> Self {
         Self {

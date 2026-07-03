@@ -5,6 +5,7 @@ use crate::ember::Eui64;
 crate::frame::parameters::frame!(0x0075, { address: Eui64, link_key: bool }, { index: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(address: Eui64, link_key: bool) -> Self {
         Self { address, link_key }

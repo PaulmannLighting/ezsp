@@ -10,6 +10,7 @@ use crate::ember::Eui64;
 crate::frame::parameters::frame!(0x0113, { eui: Eui64 }, { payload: TransientKey, status: u32 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(eui: Eui64) -> Self {
         Self { eui }

@@ -7,6 +7,7 @@ use crate::types::SourceRouteDiscoveryMode;
 crate::frame::parameters::frame!(0x005A, { mode: u8 }, { remaining_time: u32 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(mode: SourceRouteDiscoveryMode) -> Self {
         Self { mode: mode.into() }

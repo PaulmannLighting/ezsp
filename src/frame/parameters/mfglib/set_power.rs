@@ -8,6 +8,7 @@ use crate::ember::Status;
 crate::frame::parameters::frame!(0x008C, { tx_power_mode: u16, power: i8 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(tx_power_mode: u16, power: i8) -> Self {
         Self {

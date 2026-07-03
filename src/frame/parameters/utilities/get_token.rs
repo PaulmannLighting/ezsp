@@ -8,6 +8,7 @@ use crate::ember::Status;
 crate::frame::parameters::frame!(0x000A, { token_id: u8 }, { status: u8, token_data: [u8; 8] });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(token_id: u8) -> Self {
         Self { token_id }

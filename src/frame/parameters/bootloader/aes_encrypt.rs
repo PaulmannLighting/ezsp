@@ -3,6 +3,7 @@
 crate::frame::parameters::frame!(0x0094, { plaintext: [u8; 16], key: [u8; 16] }, { ciphertext: [u8; 16] });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(plaintext: [u8; 16], key: [u8; 16]) -> Self {
         Self { plaintext, key }

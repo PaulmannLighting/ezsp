@@ -11,6 +11,7 @@ use crate::ember::Eui64;
 crate::frame::parameters::frame!(0x010C, { context_in: Context }, { payload: KeyInfo, status: u32 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(context_in: Context) -> Self {
         Self { context_in }

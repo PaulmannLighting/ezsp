@@ -8,6 +8,7 @@ use crate::ember::{Eui64, Status};
 crate::frame::parameters::frame!(0x005C, { address_table_index: u8, eui64: Eui64 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(address_table_index: u8, eui64: Eui64) -> Self {
         Self {

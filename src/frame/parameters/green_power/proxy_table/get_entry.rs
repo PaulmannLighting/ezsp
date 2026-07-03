@@ -9,6 +9,7 @@ use crate::ember::gp::proxy::TableEntry;
 crate::frame::parameters::frame!(0x00C8, { proxy_index: u8 }, { status: u8, entry: TableEntry });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(proxy_index: u8) -> Self {
         Self { proxy_index }

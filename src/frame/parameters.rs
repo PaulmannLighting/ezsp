@@ -1,26 +1,25 @@
 //! Definitions of parameter structures used in the `Ember ZNet Serial Protocol` (`EZSP`).
 
-macro_rules! command {
-    ($id:expr, {}, $response:ty $(,)?) => {
+macro_rules! parameter {
+    ($name:ident, $id:expr, {}) => {
+        #[doc = concat!(stringify!($name), " parameters.")]
         #[derive(
             Clone,
+            Copy,
             Debug,
             Eq,
             PartialEq,
             le_stream::FromLeStream,
             le_stream::ToLeStream
         )]
-        pub(crate) struct Command;
+        pub struct $name;
 
-        impl crate::frame::Parameter for Command {
+        impl crate::frame::Parameter for $name {
             const ID: u16 = $id;
         }
-
-        impl crate::frame::RespondsWith for Command {
-            type Response = $response;
-        }
     };
-    ($id:expr, { $($field:ident: $ty:ty),+ $(,)? }, $response:ty $(,)?) => {
+    ($name:ident, $id:expr, { $($field:ident: $ty:ty),+ $(,)? }) => {
+        #[doc = concat!(stringify!($name), " parameters.")]
         #[derive(
             Clone,
             Debug,
@@ -29,13 +28,20 @@ macro_rules! command {
             le_stream::FromLeStream,
             le_stream::ToLeStream
         )]
-        pub(crate) struct Command {
+        pub struct $name {
             $($field: $ty),+
         }
 
-        impl crate::frame::Parameter for Command {
+        impl crate::frame::Parameter for $name {
             const ID: u16 = $id;
         }
+    };
+}
+pub(crate) use parameter;
+
+macro_rules! command {
+    ($id:expr, { $($field:ident: $ty:ty),* $(,)? }, $response:ty $(,)?) => {
+        crate::frame::parameters::parameter!(Command, $id, { $($field: $ty),* });
 
         impl crate::frame::RespondsWith for Command {
             type Response = $response;
@@ -45,39 +51,8 @@ macro_rules! command {
 pub(crate) use command;
 
 macro_rules! response {
-    ($id:expr, {}) => {
-        /// Response parameters.
-        #[derive(
-            Clone,
-            Debug,
-            Eq,
-            PartialEq,
-            le_stream::FromLeStream,
-            le_stream::ToLeStream
-        )]
-        pub struct Response;
-
-        impl crate::frame::Parameter for Response {
-            const ID: u16 = $id;
-        }
-    };
-    ($id:expr, { $($field:ident: $ty:ty),+ $(,)? }) => {
-        /// Response parameters.
-        #[derive(
-            Clone,
-            Debug,
-            Eq,
-            PartialEq,
-            le_stream::FromLeStream,
-            le_stream::ToLeStream
-        )]
-        pub struct Response {
-            $($field: $ty),+
-        }
-
-        impl crate::frame::Parameter for Response {
-            const ID: u16 = $id;
-        }
+    ($id:expr, { $($field:ident: $ty:ty),* $(,)? }) => {
+        crate::frame::parameters::parameter!(Response, $id, { $($field: $ty),* });
     };
 }
 pub(crate) use response;
@@ -85,7 +60,7 @@ pub(crate) use response;
 macro_rules! handler {
     ($id:expr, {}) => {
         /// Handler parameters.
-        #[derive(Clone, Debug, Eq, PartialEq, le_stream::FromLeStream)]
+        #[derive(Clone, Copy, Debug, Eq, PartialEq, le_stream::FromLeStream)]
         pub struct Handler;
 
         impl crate::frame::Parameter for Handler {

@@ -3,6 +3,7 @@
 crate::frame::parameters::frame!(0x0016, { descriptor: u16 }, {});
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(descriptor: u16) -> Self {
         Self { descriptor }

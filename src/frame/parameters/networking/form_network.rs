@@ -9,6 +9,7 @@ use crate::ember::network::Parameters;
 crate::frame::parameters::frame!(0x001E, { parameters: Parameters }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(parameters: Parameters) -> Self {
         Self { parameters }

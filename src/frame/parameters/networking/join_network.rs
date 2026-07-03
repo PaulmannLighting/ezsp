@@ -10,6 +10,7 @@ use crate::ember::node::Type;
 crate::frame::parameters::frame!(0x001F, { node_type: u8, parameters: Parameters }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(node_type: Type, parameters: Parameters) -> Self {
         Self {

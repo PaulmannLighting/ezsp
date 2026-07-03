@@ -9,6 +9,7 @@ use crate::Error;
 crate::frame::parameters::frame!(0x0112, { index: u8 }, { payload: TransientKey, status: u32 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(index: u8) -> Self {
         Self { index }

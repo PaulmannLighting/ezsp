@@ -3,6 +3,7 @@
 crate::frame::parameters::frame!(0x005B, { address_table_index: u8 }, { active: bool });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(address_table_index: u8) -> Self {
         Self {

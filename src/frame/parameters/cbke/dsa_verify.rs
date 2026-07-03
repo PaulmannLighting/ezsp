@@ -8,6 +8,7 @@ use crate::ember::{CertificateData, MessageDigest, SignatureData, Status};
 crate::frame::parameters::frame!(0x00A3, { digest: MessageDigest, signer_certificate: CertificateData, received_sig: SignatureData }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(
         digest: MessageDigest,

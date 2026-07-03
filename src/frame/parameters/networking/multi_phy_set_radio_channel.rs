@@ -8,6 +8,7 @@ use crate::ember::Status;
 crate::frame::parameters::frame!(0x00FB, { phy_index: u8, page: u8, channel: u8 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(phy_index: u8, page: u8, channel: u8) -> Self {
         Self {

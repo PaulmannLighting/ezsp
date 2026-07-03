@@ -9,6 +9,7 @@ use crate::ezsp::network::InitBitmask;
 crate::frame::parameters::frame!(0x0017, { bitmask: InitBitmask }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(bitmask: InitBitmask) -> Self {
         Self { bitmask }

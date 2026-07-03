@@ -3,6 +3,7 @@
 crate::frame::parameters::frame!(0x00E7, { enabled: bool }, {});
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(enabled: bool) -> Self {
         Self { enabled }

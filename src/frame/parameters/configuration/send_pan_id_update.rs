@@ -5,6 +5,7 @@ use crate::ember::PanId;
 crate::frame::parameters::frame!(0x0057, { new_pan: PanId }, { status: bool });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(new_pan: PanId) -> Self {
         Self { new_pan }

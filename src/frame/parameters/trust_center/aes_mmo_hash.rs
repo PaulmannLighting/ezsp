@@ -10,6 +10,7 @@ use crate::types::ByteSizedVec;
 crate::frame::parameters::frame!(0x006F, { context: MmoHashContext, finalize: bool, data: ByteSizedVec<u8> }, { status: u8, return_context: MmoHashContext });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(context: MmoHashContext, finalize: bool, data: ByteSizedVec<u8>) -> Self {
         Self {

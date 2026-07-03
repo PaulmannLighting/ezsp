@@ -10,6 +10,7 @@ use crate::types::ByteSizedVec;
 crate::frame::parameters::frame!(0x0108, { endpoint: u8, cluster: u16, attribute_id: u16, mask: u8, manufacturer_code: u16 }, { status: u8, payload: Attribute });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(
         endpoint: u8,

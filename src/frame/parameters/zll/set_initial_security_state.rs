@@ -10,6 +10,7 @@ use crate::ember::zll::InitialSecurityState;
 crate::frame::parameters::frame!(0x00B3, { network_key: Data, security_state: InitialSecurityState }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(network_key: Data, security_state: InitialSecurityState) -> Self {
         Self {

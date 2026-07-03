@@ -6,6 +6,7 @@ use crate::ember::key::Data;
 crate::frame::parameters::frame!(0x00C9, { options: u32, addr: Address, comm_mode: u8, sink_network_address: u16, sink_group_id: u16, assigned_alias: u16, sink_ieee_address: [u8; 8], gpd_key: Data, gpd_security_frame_counter: u32, forwarding_radius: u8 }, { gp_pairing_added: bool });
 
 impl Command {
+    /// Creates command parameters.
     #[expect(clippy::too_many_arguments)]
     #[must_use]
     pub const fn new(

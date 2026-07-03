@@ -11,6 +11,7 @@ use crate::ember::Eui64;
 crate::frame::parameters::frame!(0x010D, { eui: Eui64 }, { payload: Payload, status: u32 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(eui: Eui64) -> Self {
         Self { eui }

@@ -9,6 +9,7 @@ use crate::ember::zll::InitialSecurityState;
 crate::frame::parameters::frame!(0x00CF, { security_state: InitialSecurityState }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(security_state: InitialSecurityState) -> Self {
         Self { security_state }

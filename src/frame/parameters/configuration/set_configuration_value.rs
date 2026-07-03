@@ -9,6 +9,7 @@ use crate::ezsp::config::Id;
 crate::frame::parameters::frame!(0x0053, { config_id: u8, value: u16 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(config_id: Id, value: u16) -> Self {
         Self {

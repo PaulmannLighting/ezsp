@@ -8,6 +8,7 @@ use crate::ember::Status;
 crate::frame::parameters::frame!(0x00FA, { phy_index: u8, power: i8 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(phy_index: u8, power: i8) -> Self {
         Self { phy_index, power }

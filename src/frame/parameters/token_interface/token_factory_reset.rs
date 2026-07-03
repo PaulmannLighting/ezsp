@@ -3,6 +3,7 @@
 crate::frame::parameters::frame!(0x0077, { exclude_outgoing_fc: bool, exclude_boot_counter: bool }, {});
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(exclude_outgoing_fc: bool, exclude_boot_counter: bool) -> Self {
         Self {

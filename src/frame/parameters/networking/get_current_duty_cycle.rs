@@ -9,6 +9,7 @@ use crate::error::Error;
 crate::frame::parameters::frame!(0x004C, { max_devices: u8 }, { status: u8, device_duty_cycles: DeviceDutyCycles });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(max_devices: u8) -> Self {
         Self { max_devices }

@@ -9,6 +9,7 @@ use crate::types::ByteSizedVec;
 crate::frame::parameters::frame!(0x0109, { endpoint: u8, cluster: u16, attribute_id: u16, mask: u8, manufacturer_code: u16, just_test: bool, data_type: u8, data: ByteSizedVec<u8> }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(endpoint: u8, cluster: u16, attribute: Attribute, just_test: bool) -> Self {
         Self {

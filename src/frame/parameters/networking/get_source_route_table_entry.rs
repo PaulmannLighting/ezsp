@@ -9,6 +9,7 @@ use crate::ember::{NodeId, Status};
 crate::frame::parameters::frame!(0x00C1, { index: u8 }, { status: u8, entry: Entry });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(index: u8) -> Self {
         Self { index }

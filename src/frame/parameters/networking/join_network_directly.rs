@@ -10,6 +10,7 @@ use crate::ember::node::Type;
 crate::frame::parameters::frame!(0x003B, { local_node_type: u8, beacon: Data, radio_tx_power: i8, clear_beacons_after_network_up: bool }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(
         local_node_type: Type,

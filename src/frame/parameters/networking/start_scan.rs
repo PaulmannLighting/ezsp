@@ -10,6 +10,7 @@ use crate::types::VariableLengthU32;
 crate::frame::parameters::frame!(0x001A, { scan_type: u8, channel_mask: u32, duration: u8 }, { status: VariableLengthU32 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(scan_type: Type, channel_mask: u32, duration: u8) -> Self {
         Self {

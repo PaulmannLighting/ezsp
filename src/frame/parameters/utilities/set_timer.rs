@@ -9,6 +9,7 @@ use crate::ember::event::Units;
 crate::frame::parameters::frame!(0x000E, { timer_id: u8, time: u16, units: u8, repeat: bool }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(timer_id: u8, time: u16, units: Units, repeat: bool) -> Self {
         Self {

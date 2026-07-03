@@ -9,6 +9,7 @@ use crate::types::ByteSizedVec;
 crate::frame::parameters::frame!(0x0089, { content: ByteSizedVec<u8> }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(content: ByteSizedVec<u8>) -> Self {
         Self { content }

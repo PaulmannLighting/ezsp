@@ -12,6 +12,7 @@ use crate::types::ByteSizedVec;
 crate::frame::parameters::frame!(0x0002, { endpoint: u8, profile_id: u16, device_id: u16, app_flags: u8, clusters: Clusters }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(
         endpoint: u8,
@@ -33,7 +34,7 @@ impl Command {
 
 /// Helper struct to deal with special serialization of the cluster lists.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) struct Clusters {
+pub struct Clusters {
     input_cluster_counts: u8,
     output_cluster_counts: u8,
     #[expect(clippy::struct_field_names)]
@@ -43,6 +44,7 @@ pub(crate) struct Clusters {
 }
 
 impl Clusters {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(input_clusters: ByteSizedVec<u16>, output_clusters: ByteSizedVec<u16>) -> Self {
         Self {

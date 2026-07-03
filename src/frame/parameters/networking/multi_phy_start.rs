@@ -9,6 +9,7 @@ use crate::ember::multi_phy::nwk::Config;
 crate::frame::parameters::frame!(0x00F8, { phy_index: u8, page: u8, channel: u8, power: i8, bitmask: u8 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub fn new(phy_index: u8, page: u8, channel: u8, power: i8, bitmask: Config) -> Self {
         Self {

@@ -10,6 +10,7 @@ use crate::types::ByteSizedVec;
 crate::frame::parameters::frame!(0x003A, { aps_frame: Frame, hops: u8, nonmember_radius: u8, alias: u16, nwk_sequence: u8, message_tag: u8, message_contents: ByteSizedVec<u8> }, { status: u8, sequence: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(
         aps_frame: Frame,

@@ -9,6 +9,7 @@ use crate::Error;
 crate::frame::parameters::frame!(0x0115, { context: Context, key: Key }, { status: u32 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(context: Context, key: Key) -> Self {
         Self { context, key }

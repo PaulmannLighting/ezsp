@@ -8,6 +8,7 @@ use crate::ember::Status;
 crate::frame::parameters::frame!(0x0021, { have_current_network_key: bool, channel_mask: u32 }, { status: u8 });
 
 impl Command {
+    /// Creates command parameters.
     #[must_use]
     pub const fn new(have_current_network_key: bool, channel_mask: u32) -> Self {
         Self {

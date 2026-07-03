@@ -1,15 +1,19 @@
 //! Definitions of parameter structures used in the `Ember ZNet Serial Protocol` (`EZSP`).
 
 macro_rules! command {
-    ($id:expr, {}) => {
+    ($id:expr, {}, $response:ty $(,)?) => {
         #[derive(Clone, Debug, Eq, PartialEq, le_stream::ToLeStream)]
         pub(crate) struct Command;
 
         impl crate::frame::Parameter for Command {
             const ID: u16 = $id;
         }
+
+        impl crate::frame::RespondsWith for Command {
+            type Response = $response;
+        }
     };
-    ($id:expr, { $($field:ident: $ty:ty),+ $(,)? }) => {
+    ($id:expr, { $($field:ident: $ty:ty),+ $(,)? }, $response:ty $(,)?) => {
         #[derive(Clone, Debug, Eq, PartialEq, le_stream::ToLeStream)]
         pub(crate) struct Command {
             $($field: $ty),+
@@ -17,6 +21,10 @@ macro_rules! command {
 
         impl crate::frame::Parameter for Command {
             const ID: u16 = $id;
+        }
+
+        impl crate::frame::RespondsWith for Command {
+            type Response = $response;
         }
     };
 }
@@ -76,11 +84,7 @@ macro_rules! frame {
         { $($command_field:ident: $command_ty:ty),* $(,)? },
         { $($response_field:ident: $response_ty:ty),* $(,)? }
     ) => {
-        crate::frame::parameters::command!($id, { $($command_field: $command_ty),* });
-
-        impl crate::frame::RespondsWith for Command {
-            type Response = Response;
-        }
+        crate::frame::parameters::command!($id, { $($command_field: $command_ty),* }, Response);
 
         crate::frame::parameters::response!($id, { $($response_field: $response_ty),* });
     };

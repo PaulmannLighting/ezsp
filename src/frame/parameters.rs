@@ -46,6 +46,30 @@ macro_rules! response {
 }
 pub(crate) use response;
 
+macro_rules! handler {
+    ($id:expr, {}) => {
+        /// Handler parameters.
+        #[derive(Clone, Debug, Eq, PartialEq, le_stream::FromLeStream)]
+        pub struct Handler;
+
+        impl crate::frame::Parameter for Handler {
+            const ID: u16 = $id;
+        }
+    };
+    ($id:expr, { $($field:ident: $ty:ty),+ $(,)? }) => {
+        /// Handler parameters.
+        #[derive(Clone, Debug, Eq, PartialEq, le_stream::FromLeStream)]
+        pub struct Handler {
+            $($field: $ty),+
+        }
+
+        impl crate::frame::Parameter for Handler {
+            const ID: u16 = $id;
+        }
+    };
+}
+pub(crate) use handler;
+
 macro_rules! frame {
     (
         $id:expr,

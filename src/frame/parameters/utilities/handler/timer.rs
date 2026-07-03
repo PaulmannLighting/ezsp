@@ -1,16 +1,6 @@
 //! Timer handler parameter.
 
-use le_stream::FromLeStream;
-
-use crate::frame::Parameter;
-
-const ID: u16 = 0x000F;
-
-/// A callback from the timer.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Handler {
-    timer_id: u8,
-}
+crate::frame::parameters::handler!(0x000F, { timer_id: u8 });
 
 impl Handler {
     /// Which timer generated the callback (0 or 1).
@@ -18,8 +8,4 @@ impl Handler {
     pub const fn timer_id(&self) -> u8 {
         self.timer_id
     }
-}
-
-impl Parameter for Handler {
-    const ID: u16 = ID;
 }

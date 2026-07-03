@@ -1,6 +1,6 @@
 //! CBKE handlers.
 
-use le_stream::FromLeStream;
+use le_stream::{FromLeStream, ToLeStream};
 
 pub use self::calculate_smacs::Handler as CalculateSmacs;
 pub use self::calculate_smacs283k1::Handler as CalculateSmacs283k1;
@@ -35,7 +35,7 @@ pub enum Handler {
 }
 
 /// The Result of the CBKE operation.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, FromLeStream)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Payload {
     initiator_smac: SmacData,
     responder_smac: SmacData,

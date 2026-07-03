@@ -1,38 +1,23 @@
-use le_stream::FromLeStream;
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::{PublicKeyData, Status};
-use crate::frame::Parameter;
 
-const ID: u16 = 0x009E;
+crate::frame::parameters::handler!(
+    0x009E,
+    { status: u8, ephemeral_public_key: PublicKeyData },
+    impl {
+        /// Converts the handler into a [`PublicKeyData`] or an appropriate [`Error`]
+        /// by evaluating its status field.
+        impl TryFrom<Handler> for PublicKeyData {
+            type Error = Error;
 
-/// A callback by the Crypto Engine indicating that a new
-/// ephemeral public/private key pair has been generated.
-///
-/// The public/private key pair is stored on the NCP, but only the associated public key
-/// is returned to the host.
-///
-/// The node's associated certificate is also returned.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Handler {
-    status: u8,
-    ephemeral_public_key: PublicKeyData,
-}
-
-impl Parameter for Handler {
-    const ID: u16 = ID;
-}
-
-/// Converts the handler into a [`PublicKeyData`] or an appropriate [`Error`]
-/// by evaluating its status field.
-impl TryFrom<Handler> for PublicKeyData {
-    type Error = Error;
-
-    fn try_from(handler: Handler) -> Result<Self, Self::Error> {
-        match Status::from_u8(handler.status).ok_or(handler.status) {
-            Ok(Status::Success) => Ok(handler.ephemeral_public_key),
-            other => Err(other.into()),
+            fn try_from(handler: Handler) -> Result<Self, Self::Error> {
+                match Status::from_u8(handler.status).ok_or(handler.status) {
+                    Ok(Status::Success) => Ok(handler.ephemeral_public_key),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
+);

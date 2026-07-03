@@ -1,38 +1,30 @@
-use le_stream::FromLeStream;
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
 use crate::ember::gp::{Address, KeyType, SecurityLevel};
-use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 
-const ID: u16 = 0x00C5;
+crate::frame::parameters::handler!(
+    0x00C5,
+    { status: u8, payload: Payload },
+    impl {
+        impl TryFrom<Handler> for Payload {
+            type Error = Error;
 
-/// A callback invoked by the Zigbee GP stack when a GPDF is received.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Handler {
-    status: u8,
-    payload: Payload,
-}
-
-impl Parameter for Handler {
-    const ID: u16 = ID;
-}
-
-impl TryFrom<Handler> for Payload {
-    type Error = Error;
-
-    fn try_from(handler: Handler) -> Result<Self, Self::Error> {
-        match Status::from_u8(handler.status).ok_or(handler.status) {
-            Ok(Status::Success) => Ok(handler.payload),
-            other => Err(other.into()),
+            fn try_from(handler: Handler) -> Result<Self, Self::Error> {
+                match Status::from_u8(handler.status).ok_or(handler.status) {
+                    Ok(Status::Success) => Ok(handler.payload),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
+);
 
 /// The payload of the GPDF receive.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Payload {
     gpd_link: u8,
     sequence_number: u8,

@@ -1,37 +1,24 @@
-use le_stream::FromLeStream;
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
-use crate::frame::Parameter;
 use crate::types::ByteSizedVec;
 
-const ID: u16 = 0x00A7;
+crate::frame::parameters::handler!(
+    0x00A7,
+    { status: u8, message: ByteSizedVec<u8> },
+    impl {
+        /// Converts the handler into an array of bytes or an
+        /// appropriate [`Error`] by evaluating its status field.
+        impl TryFrom<Handler> for ByteSizedVec<u8> {
+            type Error = Error;
 
-/// The handler that returns the results of the signing operation.
-///
-/// On success, the signature will be appended to the original message
-/// (including the signature type indicator that replaced the startIndex field for the signing)
-/// and both are returned via this callback.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Handler {
-    status: u8,
-    message: ByteSizedVec<u8>,
-}
-
-impl Parameter for Handler {
-    const ID: u16 = ID;
-}
-
-/// Converts the handler into an array of bytes or an
-/// appropriate [`Error`] by evaluating its status field.
-impl TryFrom<Handler> for ByteSizedVec<u8> {
-    type Error = Error;
-
-    fn try_from(handler: Handler) -> Result<Self, Self::Error> {
-        match Status::from_u8(handler.status).ok_or(handler.status) {
-            Ok(Status::Success) => Ok(handler.message),
-            other => Err(other.into()),
+            fn try_from(handler: Handler) -> Result<Self, Self::Error> {
+                match Status::from_u8(handler.status).ok_or(handler.status) {
+                    Ok(Status::Success) => Ok(handler.message),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
+);

@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x007A,
     {},
-    { value: u8 },
+    { value: u8 } => Networking(networking)::NeighborCount,
     impl {
         impl Response {
             /// Returns the number of neighbors.

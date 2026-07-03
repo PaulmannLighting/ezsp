@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00FF,
     {},
-    { channel: u8 },
+    { channel: u8 } => Networking(networking)::GetRadioChannel,
     impl {
         impl Response {
             /// Returns the radio channel.

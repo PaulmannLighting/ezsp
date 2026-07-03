@@ -38,7 +38,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { gp_pairing_added: bool },
+    { gp_pairing_added: bool } => GreenPower(green_power)::ProxyTable(proxy_table)::ProcessGpPairing,
     impl {
         impl Response {
             /// Returns whether the GP pairing was added.

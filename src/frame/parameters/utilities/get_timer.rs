@@ -17,7 +17,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { time: u16, units: u8, repeat: bool },
+    { time: u16, units: u8, repeat: bool } => Utilities(utilities)::GetTimer,
     impl {
         impl Response {
             /// Returns the time.

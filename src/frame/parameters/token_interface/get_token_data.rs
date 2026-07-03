@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, token_data: Data },
+    { status: u8, token_data: Data } => TokenInterface(token_interface)::GetTokenData,
     impl {
         /// Convert the response into [`Data`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Data {

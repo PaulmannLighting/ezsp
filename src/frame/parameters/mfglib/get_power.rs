@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x008D,
     {},
-    { power: i8 },
+    { power: i8 } => MfgLib(mfglib)::GetPower,
     impl {
         impl Response {
             /// Returns the power level in dBm.

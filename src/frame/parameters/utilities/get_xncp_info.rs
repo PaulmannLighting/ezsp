@@ -9,7 +9,7 @@ use crate::{Error, ValueError};
 crate::frame::parameters::frame!(
     0x0013,
     {},
-    { status: u8, payload: Option<Payload> },
+    { status: u8, payload: Option<Payload> } => Utilities(utilities)::GetXncpInfo,
     impl {
         /// Convert the response into a [`Payload`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Payload {

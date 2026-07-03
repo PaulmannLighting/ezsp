@@ -1,5 +1,15 @@
 //! Sink table parameters.
 
+pub use self::clear_all::Response as ClearAll;
+pub use self::find_or_allocate_entry::Response as FindOrAllocateEntry;
+pub use self::get_entry::Response as GetEntry;
+pub use self::init::Response as Init;
+pub use self::lookup::Response as Lookup;
+pub use self::number_of_active_entries::Response as NumberOfActiveEntries;
+pub use self::remove_entry::Response as RemoveEntry;
+pub use self::set_entry::Response as SetEntry;
+pub use self::set_security_frame_counter::Response as SetSecurityFrameCounter;
+
 pub mod clear_all;
 pub mod find_or_allocate_entry;
 pub mod get_entry;
@@ -10,26 +20,15 @@ pub mod remove_entry;
 pub mod set_entry;
 pub mod set_security_frame_counter;
 
-/// Sink table response parameters.
-#[expect(variant_size_differences)]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Response {
-    /// Response to the `sink_table_clear_all` command.
-    ClearAll(clear_all::Response),
-    /// Response to the `sink_table_find_or_allocate_entry` command.
-    FindOrAllocateEntry(find_or_allocate_entry::Response),
-    /// Response to the `sink_table_get_entry` command.
-    GetEntry(Box<get_entry::Response>),
-    /// Response to the `sink_table_init` command.
-    Init(init::Response),
-    /// Response to the `sink_table_lookup` command.
-    Lookup(lookup::Response),
-    /// Response to the `sink_table_number_of_active_entries` command.
-    NumberOfActiveEntries(number_of_active_entries::Response),
-    /// Response to the `sink_table_remove_entry` command.
-    RemoveEntry(remove_entry::Response),
-    /// Response to the `sink_table_set_entry` command.
-    SetEntry(set_entry::Response),
-    /// Response to the `sink_table_set_security_frame_counter` command.
-    SetSecurityFrameCounter(set_security_frame_counter::Response),
-}
+crate::frame::parameters::parameter_enum!(
+    Response,
+    ClearAll,
+    FindOrAllocateEntry,
+    GetEntry,
+    Init,
+    Lookup,
+    NumberOfActiveEntries,
+    RemoveEntry,
+    SetEntry,
+    SetSecurityFrameCounter
+);

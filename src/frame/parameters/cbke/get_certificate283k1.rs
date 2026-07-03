@@ -8,7 +8,7 @@ use crate::ember::{Certificate283k1Data, Status};
 crate::frame::parameters::frame!(
     0x00EC,
     {},
-    { status: u8, local_cert: Certificate283k1Data },
+    { status: u8, local_cert: Certificate283k1Data } => Cbke(cbke)::GetCertificate283k1,
     impl {
         /// Converts the response into [`Certificate283k1Data`]
         /// or an appropriate [`Error`] by evaluating its status field.

@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8 },
+    { status: u8 } => GreenPower(green_power)::SinkTable(sink_table)::SetEntry,
     impl {
         /// Converts the response into `()` or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for () {

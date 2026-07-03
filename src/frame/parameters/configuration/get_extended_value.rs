@@ -22,7 +22,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, value: ByteSizedVec<u8> },
+    { status: u8, value: ByteSizedVec<u8> } => Configuration(configuration)::GetExtendedValue,
     impl {
         /// Converts the response into an array of bytes or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for ByteSizedVec<u8> {

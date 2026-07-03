@@ -1,5 +1,35 @@
 //! Messaging Frames
 
+pub use self::address_table_entry_is_active::Response as AddressTableEntryIsActive;
+pub use self::get_address_table_remote_eui64::Response as GetAddressTableRemoteEui64;
+pub use self::get_address_table_remote_node_id::Response as GetAddressTableRemoteNodeId;
+pub use self::get_beacon_classification_params::Response as GetBeaconClassificationParams;
+pub use self::get_extended_timeout::Response as GetExtendedTimeout;
+pub use self::get_multicast_table_entry::Response as GetMulticastTableEntry;
+pub use self::lookup_eui64_by_node_id::Response as LookupEui64ByNodeId;
+pub use self::lookup_node_id_by_eui64::Response as LookupNodeIdByEui64;
+pub use self::maximum_payload_length::Response as MaximumPayloadLength;
+pub use self::poll_for_data::Response as PollForData;
+pub use self::proxy_broadcast::Response as ProxyBroadcast;
+pub use self::replace_address_table_entry::Response as ReplaceAddressTableEntry;
+pub use self::send_broadcast::Response as SendBroadcast;
+pub use self::send_many_to_one_route_request::Response as SendManyToOneRouteRequest;
+pub use self::send_multicast::Response as SendMulticast;
+pub use self::send_multicast_with_alias::Response as SendMulticastWithAlias;
+pub use self::send_raw_message::Response as SendRawMessage;
+pub use self::send_raw_message_extended::Response as SendRawMessageExtended;
+pub use self::send_reply::Response as SendReply;
+pub use self::send_unicast::Response as SendUnicast;
+pub use self::set_address_table_remote_eui64::Response as SetAddressTableRemoteEui64;
+pub use self::set_address_table_remote_node_id::Response as SetAddressTableRemoteNodeId;
+pub use self::set_beacon_classification_params::Response as SetBeaconClassificationParams;
+pub use self::set_extended_timeout::Response as SetExtendedTimeout;
+pub use self::set_mac_poll_failure_wait_time::Response as SetMacPollFailureWaitTime;
+pub use self::set_multicast_table_entry::Response as SetMulticastTableEntry;
+pub use self::set_source_route_discovery_mode::Response as SetSourceRouteDiscoveryMode;
+pub use self::unicast_current_network_key::Response as UnicastCurrentNetworkKey;
+pub use self::write_node_data::Response as WriteNodeData;
+
 pub mod address_table_entry_is_active;
 pub mod get_address_table_remote_eui64;
 pub mod get_address_table_remote_node_id;
@@ -31,65 +61,35 @@ pub mod set_source_route_discovery_mode;
 pub mod unicast_current_network_key;
 pub mod write_node_data;
 
-/// Messaging response parameters.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Response {
-    /// Response to the `address_table_entry_is_active` command.
-    AddressTableEntryIsActive(address_table_entry_is_active::Response),
-    /// Response to the `get_address_table_remote_eui64` command.
-    GetAddressTableRemoteEui64(get_address_table_remote_eui64::Response),
-    /// Response to the `get_address_table_remote_node_id` command.
-    GetAddressTableRemoteNodeId(get_address_table_remote_node_id::Response),
-    /// Response to the `get_beacon_classification_params` command.
-    GetBeaconClassificationParams(get_beacon_classification_params::Response),
-    /// Response to the `get_extended_timeout` command.
-    GetExtendedTimeout(get_extended_timeout::Response),
-    /// Response to the `get_multicast_table_entry` command.
-    GetMulticastTableEntry(get_multicast_table_entry::Response),
-    /// Response to the `lookup_eui64_by_node_id` command.
-    LookupEui64ByNodeId(lookup_eui64_by_node_id::Response),
-    /// Response to the `lookup_node_id_by_eui64` command.
-    LookupNodeIdByEui64(lookup_node_id_by_eui64::Response),
-    /// Response to the `maximum_payload_length` command.
-    MaximumPayloadLength(maximum_payload_length::Response),
-    /// Response to the `poll_for_data` command.
-    PollForData(poll_for_data::Response),
-    /// Response to the `proxy_broadcast` command.
-    ProxyBroadcast(proxy_broadcast::Response),
-    /// Response to the `replace_address_table_entry` command.
-    ReplaceAddressTableEntry(replace_address_table_entry::Response),
-    /// Response to the `send_broadcast` command.
-    SendBroadcast(send_broadcast::Response),
-    /// Response to the `send_many_to_one_route_request` command.
-    SendManyToOneRouteRequest(send_many_to_one_route_request::Response),
-    /// Response to the `send_multicast` command.
-    SendMulticast(send_multicast::Response),
-    /// Response to the `send_multicast_with_alias` command.
-    SendMulticastWithAlias(send_multicast_with_alias::Response),
-    /// Response to the `send_raw_message` command.
-    SendRawMessage(send_raw_message::Response),
-    /// Response to the `send_raw_message_extended` command.
-    SendRawMessageExtended(send_raw_message_extended::Response),
-    /// Response to the `send_reply` command.
-    SendReply(send_reply::Response),
-    /// Response to the `send_unicast` command.
-    SendUnicast(send_unicast::Response),
-    /// Response to the `set_address_table_remote_eui64` command.
-    SetAddressTableRemoteEui64(set_address_table_remote_eui64::Response),
-    /// Response to the `set_address_table_remote_node_id` command.
-    SetAddressTableRemoteNodeId(set_address_table_remote_node_id::Response),
-    /// Response to the `set_beacon_classification_params` command.
-    SetBeaconClassificationParams(set_beacon_classification_params::Response),
-    /// Response to the `set_extended_timeout` command.
-    SetExtendedTimeout(set_extended_timeout::Response),
-    /// Response to the `set_mac_poll_failure_wait_time` command.
-    SetMacPollFailureWaitTime(set_mac_poll_failure_wait_time::Response),
-    /// Response to the `set_multicast_table_entry` command.
-    SetMulticastTableEntry(set_multicast_table_entry::Response),
-    /// Response to the `set_source_route_discovery_mode` command.
-    SetSourceRouteDiscoveryMode(set_source_route_discovery_mode::Response),
-    /// Response to the `unicast_current_network_key` command.
-    UnicastCurrentNetworkKey(unicast_current_network_key::Response),
-    /// Response to the `write_node_data` command.
-    WriteNodeData(write_node_data::Response),
-}
+crate::frame::parameters::parameter_enum!(
+    Response,
+    AddressTableEntryIsActive,
+    GetAddressTableRemoteEui64,
+    GetAddressTableRemoteNodeId,
+    GetBeaconClassificationParams,
+    GetExtendedTimeout,
+    GetMulticastTableEntry,
+    LookupEui64ByNodeId,
+    LookupNodeIdByEui64,
+    MaximumPayloadLength,
+    PollForData,
+    ProxyBroadcast,
+    ReplaceAddressTableEntry,
+    SendBroadcast,
+    SendManyToOneRouteRequest,
+    SendMulticast,
+    SendMulticastWithAlias,
+    SendRawMessage,
+    SendRawMessageExtended,
+    SendReply,
+    SendUnicast,
+    SetAddressTableRemoteEui64,
+    SetAddressTableRemoteNodeId,
+    SetBeaconClassificationParams,
+    SetExtendedTimeout,
+    SetMacPollFailureWaitTime,
+    SetMulticastTableEntry,
+    SetSourceRouteDiscoveryMode,
+    UnicastCurrentNetworkKey,
+    WriteNodeData
+);

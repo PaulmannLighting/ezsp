@@ -5,7 +5,7 @@ use crate::ember::Eui64;
 crate::frame::parameters::frame!(
     0x0026,
     {},
-    { eui64: Eui64 },
+    { eui64: Eui64 } => Utilities(utilities)::GetEui64,
     impl {
         impl Response {
             /// Returns the EUI64.

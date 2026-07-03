@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00C3,
     {},
-    { source_route_table_total_size: u8 },
+    { source_route_table_total_size: u8 } => Networking(networking)::GetSourceRouteTableTotalSize,
     impl {
         impl Response {
             /// The total size of the source route table.

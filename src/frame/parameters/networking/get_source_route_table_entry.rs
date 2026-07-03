@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, entry: Entry },
+    { status: u8, entry: Entry } => Networking(networking)::GetSourceRouteTableEntry,
     impl {
         /// Convert a response into an [`Entry`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Entry {

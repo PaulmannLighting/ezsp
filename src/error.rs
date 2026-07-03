@@ -152,7 +152,7 @@ impl From<Parameters> for Error {
             invalid_command,
         ))) = parameters
         {
-            Self::InvalidCommand(invalid_command)
+            Self::InvalidCommand(*invalid_command)
         } else {
             Self::UnexpectedResponse(parameters.into())
         }

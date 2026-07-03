@@ -1,5 +1,17 @@
 //! `Mfglib` frames.
 
+pub use self::end::Response as End;
+pub use self::get_channel::Response as GetChannel;
+pub use self::get_power::Response as GetPower;
+pub use self::send_packet::Response as SendPacket;
+pub use self::set_channel::Response as SetChannel;
+pub use self::set_power::Response as SetPower;
+pub use self::start::Response as Start;
+pub use self::start_stream::Response as StartStream;
+pub use self::start_tone::Response as StartTone;
+pub use self::stop_stream::Response as StopStream;
+pub use self::stop_tone::Response as StopTone;
+
 pub mod end;
 pub mod get_channel;
 pub mod get_power;
@@ -13,29 +25,17 @@ pub mod start_tone;
 pub mod stop_stream;
 pub mod stop_tone;
 
-/// Response parameters for the `Mfglib` commands.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Response {
-    /// Response to the `end` command.
-    End(end::Response),
-    /// Response to the `get_channel` command.
-    GetChannel(get_channel::Response),
-    /// Response to the `get_power` command.
-    GetPower(get_power::Response),
-    /// Response to the `send_packet` command.
-    SendPacket(send_packet::Response),
-    /// Response to the `set_channel` command.
-    SetChannel(set_channel::Response),
-    /// Response to the `set_power` command.
-    SetPower(set_power::Response),
-    /// Response to the `start` command.
-    Start(start::Response),
-    /// Response to the `start_stream` command.
-    StartStream(start_stream::Response),
-    /// Response to the `start_tone` command.
-    StartTone(start_tone::Response),
-    /// Response to the `stop_stream` command.
-    StopStream(stop_stream::Response),
-    /// Response to the `stop_tone` command.
-    StopTone(stop_tone::Response),
-}
+crate::frame::parameters::parameter_enum!(
+    Response,
+    End,
+    GetChannel,
+    GetPower,
+    SendPacket,
+    SetChannel,
+    SetPower,
+    Start,
+    StartStream,
+    StartTone,
+    StopStream,
+    StopTone
+);

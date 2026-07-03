@@ -12,7 +12,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { active: bool },
+    { active: bool } => Binding(binding)::IsActive,
     impl {
         impl Response {
             /// True if the binding table entry is active, false otherwise.

@@ -20,7 +20,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8 },
+    { status: u8 } => Utilities(utilities)::SetToken,
     impl {
         /// Convert the response into `()` or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for () {

@@ -20,7 +20,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, value: u16 },
+    { status: u8, value: u16 } => Configuration(configuration)::GetConfigurationValue,
     impl {
         /// Converts the response into a [`u16`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for u16 {

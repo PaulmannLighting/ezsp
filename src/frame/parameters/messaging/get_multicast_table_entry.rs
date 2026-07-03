@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, value: TableEntry },
+    { status: u8, value: TableEntry } => Messaging(messaging)::GetMulticastTableEntry,
     impl {
         /// Converts the response into the [`TableEntry`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for TableEntry {

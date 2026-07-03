@@ -16,7 +16,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { remaining_time: u32 },
+    { remaining_time: u32 } => Messaging(messaging)::SetSourceRouteDiscoveryMode,
     impl {
         impl Response {
             /// Remaining time until next `MTORR` broadcast if the mode is on, else `None`.

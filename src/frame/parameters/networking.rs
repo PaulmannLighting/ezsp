@@ -1,5 +1,58 @@
 //! Networking frames.
 
+pub use self::child_id::Response as ChildId;
+pub use self::clear_stored_beacons::Response as ClearStoredBeacons;
+pub use self::energy_scan_request::Response as EnergyScanRequest;
+pub use self::find_and_rejoin_network::Response as FindAndRejoinNetwork;
+pub use self::find_unused_pan_id::Response as FindUnusedPanId;
+pub use self::form_network::Response as FormNetwork;
+pub use self::get_child_data::Response as GetChildData;
+pub use self::get_current_duty_cycle::Response as GetCurrentDutyCycle;
+pub use self::get_duty_cycle_limits::Response as GetDutyCycleLimits;
+pub use self::get_duty_cycle_state::Response as GetDutyCycleState;
+pub use self::get_first_beacon::Response as GetFirstBeacon;
+pub use self::get_logical_channel::Response as GetLogicalChannel;
+pub use self::get_neighbor::Response as GetNeighbor;
+pub use self::get_neighbor_frame_counter::Response as GetNeighborFrameCounter;
+pub use self::get_network_parameters::Response as GetNetworkParameters;
+pub use self::get_next_beacon::Response as GetNextBeacon;
+pub use self::get_num_stored_beacons::Response as GetNumStoredBeacons;
+pub use self::get_parent_child_parameters::Response as GetParentChildParameters;
+pub use self::get_radio_channel::Response as GetRadioChannel;
+pub use self::get_radio_parameters::Response as GetRadioParameters;
+pub use self::get_route_table_entry::Response as GetRouteTableEntry;
+pub use self::get_routing_shortcut_threshold::Response as GetRoutingShortcutThreshold;
+pub use self::get_source_route_table_entry::Response as GetSourceRouteTableEntry;
+pub use self::get_source_route_table_filled_size::Response as GetSourceRouteTableFilledSize;
+pub use self::get_source_route_table_total_size::Response as GetSourceRouteTableTotalSize;
+pub use self::id::Response as Id;
+pub use self::join_network::Response as JoinNetwork;
+pub use self::join_network_directly::Response as JoinNetworkDirectly;
+pub use self::leave_network::Response as LeaveNetwork;
+pub use self::multi_phy_set_radio_channel::Response as MultiPhySetRadioChannel;
+pub use self::multi_phy_set_radio_power::Response as MultiPhySetRadioPower;
+pub use self::multi_phy_start::Response as MultiPhyStart;
+pub use self::multi_phy_stop::Response as MultiPhyStop;
+pub use self::neighbor_count::Response as NeighborCount;
+pub use self::network_init::Response as NetworkInit;
+pub use self::network_state::Response as NetworkState;
+pub use self::permit_joining::Response as PermitJoining;
+pub use self::send_link_power_delta_request::Response as SendLinkPowerDeltaRequest;
+pub use self::set_broken_route_error_code::Response as SetBrokenRouteErrorCode;
+pub use self::set_child_data::Response as SetChildData;
+pub use self::set_concentrator::Response as SetConcentrator;
+pub use self::set_duty_cycle_limits_in_stack::Response as SetDutyCycleLimitsInStack;
+pub use self::set_logical_and_radio_channel::Response as SetLogicalAndRadioChannel;
+pub use self::set_manufacturer_code::Response as SetManufacturerCode;
+pub use self::set_neighbor_frame_counter::Response as SetNeighborFrameCounter;
+pub use self::set_power_descriptor::Response as SetPowerDescriptor;
+pub use self::set_radio_channel::Response as SetRadioChannel;
+pub use self::set_radio_ieee802154_cca_mode::Response as SetRadioIeee802154CcaMode;
+pub use self::set_radio_power::Response as SetRadioPower;
+pub use self::set_routing_shortcut_threshold::Response as SetRoutingShortcutThreshold;
+pub use self::start_scan::Response as StartScan;
+pub use self::stop_scan::Response as StopScan;
+
 pub mod child_id;
 pub mod clear_stored_beacons;
 pub mod energy_scan_request;
@@ -54,111 +107,58 @@ pub mod set_routing_shortcut_threshold;
 pub mod start_scan;
 pub mod stop_scan;
 
-/// Response parameters for networking commands.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Response {
-    /// Response parameter for the `child_id` command.
-    ChildId(child_id::Response),
-    /// Response parameter for the `clear_stored_beacons` command.
-    ClearStoredBeacons(clear_stored_beacons::Response),
-    /// Response parameter for the `energy_scan_request` command.
-    EnergyScanRequest(energy_scan_request::Response),
-    /// Response parameter for the `find_and_rejoin_network` command.
-    FindAndRejoinNetwork(find_and_rejoin_network::Response),
-    /// Response parameter for the `find_unused_pan_id` command.
-    FindUnusedPanId(find_unused_pan_id::Response),
-    /// Response parameter for the `form_network` command.
-    FormNetwork(form_network::Response),
-    /// Response parameter for the `get_child_data` command.
-    GetChildData(get_child_data::Response),
-    /// Response parameter for the `get_current_duty_cycle` command.
-    GetCurrentDutyCycle(Box<get_current_duty_cycle::Response>),
-    /// Response parameter for the `get_duty_cycle_limits` command.
-    GetDutyCycleLimits(get_duty_cycle_limits::Response),
-    /// Response parameter for the `get_duty_cycle_state` command.
-    GetDutyCycleState(get_duty_cycle_state::Response),
-    /// Response parameter for the `get_first_beacon` command.
-    GetFirstBeacon(get_first_beacon::Response),
-    /// Response parameter for the `get_logical_channel` command.
-    GetLogicalChannel(get_logical_channel::Response),
-    /// Response parameter for the `get_neighbor` command.
-    GetNeighbor(get_neighbor::Response),
-    /// Response parameter for the `get_neighbor_frame_counter` command.
-    GetNeighborFrameCounter(get_neighbor_frame_counter::Response),
-    /// Response parameter for the `get_network_parameters` command.
-    GetNetworkParameters(get_network_parameters::Response),
-    /// Response parameter for the `get_next_beacon` command.
-    GetNextBeacon(get_next_beacon::Response),
-    /// Response parameter for the `get_num_stored_beacons` command.
-    GetNumStoredBeacons(get_num_stored_beacons::Response),
-    /// Response parameter for the `get_parent_child_parameters` command.
-    GetParentChildParameters(get_parent_child_parameters::Response),
-    /// Response parameter for the `get_radio_channel` command.
-    GetRadioChannel(get_radio_channel::Response),
-    /// Response parameter for the `get_radio_parameters` command.
-    GetRadioParameters(get_radio_parameters::Response),
-    /// Response parameter for the `get_route_table_entry` command.
-    GetRouteTableEntry(get_route_table_entry::Response),
-    /// Response parameter for the `get_routing_shortcut_threshold` command.
-    GetRoutingShortcutThreshold(get_routing_shortcut_threshold::Response),
-    /// Response parameter for the `get_source_route_table_entry` command.
-    GetSourceRouteTableEntry(get_source_route_table_entry::Response),
-    /// Response parameter for the `get_source_route_table_filled_size` command.
-    GetSourceRouteTableFilledSize(get_source_route_table_filled_size::Response),
-    /// Response parameter for the `get_source_route_table_total_size` command.
-    GetSourceRouteTableTotalSize(get_source_route_table_total_size::Response),
-    /// Response parameter for the `id` command.
-    Id(id::Response),
-    /// Response parameter for the `join_network` command.
-    JoinNetwork(join_network::Response),
-    /// Response parameter for the `join_network_directly` command.
-    JoinNetworkDirectly(join_network_directly::Response),
-    /// Response parameter for the `leave_network` command.
-    LeaveNetwork(leave_network::Response),
-    /// Response parameter for the `multi_phy_set_radio_channel` command.
-    MultiPhySetRadioChannel(multi_phy_set_radio_channel::Response),
-    /// Response parameter for the `multi_phy_set_radio_power` command.
-    MultiPhySetRadioPower(multi_phy_set_radio_power::Response),
-    /// Response parameter for the `multi_phy_start` command.
-    MultiPhyStart(multi_phy_start::Response),
-    /// Response parameter for the `multi_phy_stop` command.
-    MultiPhyStop(multi_phy_stop::Response),
-    /// Response parameter for the `neighbor_count` command.
-    NeighborCount(neighbor_count::Response),
-    /// Response parameter for the `network_init` command.
-    NetworkInit(network_init::Response),
-    /// Response parameter for the `network_state` command.
-    NetworkState(network_state::Response),
-    /// Response parameter for the `permit_joining` command.
-    PermitJoining(permit_joining::Response),
-    /// Response parameter for the `send_link_power_delta_request` command.
-    SendLinkPowerDeltaRequest(send_link_power_delta_request::Response),
-    /// Response parameter for the `set_broken_route_error_code` command.
-    SetBrokenRouteErrorCode(set_broken_route_error_code::Response),
-    /// Response parameter for the `set_child_data` command.
-    SetChildData(set_child_data::Response),
-    /// Response parameter for the `set_concentrator` command.
-    SetConcentrator(set_concentrator::Response),
-    /// Response parameter for the `set_duty_cycle_limits_in_stack` command.
-    SetDutyCycleLimitsInStack(set_duty_cycle_limits_in_stack::Response),
-    /// Response parameter for the `set_logical_and_radio_channel` command.
-    SetLogicalAndRadioChannel(set_logical_and_radio_channel::Response),
-    /// Response parameter for the `set_manufacturer_code` command.
-    SetManufacturerCode(set_manufacturer_code::Response),
-    /// Response parameter for the `set_neighbor_frame_counter` command.
-    SetNeighborFrameCounter(set_neighbor_frame_counter::Response),
-    /// Response parameter for the `set_power_descriptor` command.
-    SetPowerDescriptor(set_power_descriptor::Response),
-    /// Response parameter for the `set_radio_channel` command.
-    SetRadioChannel(set_radio_channel::Response),
-    /// Response parameter for the `set_radio_ieee802154_cca_mode` command.
-    SetRadioIeee802154CcaMode(set_radio_ieee802154_cca_mode::Response),
-    /// Response parameter for the `set_radio_power` command.
-    SetRadioPower(set_radio_power::Response),
-    /// Response parameter for the `set_routing_shortcut_threshold` command.
-    SetRoutingShortcutThreshold(set_routing_shortcut_threshold::Response),
-    /// Response parameter for the `start_scan` command.
-    StartScan(start_scan::Response),
-    /// Response parameter for the `stop_scan` command.
-    StopScan(stop_scan::Response),
-}
+crate::frame::parameters::parameter_enum!(
+    Response,
+    ChildId,
+    ClearStoredBeacons,
+    EnergyScanRequest,
+    FindAndRejoinNetwork,
+    FindUnusedPanId,
+    FormNetwork,
+    GetChildData,
+    GetCurrentDutyCycle,
+    GetDutyCycleLimits,
+    GetDutyCycleState,
+    GetFirstBeacon,
+    GetLogicalChannel,
+    GetNeighbor,
+    GetNeighborFrameCounter,
+    GetNetworkParameters,
+    GetNextBeacon,
+    GetNumStoredBeacons,
+    GetParentChildParameters,
+    GetRadioChannel,
+    GetRadioParameters,
+    GetRouteTableEntry,
+    GetRoutingShortcutThreshold,
+    GetSourceRouteTableEntry,
+    GetSourceRouteTableFilledSize,
+    GetSourceRouteTableTotalSize,
+    Id,
+    JoinNetwork,
+    JoinNetworkDirectly,
+    LeaveNetwork,
+    MultiPhySetRadioChannel,
+    MultiPhySetRadioPower,
+    MultiPhyStart,
+    MultiPhyStop,
+    NeighborCount,
+    NetworkInit,
+    NetworkState,
+    PermitJoining,
+    SendLinkPowerDeltaRequest,
+    SetBrokenRouteErrorCode,
+    SetChildData,
+    SetConcentrator,
+    SetDutyCycleLimitsInStack,
+    SetLogicalAndRadioChannel,
+    SetManufacturerCode,
+    SetNeighborFrameCounter,
+    SetPowerDescriptor,
+    SetRadioChannel,
+    SetRadioIeee802154CcaMode,
+    SetRadioPower,
+    SetRoutingShortcutThreshold,
+    StartScan,
+    StopScan
+);

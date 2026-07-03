@@ -1,5 +1,10 @@
 //! Bootloader Frames
 
+pub use self::aes_encrypt::Response as AesEncrypt;
+pub use self::get_standalone_bootloader_version_plat_micro_phy::Response as GetStandaloneBootloaderVersionPlatMicroPhy;
+pub use self::launch_standalone_bootloader::Response as LaunchStandaloneBootloader;
+pub use self::send_bootload_message::Response as SendBootloadMessage;
+
 pub mod aes_encrypt;
 pub mod get_standalone_bootloader_version_plat_micro_phy;
 pub mod handler;
@@ -7,20 +12,10 @@ pub mod handler;
 pub mod launch_standalone_bootloader;
 pub mod send_bootload_message;
 
-/// `EZSP` response parameters for bootloader frames.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Response {
-    /// Response parameters for [`Bootloader::aes_encrypt()`](crate::Bootloader::aes_encrypt).
-    AesEncrypt(aes_encrypt::Response),
-
-    /// Response parameters for [`Bootloader::get_standalone_bootloader_version_plat_micro_phy()`](crate::Bootloader::get_standalone_bootloader_version_plat_micro_phy).
-    GetStandaloneBootloaderVersionPlatMicroPhy(
-        get_standalone_bootloader_version_plat_micro_phy::Response,
-    ),
-
-    /// Response parameters for [`Bootloader::launch_standalone_bootloader()`](crate::Bootloader::launch_standalone_bootloader).
-    LaunchStandaloneBootloader(launch_standalone_bootloader::Response),
-
-    /// Response parameters for [`Bootloader::send_bootload_message()`](crate::Bootloader::send_bootload_message).
-    SendBootloadMessage(send_bootload_message::Response),
-}
+crate::frame::parameters::parameter_enum!(
+    Response,
+    AesEncrypt,
+    GetStandaloneBootloaderVersionPlatMicroPhy,
+    LaunchStandaloneBootloader,
+    SendBootloadMessage
+);

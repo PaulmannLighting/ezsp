@@ -8,7 +8,7 @@ use crate::ember::Status;
 crate::frame::parameters::frame!(
     0x00E8,
     {},
-    { status: u8 },
+    { status: u8 } => Cbke(cbke)::GenerateCbkeKeys283k1,
     impl {
         /// Converts the response into `()` or an appropriate [`Error`] by evaluating its status field.
         impl TryFrom<Response> for () {

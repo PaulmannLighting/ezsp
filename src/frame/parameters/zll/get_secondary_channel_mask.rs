@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00DA,
     {},
-    { zll_secondary_channel_mask: u32 },
+    { zll_secondary_channel_mask: u32 } => Zll(zll)::GetSecondaryChannelMask,
     impl {
         impl Response {
             /// ZLL secondary channel mask.

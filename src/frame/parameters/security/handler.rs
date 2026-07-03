@@ -5,13 +5,4 @@ pub use self::zigbee_key_establishment::Handler as ZigbeeKeyEstablishment;
 
 mod switch_network_key;
 mod zigbee_key_establishment;
-
-/// The handler for the security command.
-#[expect(variant_size_differences)]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Handler {
-    /// The handler for the switch network key command.
-    SwitchNetworkKey(SwitchNetworkKey),
-    /// The handler for the Zigbee key establishment command.
-    ZigbeeKeyEstablishment(Box<ZigbeeKeyEstablishment>),
-}
+crate::frame::parameters::parameter_enum!(Handler, SwitchNetworkKey, ZigbeeKeyEstablishment);

@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x008B,
     {},
-    { channel: u8 },
+    { channel: u8 } => MfgLib(mfglib)::GetChannel,
     impl {
         impl Response {
             /// Returns the channel.

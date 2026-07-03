@@ -21,7 +21,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8 },
+    { status: u8 } => Utilities(utilities)::DebugWrite,
     impl {
         /// Converts the response into `()` or an error, depending on the status.
         impl TryFrom<Response> for () {

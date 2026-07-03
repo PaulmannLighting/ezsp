@@ -16,5 +16,4 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    {}
-);
+    {} => Zll(zll)::SetNodeType);

@@ -16,7 +16,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { eui64: Eui64 },
+    { eui64: Eui64 } => Messaging(messaging)::GetAddressTableRemoteEui64,
     impl {
         impl Response {
             /// Returns the EUI64.

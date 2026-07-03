@@ -14,7 +14,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { child_index: u8 },
+    { child_index: u8 } => Networking(networking)::Id,
     impl {
         impl Response {
             /// Returns the child index.

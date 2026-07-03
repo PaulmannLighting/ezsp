@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00C2,
     {},
-    { source_route_table_filled_size: u8 },
+    { source_route_table_filled_size: u8 } => Networking(networking)::GetSourceRouteTableFilledSize,
     impl {
         impl Response {
             /// The number of filled entries in the source route table.

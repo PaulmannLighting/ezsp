@@ -1,5 +1,25 @@
 //! ZLL Frames
 
+pub use self::clear_tokens::Response as ClearTokens;
+pub use self::get_primary_channel_mask::Response as GetPrimaryChannelMask;
+pub use self::get_secondary_channel_mask::Response as GetSecondaryChannelMask;
+pub use self::get_tokens::Response as GetTokens;
+pub use self::is_zll_network::Response as IsZllNetwork;
+pub use self::network_ops::Response as NetworkOps;
+pub use self::operation_in_progress::Response as OperationInProgress;
+pub use self::rx_on_when_idle_get_active::Response as RxOnWhenIdleGetActive;
+pub use self::set_additional_state::Response as SetAdditionalState;
+pub use self::set_data_token::Response as SetDataToken;
+pub use self::set_initial_security_state::Response as SetInitialSecurityState;
+pub use self::set_node_type::Response as SetNodeType;
+pub use self::set_non_zll_network::Response as SetNonZllNetwork;
+pub use self::set_primary_channel_mask::Response as SetPrimaryChannelMask;
+pub use self::set_radio_idle_mode::Response as SetRadioIdleMode;
+pub use self::set_rx_on_when_idle::Response as SetRxOnWhenIdle;
+pub use self::set_secondary_channel_mask::Response as SetSecondaryChannelMask;
+pub use self::set_security_state_without_key::Response as SetSecurityStateWithoutKey;
+pub use self::start_scan::Response as StartScan;
+
 pub mod clear_tokens;
 pub mod get_primary_channel_mask;
 pub mod get_secondary_channel_mask;
@@ -21,45 +41,25 @@ pub mod set_secondary_channel_mask;
 pub mod set_security_state_without_key;
 pub mod start_scan;
 
-/// ZLL response parameters.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Response {
-    /// Clear tokens response parameters.
-    ClearTokens(clear_tokens::Response),
-    /// Get primary channel mask response parameters.
-    GetPrimaryChannelMask(get_primary_channel_mask::Response),
-    /// Get secondary channel mask response parameters.
-    GetSecondaryChannelMask(get_secondary_channel_mask::Response),
-    /// Get tokens response parameters.
-    GetTokens(Box<get_tokens::Response>),
-    /// Is ZLL network response parameters.
-    IsZllNetwork(is_zll_network::Response),
-    /// Network operations response parameters.
-    NetworkOps(network_ops::Response),
-    /// Operation in progress response parameters.
-    OperationInProgress(operation_in_progress::Response),
-    /// RX on when idle get active response parameters.
-    RxOnWhenIdleGetActive(rx_on_when_idle_get_active::Response),
-    /// Set additional state response parameters.
-    SetAdditionalState(set_additional_state::Response),
-    /// Set data token response parameters.
-    SetDataToken(set_data_token::Response),
-    /// Set initial security state response parameters.
-    SetInitialSecurityState(set_initial_security_state::Response),
-    /// Set node type response parameters.
-    SetNodeType(set_node_type::Response),
-    /// Set non-ZLL network response parameters.
-    SetNonZllNetwork(set_non_zll_network::Response),
-    /// Set primary channel mask response parameters.
-    SetPrimaryChannelMask(set_primary_channel_mask::Response),
-    /// Set radio idle mode response parameters.
-    SetRadioIdleMode(set_radio_idle_mode::Response),
-    /// Set RX on when idle response parameters.
-    SetRxOnWhenIdle(set_rx_on_when_idle::Response),
-    /// Set secondary channel mask response parameters.
-    SetSecondaryChannelMask(set_secondary_channel_mask::Response),
-    /// Set security state without key response parameters.
-    SetSecurityStateWithoutKey(set_security_state_without_key::Response),
-    /// Start scan response parameters.
-    StartScan(start_scan::Response),
-}
+crate::frame::parameters::parameter_enum!(
+    Response,
+    ClearTokens,
+    GetPrimaryChannelMask,
+    GetSecondaryChannelMask,
+    GetTokens,
+    IsZllNetwork,
+    NetworkOps,
+    OperationInProgress,
+    RxOnWhenIdleGetActive,
+    SetAdditionalState,
+    SetDataToken,
+    SetInitialSecurityState,
+    SetNodeType,
+    SetNonZllNetwork,
+    SetPrimaryChannelMask,
+    SetRadioIdleMode,
+    SetRxOnWhenIdle,
+    SetSecondaryChannelMask,
+    SetSecurityStateWithoutKey,
+    StartScan
+);

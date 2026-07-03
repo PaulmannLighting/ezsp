@@ -14,7 +14,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { node_id: NodeId },
+    { node_id: NodeId } => Binding(binding)::GetRemoteNodeId,
     impl {
         impl Response {
             /// The short ID of the destination node or `None` if no destination is known.

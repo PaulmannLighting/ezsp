@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00D1,
     {},
-    { routing_shortcut_thresh: u8 },
+    { routing_shortcut_thresh: u8 } => Networking(networking)::GetRoutingShortcutThreshold,
     impl {
         impl Response {
             /// Returns the routing shortcut threshold.

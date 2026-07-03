@@ -14,7 +14,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { child_id: NodeId },
+    { child_id: NodeId } => Networking(networking)::ChildId,
     impl {
         impl Response {
             /// The node ID of the child or `None` if there isn't a child at the `child_index` specified.

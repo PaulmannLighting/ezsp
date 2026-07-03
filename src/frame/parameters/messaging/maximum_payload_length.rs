@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x0033,
     {},
-    { aps_length: u8 },
+    { aps_length: u8 } => Messaging(messaging)::MaximumPayloadLength,
     impl {
         impl Response {
             /// Returns the maximum payload length in bytes.

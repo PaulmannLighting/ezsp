@@ -31,7 +31,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, payload: Attribute },
+    { status: u8, payload: Attribute } => Configuration(configuration)::ReadAttribute,
     impl {
         /// Converts the response into an [`Attribute`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Attribute {

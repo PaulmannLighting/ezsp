@@ -14,7 +14,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: Status },
+    { status: Status } => Utilities(utilities)::GetLibraryStatus,
     impl {
         impl From<Response> for Status {
             fn from(response: Response) -> Self {

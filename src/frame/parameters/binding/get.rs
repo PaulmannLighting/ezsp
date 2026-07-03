@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, value: TableEntry },
+    { status: u8, value: TableEntry } => Binding(binding)::Get,
     impl {
         /// Convert the response into its [`TableEntry`] or an appropriate [`Error`]
         /// by evaluating its status field.

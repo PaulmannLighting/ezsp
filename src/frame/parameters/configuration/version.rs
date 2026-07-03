@@ -21,7 +21,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { protocol_version: u8, stack_type: u8, stack_version: u16 },
+    { protocol_version: u8, stack_type: u8, stack_version: u16 } => Configuration(configuration)::Version,
     impl {
         impl Response {
             /// The EZSP version the NCP is using.

@@ -14,7 +14,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { echo: ByteSizedVec<u8> },
+    { echo: ByteSizedVec<u8> } => Utilities(utilities)::Echo,
     impl {
         impl Response {
             /// Returns the echoed data.

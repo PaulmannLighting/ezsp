@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, child_data: Data },
+    { status: u8, child_data: Data } => Networking(networking)::GetChildData,
     impl {
         /// Converts the response into [`Data`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Data {

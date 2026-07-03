@@ -17,7 +17,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, return_frame_counter: u32 },
+    { status: u8, return_frame_counter: u32 } => Networking(networking)::GetNeighborFrameCounter,
     impl {
         /// Convert a response into a [`u32`] representing the return frame counter
         /// or an appropriate [`Error`] depending on its status.

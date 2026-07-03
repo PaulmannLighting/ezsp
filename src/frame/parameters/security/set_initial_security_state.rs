@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { success: u8 },
+    { success: u8 } => Security(security)::SetInitialSecurityState,
     impl {
         /// Convert the response into `()` or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for () {

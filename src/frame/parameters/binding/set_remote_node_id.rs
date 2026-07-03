@@ -13,5 +13,4 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    {}
-);
+    {} => Binding(binding)::SetRemoteNodeId);

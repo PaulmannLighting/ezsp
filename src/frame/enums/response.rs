@@ -1,39 +1,34 @@
 //! Enumeration containing all possible `EZSP` response parameters.
 
-use crate::parameters::{
-    binding, bootloader, cbke, configuration, green_power, messaging, mfglib, networking, security,
-    token_interface, trust_center, utilities, wwah, zll,
-};
+use crate::frame::parameters::binding::Response as Binding;
+use crate::frame::parameters::bootloader::Response as Bootloader;
+use crate::frame::parameters::cbke::Response as Cbke;
+use crate::frame::parameters::configuration::Response as Configuration;
+use crate::frame::parameters::green_power::Response as GreenPower;
+use crate::frame::parameters::messaging::Response as Messaging;
+use crate::frame::parameters::mfglib::Response as MfgLib;
+use crate::frame::parameters::networking::Response as Networking;
+use crate::frame::parameters::security::Response as Security;
+use crate::frame::parameters::token_interface::Response as TokenInterface;
+use crate::frame::parameters::trust_center::Response as TrustCenter;
+use crate::frame::parameters::utilities::Response as Utilities;
+use crate::frame::parameters::wwah::Response as Wwah;
+use crate::frame::parameters::zll::Response as Zll;
 
-/// `EZSP` response parameters.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Response {
-    /// Response parameters for binding frames.
-    Binding(binding::Response),
-    /// Response parameters for bootloader frames.
-    Bootloader(bootloader::Response),
-    /// Response parameters for certificate-based key exchange (CBKE) frames.
-    Cbke(cbke::Response),
-    /// Response parameters for configuration frames.
-    Configuration(configuration::Response),
-    /// Response parameters for green power frames.
-    GreenPower(green_power::Response),
-    /// Response parameters for messaging frames.
-    Messaging(messaging::Response),
-    /// Response parameters for Manufacturing Test Library (`MfgLib`) frames.
-    MfgLib(mfglib::Response),
-    /// Response parameters for networking frames.
-    Networking(networking::Response),
-    /// Response parameters for security frames.
-    Security(security::Response),
-    /// Response parameters for token interface frames.
-    TokenInterface(token_interface::Response),
-    /// Response parameters for trust center frames.
-    TrustCenter(trust_center::Response),
-    /// Response parameters for utilities frames.
-    Utilities(utilities::Response),
-    /// Response parameters for Wireless Workgroup for Home Automation (WWAH) frames.
-    Wwah(wwah::Response),
-    /// Response parameters for Zigbee Light Link (ZLL) frames.
-    Zll(zll::Response),
-}
+crate::frame::parameters::parameter_group_enum!(
+    Response,
+    Binding,
+    Bootloader,
+    Cbke,
+    Configuration,
+    GreenPower,
+    Messaging,
+    MfgLib,
+    Networking,
+    Security,
+    TokenInterface,
+    TrustCenter,
+    Utilities,
+    Wwah,
+    Zll,
+);

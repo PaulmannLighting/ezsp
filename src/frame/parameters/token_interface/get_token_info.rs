@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, token_info: Info },
+    { status: u8, token_info: Info } => TokenInterface(token_interface)::GetTokenInfo,
     impl {
         /// Convert the response into [`Info`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Info {

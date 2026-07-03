@@ -14,7 +14,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { index: u8 },
+    { index: u8 } => GreenPower(green_power)::SinkTable(sink_table)::FindOrAllocateEntry,
     impl {
         impl Response {
             /// Returns the index.

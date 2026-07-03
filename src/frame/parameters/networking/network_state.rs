@@ -8,7 +8,7 @@ use crate::{Error, ValueError};
 crate::frame::parameters::frame!(
     0x0018,
     {},
-    { status: u8 },
+    { status: u8 } => Networking(networking)::NetworkState,
     impl {
         /// Convert a response into a [`Status`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Status {

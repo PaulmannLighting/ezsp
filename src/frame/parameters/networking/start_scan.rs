@@ -23,7 +23,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: VariableLengthU32 },
+    { status: VariableLengthU32 } => Networking(networking)::StartScan,
     impl {
         /// Convert the response into `()` or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for () {

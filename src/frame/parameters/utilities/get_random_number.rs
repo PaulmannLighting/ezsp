@@ -8,7 +8,7 @@ use crate::ember::Status;
 crate::frame::parameters::frame!(
     0x0049,
     {},
-    { status: u8, value: u16 },
+    { status: u8, value: u16 } => Utilities(utilities)::GetRandomNumber,
     impl {
         /// Convert the response into the generated random number
         /// or an appropriate [`Error`] depending on its status.

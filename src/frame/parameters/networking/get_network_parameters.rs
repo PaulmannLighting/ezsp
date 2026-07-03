@@ -11,7 +11,7 @@ use crate::error::ValueError;
 crate::frame::parameters::frame!(
     0x0028,
     {},
-    { status: u8, node_type: u8, parameters: Parameters },
+    { status: u8, node_type: u8, parameters: Parameters } => Networking(networking)::GetNetworkParameters,
     impl {
         impl Response {
             /// Returns the status of the response.

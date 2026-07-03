@@ -12,5 +12,4 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    {}
-);
+    {} => Security(security)::EraseKeyTableEntry);

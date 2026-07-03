@@ -19,7 +19,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8 },
+    { status: u8 } => Networking(networking)::SetConcentrator,
     impl {
         /// Convert a response into `()` or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for () {

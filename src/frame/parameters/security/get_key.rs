@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, key: Struct },
+    { status: u8, key: Struct } => Security(security)::GetKey,
     impl {
         impl TryFrom<Response> for Struct {
             type Error = Error;

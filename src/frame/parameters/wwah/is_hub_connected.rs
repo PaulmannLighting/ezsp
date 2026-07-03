@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00E6,
     {},
-    { is_hub_connected: bool },
+    { is_hub_connected: bool } => Wwah(wwah)::IsHubConnected,
     impl {
         /// Convert the response into a boolean indicating if the hub is connected.
         impl From<Response> for bool {

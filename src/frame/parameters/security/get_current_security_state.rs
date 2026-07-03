@@ -9,7 +9,7 @@ use crate::ember::security::current::State;
 crate::frame::parameters::frame!(
     0x0069,
     {},
-    { status: u8, state: State },
+    { status: u8, state: State } => Security(security)::GetCurrentSecurityState,
     impl {
         /// Convert the response into [`State`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for State {

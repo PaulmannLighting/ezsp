@@ -22,7 +22,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8 },
+    { status: u8 } => Bootloader(bootloader)::SendBootloadMessage,
     impl {
         /// Convert the response into a [`Result<()>`](crate::Result) by evaluating its status field.
         impl TryFrom<Response> for () {

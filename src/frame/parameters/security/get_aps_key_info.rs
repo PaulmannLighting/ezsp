@@ -20,7 +20,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { payload: KeyInfo, status: u32 },
+    { payload: KeyInfo, status: u32 } => Security(security)::GetApsKeyInfo,
     impl {
         /// Convert the response into [`KeyInfo`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for KeyInfo {

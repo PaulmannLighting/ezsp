@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00BE,
     {},
-    { is_zll_network: bool },
+    { is_zll_network: bool } => Zll(zll)::IsZllNetwork,
     impl {
         impl Response {
             /// Returns whether the network is a ZLL network.

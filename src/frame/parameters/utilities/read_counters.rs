@@ -5,7 +5,7 @@ use crate::ember::constants::COUNTER_TYPE_COUNT;
 crate::frame::parameters::frame!(
     0x00F1,
     {},
-    { values: [u16; COUNTER_TYPE_COUNT] },
+    { values: [u16; COUNTER_TYPE_COUNT] } => Utilities(utilities)::ReadCounters,
     impl {
         /// Convert the response into an array of counter values.
         impl From<Response> for [u16; COUNTER_TYPE_COUNT] {

@@ -14,7 +14,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { active: bool },
+    { active: bool } => Messaging(messaging)::AddressTableEntryIsActive,
     impl {
         impl Response {
             /// Returns whether the entry is active.

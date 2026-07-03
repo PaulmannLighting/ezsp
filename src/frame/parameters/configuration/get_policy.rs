@@ -19,7 +19,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, decision_id: u8 },
+    { status: u8, decision_id: u8 } => Configuration(configuration)::GetPolicy,
     impl {
         /// Converts the response into a [`decision::Id`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for decision::Id {

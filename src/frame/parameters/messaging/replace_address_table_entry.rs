@@ -28,7 +28,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, payload: PreviousEntry },
+    { status: u8, payload: PreviousEntry } => Messaging(messaging)::ReplaceAddressTableEntry,
     impl {
         /// Converts the response into the [`PreviousEntry`]
         /// or an appropriate [`Error`] depending on its status.

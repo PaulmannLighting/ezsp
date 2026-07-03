@@ -9,7 +9,7 @@ use crate::ember::duty_cycle::Limits;
 crate::frame::parameters::frame!(
     0x004B,
     {},
-    { status: u8, returned_limits: Limits },
+    { status: u8, returned_limits: Limits } => Networking(networking)::GetDutyCycleLimits,
     impl {
         /// Converts the response into [`Limits`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Limits {

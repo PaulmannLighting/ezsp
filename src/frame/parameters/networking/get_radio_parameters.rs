@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, parameters: Parameters },
+    { status: u8, parameters: Parameters } => Networking(networking)::GetRadioParameters,
     impl {
         /// Converts the response into [`Parameters`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Parameters {

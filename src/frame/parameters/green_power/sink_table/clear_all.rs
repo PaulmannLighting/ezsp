@@ -1,3 +1,7 @@
 //! Parameters for the [`SinkTable::clear_all`](crate::SinkTable::clear_all) command.
 
-crate::frame::parameters::frame!(0x00E2, {}, {});
+crate::frame::parameters::frame!(
+    0x00E2,
+    {},
+    {} => GreenPower(green_power)::SinkTable(sink_table)::ClearAll,
+);

@@ -25,7 +25,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8 },
+    { status: u8 } => Cbke(cbke)::CalculateSmacs283k1,
     impl {
         /// Converts the response into `()` or an appropriate [`Error`] by evaluating its status field.
         impl TryFrom<Response> for () {

@@ -9,7 +9,7 @@ use crate::ember::beacon::Iterator;
 crate::frame::parameters::frame!(
     0x003D,
     {},
-    { status: u8, beacon_iterator: Iterator },
+    { status: u8, beacon_iterator: Iterator } => Networking(networking)::GetFirstBeacon,
     impl {
         /// Converts the response into [`Iterator`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Iterator {

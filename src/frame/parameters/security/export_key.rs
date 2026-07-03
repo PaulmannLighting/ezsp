@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { key: Key, status: u32 },
+    { key: Key, status: u32 } => Security(security)::ExportKey,
     impl {
         /// Convert the response into [`Key`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Key {

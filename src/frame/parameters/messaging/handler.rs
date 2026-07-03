@@ -27,34 +27,19 @@ mod message_sent;
 mod poll;
 mod poll_complete;
 mod raw_transmit_complete;
-
-/// Message handlers.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Handler {
-    /// An ID conflict handler.
-    IdConflict(IdConflict),
-    /// An incoming many-to-one route request handler.
-    IncomingManyToOneRouteRequest(IncomingManyToOneRouteRequest),
-    /// An incoming message handler.
-    IncomingMessage(IncomingMessage),
-    /// An incoming network status handler.
-    IncomingNetworkStatus(IncomingNetworkStatus),
-    /// An incoming route error handler.
-    IncomingRouteError(IncomingRouteError),
-    /// An incoming route record handler.
-    IncomingRouteRecord(IncomingRouteRecord),
-    /// An incoming sender EUI64 handler.
-    IncomingSenderEui64(IncomingSenderEui64),
-    /// A MAC filter match message handler.
-    MacFilterMatchMessage(MacFilterMatchMessage),
-    /// A MAC passthrough message handler.
-    MacPassthroughMessage(MacPassthroughMessage),
-    /// A message sent handler.
-    MessageSent(MessageSent),
-    /// A poll handler.
-    Poll(Poll),
-    /// A poll complete handler.
-    PollComplete(PollComplete),
-    /// A raw transmit complete handler.
-    RawTransmitComplete(RawTransmitComplete),
-}
+crate::frame::parameters::parameter_enum!(
+    Handler,
+    IdConflict,
+    IncomingManyToOneRouteRequest,
+    IncomingMessage,
+    IncomingNetworkStatus,
+    IncomingRouteError,
+    IncomingRouteRecord,
+    IncomingSenderEui64,
+    MacFilterMatchMessage,
+    MacPassthroughMessage,
+    MessageSent,
+    Poll,
+    PollComplete,
+    RawTransmitComplete
+);

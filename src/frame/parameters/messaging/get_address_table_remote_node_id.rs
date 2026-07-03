@@ -16,7 +16,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { node_id: NodeId },
+    { node_id: NodeId } => Messaging(messaging)::GetAddressTableRemoteNodeId,
     impl {
         impl Response {
             /// Returns the node ID.

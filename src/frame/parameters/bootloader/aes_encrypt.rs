@@ -12,7 +12,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { ciphertext: [u8; 16] },
+    { ciphertext: [u8; 16] } => Bootloader(bootloader)::AesEncrypt,
     impl {
         impl Response {
             /// Returns the ciphertext.

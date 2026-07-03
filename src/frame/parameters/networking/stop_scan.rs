@@ -8,7 +8,7 @@ use crate::ember::Status;
 crate::frame::parameters::frame!(
     0x001D,
     {},
-    { status: u8 },
+    { status: u8 } => Networking(networking)::StopScan,
     impl {
         /// Convert the response into `()` or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for () {

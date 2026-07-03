@@ -10,7 +10,7 @@ use crate::error::ValueError;
 crate::frame::parameters::frame!(
     0x0035,
     {},
-    { status: u8, returned_state: u8 },
+    { status: u8, returned_state: u8 } => Networking(networking)::GetDutyCycleState,
     impl {
         /// Converts the response into [`State`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for State {

@@ -14,5 +14,4 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    {}
-);
+    {} => Messaging(messaging)::SetMacPollFailureWaitTime);

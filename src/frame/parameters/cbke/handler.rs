@@ -16,23 +16,15 @@ mod dsa_sign;
 mod dsa_verify;
 mod generate_cbke_keys;
 mod generate_cbke_keys283k1;
-
-/// Certificate-Based Key Exchange (CBKE) handlers.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Handler {
-    /// Calculate Secure Message Authentication Codes (SMACs).
-    CalculateSmacs(CalculateSmacs),
-    /// Calculate Secure Message Authentication Codes (SMACs) for 283k1.
-    CalculateSmacs283k1(CalculateSmacs283k1),
-    /// Digital Signature Algorithm (DSA) sign.
-    DsaSign(Box<DsaSign>),
-    /// Digital Signature Algorithm (DSA) verify.
-    DsaVerify(DsaVerify),
-    /// Generate CBKE keys.
-    GenerateCbkeKeys(GenerateCbkeKeys),
-    /// Generate CBKE keys for 283k1.
-    GenerateCbkeKeys283k1(GenerateCbkeKeys283k1),
-}
+crate::frame::parameters::parameter_enum!(
+    Handler,
+    CalculateSmacs,
+    CalculateSmacs283k1,
+    DsaSign,
+    DsaVerify,
+    GenerateCbkeKeys,
+    GenerateCbkeKeys283k1
+);
 
 /// The Result of the CBKE operation.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

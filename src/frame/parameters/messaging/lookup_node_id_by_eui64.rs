@@ -14,7 +14,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { node_id: NodeId },
+    { node_id: NodeId } => Messaging(messaging)::LookupNodeIdByEui64,
     impl {
         impl Response {
             /// Returns the node ID.

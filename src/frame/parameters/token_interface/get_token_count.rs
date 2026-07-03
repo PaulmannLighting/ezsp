@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x0100,
     {},
-    { count: u8 },
+    { count: u8 } => TokenInterface(token_interface)::GetTokenCount,
     impl {
         /// Convert the response into the count of tokens.
         impl From<Response> for u8 {

@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00E5,
     {},
-    { has_long_up_time: bool },
+    { has_long_up_time: bool } => Wwah(wwah)::IsUptimeLong,
     impl {
         /// Convert the response into a boolean value of whether the uptime is long.
         impl From<Response> for bool {

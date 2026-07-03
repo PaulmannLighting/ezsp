@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00BA,
     {},
-    { logical_channel: u8 },
+    { logical_channel: u8 } => Networking(networking)::GetLogicalChannel,
     impl {
         impl Response {
             /// Returns the logical channel.

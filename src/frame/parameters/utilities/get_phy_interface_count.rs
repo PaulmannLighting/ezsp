@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00FC,
     {},
-    { interface_count: u8 },
+    { interface_count: u8 } => Utilities(utilities)::GetPhyInterfaceCount,
     impl {
         /// Convert the response into the number of physical interfaces.
         impl From<Response> for u8 {

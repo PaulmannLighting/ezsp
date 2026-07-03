@@ -14,7 +14,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { extended_timeout: bool },
+    { extended_timeout: bool } => Messaging(messaging)::GetExtendedTimeout,
     impl {
         impl Response {
             /// Returns whether the extended timeout is enabled.

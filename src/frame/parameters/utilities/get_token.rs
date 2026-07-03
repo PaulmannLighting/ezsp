@@ -17,7 +17,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, token_data: [u8; 8] },
+    { status: u8, token_data: [u8; 8] } => Utilities(utilities)::GetToken,
     impl {
         /// Convert the response into an array of bytes or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for [u8; 8] {

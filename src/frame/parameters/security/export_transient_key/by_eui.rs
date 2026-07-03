@@ -19,7 +19,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { payload: TransientKey, status: u32 },
+    { payload: TransientKey, status: u32 } => Security(security)::ExportTransientKeyByEui,
     impl {
         /// Convert the response into [`TransientKey`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for TransientKey {

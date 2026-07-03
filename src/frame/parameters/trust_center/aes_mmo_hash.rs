@@ -23,7 +23,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, return_context: MmoHashContext },
+    { status: u8, return_context: MmoHashContext } => TrustCenter(trust_center)::AesMmoHash,
     impl {
         /// Convert the response into [`MmoHashContext`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for MmoHashContext {

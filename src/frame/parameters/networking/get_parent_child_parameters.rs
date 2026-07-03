@@ -5,7 +5,7 @@ use crate::ember::{Eui64, NodeId};
 crate::frame::parameters::frame!(
     0x0029,
     {},
-    { child_count: u8, parent_eui64: Eui64, parent_node_id: NodeId },
+    { child_count: u8, parent_eui64: Eui64, parent_node_id: NodeId } => Networking(networking)::GetParentChildParameters,
     impl {
         impl Response {
             /// Returns the child count.

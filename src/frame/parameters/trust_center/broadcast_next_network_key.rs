@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8 },
+    { status: u8 } => TrustCenter(trust_center)::BroadcastNextNetworkKey,
     impl {
         /// Convert the response into `()` or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for () {

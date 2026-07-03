@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00D9,
     {},
-    { zll_primary_channel_mask: u32 },
+    { zll_primary_channel_mask: u32 } => Zll(zll)::GetPrimaryChannelMask,
     impl {
         impl Response {
             /// ZLL primary channel mask.

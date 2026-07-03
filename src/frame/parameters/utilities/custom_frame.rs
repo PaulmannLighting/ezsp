@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, reply: ByteSizedVec<u8> },
+    { status: u8, reply: ByteSizedVec<u8> } => Utilities(utilities)::CustomFrame,
     impl {
         /// Converts the response into the reply payload or an error, depending on the status.
         impl TryFrom<Response> for ByteSizedVec<u8> {

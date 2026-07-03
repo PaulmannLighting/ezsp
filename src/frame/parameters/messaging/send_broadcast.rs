@@ -31,7 +31,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, sequence: u8 },
+    { status: u8, sequence: u8 } => Messaging(messaging)::SendBroadcast,
     impl {
         /// Converts the response into the sequence number or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for u8 {

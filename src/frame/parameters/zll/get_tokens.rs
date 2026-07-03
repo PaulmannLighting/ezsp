@@ -5,7 +5,7 @@ use crate::ember::zll::{DataToken, SecurityToken};
 crate::frame::parameters::frame!(
     0x00BC,
     {},
-    { data: DataToken, security: SecurityToken },
+    { data: DataToken, security: SecurityToken } => Zll(zll)::GetTokens,
     impl {
         impl Response {
             /// Returns the token data.

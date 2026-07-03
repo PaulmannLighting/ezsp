@@ -37,7 +37,7 @@ impl EventHandler {
             Callback::Messaging(messaging) => self.handle_messaging_callbacks(messaging).await,
             Callback::Networking(networking) => self.handle_networking_callbacks(networking).await,
             Callback::TrustCenter(TrustCenter::TrustCenterJoin(trust_center_join)) => {
-                self.handle_trust_center_join(trust_center_join).await;
+                self.handle_trust_center_join(*trust_center_join).await;
             }
             Callback::Security(security) => {
                 Self::handle_security_callbacks(security);
@@ -53,13 +53,13 @@ impl EventHandler {
         match networking {
             Networking::StackStatus(status) => self.handle_stack_status(status.result()).await,
             Networking::ChildJoin(child_join) => {
-                self.forward_event(child_join.into()).await;
+                self.forward_event((*child_join).into()).await;
             }
             Networking::NetworkFound(network_found) => {
-                self.scans.add_network(network_found.into());
+                self.scans.add_network((*network_found).into());
             }
             Networking::EnergyScanResult(energy_scan_result) => {
-                self.scans.add_channel(energy_scan_result.into());
+                self.scans.add_channel((*energy_scan_result).into());
             }
             Networking::ScanComplete(_) => {
                 self.scans.pop();
@@ -73,7 +73,7 @@ impl EventHandler {
     async fn handle_messaging_callbacks(&mut self, messaging: Messaging) {
         match messaging {
             Messaging::IncomingMessage(incoming_message) => {
-                self.handle_incoming_message(incoming_message).await;
+                self.handle_incoming_message(*incoming_message).await;
             }
             Messaging::MessageSent(message_sent) => {
                 self.handle_message_sent(&message_sent);

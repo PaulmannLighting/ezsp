@@ -17,7 +17,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { token_data: ByteSizedVec<u8> },
+    { token_data: ByteSizedVec<u8> } => Utilities(utilities)::GetMfgToken,
     impl {
         /// Convert the response into the token data.
         impl From<Response> for ByteSizedVec<u8> {

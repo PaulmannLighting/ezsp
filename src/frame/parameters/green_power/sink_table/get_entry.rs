@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, entry: TableEntry },
+    { status: u8, entry: TableEntry } => GreenPower(green_power)::SinkTable(sink_table)::GetEntry,
     impl {
         /// Converts the response into a [`TableEntry`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for TableEntry {

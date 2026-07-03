@@ -14,7 +14,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { index: u8 },
+    { index: u8 } => Security(security)::FindKeyTableEntry,
     impl {
         /// Convert the response into the index of the key table entry.
         impl From<Response> for u8 {

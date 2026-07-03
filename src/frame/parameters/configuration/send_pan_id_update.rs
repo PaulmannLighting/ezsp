@@ -14,7 +14,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: bool },
+    { status: bool } => Configuration(configuration)::SendPanIdUpdate,
     impl {
         /// Converts the response into a [`bool`] indicating whether the command was successful.
         impl From<Response> for bool {

@@ -20,7 +20,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { payload: Payload, status: u32 },
+    { payload: Payload, status: u32 } => Security(security)::ExportLinkKeyByIndex,
     impl {
         /// Convert the response into [`Payload`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Payload {

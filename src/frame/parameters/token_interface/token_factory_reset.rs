@@ -15,5 +15,4 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    {}
-);
+    {} => TokenInterface(token_interface)::TokenFactoryReset);

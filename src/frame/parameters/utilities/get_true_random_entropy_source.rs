@@ -8,7 +8,7 @@ use crate::{Error, ValueError};
 crate::frame::parameters::frame!(
     0x004F,
     {},
-    { entropy_source: u8 },
+    { entropy_source: u8 } => Utilities(utilities)::GetTrueRandomEntropySource,
     impl {
         /// Convert the response into a [`Source`] or an appropriate [`Error`]
         /// depending on the validity of its entropy source data.

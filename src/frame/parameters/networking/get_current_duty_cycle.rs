@@ -18,7 +18,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, device_duty_cycles: DeviceDutyCycles },
+    { status: u8, device_duty_cycles: DeviceDutyCycles } => Networking(networking)::GetCurrentDutyCycle,
     impl {
         impl Response {
             /// Returns the per-device duty cycles.

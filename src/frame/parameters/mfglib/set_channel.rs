@@ -17,7 +17,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8 },
+    { status: u8 } => MfgLib(mfglib)::SetChannel,
     impl {
         /// Converts the response into `()` or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for () {

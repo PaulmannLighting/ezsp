@@ -17,5 +17,4 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    {}
-);
+    {} => Messaging(messaging)::SetAddressTableRemoteNodeId);

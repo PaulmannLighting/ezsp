@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00F0,
     {},
-    { enabled: bool },
+    { enabled: bool } => Wwah(wwah)::GetParentClassificationEnabled,
     impl {
         /// Convert the response into a boolean indicating if the parent classification is enabled.
         impl From<Response> for bool {

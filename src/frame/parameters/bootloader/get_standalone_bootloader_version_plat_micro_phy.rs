@@ -4,7 +4,7 @@
 crate::frame::parameters::frame!(
     0x0091,
     {},
-    { bootloader_version: u16, node_plat: u8, node_micro: u8, node_phy: u8 },
+    { bootloader_version: u16, node_plat: u8, node_micro: u8, node_phy: u8 } => Bootloader(bootloader)::GetStandaloneBootloaderVersionPlatMicroPhy,
     impl {
         impl Response {
             /// `None` if the standalone bootloader is not present,

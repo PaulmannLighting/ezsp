@@ -17,7 +17,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8, eui64: Eui64 },
+    { status: u8, eui64: Eui64 } => Messaging(messaging)::LookupEui64ByNodeId,
     impl {
         /// Converts the response into the [`Eui64`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Eui64 {

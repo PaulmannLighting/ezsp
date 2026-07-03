@@ -9,7 +9,7 @@ use crate::Error;
 crate::frame::parameters::frame!(
     0x0116,
     {},
-    { status: u32, network_key_info: NetworkKeyInfo },
+    { status: u32, network_key_info: NetworkKeyInfo } => Security(security)::GetNetworkKeyInfo,
     impl {
         /// Convert the response into [`NetworkKeyInfo`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for NetworkKeyInfo {

@@ -8,7 +8,7 @@ use crate::ember::Status;
 crate::frame::parameters::frame!(
     0x0088,
     {},
-    { status: u8 },
+    { status: u8 } => MfgLib(mfglib)::StopStream,
     impl {
         /// Converts the response into `()` or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for () {

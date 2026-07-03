@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x00D7,
     {},
-    { zll_operation_in_progress: bool },
+    { zll_operation_in_progress: bool } => Zll(zll)::OperationInProgress,
     impl {
         impl Response {
             /// Returns whether a ZLL operation is in progress.

@@ -23,7 +23,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u32 },
+    { status: u32 } => Security(security)::ImportLinkKey,
     impl {
         /// Convert the response into `()` or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for () {

@@ -12,5 +12,4 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    {}
-);
+    {} => GreenPower(green_power)::SinkTable(sink_table)::SetSecurityFrameCounter);

@@ -3,7 +3,7 @@
 crate::frame::parameters::frame!(
     0x0008,
     {},
-    { num_beacons: u8 },
+    { num_beacons: u8 } => Networking(networking)::GetNumStoredBeacons,
     impl {
         impl Response {
             /// The number of stored beacons.

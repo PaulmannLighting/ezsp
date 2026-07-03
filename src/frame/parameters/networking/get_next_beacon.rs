@@ -9,7 +9,7 @@ use crate::ember::beacon::Data;
 crate::frame::parameters::frame!(
     0x0004,
     {},
-    { status: u8, beacon: Data },
+    { status: u8, beacon: Data } => Networking(networking)::GetNextBeacon,
     impl {
         /// Convert a response into a [`Data`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for Data {

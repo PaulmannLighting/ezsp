@@ -17,7 +17,7 @@ crate::frame::parameters::frame!(
             }
         }
     },
-    { status: u8 },
+    { status: u8 } => Binding(binding)::Delete,
     impl {
         /// Convert the response into a [`Result<()>`](crate::Result) by evaluating its status field.
         impl TryFrom<Response> for () {

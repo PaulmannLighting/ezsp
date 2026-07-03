@@ -1,24 +1,13 @@
 //! Parameters for the [`Networking::join_network_directly`](crate::Networking::join_network_directly) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
 use crate::ember::beacon::Data;
 use crate::ember::node::Type;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x003B;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    local_node_type: u8,
-    beacon: Data,
-    radio_tx_power: i8,
-    clear_beacons_after_network_up: bool,
-}
+crate::frame::parameters::frame!(0x003B, { local_node_type: u8, beacon: Data, radio_tx_power: i8, clear_beacons_after_network_up: bool }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -35,24 +24,6 @@ impl Command {
             clear_beacons_after_network_up,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert a response into `()` or an appropriate [`Error`] depending on its status.

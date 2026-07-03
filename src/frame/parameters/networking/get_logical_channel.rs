@@ -1,28 +1,6 @@
 //! Parameters for the [`Networking::get_logical_channel`](crate::Networking::get_logical_channel) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x00BA;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    logical_channel: u8,
-}
+crate::frame::parameters::frame!(0x00BA, {}, { logical_channel: u8 });
 
 impl Response {
     /// Returns the logical channel.
@@ -30,8 +8,4 @@ impl Response {
     pub const fn logical_channel(&self) -> u8 {
         self.logical_channel
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

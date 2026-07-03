@@ -1,28 +1,6 @@
 //! Parameters for the [`Zll::is_zll_network`](crate::Zll::is_zll_network) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x00BE;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    is_zll_network: bool,
-}
+crate::frame::parameters::frame!(0x00BE, {}, { is_zll_network: bool });
 
 impl Response {
     /// Returns whether the network is a ZLL network.
@@ -30,8 +8,4 @@ impl Response {
     pub const fn is_zll_network(&self) -> bool {
         self.is_zll_network
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

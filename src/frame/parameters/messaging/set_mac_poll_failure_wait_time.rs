@@ -1,16 +1,6 @@
 //! Parameters for the [`Messaging::set_mac_poll_failure_wait_time`](crate::Messaging::set_mac_poll_failure_wait_time) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x00F4;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    wait_before_retry_interval_ms: u8,
-}
+crate::frame::parameters::frame!(0x00F4, { wait_before_retry_interval_ms: u8 }, {});
 
 impl Command {
     #[must_use]
@@ -19,20 +9,4 @@ impl Command {
             wait_before_retry_interval_ms,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response;
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

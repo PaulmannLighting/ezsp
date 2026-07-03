@@ -1,17 +1,8 @@
 //! Parameters for the [`SinkTable::find_or_allocate_entry`](crate::SinkTable::find_or_allocate_entry) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
 use crate::ember::gp::Address;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x00E1;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    addr: Address,
-}
+crate::frame::parameters::frame!(0x00E1, { addr: Address }, { index: u8 });
 
 impl Command {
     #[must_use]
@@ -20,28 +11,10 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    index: u8,
-}
-
 impl Response {
     /// Returns the index.
     #[must_use]
     pub const fn index(&self) -> u8 {
         self.index
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

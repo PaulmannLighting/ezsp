@@ -1,43 +1,17 @@
 //! Parameters for the [`Security::update_tc_link_key`](crate::Security::update_tc_link_key) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x006C;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    max_attempts: u8,
-}
+crate::frame::parameters::frame!(0x006C, { max_attempts: u8 }, { status: u8 });
 
 impl Command {
     #[must_use]
     pub const fn new(max_attempts: u8) -> Self {
         Self { max_attempts }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into `()` or an appropriate [`Error`] depending on its status.

@@ -1,35 +1,11 @@
 //! Parameters for the [`Networking::stop_scan`](crate::Networking::stop_scan) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x001D;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
-}
+crate::frame::parameters::frame!(0x001D, {}, { status: u8 });
 
 /// Convert the response into `()` or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for () {

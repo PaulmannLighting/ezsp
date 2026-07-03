@@ -1,17 +1,8 @@
 //! Parameters for the [`Messaging::lookup_node_id_by_eui64`](crate::Messaging::lookup_node_id_by_eui64) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
 use crate::ember::{Eui64, NodeId};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0060;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    eui64: Eui64,
-}
+crate::frame::parameters::frame!(0x0060, { eui64: Eui64 }, { node_id: NodeId });
 
 impl Command {
     #[must_use]
@@ -20,28 +11,10 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    node_id: NodeId,
-}
-
 impl Response {
     /// Returns the node ID.
     #[must_use]
     pub const fn node_id(&self) -> NodeId {
         self.node_id
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

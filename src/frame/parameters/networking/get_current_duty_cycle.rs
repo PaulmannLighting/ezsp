@@ -1,42 +1,18 @@
 //! Parameters for the [`Networking::get_current_duty_cycle`](crate::Networking::get_current_duty_cycle) command.
 
-use le_stream::{FromLeStream, ToLeStream};
+use le_stream::FromLeStream;
 use log::error;
 use num_traits::FromPrimitive;
 
 use crate::ember::{DeviceDutyCycles, MAX_END_DEVICE_CHILDREN, PerDeviceDutyCycle, Status};
 use crate::error::Error;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x004C;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    max_devices: u8,
-}
+crate::frame::parameters::frame!(0x004C, { max_devices: u8 }, { status: u8, device_duty_cycles: DeviceDutyCycles });
 
 impl Command {
     #[must_use]
     pub const fn new(max_devices: u8) -> Self {
         Self { max_devices }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-    // FIXME: The docs specify 33 * 4 + 1 bytes = 134 bytes, but that doesn't make sense.
-    device_duty_cycles: DeviceDutyCycles,
 }
 
 impl Response {
@@ -55,10 +31,6 @@ impl Response {
             })
             .collect()
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into a [`heapless::Vec`] of [`PerDeviceDutyCycle`]

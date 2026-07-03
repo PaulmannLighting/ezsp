@@ -1,36 +1,11 @@
 //! Parameters for the [`Cbke::get_certificate283k1`](crate::Cbke::get_certificate283k1) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::{Certificate283k1Data, Status};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x00EC;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-    local_cert: Certificate283k1Data,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
-}
+crate::frame::parameters::frame!(0x00EC, {}, { status: u8, local_cert: Certificate283k1Data });
 
 /// Converts the response into [`Certificate283k1Data`]
 /// or an appropriate [`Error`] by evaluating its status field.

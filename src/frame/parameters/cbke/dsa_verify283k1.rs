@@ -1,21 +1,11 @@
 //! Parameters for the [`Cbke::dsa_verify`](crate::Cbke::dsa_verify) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::{Certificate283k1Data, MessageDigest, Signature283k1Data, Status};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x00B0;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    digest: MessageDigest,
-    signer_certificate: Certificate283k1Data,
-    received_sig: Signature283k1Data,
-}
+crate::frame::parameters::frame!(0x00B0, { digest: MessageDigest, signer_certificate: Certificate283k1Data, received_sig: Signature283k1Data }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -30,24 +20,6 @@ impl Command {
             received_sig,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into `()` or an appropriate [`Error`] by evaluating its status field.

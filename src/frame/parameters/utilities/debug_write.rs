@@ -1,21 +1,12 @@
 //! Parameters for the [`Utilities::debug_write`](crate::Utilities::debug_write) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::types::ByteSizedVec;
 
-const ID: u16 = 0x0012;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    binary_message: bool,
-    message: ByteSizedVec<u8>,
-}
+crate::frame::parameters::frame!(0x0012, { binary_message: bool, message: ByteSizedVec<u8> }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -25,24 +16,6 @@ impl Command {
             message,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into `()` or an error, depending on the status.

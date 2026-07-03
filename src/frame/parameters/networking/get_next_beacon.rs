@@ -1,37 +1,12 @@
 //! Parameters for the [`Networking::get_next_beacon`](crate::Networking::get_next_beacon) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
 use crate::ember::beacon::Data;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0004;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-    beacon: Data,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
-}
+crate::frame::parameters::frame!(0x0004, {}, { status: u8, beacon: Data });
 
 /// Convert a response into a [`Data`] or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for Data {

@@ -1,46 +1,20 @@
 //! Parameters for the [`Security::export_link_key_by_eui`](crate::Security::export_link_key_by_eui) command.
 
-use le_stream::{FromLeStream, ToLeStream};
+use le_stream::FromLeStream;
 use num_traits::FromPrimitive;
 use silizium::Status;
 use silizium::zigbee::security::man::{ApsKeyMetadata, Key};
 
 use crate::Error;
 use crate::ember::Eui64;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x010D;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    eui: Eui64,
-}
+crate::frame::parameters::frame!(0x010D, { eui: Eui64 }, { payload: Payload, status: u32 });
 
 impl Command {
     #[must_use]
     pub const fn new(eui: Eui64) -> Self {
         Self { eui }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    payload: Payload,
-    status: u32,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into [`Payload`] or an appropriate [`Error`] depending on its status.

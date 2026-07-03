@@ -1,37 +1,12 @@
 //! Parameters for the [`Security::get_network_key_info`](crate::Security::get_network_key_info) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use silizium::Status;
 use silizium::zigbee::security::man::NetworkKeyInfo;
 
 use crate::Error;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0116;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u32,
-    network_key_info: NetworkKeyInfo,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
-}
+crate::frame::parameters::frame!(0x0116, {}, { status: u32, network_key_info: NetworkKeyInfo });
 
 /// Convert the response into [`NetworkKeyInfo`] or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for NetworkKeyInfo {

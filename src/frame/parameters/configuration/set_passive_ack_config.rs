@@ -1,20 +1,11 @@
 //! Parameters for the [`Configuration::set_passive_ack_config`](crate::Configuration::set_passive_ack_config) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0105;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    config: u8,
-    min_acks_needed: u8,
-}
+crate::frame::parameters::frame!(0x0105, { config: u8, min_acks_needed: u8 }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -24,24 +15,6 @@ impl Command {
             min_acks_needed,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into `()` or an appropriate [`Error`] depending on its status.

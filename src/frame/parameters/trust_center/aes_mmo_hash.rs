@@ -1,23 +1,13 @@
 //! Parameters for the [`TrustCenter::aes_mmo_hash`](crate::TrustCenter::aes_mmo_hash) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
 use crate::ember::aes::MmoHashContext;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::types::ByteSizedVec;
 
-const ID: u16 = 0x006F;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    context: MmoHashContext,
-    finalize: bool,
-    data: ByteSizedVec<u8>,
-}
+crate::frame::parameters::frame!(0x006F, { context: MmoHashContext, finalize: bool, data: ByteSizedVec<u8> }, { status: u8, return_context: MmoHashContext });
 
 impl Command {
     #[must_use]
@@ -28,25 +18,6 @@ impl Command {
             data,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-    return_context: MmoHashContext,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into [`MmoHashContext`] or an appropriate [`Error`] depending on its status.

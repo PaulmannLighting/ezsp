@@ -1,27 +1,3 @@
 //! Parameters for the [`TokenInterface::reset_node`](crate::TokenInterface::reset_node) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x0104;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response;
-
-impl Parameter for Response {
-    const ID: u16 = ID;
-}
+crate::frame::parameters::frame!(0x0104, {}, {});

@@ -1,22 +1,12 @@
 //! Parameters for the [`Messaging::poll_for_data`](crate::Messaging::poll_for_data) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
 use crate::ember::event::Units;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0042;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    interval: u16,
-    units: u8,
-    failure_limit: u8,
-}
+crate::frame::parameters::frame!(0x0042, { interval: u16, units: u8, failure_limit: u8 }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -27,24 +17,6 @@ impl Command {
             failure_limit,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into `()` or an appropriate [`Error`] depending on its status.

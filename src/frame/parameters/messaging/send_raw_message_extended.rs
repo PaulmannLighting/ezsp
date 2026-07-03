@@ -1,22 +1,12 @@
 //! Parameters for the [`Messaging::send_raw_message_extended`](crate::Messaging::send_raw_message_extended) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::types::ByteSizedVec;
 
-const ID: u16 = 0x0051;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    message: ByteSizedVec<u8>,
-    priority: u8,
-    use_cca: bool,
-}
+crate::frame::parameters::frame!(0x0051, { message: ByteSizedVec<u8>, priority: u8, use_cca: bool }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -27,24 +17,6 @@ impl Command {
             use_cca,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into `()` or an appropriate [`Error`] depending on its status.

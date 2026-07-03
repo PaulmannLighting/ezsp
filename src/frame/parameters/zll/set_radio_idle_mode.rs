@@ -1,37 +1,12 @@
 //! Parameters for the [`Zll::set_radio_idle_mode`](crate::Zll::set_radio_idle_mode) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
 use crate::ember::radio::PowerMode;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x00D4;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    mode: u8,
-}
+crate::frame::parameters::frame!(0x00D4, { mode: u8 }, {});
 
 impl Command {
     #[must_use]
     pub fn new(mode: PowerMode) -> Self {
         Self { mode: mode.into() }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response;
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

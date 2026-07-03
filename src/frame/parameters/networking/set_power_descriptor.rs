@@ -1,36 +1,10 @@
 //! Parameters for the [`Networking::set_power_descriptor`](crate::Networking::set_power_descriptor) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x0016;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    descriptor: u16,
-}
+crate::frame::parameters::frame!(0x0016, { descriptor: u16 }, {});
 
 impl Command {
     #[must_use]
     pub const fn new(descriptor: u16) -> Self {
         Self { descriptor }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response;
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

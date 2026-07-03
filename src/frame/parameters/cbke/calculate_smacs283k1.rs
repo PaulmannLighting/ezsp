@@ -1,21 +1,11 @@
 //! Parameters for the [`Cbke::calculate_smacs283k1`](crate::Cbke::calculate_smacs283k1) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::{Certificate283k1Data, PublicKey283k1Data, Status};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x00EA;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    am_initiator: bool,
-    partner_certificate: Certificate283k1Data,
-    partner_ephemeral_public_key: PublicKey283k1Data,
-}
+crate::frame::parameters::frame!(0x00EA, { am_initiator: bool, partner_certificate: Certificate283k1Data, partner_ephemeral_public_key: PublicKey283k1Data }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -30,24 +20,6 @@ impl Command {
             partner_ephemeral_public_key,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into `()` or an appropriate [`Error`] by evaluating its status field.

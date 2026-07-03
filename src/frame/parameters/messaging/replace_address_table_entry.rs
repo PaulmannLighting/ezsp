@@ -1,22 +1,12 @@
 //! Parameters for the [`Messaging::replace_address_table_entry`](crate::Messaging::replace_address_table_entry) command.
 
-use le_stream::{FromLeStream, ToLeStream};
+use le_stream::FromLeStream;
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::{Eui64, NodeId, Status};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0082;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    address_table_index: u8,
-    new_eui64: Eui64,
-    new_id: NodeId,
-    new_extended_timeout: bool,
-}
+crate::frame::parameters::frame!(0x0082, { address_table_index: u8, new_eui64: Eui64, new_id: NodeId, new_extended_timeout: bool }, { status: u8, payload: PreviousEntry });
 
 impl Command {
     #[must_use]
@@ -33,25 +23,6 @@ impl Command {
             new_extended_timeout,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-    payload: PreviousEntry,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into the [`PreviousEntry`]

@@ -1,36 +1,12 @@
 //! Parameters for the [`Utilities::get_xncp_info`](crate::Utilities::get_xncp_info) command.
 
-use le_stream::{FromLeStream, ToLeStream};
+use le_stream::FromLeStream;
 use num_traits::FromPrimitive;
 
 use crate::ember::Status;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::{Error, ValueError};
 
-const ID: u16 = 0x0013;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-    payload: Option<Payload>,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
-}
+crate::frame::parameters::frame!(0x0013, {}, { status: u8, payload: Option<Payload> });
 
 /// Convert the response into a [`Payload`] or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for Payload {

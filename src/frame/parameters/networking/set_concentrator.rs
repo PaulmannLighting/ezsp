@@ -1,21 +1,12 @@
 //! Parameters for the [`Networking::set_concentrator`](crate::Networking::set_concentrator) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
 use crate::ember::concentrator::Parameters;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0010;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    on: bool,
-    parameters: Parameters,
-}
+crate::frame::parameters::frame!(0x0010, { on: bool, parameters: Parameters }, { status: u8 });
 
 impl From<Option<Parameters>> for Command {
     fn from(parameters: Option<Parameters>) -> Self {
@@ -24,24 +15,6 @@ impl From<Option<Parameters>> for Command {
             parameters: parameters.unwrap_or_default(),
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert a response into `()` or an appropriate [`Error`] depending on its status.

@@ -1,42 +1,17 @@
 //! Parameters for the [`Networking::set_routing_shortcut_threshold`](crate::Networking::set_routing_shortcut_threshold) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x00D0;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    cost_thresh: u8,
-}
+crate::frame::parameters::frame!(0x00D0, { cost_thresh: u8 }, { status: u8 });
 
 impl Command {
     #[must_use]
     pub const fn new(cost_thresh: u8) -> Self {
         Self { cost_thresh }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into `()` or an appropriate [`Error`] depending on its status.

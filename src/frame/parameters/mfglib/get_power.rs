@@ -1,28 +1,6 @@
 //! Parameters for the [`Mfglib::get_power`](crate::Mfglib::get_power) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x008D;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    power: i8,
-}
+crate::frame::parameters::frame!(0x008D, {}, { power: i8 });
 
 impl Response {
     /// Returns the power level in dBm.
@@ -30,8 +8,4 @@ impl Response {
     pub const fn power(&self) -> i8 {
         self.power
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

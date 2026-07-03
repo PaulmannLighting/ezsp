@@ -1,33 +1,8 @@
 //! Parameters for the [`Bootloader::get_standalone_bootloader_version_plat_micro_phy()`](crate::Bootloader::get_standalone_bootloader_version_plat_micro_phy)
 //! command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x0091;
+crate::frame::parameters::frame!(0x0091, {}, { bootloader_version: u16, node_plat: u8, node_micro: u8, node_phy: u8 });
 const BOOTLOADER_INVALID_VERSION: u16 = 0xFFFF;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    bootloader_version: u16,
-    node_plat: u8,
-    node_micro: u8,
-    node_phy: u8,
-}
 
 impl Response {
     /// `None` if the standalone bootloader is not present,
@@ -58,8 +33,4 @@ impl Response {
     pub const fn node_phy(&self) -> u8 {
         self.node_phy
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

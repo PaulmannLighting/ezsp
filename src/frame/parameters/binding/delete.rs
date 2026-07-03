@@ -1,43 +1,17 @@
 //! Parameters for the [`Binding::delete_binding`](crate::Binding::delete) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x002D;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    index: u8,
-}
+crate::frame::parameters::frame!(0x002D, { index: u8 }, { status: u8 });
 
 impl Command {
     #[must_use]
     pub const fn new(index: u8) -> Self {
         Self { index }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into a [`Result<()>`](crate::Result) by evaluating its status field.

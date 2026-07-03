@@ -1,17 +1,8 @@
 //! Parameters for the [`Utilities::echo`](crate::Utilities::echo) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::types::ByteSizedVec;
 
-const ID: u16 = 0x0081;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    data: ByteSizedVec<u8>,
-}
+crate::frame::parameters::frame!(0x0081, { data: ByteSizedVec<u8> }, { echo: ByteSizedVec<u8> });
 
 impl Command {
     #[must_use]
@@ -20,28 +11,10 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    echo: ByteSizedVec<u8>,
-}
-
 impl Response {
     /// Returns the echoed data.
     #[must_use]
     pub fn echo(self) -> ByteSizedVec<u8> {
         self.echo
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

@@ -1,30 +1,6 @@
 //! Parameters for the [`SinkTable::number_of_active_entries`](crate::SinkTable::number_of_active_entries) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x0118;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    // The number of active entries in the sink table.
-    // The documentation specifies `Uint_t`, but the actual type is `u8`.
-    number_of_entries: u8,
-}
+crate::frame::parameters::frame!(0x0118, {}, { number_of_entries: u8 });
 
 impl Response {
     /// The number of active entries in the sink table.
@@ -32,8 +8,4 @@ impl Response {
     pub const fn number_of_entries(&self) -> u8 {
         self.number_of_entries
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

@@ -1,6 +1,5 @@
 //! Parameters for the [`Networking::get_network_parameters`](crate::Networking::get_network_parameters) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -8,29 +7,8 @@ use crate::ember::Status;
 use crate::ember::network::Parameters;
 use crate::ember::node::Type;
 use crate::error::ValueError;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0028;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-    node_type: u8,
-    parameters: Parameters,
-}
+crate::frame::parameters::frame!(0x0028, {}, { status: u8, node_type: u8, parameters: Parameters });
 
 impl Response {
     /// Returns the status of the response.
@@ -62,10 +40,6 @@ impl Response {
     pub const fn into_parameters(self) -> Parameters {
         self.parameters
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert a response into a [`Type`] and [`Parameters`] tuple

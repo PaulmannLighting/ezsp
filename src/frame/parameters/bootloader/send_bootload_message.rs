@@ -1,22 +1,12 @@
 //! Parameters for the [`Bootloader::send_bootload_message()`](crate::Bootloader::send_bootload_message) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::{Eui64, Status};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::types::ByteSizedVec;
 
-const ID: u16 = 0x0090;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    broadcast: bool,
-    dest_eui64: Eui64,
-    message: ByteSizedVec<u8>,
-}
+crate::frame::parameters::frame!(0x0090, { broadcast: bool, dest_eui64: Eui64, message: ByteSizedVec<u8> }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -27,24 +17,6 @@ impl Command {
             message,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into a [`Result<()>`](crate::Result) by evaluating its status field.

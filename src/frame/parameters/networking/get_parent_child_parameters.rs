@@ -1,31 +1,8 @@
 //! Returns information about the children of the local node and the parent of the local node.
 
-use le_stream::{FromLeStream, ToLeStream};
-
 use crate::ember::{Eui64, NodeId};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0029;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// The response to a get parent child parameters command.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    child_count: u8,
-    parent_eui64: Eui64,
-    parent_node_id: NodeId,
-}
+crate::frame::parameters::frame!(0x0029, {}, { child_count: u8, parent_eui64: Eui64, parent_node_id: NodeId });
 
 impl Response {
     /// Returns the child count.
@@ -45,8 +22,4 @@ impl Response {
     pub const fn parent_node_id(&self) -> NodeId {
         self.parent_node_id
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

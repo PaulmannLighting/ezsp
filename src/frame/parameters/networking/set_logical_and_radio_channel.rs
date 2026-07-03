@@ -1,43 +1,17 @@
 //! Parameters for the [`Networking::set_logical_and_radio_channel`](crate::Networking::set_logical_and_radio_channel) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x00B9;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    radio_channel: u8,
-}
+crate::frame::parameters::frame!(0x00B9, { radio_channel: u8 }, { status: u8 });
 
 impl Command {
     #[must_use]
     pub const fn new(radio_channel: u8) -> Self {
         Self { radio_channel }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert a response into `()` or an appropriate [`Error`] depending on its status.

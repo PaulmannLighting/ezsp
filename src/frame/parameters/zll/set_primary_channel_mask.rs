@@ -1,16 +1,6 @@
 //! Parameters for the [`Zll::set_primary_channel_mask`](crate::Zll::set_primary_channel_mask) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x00DB;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    zll_primary_channel_mask: u32,
-}
+crate::frame::parameters::frame!(0x00DB, { zll_primary_channel_mask: u32 }, {});
 
 impl Command {
     #[must_use]
@@ -19,20 +9,4 @@ impl Command {
             zll_primary_channel_mask,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response;
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

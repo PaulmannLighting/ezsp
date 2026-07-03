@@ -1,28 +1,6 @@
 //! Parameters for the [`Networking::get_radio_channel`](crate::Networking::get_radio_channel) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x00FF;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    channel: u8,
-}
+crate::frame::parameters::frame!(0x00FF, {}, { channel: u8 });
 
 impl Response {
     /// Returns the radio channel.
@@ -30,8 +8,4 @@ impl Response {
     pub const fn channel(&self) -> u8 {
         self.channel
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

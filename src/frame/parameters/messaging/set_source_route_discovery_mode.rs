@@ -2,38 +2,15 @@
 
 use core::time::Duration;
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::types::SourceRouteDiscoveryMode;
 
-const ID: u16 = 0x005A;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    mode: u8,
-}
+crate::frame::parameters::frame!(0x005A, { mode: u8 }, { remaining_time: u32 });
 
 impl Command {
     #[must_use]
     pub fn new(mode: SourceRouteDiscoveryMode) -> Self {
         Self { mode: mode.into() }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    remaining_time: u32,
 }
 
 impl Response {
@@ -46,8 +23,4 @@ impl Response {
             Some(Duration::from_millis(self.remaining_time as u64))
         }
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

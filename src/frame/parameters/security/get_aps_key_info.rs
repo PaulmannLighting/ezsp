@@ -1,46 +1,20 @@
 //! Parameters for the [`Security::get_aps_key_info`](crate::Security::get_aps_key_info) command.
 
-use le_stream::{FromLeStream, ToLeStream};
+use le_stream::FromLeStream;
 use num_traits::FromPrimitive;
 use silizium::Status;
 use silizium::zigbee::security::man::{ApsKeyMetadata, Context};
 
 use crate::Error;
 use crate::ember::Eui64;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x010C;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    context_in: Context,
-}
+crate::frame::parameters::frame!(0x010C, { context_in: Context }, { payload: KeyInfo, status: u32 });
 
 impl Command {
     #[must_use]
     pub const fn new(context_in: Context) -> Self {
         Self { context_in }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    payload: KeyInfo,
-    status: u32,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into [`KeyInfo`] or an appropriate [`Error`] depending on its status.

@@ -1,43 +1,17 @@
 //! Parameters for the [`Mfglib::start_stream`](crate::Mfglib::start_stream) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0083;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    rx_callback: bool,
-}
+crate::frame::parameters::frame!(0x0083, { rx_callback: bool }, { status: u8 });
 
 impl Command {
     #[must_use]
     pub const fn new(rx_callback: bool) -> Self {
         Self { rx_callback }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into `()` or an appropriate [`Error`] depending on its status.

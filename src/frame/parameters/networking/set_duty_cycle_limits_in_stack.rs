@@ -1,43 +1,17 @@
 //! Parameters for the  [`Networking::set_duty_cycle_limits_in_stack`](crate::Networking::set_duty_cycle_limits_in_stack) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
 use crate::ember::duty_cycle::Limits;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0040;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    limits: Limits,
-}
+crate::frame::parameters::frame!(0x0040, { limits: Limits }, { status: u8 });
 
 impl From<Limits> for Command {
     fn from(limits: Limits) -> Self {
         Self { limits }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert a response into `()` or an appropriate [`Error`] depending on its status.

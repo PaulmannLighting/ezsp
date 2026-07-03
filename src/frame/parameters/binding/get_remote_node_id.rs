@@ -1,37 +1,14 @@
 //! Parameters for the [`Binding::get_binding_remote_node_id`](crate::Binding::get_remote_node_id) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
 use crate::ember::{NULL_NODE_ID, NodeId};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x002F;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    index: u8,
-}
+crate::frame::parameters::frame!(0x002F, { index: u8 }, { node_id: NodeId });
 
 impl Command {
     #[must_use]
     pub const fn new(index: u8) -> Self {
         Self { index }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    node_id: NodeId,
 }
 
 impl Response {
@@ -44,8 +21,4 @@ impl Response {
             Some(self.node_id)
         }
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

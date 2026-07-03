@@ -1,21 +1,11 @@
 //! Parameters for the [`TrustCenter::remove_device`](crate::TrustCenter::remove_device) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::{Eui64, NodeId, Status};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x00A8;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    dest_short: NodeId,
-    dest_long: Eui64,
-    target_long: Eui64,
-}
+crate::frame::parameters::frame!(0x00A8, { dest_short: NodeId, dest_long: Eui64, target_long: Eui64 }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -26,24 +16,6 @@ impl Command {
             target_long,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into `()` or an appropriate [`Error`] depending on its status.

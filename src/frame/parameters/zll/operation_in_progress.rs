@@ -1,28 +1,6 @@
 //! Parameters for the [`Zll::operation_in_progress`](crate::Zll::operation_in_progress) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x00D7;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    zll_operation_in_progress: bool,
-}
+crate::frame::parameters::frame!(0x00D7, {}, { zll_operation_in_progress: bool });
 
 impl Response {
     /// Returns whether a ZLL operation is in progress.
@@ -30,8 +8,4 @@ impl Response {
     pub const fn zll_operation_in_progress(&self) -> bool {
         self.zll_operation_in_progress
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

@@ -1,45 +1,18 @@
 //! Parameters for the [`Binding::set_binding`](crate::Binding::set) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
 use crate::ember::binding::TableEntry;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x002B;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    index: u8,
-    value: TableEntry,
-}
+crate::frame::parameters::frame!(0x002B, { index: u8, value: TableEntry }, { status: u8 });
 
 impl Command {
     #[must_use]
     pub const fn new(index: u8, value: TableEntry) -> Self {
         Self { index, value }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into a [`Result<()>`](crate::Result) by evaluating its status field.

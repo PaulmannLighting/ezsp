@@ -2,25 +2,14 @@
 
 use std::iter::{Chain, FlatMap};
 
-use le_stream::{FromLeStream, ToLeStream};
+use le_stream::ToLeStream;
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ezsp::Status;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::types::ByteSizedVec;
 
-const ID: u16 = 0x0002;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    endpoint: u8,
-    profile_id: u16,
-    device_id: u16,
-    app_flags: u8,
-    clusters: Clusters,
-}
+crate::frame::parameters::frame!(0x0002, { endpoint: u8, profile_id: u16, device_id: u16, app_flags: u8, clusters: Clusters }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -100,24 +89,6 @@ impl ToLeStream for Clusters {
                     .flat_map(ToLeStream::to_le_stream as _),
             )
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into `()` or an appropriate [`Error`] depending on its status.

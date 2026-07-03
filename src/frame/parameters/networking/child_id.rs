@@ -1,37 +1,14 @@
 //! Parameters for the [`Networking::child_id`](crate::Networking::child_id) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
 use crate::ember::{NULL_NODE_ID, NodeId};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0106;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    child_index: u8,
-}
+crate::frame::parameters::frame!(0x0106, { child_index: u8 }, { child_id: NodeId });
 
 impl Command {
     #[must_use]
     pub const fn new(child_index: u8) -> Self {
         Self { child_index }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    child_id: NodeId,
 }
 
 impl Response {
@@ -44,8 +21,4 @@ impl Response {
             Some(self.child_id)
         }
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

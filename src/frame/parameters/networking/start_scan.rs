@@ -1,23 +1,13 @@
 //! Parameters for the [`Networking::start_scan`](crate::Networking::start_scan) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use silizium::Status;
 
 use crate::Error;
 use crate::ezsp::network::scan::Type;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::types::VariableLengthU32;
 
-const ID: u16 = 0x001A;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    scan_type: u8,
-    channel_mask: u32,
-    duration: u8,
-}
+crate::frame::parameters::frame!(0x001A, { scan_type: u8, channel_mask: u32, duration: u8 }, { status: VariableLengthU32 });
 
 impl Command {
     #[must_use]
@@ -28,24 +18,6 @@ impl Command {
             duration,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: VariableLengthU32,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into `()` or an appropriate [`Error`] depending on its status.

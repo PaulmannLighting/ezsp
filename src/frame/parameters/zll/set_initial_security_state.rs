@@ -1,22 +1,13 @@
 //! Parameters for the [`Zll::set_initial_security_state`](crate::Zll::set_initial_security_state) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
 use crate::ember::key::Data;
 use crate::ember::zll::InitialSecurityState;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x00B3;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    network_key: Data,
-    security_state: InitialSecurityState,
-}
+crate::frame::parameters::frame!(0x00B3, { network_key: Data, security_state: InitialSecurityState }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -26,24 +17,6 @@ impl Command {
             security_state,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into a [`Result<()>`](crate::Result) by evaluating its status field.

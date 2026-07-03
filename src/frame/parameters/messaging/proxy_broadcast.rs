@@ -1,27 +1,13 @@
 //! Parameters for the [`Messaging::proxy_broadcast`](crate::Messaging::proxy_broadcast) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::aps::Frame;
 use crate::ember::{NodeId, Status};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::types::ByteSizedVec;
 
-const ID: u16 = 0x0037;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    source: NodeId,
-    destination: NodeId,
-    nwk_sequence: u8,
-    aps_frame: Frame,
-    radius: u8,
-    message_tag: u8,
-    content: ByteSizedVec<u8>,
-}
+crate::frame::parameters::frame!(0x0037, { source: NodeId, destination: NodeId, nwk_sequence: u8, aps_frame: Frame, radius: u8, message_tag: u8, content: ByteSizedVec<u8> }, { status: u8, aps_sequence: u8 });
 
 impl Command {
     #[must_use]
@@ -44,25 +30,6 @@ impl Command {
             content,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-    aps_sequence: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into the sequence number or an appropriate [`Error`] depending on its status.

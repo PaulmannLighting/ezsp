@@ -1,16 +1,6 @@
 //! Parameters for the [`Messaging::address_table_entry_is_active`](crate::Messaging::address_table_entry_is_active) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x005B;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    address_table_index: u8,
-}
+crate::frame::parameters::frame!(0x005B, { address_table_index: u8 }, { active: bool });
 
 impl Command {
     #[must_use]
@@ -21,28 +11,10 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    active: bool,
-}
-
 impl Response {
     /// Returns whether the entry is active.
     #[must_use]
     pub const fn active(&self) -> bool {
         self.active
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

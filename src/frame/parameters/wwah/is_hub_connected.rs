@@ -1,32 +1,6 @@
 //! Parameters for the [`Wwah::is_hub_connected`](crate::Wwah::is_hub_connected) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
-
-const ID: u16 = 0x00E6;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    is_hub_connected: bool,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
-}
+crate::frame::parameters::frame!(0x00E6, {}, { is_hub_connected: bool });
 
 /// Convert the response into a boolean indicating if the hub is connected.
 impl From<Response> for bool {

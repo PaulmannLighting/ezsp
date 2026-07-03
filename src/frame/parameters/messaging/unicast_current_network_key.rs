@@ -1,21 +1,11 @@
 //! Parameters for the [`Messaging::unicast_current_network_key`](crate::Messaging::unicast_current_network_key) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::{Eui64, NodeId, Status};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0050;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    target_short: NodeId,
-    target_long: Eui64,
-    parent_short_id: NodeId,
-}
+crate::frame::parameters::frame!(0x0050, { target_short: NodeId, target_long: Eui64, parent_short_id: NodeId }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -26,24 +16,6 @@ impl Command {
             parent_short_id,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into `()` or an appropriate [`Error`] depending on its status.

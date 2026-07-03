@@ -1,22 +1,13 @@
 //! Parameters for the [`Utilities::set_mfg_token`](crate::Utilities::set_mfg_token) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
 use crate::ezsp::mfg_token::Id;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::types::ByteSizedVec;
 
-const ID: u16 = 0x000C;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    token_id: u8,
-    token_data: ByteSizedVec<u8>,
-}
+crate::frame::parameters::frame!(0x000C, { token_id: u8, token_data: ByteSizedVec<u8> }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -26,24 +17,6 @@ impl Command {
             token_data,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into `()` or an appropriate [`Error`] depending on its status.

@@ -1,38 +1,13 @@
 //! Parameters for the [`Networking::get_duty_cycle_state`](crate::Networking::get_duty_cycle_state) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
 use crate::ember::duty_cycle::State;
 use crate::error::ValueError;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0035;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-    returned_state: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
-}
+crate::frame::parameters::frame!(0x0035, {}, { status: u8, returned_state: u8 });
 
 /// Converts the response into [`State`] or an appropriate [`Error`] depending on its status.
 impl TryFrom<Response> for State {

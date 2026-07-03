@@ -1,17 +1,8 @@
 //! Parameters for the [`Messaging::get_extended_timeout`](crate::Messaging::get_extended_timeout) command.
 
-use le_stream::{FromLeStream, ToLeStream};
-
 use crate::ember::Eui64;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x007F;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    remote_eui64: Eui64,
-}
+crate::frame::parameters::frame!(0x007F, { remote_eui64: Eui64 }, { extended_timeout: bool });
 
 impl Command {
     #[must_use]
@@ -20,28 +11,10 @@ impl Command {
     }
 }
 
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    extended_timeout: bool,
-}
-
 impl Response {
     /// Returns whether the extended timeout is enabled.
     #[must_use]
     pub const fn extended_timeout(&self) -> bool {
         self.extended_timeout
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

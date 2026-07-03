@@ -1,22 +1,12 @@
 //! Parameters for the [`TrustCenter::unicast_nwk_key_update`](crate::TrustCenter::unicast_nwk_key_update) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::key::Data;
 use crate::ember::{Eui64, NodeId, Status};
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x00A9;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    dest_short: NodeId,
-    dest_long: Eui64,
-    key: Data,
-}
+crate::frame::parameters::frame!(0x00A9, { dest_short: NodeId, dest_long: Eui64, key: Data }, { status: u8 });
 
 impl Command {
     #[must_use]
@@ -27,24 +17,6 @@ impl Command {
             key,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into `()` or an appropriate [`Error`] depending on its status.

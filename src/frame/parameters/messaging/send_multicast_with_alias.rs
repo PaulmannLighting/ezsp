@@ -1,27 +1,13 @@
 //! Parameters for the [`Messaging::send_multicast_with_alias`](crate::Messaging::send_multicast_with_alias) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
 use crate::ember::Status;
 use crate::ember::aps::Frame;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::types::ByteSizedVec;
 
-const ID: u16 = 0x003A;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    aps_frame: Frame,
-    hops: u8,
-    nonmember_radius: u8,
-    alias: u16,
-    nwk_sequence: u8,
-    message_tag: u8,
-    message_contents: ByteSizedVec<u8>,
-}
+crate::frame::parameters::frame!(0x003A, { aps_frame: Frame, hops: u8, nonmember_radius: u8, alias: u16, nwk_sequence: u8, message_tag: u8, message_contents: ByteSizedVec<u8> }, { status: u8, sequence: u8 });
 
 impl Command {
     #[must_use]
@@ -44,25 +30,6 @@ impl Command {
             message_contents,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u8,
-    sequence: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Converts the response into the sequence number or an appropriate [`Error`] depending on its status.

@@ -1,35 +1,11 @@
 //! Parameters for the [`Utilities::get_true_random_entropy_source`](crate::Utilities::get_true_random_entropy_source) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::ember::entropy::Source;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 use crate::{Error, ValueError};
 
-const ID: u16 = 0x004F;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command;
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    entropy_source: u8,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
-}
+crate::frame::parameters::frame!(0x004F, {}, { entropy_source: u8 });
 
 /// Convert the response into a [`Source`] or an appropriate [`Error`]
 /// depending on the validity of its entropy source data.

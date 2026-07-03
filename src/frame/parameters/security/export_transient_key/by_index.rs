@@ -1,45 +1,18 @@
 //! Parameters for the [`Security::export_transient_key_by_index`](crate::Security::export_transient_key_by_index) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use silizium::Status;
 
 use super::transient_key::TransientKey;
 use crate::Error;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0112;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    index: u8,
-}
+crate::frame::parameters::frame!(0x0112, { index: u8 }, { payload: TransientKey, status: u32 });
 
 impl Command {
     #[must_use]
     pub const fn new(index: u8) -> Self {
         Self { index }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    payload: TransientKey,
-    status: u32,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into [`TransientKey`] or an appropriate [`Error`] depending on its status.

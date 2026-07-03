@@ -5,19 +5,9 @@
 
 use core::fmt::Debug;
 
-use le_stream::{FromLeStream, ToLeStream};
-
 use crate::ezsp::StackVersion;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x0000;
-
-/// The response provides information about the firmware running on the NCP.
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    desired_protocol_version: u8,
-}
+crate::frame::parameters::frame!(0x0000, { desired_protocol_version: u8 }, { protocol_version: u8, stack_type: u8, stack_version: u16 });
 
 impl Command {
     #[must_use]
@@ -26,22 +16,6 @@ impl Command {
             desired_protocol_version,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// The response provides information about the firmware running on the NCP.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    protocol_version: u8,
-    stack_type: u8,
-    stack_version: u16,
 }
 
 impl Response {
@@ -62,8 +36,4 @@ impl Response {
     pub const fn stack_version(&self) -> StackVersion {
         StackVersion(self.stack_version)
     }
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }

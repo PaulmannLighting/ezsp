@@ -1,23 +1,13 @@
 //! Parameters for the [`Security::import_link_key`](crate::Security::import_link_key) command.
 
-use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use silizium::Status;
 use silizium::zigbee::security::man::Key;
 
 use crate::Error;
 use crate::ember::Eui64;
-use crate::frame::Parameter;
-use crate::frame::responds_with::RespondsWith;
 
-const ID: u16 = 0x010E;
-
-#[derive(Clone, Debug, Eq, PartialEq, ToLeStream)]
-pub(crate) struct Command {
-    index: u8,
-    address: Eui64,
-    plaintext_key: Key,
-}
+crate::frame::parameters::frame!(0x010E, { index: u8, address: Eui64, plaintext_key: Key }, { status: u32 });
 
 impl Command {
     #[must_use]
@@ -28,24 +18,6 @@ impl Command {
             plaintext_key,
         }
     }
-}
-
-impl Parameter for Command {
-    const ID: u16 = ID;
-}
-
-impl RespondsWith for Command {
-    type Response = Response;
-}
-
-/// Response parameters.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
-pub struct Response {
-    status: u32,
-}
-
-impl Parameter for Response {
-    const ID: u16 = ID;
 }
 
 /// Convert the response into `()` or an appropriate [`Error`] depending on its status.

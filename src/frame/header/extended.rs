@@ -4,7 +4,10 @@ use le_stream::{FromLeStream, ToLeStream};
 
 use super::{HighByte, LowByte};
 
-/// An extended header.
+/// Extended EZSP header used by protocol version 8 and newer.
+///
+/// The extended format stores the sequence number, low and high frame-control
+/// bytes, and a 16-bit frame ID.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
 pub struct Extended {
     sequence: u8,
@@ -14,7 +17,7 @@ pub struct Extended {
 }
 
 impl Extended {
-    /// Creates a new extended header.
+    /// Creates a new extended EZSP header.
     #[must_use]
     pub const fn new(sequence: u8, low_byte: LowByte, id: u16) -> Self {
         Self {

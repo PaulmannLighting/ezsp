@@ -1,4 +1,10 @@
-//! This module contains the implementation of the `Ember ZNet Serial Protocol` (`EZSP`) API.
+//! EZSP-specific protocol identifiers and values.
+//!
+//! Types in this module model the EZSP layer itself: configuration IDs,
+//! policies, decision IDs, status values, value IDs, manufacturing token IDs,
+//! and ZLL-specific EZSP values. Ember stack data structures live in
+//! [`crate::ember`], while typed frame parameters live in
+//! [`crate::parameters`].
 
 pub use stack_version::StackVersion;
 pub use status::{Ash, Error, SpiErr, Status};

@@ -1,17 +1,66 @@
 # ezsp
 
-Rust implementation of the EmberZNet Serial Protocol (EZSP).
+Rust implementation of the EmberZNet Serial Protocol (EZSP) host side.
 
-## Protocol documentation
+EZSP is the command protocol used by a host application processor to communicate
+with the EmberZNet PRO stack running on a Silicon Labs Network Co-Processor
+(NCP). The crate models the EZSP command/response surface, frame headers,
+parameter payloads, asynchronous callbacks, and the UART transport used by
+EZSP-UART NCP firmware.
 
-- <https://docs.silabs.com/zigbee/latest/sisdk-ezsp-reference-guide/>
-- <https://docs.silabs.com/zigbee/6.6/em35x/>
+## Documentation Basis
+
+The crate documentation is based on these Silicon Labs references:
+
+- `UG100: EZSP Reference Guide`, Rev. 5.1, for EmberZNet PRO 7.4.2.
+- `UG101: UART-EZSP Gateway Protocol Reference`, Rev. 1.3, for ASHv2 over UART.
+- <https://docs.silabs.com/zigbee/latest/sisdk-ezsp-reference-guide/>, which
+  currently documents the Simplicity SDK EZSP guide for Zigbee 9.1.0 /
+  EmberZNet PRO 8.1 and notes the v8 API/type renaming split from UG100.
+- <https://docs.silabs.com/zigbee/6.6/em35x/>, the older EmberZNet API
+  reference used by several Ember type descriptions.
+
+The implementation keeps the legacy EZSP naming used throughout UG100 and the
+EmberZNet 6.x/7.x API surface where that naming is reflected in the crate.
 
 ## Features
 
 - `ashv2`: enables the ASHv2 serial transport (`uart::Uart`).
 - `apis-saltans`: enables Zigbee host integration (`apis_saltans::EzspNetworkManager`) and pulls in `apis-saltans` APS/core/hardware/ZDP crates.
 - `semver`: enables `semver` support for EZSP version APIs.
+
+## Protocol Model
+
+EZSP messages are exchanged between a host and an NCP over SPI or UART. This
+crate currently provides the UART path via ASHv2.
+
+- The host starts normal EZSP use by sending the `version` command after NCP
+  reset. A successful version transaction establishes the protocol version that
+  both sides will use.
+- EZSP fields wider than one byte are serialized little-endian, including EUI64
+  values.
+- Frames contain a sequence number, frame control, frame ID, and typed
+  parameters. EZSP protocol versions before 8 use a three-byte legacy header;
+  versions 8 and newer use the extended five-byte header.
+- Most commands form a two-message transaction: host command, then NCP response.
+  UART NCPs may also send callbacks asynchronously as they occur.
+- The response frame control reports NCP status bits such as overflow,
+  truncation, callback-pending state, and callback type.
+
+## UART and ASHv2
+
+UG101 describes ASH as the data-link layer below EZSP and above the serial
+driver. ASHv2 frames add reliability around EZSP payloads: CRC validation, byte
+stuffing, data-field randomization, sliding-window acknowledgements, ACK/NAK
+frames, reset handling, and optional not-ready flow control.
+
+The `ashv2` feature delegates this link layer to the `ashv2` crate and keeps the
+EZSP-specific work in this crate:
+
+- `uart::Encoder` serializes EZSP headers and parameters into ASHv2 payloads.
+- `uart::Decoder` parses ASHv2 payloads back into typed EZSP frames.
+- `uart::Splitter` routes normal responses to the pending request path and UART
+  asynchronous callbacks to the callback channel.
 
 ## Core API
 
@@ -85,7 +134,9 @@ If both `apis-saltans` and `ashv2` are enabled, convenience constructors are ava
 
 ## Legal
 
-This project is free software and is not affiliated with Silicon Labs.
+This project is free software and is not affiliated with Silicon Labs. Silicon
+Labs documentation is cited only to describe the public protocol implemented by
+this crate.
 
 ## Contribution guidelines
 

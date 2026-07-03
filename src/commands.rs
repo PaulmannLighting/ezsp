@@ -1,3 +1,11 @@
+//! High-level EZSP command traits.
+//!
+//! Silicon Labs groups EZSP frames by protocol area, such as configuration,
+//! utilities, networking, messaging, security, and bootloader support. This
+//! module exposes one async trait per group plus [`Ezsp`], a convenience trait
+//! for transports that implement the complete command surface represented by
+//! this crate.
+
 pub use self::binding::Binding;
 pub use self::bootloader::Bootloader;
 pub use self::cbke::Cbke;
@@ -28,9 +36,11 @@ mod utilities;
 mod wwah;
 mod zll;
 
-/// A trait to represent implementors of the full `EZSP` protocol.
+/// Convenience trait for implementors of the full EZSP command surface.
 ///
-/// This trait is a convenience trait that combines all the other EZSP traits.
+/// Implementing [`Transport`](crate::Transport) is enough to get blanket
+/// implementations of the individual command-group traits. This trait simply
+/// collects those groups under one bound.
 pub trait Ezsp:
     Binding
     + Bootloader

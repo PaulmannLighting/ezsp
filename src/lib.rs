@@ -1,7 +1,17 @@
-//! The `Ember ZNet Serial Protocol` (`EZSP`)
+//! Host-side support for the `EmberZNet` Serial Protocol (`EZSP`).
 //!
-//! This library implements the `Ember ZNet Serial Protocol`, `EZSP` for short.
-//! You can find the protocol's definition on [siliconlabs.com](https://docs.silabs.com/zigbee/latest/sisdk-ezsp-reference-guide/).
+//! EZSP is the protocol used by a host application processor to communicate
+//! with the `EmberZNet` PRO stack running on a Network Co-Processor (`NCP`).
+//! Commands are sent by the host and answered by the `NCP`; UART-based NCPs may
+//! additionally send asynchronous callbacks as they occur.
+//!
+//! This crate provides typed EZSP frame headers, parameter structures,
+//! command/response traits, and transport-independent command traits. With the
+//! `ashv2` feature enabled, it also provides a UART transport for EZSP over
+//! `ASHv2`.
+//!
+//! Protocol details are documented by Silicon Labs in the
+//! [Simplicity SDK EZSP Reference Guide](https://docs.silabs.com/zigbee/latest/sisdk-ezsp-reference-guide/).
 //!
 //! This library is free software and is not affiliated with Silicon Labs.
 #![deny(unsafe_code)]

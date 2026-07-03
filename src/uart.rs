@@ -1,4 +1,14 @@
-//! `ASHv2` transport layer.
+//! EZSP-UART transport built on `ASHv2`.
+//!
+//! Silicon Labs describes `ASHv2` as the data-link layer below EZSP for UART
+//! gateway systems. `ASHv2` carries EZSP DATA payloads and supplies reset
+//! handling, CRC validation, byte stuffing, data-field randomization, ACK/NAK
+//! frames, and sliding-window retransmission.
+//!
+//! This module delegates `ASHv2` link handling to the `ashv2` crate and handles
+//! the EZSP-specific pieces: protocol-version negotiation, EZSP header
+//! selection, typed request/response exchange, and asynchronous callback
+//! demultiplexing.
 
 use core::fmt::Debug;
 use core::num::TryFromIntError;
@@ -39,7 +49,7 @@ mod splitter;
 
 const REQUEUE_GRACE_PERIOD: Duration = Duration::from_millis(100);
 
-/// An `EZSP` host using `ASHv2` on the transport layer.
+/// An EZSP host using `ASHv2` as the UART link layer.
 #[derive(Debug)]
 pub struct Uart {
     protocol_version: u8,
@@ -54,7 +64,7 @@ pub struct Uart {
 }
 
 impl Uart {
-    /// Creates an `ASHv2` host.
+    /// Creates an EZSP host from an already running `ASHv2` proxy.
     ///
     /// A minimum protocol version of [`MIN_NON_LEGACY_VERSION`] is required
     /// to support non-legacy commands.
@@ -90,7 +100,7 @@ impl Uart {
         }
     }
 
-    /// Open a new UART from a serial port.
+    /// Open a new EZSP-UART transport from a serial port.
     ///
     /// # Errors
     ///
@@ -121,7 +131,7 @@ impl Uart {
         ))
     }
 
-    /// Open a new UART from a serial port's path.
+    /// Open a new EZSP-UART transport from a serial port path.
     ///
     /// # Errors
     ///
@@ -142,9 +152,11 @@ impl Uart {
         )
     }
 
-    /// Return the next header.
+    /// Return the next EZSP header.
     ///
-    /// This method is used to determine the next header to be used in the communication.
+    /// Protocol versions before 8 use the legacy three-byte EZSP header. Version
+    /// 8 and newer use the extended five-byte header with a two-byte frame
+    /// control field and a two-byte frame ID.
     ///
     /// The `id` parameter is the identifier of the command that will be sent.
     ///
@@ -166,9 +178,12 @@ impl Uart {
         Ok(header)
     }
 
-    /// Negotiate the `EZSP` protocol version.
+    /// Negotiate the EZSP protocol version.
     ///
-    /// A minimum version of [`MIN_NON_LEGACY_VERSION`] is required to support non-legacy commands.
+    /// The Silicon Labs reference specifies that the host starts with the
+    /// `version` command after NCP reset. This implementation first sends that
+    /// command with the legacy frame format, then repeats it with the negotiated
+    /// non-legacy format when the NCP reports protocol version 8 or newer.
     ///
     /// # Errors
     ///
@@ -205,7 +220,7 @@ impl Uart {
         }
     }
 
-    /// Abort the UART threads.
+    /// Abort the UART background task.
     ///
     /// # Errors
     ///

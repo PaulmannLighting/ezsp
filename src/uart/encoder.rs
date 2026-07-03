@@ -8,7 +8,7 @@ use log::trace;
 use crate::frame::Header;
 use crate::{Error, MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 
-/// Encode `EZSP` frames into `ASHv2` frames.
+/// Encodes EZSP headers and parameters into `ASHv2` DATA payloads.
 #[derive(Debug)]
 pub struct Encoder {
     proxy: Proxy,
@@ -26,7 +26,10 @@ impl Encoder {
         }
     }
 
-    /// Encode an `EZSP` header and parameters into a `ASHv2` frames.
+    /// Encode an EZSP header and parameters into one or more `ASHv2` payloads.
+    ///
+    /// `ASHv2` DATA fields have a bounded payload size. Each emitted payload
+    /// repeats the EZSP header and carries the next parameter chunk.
     pub async fn send<P>(&mut self, header: Header, parameters: P) -> Result<(), Error>
     where
         P: Debug + ToLeStream,

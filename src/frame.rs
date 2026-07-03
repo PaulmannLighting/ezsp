@@ -15,7 +15,12 @@ pub mod parameters;
 pub mod parsable;
 mod responds_with;
 
-/// A frame that contains a header and parameters.
+/// A decoded EZSP frame.
+///
+/// An EZSP frame consists of a sequence number, frame-control bytes, a frame
+/// ID, and frame-specific parameters. The header stores the sequence/control/ID
+/// fields, while [`Parameters`] stores either response parameters or callback
+/// parameters.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Frame {
     header: Header,

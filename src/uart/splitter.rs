@@ -7,7 +7,11 @@ use super::decoder::Decoder;
 use crate::error::Error;
 use crate::frame::{Callback, Frame, Parameters};
 
-/// Split incoming `EZSP` frames into responses and asynchronous callbacks.
+/// Splits incoming EZSP frames into responses and asynchronous callbacks.
+///
+/// On EZSP-UART, callbacks are asynchronous by default. The response frame
+/// control byte identifies whether a callback arrived asynchronously or as part
+/// of a normal command/response exchange.
 pub struct Splitter {
     incoming: Decoder,
     responses: Sender<Result<Parameters, Error>>,

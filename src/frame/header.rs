@@ -11,12 +11,16 @@ mod high_byte;
 mod legacy;
 mod low_byte;
 
-/// Available header types.
+/// EZSP header formats.
+///
+/// The `version` command can be sent using the legacy frame format so hosts and
+/// NCPs with different protocol versions can negotiate. Once protocol version 8
+/// or newer is active, regular frames use the extended header.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Header {
-    /// A legacy header.
+    /// Legacy three-byte header.
     Legacy(Legacy),
-    /// An extended header.
+    /// Extended five-byte header.
     Extended(Extended),
 }
 

@@ -1,4 +1,9 @@
-//! Decoding of `ASHv2` frames into `EZSP` frames.
+//! Decoding of `ASHv2` DATA payloads into EZSP frames.
+//!
+//! `ASHv2` validates, acknowledges, un-stuffs, and de-randomizes UART frames
+//! before this decoder sees their DATA fields. The decoder is responsible for
+//! parsing the EZSP header and accumulating the EZSP parameters into a typed
+//! [`Frame`].
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU8, Ordering};
@@ -16,7 +21,7 @@ use crate::{
     Error, Extended, Legacy, LowByte, MAX_PARAMETER_SIZE, MIN_NON_LEGACY_VERSION, Parameters, ezsp,
 };
 
-/// Decode `ASHv2` frames into `EZSP` frames.
+/// Decodes `ASHv2` payloads into typed EZSP frames.
 #[derive(Debug)]
 pub struct Decoder {
     source: Receiver<Payload>,
@@ -40,7 +45,7 @@ impl Decoder {
         }
     }
 
-    /// Decode incoming `ASHv2` frames into `EZSP` frames.
+    /// Decode incoming `ASHv2` payloads into one EZSP frame.
     ///
     /// # Errors
     ///
@@ -66,7 +71,9 @@ impl Decoder {
 
     /// Try to parse a frame fragment from a chunk of bytes.
     ///
-    /// EZSP packets, in practice, though undocumented, may be split across multiple frames:
+    /// `ASHv2` DATA fields are limited by the UART link layer. Large EZSP
+    /// parameter bodies may therefore arrive split across multiple `ASHv2`
+    /// payloads:
     ///
     /// <EZSP Header><Payload Fragment 1>, <EZSP Header><Payload Fragment 2>, ...
     ///

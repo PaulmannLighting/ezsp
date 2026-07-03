@@ -4,7 +4,11 @@ use le_stream::{FromLeStream, ToLeStream};
 
 use super::LowByte;
 
-/// A legacy header.
+/// Legacy EZSP header.
+///
+/// The legacy format stores the sequence number, one frame-control byte, and an
+/// 8-bit frame ID. It is required for the initial `version` command and for
+/// protocol versions before 8.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, FromLeStream, ToLeStream)]
 pub struct Legacy {
     sequence: u8,
@@ -13,7 +17,7 @@ pub struct Legacy {
 }
 
 impl Legacy {
-    /// Creates a new legacy header.
+    /// Creates a new legacy EZSP header.
     #[must_use]
     pub const fn new(sequence: u8, low_byte: LowByte, id: u8) -> Self {
         Self {

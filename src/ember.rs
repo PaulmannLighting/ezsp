@@ -1,4 +1,9 @@
-//! `Ember ZNet Serial Protocol` stack.
+//! `EmberZNet` stack data types exposed through EZSP.
+//!
+//! The EZSP command set mirrors much of the `EmberZNet` PRO stack API. This
+//! module contains the stack-facing data structures and named values used by
+//! those commands, such as APS frames, network parameters, security state,
+//! binding table entries, status values, and Zigbee Light Link structures.
 
 pub mod aes;
 pub mod aps;

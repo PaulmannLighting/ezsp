@@ -8,12 +8,26 @@ delta = "0.1.1 -> 0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187"
 importable = false
 notes = "AI-assisted: reviewed diff 0.1.1 -> 0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187; dependency source changed from git branch to workspace path"
 
+[[audits.apis-saltans-aps]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187 -> 0.1.1@git:77753b3c02383d51c2e565e3cdb09caa551c7048"
+importable = false
+notes = "AI-assisted: reviewed diff de0050ec889b5995faf57e4001e816e57241a187 -> 77753b3c02383d51c2e565e3cdb09caa551c7048; no files changed under apis-saltans-aps."
+
 [[audits.apis-saltans-core]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.2.1 -> 0.2.1@git:de0050ec889b5995faf57e4001e816e57241a187"
 importable = false
 notes = "AI-assisted: reviewed diff 0.2.1 -> 0.2.1@git:de0050ec889b5995faf57e4001e816e57241a187; adds optional smarthomelib feature and Limited impls only"
+
+[[audits.apis-saltans-core]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.1@git:de0050ec889b5995faf57e4001e816e57241a187 -> 0.2.3@git:77753b3c02383d51c2e565e3cdb09caa551c7048"
+importable = false
+notes = "AI-assisted: reviewed diff de0050ec889b5995faf57e4001e816e57241a187 -> 77753b3c02383d51c2e565e3cdb09caa551c7048; changes are version/feature renaming, serde derives/transparent attrs, typed endpoint constants, and common type formatting."
 
 [[audits.apis-saltans-hw]]
 who = "Codex"
@@ -22,12 +36,26 @@ delta = "0.1.1 -> 0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187"
 importable = false
 notes = "AI-assisted: reviewed diff 0.1.1 -> 0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187; dependency sources changed from git branch to workspace paths"
 
+[[audits.apis-saltans-hw]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187 -> 0.1.1@git:77753b3c02383d51c2e565e3cdb09caa551c7048"
+importable = false
+notes = "AI-assisted: reviewed diff de0050ec889b5995faf57e4001e816e57241a187 -> 77753b3c02383d51c2e565e3cdb09caa551c7048; adds parallel unicast API plumbing and changes Frame payload storage from Box<[u8]> to Arc<[u8]>."
+
 [[audits.apis-saltans-macros]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.1.0 -> 0.1.0@git:de0050ec889b5995faf57e4001e816e57241a187"
 importable = false
 notes = "AI-assisted: reviewed diff 0.1.0 -> 0.1.0@git:de0050ec889b5995faf57e4001e816e57241a187 (0 files changed)"
+
+[[audits.apis-saltans-macros]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.0@git:de0050ec889b5995faf57e4001e816e57241a187 -> 0.1.1@git:77753b3c02383d51c2e565e3cdb09caa551c7048"
+importable = false
+notes = "AI-assisted: reviewed diff de0050ec889b5995faf57e4001e816e57241a187 -> 77753b3c02383d51c2e565e3cdb09caa551c7048; code is unchanged, with only a version bump and README addition."
 
 [[audits.apis-saltans-zcl]]
 who = "Codex"
@@ -36,12 +64,26 @@ delta = "0.1.1 -> 0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187"
 importable = false
 notes = "AI-assisted: reviewed diff 0.1.1 -> 0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187; dependency source changes plus optional smarthomelib conversion impl"
 
+[[audits.apis-saltans-zcl]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.1@git:de0050ec889b5995faf57e4001e816e57241a187 -> 0.1.1@git:77753b3c02383d51c2e565e3cdb09caa551c7048"
+importable = false
+notes = "AI-assisted: reviewed diff de0050ec889b5995faf57e4001e816e57241a187 -> 77753b3c02383d51c2e565e3cdb09caa551c7048; level command mode now carries stride, and smarthomelib effect conversion paths were updated."
+
 [[audits.apis-saltans-zdp]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.1.2 -> 0.1.2@git:de0050ec889b5995faf57e4001e816e57241a187"
 importable = false
 notes = "AI-assisted: reviewed diff 0.1.2 -> 0.1.2@git:de0050ec889b5995faf57e4001e816e57241a187; dependency sources changed from git branch to workspace paths"
+
+[[audits.apis-saltans-zdp]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.2@git:de0050ec889b5995faf57e4001e816e57241a187 -> 0.1.2@git:77753b3c02383d51c2e565e3cdb09caa551c7048"
+importable = false
+notes = "AI-assisted: reviewed diff de0050ec889b5995faf57e4001e816e57241a187 -> 77753b3c02383d51c2e565e3cdb09caa551c7048; no files changed under apis-saltans-zdp."
 
 [[audits.ashv2]]
 who = "Codex"
@@ -127,6 +169,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "1.4.0 -> 1.5.0"
 notes = "AI-assisted: reviewed diff 1.4.0 -> 1.5.0"
+
+[[audits.ezsp]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "5.2.0"
+notes = "AI-assisted: inspected local crate source for ezsp 5.2.0; crate denies unsafe code and the current changes are protocol frame/parameter macro and enum generation refactors."
 
 [[audits.ezsp]]
 who = "Codex"
@@ -259,6 +307,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 version = "6.0.0"
 notes = "AI-assisted: inspected full source 6.0.0"
+
+[[audits.rand]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.10.2"
+notes = "AI-assisted: inspected full source 0.10.2; no build script or runtime process/network/filesystem access in library code. Unsafe is limited to documented RNG buffer fills, thread-local UnsafeCell access, SIMD/transmute distribution support, and valid UTF-8/char construction."
 
 [[audits.rand_core]]
 who = "Codex"

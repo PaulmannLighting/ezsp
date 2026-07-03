@@ -1,6 +1,6 @@
 //! Parameters for the [`Messaging::replace_address_table_entry`](crate::Messaging::replace_address_table_entry) command.
 
-use le_stream::FromLeStream;
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -39,7 +39,7 @@ impl TryFrom<Response> for PreviousEntry {
 }
 
 /// Information about the previous entry that was replaced.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct PreviousEntry {
     eui64: Eui64,
     id: NodeId,

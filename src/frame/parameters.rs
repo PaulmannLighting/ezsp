@@ -2,7 +2,14 @@
 
 macro_rules! command {
     ($id:expr, {}, $response:ty $(,)?) => {
-        #[derive(Clone, Debug, Eq, PartialEq, le_stream::ToLeStream)]
+        #[derive(
+            Clone,
+            Debug,
+            Eq,
+            PartialEq,
+            le_stream::FromLeStream,
+            le_stream::ToLeStream
+        )]
         pub(crate) struct Command;
 
         impl crate::frame::Parameter for Command {
@@ -14,7 +21,14 @@ macro_rules! command {
         }
     };
     ($id:expr, { $($field:ident: $ty:ty),+ $(,)? }, $response:ty $(,)?) => {
-        #[derive(Clone, Debug, Eq, PartialEq, le_stream::ToLeStream)]
+        #[derive(
+            Clone,
+            Debug,
+            Eq,
+            PartialEq,
+            le_stream::FromLeStream,
+            le_stream::ToLeStream
+        )]
         pub(crate) struct Command {
             $($field: $ty),+
         }
@@ -33,7 +47,14 @@ pub(crate) use command;
 macro_rules! response {
     ($id:expr, {}) => {
         /// Response parameters.
-        #[derive(Clone, Debug, Eq, PartialEq, le_stream::FromLeStream)]
+        #[derive(
+            Clone,
+            Debug,
+            Eq,
+            PartialEq,
+            le_stream::FromLeStream,
+            le_stream::ToLeStream
+        )]
         pub struct Response;
 
         impl crate::frame::Parameter for Response {
@@ -42,7 +63,14 @@ macro_rules! response {
     };
     ($id:expr, { $($field:ident: $ty:ty),+ $(,)? }) => {
         /// Response parameters.
-        #[derive(Clone, Debug, Eq, PartialEq, le_stream::FromLeStream)]
+        #[derive(
+            Clone,
+            Debug,
+            Eq,
+            PartialEq,
+            le_stream::FromLeStream,
+            le_stream::ToLeStream
+        )]
         pub struct Response {
             $($field: $ty),+
         }

@@ -2,7 +2,7 @@
 
 use std::iter::{Chain, FlatMap};
 
-use le_stream::ToLeStream;
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -53,6 +53,37 @@ impl Clusters {
             input_clusters,
             output_clusters,
         }
+    }
+}
+
+impl FromLeStream for Clusters {
+    fn from_le_stream<T>(mut bytes: T) -> Option<Self>
+    where
+        T: Iterator<Item = u8>,
+    {
+        let input_cluster_counts = u8::from_le_stream(bytes.by_ref())?;
+        let output_cluster_counts = u8::from_le_stream(bytes.by_ref())?;
+        let mut input_clusters = ByteSizedVec::new();
+        let mut output_clusters = ByteSizedVec::new();
+
+        for _ in 0..input_cluster_counts {
+            input_clusters
+                .push(u16::from_le_stream(bytes.by_ref())?)
+                .ok()?;
+        }
+
+        for _ in 0..output_cluster_counts {
+            output_clusters
+                .push(u16::from_le_stream(bytes.by_ref())?)
+                .ok()?;
+        }
+
+        Some(Self {
+            input_cluster_counts,
+            output_cluster_counts,
+            input_clusters,
+            output_clusters,
+        })
     }
 }
 

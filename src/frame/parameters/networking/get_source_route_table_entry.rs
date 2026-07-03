@@ -1,6 +1,6 @@
 //! Parameters for the [`Networking::get_source_route_table_entry`](crate::Networking::get_source_route_table_entry) command.
 
-use le_stream::FromLeStream;
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::Error;
@@ -28,7 +28,7 @@ impl TryFrom<Response> for Entry {
 }
 
 /// A source route table entry.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Entry {
     destination: NodeId,
     closer_index: u8,

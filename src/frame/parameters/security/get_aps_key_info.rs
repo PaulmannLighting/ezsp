@@ -1,6 +1,6 @@
 //! Parameters for the [`Security::get_aps_key_info`](crate::Security::get_aps_key_info) command.
 
-use le_stream::FromLeStream;
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use silizium::Status;
 use silizium::zigbee::security::man::{ApsKeyMetadata, Context};
@@ -30,7 +30,7 @@ impl TryFrom<Response> for KeyInfo {
 }
 
 /// The retrieved key information.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct KeyInfo {
     eui: Eui64,
     key_data: ApsKeyMetadata,

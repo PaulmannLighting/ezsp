@@ -1,10 +1,10 @@
 //! Transient key structure definitions.
 
-use le_stream::FromLeStream;
+use le_stream::{FromLeStream, ToLeStream};
 use silizium::zigbee::security::man::{ApsKeyMetadata, Context, Key};
 
 /// The exported transient key.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct TransientKey {
     context: Context,
     plaintext_key: Key,

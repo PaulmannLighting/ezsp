@@ -1,6 +1,6 @@
 //! Parameters for the [`Security::export_link_key_by_eui`](crate::Security::export_link_key_by_eui) command.
 
-use le_stream::FromLeStream;
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use silizium::Status;
 use silizium::zigbee::security::man::{ApsKeyMetadata, Key};
@@ -30,7 +30,7 @@ impl TryFrom<Response> for Payload {
 }
 
 /// Payload of the export link key by EUI64 command.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream)]
+#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Payload {
     plaintext_key: Key,
     index: u8,

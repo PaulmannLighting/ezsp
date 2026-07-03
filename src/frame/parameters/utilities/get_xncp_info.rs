@@ -1,6 +1,6 @@
 //! Parameters for the [`Utilities::get_xncp_info`](crate::Utilities::get_xncp_info) command.
 
-use le_stream::FromLeStream;
+use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 
 use crate::ember::Status;
@@ -23,7 +23,7 @@ impl TryFrom<Response> for Payload {
 }
 
 /// Payload of the get XNCP info command.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, FromLeStream)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Payload {
     manufacturer_id: u16,
     version_number: u16,

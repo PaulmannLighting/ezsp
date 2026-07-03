@@ -3,10 +3,10 @@
 use core::num::TryFromIntError;
 use core::time::Duration;
 
-use le_stream::ToLeStream;
+use le_stream::{FromLeStream, ToLeStream};
 
 /// Concentrator parameters.
-#[derive(Clone, Debug, Default, Eq, PartialEq, ToLeStream)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Parameters {
     concentrator_type: u16,
     min_time: u16,

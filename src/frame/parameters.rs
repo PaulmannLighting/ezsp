@@ -1,7 +1,16 @@
 //! Definitions of parameter structures used in the `Ember ZNet Serial Protocol` (`EZSP`).
 
 macro_rules! parameter {
-    ($name:ident, $id:expr, {}) => {
+    ($name:ident, $id:expr, { $($field:ident: $ty:ty),* $(,)? } $(, impl { $($impls:item)* })?) => {
+        crate::frame::parameters::parameter!(@struct $name, { $($field: $ty),* });
+
+        impl crate::frame::Parameter for $name {
+            const ID: u16 = $id;
+        }
+
+        $($($impls)*)?
+    };
+    (@struct $name:ident, {}) => {
         #[doc = concat!(stringify!($name), " parameters.")]
         #[derive(
             Clone,
@@ -13,12 +22,8 @@ macro_rules! parameter {
             le_stream::ToLeStream
         )]
         pub struct $name;
-
-        impl crate::frame::Parameter for $name {
-            const ID: u16 = $id;
-        }
     };
-    ($name:ident, $id:expr, { $($field:ident: $ty:ty),+ $(,)? }) => {
+    (@struct $name:ident, { $($field:ident: $ty:ty),+ }) => {
         #[doc = concat!(stringify!($name), " parameters.")]
         #[derive(
             Clone,
@@ -31,17 +36,13 @@ macro_rules! parameter {
         pub struct $name {
             $($field: $ty),+
         }
-
-        impl crate::frame::Parameter for $name {
-            const ID: u16 = $id;
-        }
     };
 }
 pub(crate) use parameter;
 
 macro_rules! command {
-    ($id:expr, { $($field:ident: $ty:ty),* $(,)? }, $response:ty $(,)?) => {
-        crate::frame::parameters::parameter!(Command, $id, { $($field: $ty),* });
+    ($id:expr, { $($field:ident: $ty:ty),* $(,)? }, $response:ty $(, impl { $($impls:item)* })? $(,)?) => {
+        crate::frame::parameters::parameter!(Command, $id, { $($field: $ty),* } $(, impl { $($impls)* })?);
 
         impl crate::frame::RespondsWith for Command {
             type Response = $response;
@@ -51,31 +52,32 @@ macro_rules! command {
 pub(crate) use command;
 
 macro_rules! response {
-    ($id:expr, { $($field:ident: $ty:ty),* $(,)? }) => {
-        crate::frame::parameters::parameter!(Response, $id, { $($field: $ty),* });
+    ($id:expr, { $($field:ident: $ty:ty),* $(,)? } $(, impl { $($impls:item)* })? $(,)?) => {
+        crate::frame::parameters::parameter!(Response, $id, { $($field: $ty),* } $(, impl { $($impls)* })?);
     };
 }
 pub(crate) use response;
 
 macro_rules! handler {
-    ($id:expr, {}) => {
-        /// Handler parameters.
-        #[derive(Clone, Copy, Debug, Eq, PartialEq, le_stream::FromLeStream)]
-        pub struct Handler;
+    ($id:expr, { $($field:ident: $ty:ty),* $(,)? } $(, impl { $($impls:item)* })? $(,)?) => {
+        crate::frame::parameters::handler!(@struct { $($field: $ty),* });
 
         impl crate::frame::Parameter for Handler {
             const ID: u16 = $id;
         }
+
+        $($($impls)*)?
     };
-    ($id:expr, { $($field:ident: $ty:ty),+ $(,)? }) => {
+    (@struct {}) => {
+        /// Handler parameters.
+        #[derive(Clone, Copy, Debug, Eq, PartialEq, le_stream::FromLeStream)]
+        pub struct Handler;
+    };
+    (@struct { $($field:ident: $ty:ty),+ }) => {
         /// Handler parameters.
         #[derive(Clone, Debug, Eq, PartialEq, le_stream::FromLeStream)]
         pub struct Handler {
             $($field: $ty),+
-        }
-
-        impl crate::frame::Parameter for Handler {
-            const ID: u16 = $id;
         }
     };
 }
@@ -84,12 +86,15 @@ pub(crate) use handler;
 macro_rules! frame {
     (
         $id:expr,
-        { $($command_field:ident: $command_ty:ty),* $(,)? },
+        { $($command_field:ident: $command_ty:ty),* $(,)? }
+        $(, impl { $($command_impls:item)* })?,
         { $($response_field:ident: $response_ty:ty),* $(,)? }
+        $(, impl { $($response_impls:item)* })?
+        $(,)?
     ) => {
-        crate::frame::parameters::command!($id, { $($command_field: $command_ty),* }, Response);
+        crate::frame::parameters::command!($id, { $($command_field: $command_ty),* }, Response $(, impl { $($command_impls)* })?);
 
-        crate::frame::parameters::response!($id, { $($response_field: $response_ty),* });
+        crate::frame::parameters::response!($id, { $($response_field: $response_ty),* } $(, impl { $($response_impls)* })?);
     };
 }
 pub(crate) use frame;

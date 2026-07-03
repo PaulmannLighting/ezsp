@@ -8,27 +8,33 @@ use silizium::zigbee::security::man::{ApsKeyMetadata, Key};
 use crate::Error;
 use crate::ember::Eui64;
 
-crate::frame::parameters::frame!(0x010D, { eui: Eui64 }, { payload: Payload, status: u32 });
+crate::frame::parameters::frame!(
+    0x010D,
+    { eui: Eui64 },
+    impl {
+        impl Command {
+            /// Creates command parameters.
+            #[must_use]
+            pub const fn new(eui: Eui64) -> Self {
+                Self { eui }
+            }
+        }
+    },
+    { payload: Payload, status: u32 },
+    impl {
+        /// Convert the response into [`Payload`] or an appropriate [`Error`] depending on its status.
+        impl TryFrom<Response> for Payload {
+            type Error = Error;
 
-impl Command {
-    /// Creates command parameters.
-    #[must_use]
-    pub const fn new(eui: Eui64) -> Self {
-        Self { eui }
-    }
-}
-
-/// Convert the response into [`Payload`] or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for Payload {
-    type Error = Error;
-
-    fn try_from(response: Response) -> Result<Self, Self::Error> {
-        match Status::from_u32(response.status).ok_or(response.status) {
-            Ok(Status::Ok) => Ok(response.payload),
-            other => Err(other.into()),
+            fn try_from(response: Response) -> Result<Self, Self::Error> {
+                match Status::from_u32(response.status).ok_or(response.status) {
+                    Ok(Status::Ok) => Ok(response.payload),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
+);
 
 /// Payload of the export link key by EUI64 command.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

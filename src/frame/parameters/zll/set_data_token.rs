@@ -2,12 +2,17 @@
 
 use crate::ember::zll::DataToken;
 
-crate::frame::parameters::frame!(0x00BD, { data: DataToken }, {});
-
-impl Command {
-    /// Creates command parameters.
-    #[must_use]
-    pub const fn new(data: DataToken) -> Self {
-        Self { data }
-    }
-}
+crate::frame::parameters::frame!(
+    0x00BD,
+    { data: DataToken },
+    impl {
+        impl Command {
+            /// Creates command parameters.
+            #[must_use]
+            pub const fn new(data: DataToken) -> Self {
+                Self { data }
+            }
+        }
+    },
+    {}
+);

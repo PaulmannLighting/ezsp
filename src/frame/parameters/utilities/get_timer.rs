@@ -5,43 +5,49 @@
 
 use crate::ember::event::{Duration, Units};
 
-crate::frame::parameters::frame!(0x004E, { timer_id: u8 }, { time: u16, units: u8, repeat: bool });
+crate::frame::parameters::frame!(
+    0x004E,
+    { timer_id: u8 },
+    impl {
+        impl Command {
+            /// Creates command parameters.
+            #[must_use]
+            pub const fn new(timer_id: u8) -> Self {
+                Self { timer_id }
+            }
+        }
+    },
+    { time: u16, units: u8, repeat: bool },
+    impl {
+        impl Response {
+            /// Returns the time.
+            #[must_use]
+            pub const fn time(&self) -> u16 {
+                self.time
+            }
 
-impl Command {
-    /// Creates command parameters.
-    #[must_use]
-    pub const fn new(timer_id: u8) -> Self {
-        Self { timer_id }
-    }
-}
+            /// Returns the time units.
+            ///
+            /// # Errors
+            ///
+            /// Returns an error if the units are invalid.
+            pub fn units(&self) -> Result<Units, u8> {
+                Units::try_from(self.units)
+            }
 
-impl Response {
-    /// Returns the time.
-    #[must_use]
-    pub const fn time(&self) -> u16 {
-        self.time
-    }
+            /// Returns the time duration.
+            #[must_use]
+            pub fn duration(&self) -> Option<Duration> {
+                self.units()
+                    .ok()
+                    .and_then(|units| Duration::try_new(self.time, units).ok())
+            }
 
-    /// Returns the time units.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the units are invalid.
-    pub fn units(&self) -> Result<Units, u8> {
-        Units::try_from(self.units)
+            /// Returns whether the timer should repeat.
+            #[must_use]
+            pub const fn repeat(&self) -> bool {
+                self.repeat
+            }
+        }
     }
-
-    /// Returns the time duration.
-    #[must_use]
-    pub fn duration(&self) -> Option<Duration> {
-        self.units()
-            .ok()
-            .and_then(|units| Duration::try_new(self.time, units).ok())
-    }
-
-    /// Returns whether the timer should repeat.
-    #[must_use]
-    pub const fn repeat(&self) -> bool {
-        self.repeat
-    }
-}
+);

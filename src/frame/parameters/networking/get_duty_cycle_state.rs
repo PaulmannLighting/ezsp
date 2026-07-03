@@ -7,17 +7,22 @@ use crate::ember::Status;
 use crate::ember::duty_cycle::State;
 use crate::error::ValueError;
 
-crate::frame::parameters::frame!(0x0035, {}, { status: u8, returned_state: u8 });
+crate::frame::parameters::frame!(
+    0x0035,
+    {},
+    { status: u8, returned_state: u8 },
+    impl {
+        /// Converts the response into [`State`] or an appropriate [`Error`] depending on its status.
+        impl TryFrom<Response> for State {
+            type Error = Error;
 
-/// Converts the response into [`State`] or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for State {
-    type Error = Error;
-
-    fn try_from(response: Response) -> Result<Self, Self::Error> {
-        match Status::from_u8(response.status).ok_or(response.status) {
-            Ok(Status::Success) => Self::from_u8(response.returned_state)
-                .ok_or_else(|| ValueError::EmberDutyCycleState(response.returned_state).into()),
-            other => Err(other.into()),
+            fn try_from(response: Response) -> Result<Self, Self::Error> {
+                match Status::from_u8(response.status).ok_or(response.status) {
+                    Ok(Status::Success) => Self::from_u8(response.returned_state)
+                        .ok_or_else(|| ValueError::EmberDutyCycleState(response.returned_state).into()),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
+);

@@ -6,38 +6,44 @@ use num_traits::FromPrimitive;
 use crate::Error;
 use crate::ember::{Eui64, NodeId, Status};
 
-crate::frame::parameters::frame!(0x0082, { address_table_index: u8, new_eui64: Eui64, new_id: NodeId, new_extended_timeout: bool }, { status: u8, payload: PreviousEntry });
+crate::frame::parameters::frame!(
+    0x0082,
+    { address_table_index: u8, new_eui64: Eui64, new_id: NodeId, new_extended_timeout: bool },
+    impl {
+        impl Command {
+            /// Creates command parameters.
+            #[must_use]
+            pub const fn new(
+                address_table_index: u8,
+                new_eui64: Eui64,
+                new_id: NodeId,
+                new_extended_timeout: bool,
+            ) -> Self {
+                Self {
+                    address_table_index,
+                    new_eui64,
+                    new_id,
+                    new_extended_timeout,
+                }
+            }
+        }
+    },
+    { status: u8, payload: PreviousEntry },
+    impl {
+        /// Converts the response into the [`PreviousEntry`]
+        /// or an appropriate [`Error`] depending on its status.
+        impl TryFrom<Response> for PreviousEntry {
+            type Error = Error;
 
-impl Command {
-    /// Creates command parameters.
-    #[must_use]
-    pub const fn new(
-        address_table_index: u8,
-        new_eui64: Eui64,
-        new_id: NodeId,
-        new_extended_timeout: bool,
-    ) -> Self {
-        Self {
-            address_table_index,
-            new_eui64,
-            new_id,
-            new_extended_timeout,
+            fn try_from(response: Response) -> Result<Self, Self::Error> {
+                match Status::from_u8(response.status).ok_or(response.status) {
+                    Ok(Status::Success) => Ok(response.payload),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
-
-/// Converts the response into the [`PreviousEntry`]
-/// or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for PreviousEntry {
-    type Error = Error;
-
-    fn try_from(response: Response) -> Result<Self, Self::Error> {
-        match Status::from_u8(response.status).ok_or(response.status) {
-            Ok(Status::Success) => Ok(response.payload),
-            other => Err(other.into()),
-        }
-    }
-}
+);
 
 /// Information about the previous entry that was replaced.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

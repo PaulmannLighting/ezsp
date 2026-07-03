@@ -6,24 +6,30 @@ use crate::Error;
 use crate::ember::Status;
 use crate::ember::multicast::TableEntry;
 
-crate::frame::parameters::frame!(0x0063, { index: u8 }, { status: u8, value: TableEntry });
+crate::frame::parameters::frame!(
+    0x0063,
+    { index: u8 },
+    impl {
+        impl Command {
+            /// Creates command parameters.
+            #[must_use]
+            pub const fn new(index: u8) -> Self {
+                Self { index }
+            }
+        }
+    },
+    { status: u8, value: TableEntry },
+    impl {
+        /// Converts the response into the [`TableEntry`] or an appropriate [`Error`] depending on its status.
+        impl TryFrom<Response> for TableEntry {
+            type Error = Error;
 
-impl Command {
-    /// Creates command parameters.
-    #[must_use]
-    pub const fn new(index: u8) -> Self {
-        Self { index }
-    }
-}
-
-/// Converts the response into the [`TableEntry`] or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for TableEntry {
-    type Error = Error;
-
-    fn try_from(response: Response) -> Result<Self, Self::Error> {
-        match Status::from_u8(response.status).ok_or(response.status) {
-            Ok(Status::Success) => Ok(response.value),
-            other => Err(other.into()),
+            fn try_from(response: Response) -> Result<Self, Self::Error> {
+                match Status::from_u8(response.status).ok_or(response.status) {
+                    Ok(Status::Success) => Ok(response.value),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
+);

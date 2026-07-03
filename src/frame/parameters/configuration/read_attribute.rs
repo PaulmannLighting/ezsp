@@ -7,27 +7,45 @@ use crate::Error;
 use crate::ember::Status;
 use crate::types::ByteSizedVec;
 
-crate::frame::parameters::frame!(0x0108, { endpoint: u8, cluster: u16, attribute_id: u16, mask: u8, manufacturer_code: u16 }, { status: u8, payload: Attribute });
+crate::frame::parameters::frame!(
+    0x0108,
+    { endpoint: u8, cluster: u16, attribute_id: u16, mask: u8, manufacturer_code: u16 },
+    impl {
+        impl Command {
+            /// Creates command parameters.
+            #[must_use]
+            pub const fn new(
+                endpoint: u8,
+                cluster: u16,
+                attribute_id: u16,
+                mask: u8,
+                manufacturer_code: u16,
+            ) -> Self {
+                Self {
+                    endpoint,
+                    cluster,
+                    attribute_id,
+                    mask,
+                    manufacturer_code,
+                }
+            }
+        }
+    },
+    { status: u8, payload: Attribute },
+    impl {
+        /// Converts the response into an [`Attribute`] or an appropriate [`Error`] depending on its status.
+        impl TryFrom<Response> for Attribute {
+            type Error = Error;
 
-impl Command {
-    /// Creates command parameters.
-    #[must_use]
-    pub const fn new(
-        endpoint: u8,
-        cluster: u16,
-        attribute_id: u16,
-        mask: u8,
-        manufacturer_code: u16,
-    ) -> Self {
-        Self {
-            endpoint,
-            cluster,
-            attribute_id,
-            mask,
-            manufacturer_code,
+            fn try_from(response: Response) -> Result<Self, Self::Error> {
+                match Status::from_u8(response.status).ok_or(response.status) {
+                    Ok(Status::Success) => Ok(response.payload),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
+);
 
 /// Read attribute data.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
@@ -47,17 +65,5 @@ impl Attribute {
     #[must_use]
     pub fn data(&self) -> &[u8] {
         self.data.as_ref()
-    }
-}
-
-/// Converts the response into an [`Attribute`] or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for Attribute {
-    type Error = Error;
-
-    fn try_from(response: Response) -> Result<Self, Self::Error> {
-        match Status::from_u8(response.status).ok_or(response.status) {
-            Ok(Status::Success) => Ok(response.payload),
-            other => Err(other.into()),
-        }
     }
 }

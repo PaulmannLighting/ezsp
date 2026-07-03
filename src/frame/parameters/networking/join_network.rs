@@ -7,27 +7,33 @@ use crate::ember::Status;
 use crate::ember::network::Parameters;
 use crate::ember::node::Type;
 
-crate::frame::parameters::frame!(0x001F, { node_type: u8, parameters: Parameters }, { status: u8 });
+crate::frame::parameters::frame!(
+    0x001F,
+    { node_type: u8, parameters: Parameters },
+    impl {
+        impl Command {
+            /// Creates command parameters.
+            #[must_use]
+            pub fn new(node_type: Type, parameters: Parameters) -> Self {
+                Self {
+                    node_type: node_type.into(),
+                    parameters,
+                }
+            }
+        }
+    },
+    { status: u8 },
+    impl {
+        /// Convert a response into `()` or an appropriate [`Error`] depending on its status.
+        impl TryFrom<Response> for () {
+            type Error = Error;
 
-impl Command {
-    /// Creates command parameters.
-    #[must_use]
-    pub fn new(node_type: Type, parameters: Parameters) -> Self {
-        Self {
-            node_type: node_type.into(),
-            parameters,
+            fn try_from(response: Response) -> Result<Self, Self::Error> {
+                match Status::from_u8(response.status).ok_or(response.status) {
+                    Ok(Status::Success) => Ok(()),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
-
-/// Convert a response into `()` or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for () {
-    type Error = Error;
-
-    fn try_from(response: Response) -> Result<Self, Self::Error> {
-        match Status::from_u8(response.status).ok_or(response.status) {
-            Ok(Status::Success) => Ok(()),
-            other => Err(other.into()),
-        }
-    }
-}
+);

@@ -6,22 +6,28 @@ use crate::Error;
 use crate::ember::Status;
 use crate::ember::duty_cycle::Limits;
 
-crate::frame::parameters::frame!(0x0040, { limits: Limits }, { status: u8 });
+crate::frame::parameters::frame!(
+    0x0040,
+    { limits: Limits },
+    impl {
+        impl From<Limits> for Command {
+            fn from(limits: Limits) -> Self {
+                Self { limits }
+            }
+        }
+    },
+    { status: u8 },
+    impl {
+        /// Convert a response into `()` or an appropriate [`Error`] depending on its status.
+        impl TryFrom<Response> for () {
+            type Error = Error;
 
-impl From<Limits> for Command {
-    fn from(limits: Limits) -> Self {
-        Self { limits }
-    }
-}
-
-/// Convert a response into `()` or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for () {
-    type Error = Error;
-
-    fn try_from(response: Response) -> Result<Self, Self::Error> {
-        match Status::from_u8(response.status).ok_or(response.status) {
-            Ok(Status::Success) => Ok(()),
-            other => Err(other.into()),
+            fn try_from(response: Response) -> Result<Self, Self::Error> {
+                match Status::from_u8(response.status).ok_or(response.status) {
+                    Ok(Status::Success) => Ok(()),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
+);

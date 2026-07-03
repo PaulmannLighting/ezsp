@@ -6,21 +6,26 @@ use num_traits::FromPrimitive;
 use crate::ember::Status;
 use crate::{Error, ValueError};
 
-crate::frame::parameters::frame!(0x0013, {}, { status: u8, payload: Option<Payload> });
+crate::frame::parameters::frame!(
+    0x0013,
+    {},
+    { status: u8, payload: Option<Payload> },
+    impl {
+        /// Convert the response into a [`Payload`] or an appropriate [`Error`] depending on its status.
+        impl TryFrom<Response> for Payload {
+            type Error = Error;
 
-/// Convert the response into a [`Payload`] or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for Payload {
-    type Error = Error;
-
-    fn try_from(response: Response) -> Result<Self, Self::Error> {
-        match Status::from_u8(response.status).ok_or(response.status) {
-            Ok(Status::Success) => response
-                .payload
-                .ok_or_else(|| ValueError::MissingPayload.into()),
-            other => Err(other.into()),
+            fn try_from(response: Response) -> Result<Self, Self::Error> {
+                match Status::from_u8(response.status).ok_or(response.status) {
+                    Ok(Status::Success) => response
+                        .payload
+                        .ok_or_else(|| ValueError::MissingPayload.into()),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
+);
 
 /// Payload of the get XNCP info command.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

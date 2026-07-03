@@ -6,27 +6,33 @@ use num_traits::FromPrimitive;
 use crate::Error;
 use crate::ember::{NodeId, Status};
 
-crate::frame::parameters::frame!(0x00C1, { index: u8 }, { status: u8, entry: Entry });
+crate::frame::parameters::frame!(
+    0x00C1,
+    { index: u8 },
+    impl {
+        impl Command {
+            /// Creates command parameters.
+            #[must_use]
+            pub const fn new(index: u8) -> Self {
+                Self { index }
+            }
+        }
+    },
+    { status: u8, entry: Entry },
+    impl {
+        /// Convert a response into an [`Entry`] or an appropriate [`Error`] depending on its status.
+        impl TryFrom<Response> for Entry {
+            type Error = Error;
 
-impl Command {
-    /// Creates command parameters.
-    #[must_use]
-    pub const fn new(index: u8) -> Self {
-        Self { index }
-    }
-}
-
-/// Convert a response into an [`Entry`] or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for Entry {
-    type Error = Error;
-
-    fn try_from(response: Response) -> Result<Self, Self::Error> {
-        match Status::from_u8(response.status).ok_or(response.status) {
-            Ok(Status::Success) => Ok(response.entry),
-            other => Err(other.into()),
+            fn try_from(response: Response) -> Result<Self, Self::Error> {
+                match Status::from_u8(response.status).ok_or(response.status) {
+                    Ok(Status::Success) => Ok(response.entry),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
+);
 
 /// A source route table entry.
 #[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]

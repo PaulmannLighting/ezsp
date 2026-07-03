@@ -2,18 +2,23 @@
 
 use crate::ember::zll::{DataToken, SecurityToken};
 
-crate::frame::parameters::frame!(0x00BC, {}, { data: DataToken, security: SecurityToken });
+crate::frame::parameters::frame!(
+    0x00BC,
+    {},
+    { data: DataToken, security: SecurityToken },
+    impl {
+        impl Response {
+            /// Returns the token data.
+            #[must_use]
+            pub const fn data(&self) -> &DataToken {
+                &self.data
+            }
 
-impl Response {
-    /// Returns the token data.
-    #[must_use]
-    pub const fn data(&self) -> &DataToken {
-        &self.data
+            /// Returns the token security.
+            #[must_use]
+            pub const fn security(&self) -> &SecurityToken {
+                &self.security
+            }
+        }
     }
-
-    /// Returns the token security.
-    #[must_use]
-    pub const fn security(&self) -> &SecurityToken {
-        &self.security
-    }
-}
+);

@@ -2,20 +2,26 @@
 
 use crate::types::ByteSizedVec;
 
-crate::frame::parameters::frame!(0x0081, { data: ByteSizedVec<u8> }, { echo: ByteSizedVec<u8> });
-
-impl Command {
-    /// Creates command parameters.
-    #[must_use]
-    pub const fn new(data: ByteSizedVec<u8>) -> Self {
-        Self { data }
+crate::frame::parameters::frame!(
+    0x0081,
+    { data: ByteSizedVec<u8> },
+    impl {
+        impl Command {
+            /// Creates command parameters.
+            #[must_use]
+            pub const fn new(data: ByteSizedVec<u8>) -> Self {
+                Self { data }
+            }
+        }
+    },
+    { echo: ByteSizedVec<u8> },
+    impl {
+        impl Response {
+            /// Returns the echoed data.
+            #[must_use]
+            pub fn echo(self) -> ByteSizedVec<u8> {
+                self.echo
+            }
+        }
     }
-}
-
-impl Response {
-    /// Returns the echoed data.
-    #[must_use]
-    pub fn echo(self) -> ByteSizedVec<u8> {
-        self.echo
-    }
-}
+);

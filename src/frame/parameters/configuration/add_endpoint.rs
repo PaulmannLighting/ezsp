@@ -9,28 +9,46 @@ use crate::Error;
 use crate::ezsp::Status;
 use crate::types::ByteSizedVec;
 
-crate::frame::parameters::frame!(0x0002, { endpoint: u8, profile_id: u16, device_id: u16, app_flags: u8, clusters: Clusters }, { status: u8 });
+crate::frame::parameters::frame!(
+    0x0002,
+    { endpoint: u8, profile_id: u16, device_id: u16, app_flags: u8, clusters: Clusters },
+    impl {
+        impl Command {
+            /// Creates command parameters.
+            #[must_use]
+            pub fn new(
+                endpoint: u8,
+                profile_id: u16,
+                device_id: u16,
+                app_flags: u8,
+                input_cluster_list: ByteSizedVec<u16>,
+                output_cluster_list: ByteSizedVec<u16>,
+            ) -> Self {
+                Self {
+                    endpoint,
+                    profile_id,
+                    device_id,
+                    app_flags,
+                    clusters: Clusters::new(input_cluster_list, output_cluster_list),
+                }
+            }
+        }
+    },
+    { status: u8 },
+    impl {
+        /// Converts the response into `()` or an appropriate [`Error`] depending on its status.
+        impl TryFrom<Response> for () {
+            type Error = Error;
 
-impl Command {
-    /// Creates command parameters.
-    #[must_use]
-    pub fn new(
-        endpoint: u8,
-        profile_id: u16,
-        device_id: u16,
-        app_flags: u8,
-        input_cluster_list: ByteSizedVec<u16>,
-        output_cluster_list: ByteSizedVec<u16>,
-    ) -> Self {
-        Self {
-            endpoint,
-            profile_id,
-            device_id,
-            app_flags,
-            clusters: Clusters::new(input_cluster_list, output_cluster_list),
+            fn try_from(response: Response) -> Result<Self, Self::Error> {
+                match Status::from_u8(response.status).ok_or(response.status) {
+                    Ok(Status::Success) => Ok(()),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
+);
 
 /// Helper struct to deal with special serialization of the cluster lists.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -121,17 +139,5 @@ impl ToLeStream for Clusters {
                     .into_iter()
                     .flat_map(ToLeStream::to_le_stream as _),
             )
-    }
-}
-
-/// Converts the response into `()` or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for () {
-    type Error = Error;
-
-    fn try_from(response: Response) -> Result<Self, Self::Error> {
-        match Status::from_u8(response.status).ok_or(response.status) {
-            Ok(Status::Success) => Ok(()),
-            other => Err(other.into()),
-        }
     }
 }

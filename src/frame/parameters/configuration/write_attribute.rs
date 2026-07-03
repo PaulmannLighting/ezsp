@@ -6,36 +6,42 @@ use crate::Error;
 use crate::ember::Status;
 use crate::types::ByteSizedVec;
 
-crate::frame::parameters::frame!(0x0109, { endpoint: u8, cluster: u16, attribute_id: u16, mask: u8, manufacturer_code: u16, just_test: bool, data_type: u8, data: ByteSizedVec<u8> }, { status: u8 });
+crate::frame::parameters::frame!(
+    0x0109,
+    { endpoint: u8, cluster: u16, attribute_id: u16, mask: u8, manufacturer_code: u16, just_test: bool, data_type: u8, data: ByteSizedVec<u8> },
+    impl {
+        impl Command {
+            /// Creates command parameters.
+            #[must_use]
+            pub fn new(endpoint: u8, cluster: u16, attribute: Attribute, just_test: bool) -> Self {
+                Self {
+                    endpoint,
+                    cluster,
+                    attribute_id: attribute.id,
+                    mask: attribute.mask,
+                    manufacturer_code: attribute.manufacturer_code,
+                    just_test,
+                    data_type: attribute.data_type,
+                    data: attribute.data,
+                }
+            }
+        }
+    },
+    { status: u8 },
+    impl {
+        /// Converts the response into `()` or an appropriate [`Error`] depending on its status.
+        impl TryFrom<Response> for () {
+            type Error = Error;
 
-impl Command {
-    /// Creates command parameters.
-    #[must_use]
-    pub fn new(endpoint: u8, cluster: u16, attribute: Attribute, just_test: bool) -> Self {
-        Self {
-            endpoint,
-            cluster,
-            attribute_id: attribute.id,
-            mask: attribute.mask,
-            manufacturer_code: attribute.manufacturer_code,
-            just_test,
-            data_type: attribute.data_type,
-            data: attribute.data,
+            fn try_from(response: Response) -> Result<Self, Self::Error> {
+                match Status::from_u8(response.status).ok_or(response.status) {
+                    Ok(Status::Success) => Ok(()),
+                    other => Err(other.into()),
+                }
+            }
         }
     }
-}
-
-/// Converts the response into `()` or an appropriate [`Error`] depending on its status.
-impl TryFrom<Response> for () {
-    type Error = Error;
-
-    fn try_from(response: Response) -> Result<Self, Self::Error> {
-        match Status::from_u8(response.status).ok_or(response.status) {
-            Ok(Status::Success) => Ok(()),
-            other => Err(other.into()),
-        }
-    }
-}
+);
 
 /// An attribute to write.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]

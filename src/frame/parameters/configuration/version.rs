@@ -7,34 +7,40 @@ use core::fmt::Debug;
 
 use crate::ezsp::StackVersion;
 
-crate::frame::parameters::frame!(0x0000, { desired_protocol_version: u8 }, { protocol_version: u8, stack_type: u8, stack_version: u16 });
+crate::frame::parameters::frame!(
+    0x0000,
+    { desired_protocol_version: u8 },
+    impl {
+        impl Command {
+            /// Creates command parameters.
+            #[must_use]
+            pub const fn new(desired_protocol_version: u8) -> Self {
+                Self {
+                    desired_protocol_version,
+                }
+            }
+        }
+    },
+    { protocol_version: u8, stack_type: u8, stack_version: u16 },
+    impl {
+        impl Response {
+            /// The EZSP version the NCP is using.
+            #[must_use]
+            pub const fn protocol_version(&self) -> u8 {
+                self.protocol_version
+            }
 
-impl Command {
-    /// Creates command parameters.
-    #[must_use]
-    pub const fn new(desired_protocol_version: u8) -> Self {
-        Self {
-            desired_protocol_version,
+            /// The type of stack running on the NCP (2).
+            #[must_use]
+            pub const fn stack_type(&self) -> u8 {
+                self.stack_type
+            }
+
+            /// The version number of the stack.
+            #[must_use]
+            pub const fn stack_version(&self) -> StackVersion {
+                StackVersion(self.stack_version)
+            }
         }
     }
-}
-
-impl Response {
-    /// The EZSP version the NCP is using.
-    #[must_use]
-    pub const fn protocol_version(&self) -> u8 {
-        self.protocol_version
-    }
-
-    /// The type of stack running on the NCP (2).
-    #[must_use]
-    pub const fn stack_type(&self) -> u8 {
-        self.stack_type
-    }
-
-    /// The version number of the stack.
-    #[must_use]
-    pub const fn stack_version(&self) -> StackVersion {
-        StackVersion(self.stack_version)
-    }
-}
+);

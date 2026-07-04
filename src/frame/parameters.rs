@@ -259,19 +259,6 @@ macro_rules! frame {
 pub(crate) use frame;
 
 #[allow(unused_macros)]
-macro_rules! ids {
-    ($name:ident, $($ty:ty),+ $(,)?) => {
-        macro_rules! $name {
-            () => {
-                $(<$ty as crate::frame::Parameter>::ID)|+
-            };
-        }
-    };
-}
-#[allow(unused_imports)]
-pub(crate) use ids;
-
-#[allow(unused_macros)]
 macro_rules! parameter_enum {
     ($name:ident, $($ty:ident),+ $(,)?) => {
         #[derive(Clone, Debug, Eq, PartialEq)]
@@ -309,7 +296,6 @@ macro_rules! parameter_enum {
         }
     };
 }
-#[allow(unused_imports)]
 pub(crate) use parameter_enum;
 
 macro_rules! parameter_group_enum {

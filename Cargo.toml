@@ -7,7 +7,7 @@ repository = "https://github.com/PaulmannLighting/ezsp"
 keywords = ["Ember", "ZNet", "Serial", "Zigbee"]
 categories = ["hardware-support", "network-programming"]
 documentation = "https://docs.rs/ezsp"
-version = "5.2.0"
+version = "5.2.1"
 edition = "2024"
 exclude = [".github", ".gitignore", "ARCHITECTURE.md"]
 
@@ -15,10 +15,10 @@ exclude = [".github", ".gitignore", "ARCHITECTURE.md"]
 all-features = true
 
 [dependencies]
-apis-saltans-aps = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans.git", branch = "smarthomelib", optional = true }
-apis-saltans-core = { version = "0.2", git = "https://github.com/PaulmannLighting/apis-saltans.git", branch = "smarthomelib", optional = true }
-apis-saltans-hw = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans.git", branch = "smarthomelib", optional = true }
-apis-saltans-zdp = { version = "0.1", git = "https://github.com/PaulmannLighting/apis-saltans.git", branch = "smarthomelib", optional = true }
+apis-saltans-aps = { version = "0.2", optional = true }
+apis-saltans-core = { version = "0.3", optional = true }
+apis-saltans-hw = { version = "0.2", optional = true }
+apis-saltans-zdp = { version = "0.2", optional = true }
 ashv2 = { version = "8", git = "https://github.com/PaulmannLighting/ashv2/", optional = true }
 bitflags = "2"
 enum-iterator = "2"

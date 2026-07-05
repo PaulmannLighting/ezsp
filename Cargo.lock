@@ -13,8 +13,9 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-aps"
-version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#77753b3c02383d51c2e565e3cdb09caa551c7048"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eea234b3a505c2fd9c4af9cf4a887c4ab8dbb6d3b31b486fb59ccdc99c282b43"
 dependencies = [
  "apis-saltans-core",
  "bitflags 2.13.0",
@@ -26,8 +27,9 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-core"
-version = "0.2.3"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#77753b3c02383d51c2e565e3cdb09caa551c7048"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c2c0b7a8566bfeaf48a2c684a0754dbb5ce5e863c43de02ffd8a9ccf87fae84"
 dependencies = [
  "bitflags 2.13.0",
  "chrono",
@@ -43,8 +45,9 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-hw"
-version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#77753b3c02383d51c2e565e3cdb09caa551c7048"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3bf11fae44c5cdaaa196f172404b6a3d15e04c1926d3fd794056adc4b6868f60"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -59,7 +62,8 @@ dependencies = [
 [[package]]
 name = "apis-saltans-macros"
 version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#77753b3c02383d51c2e565e3cdb09caa551c7048"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff99e314068eaccc50a4fe253483fb1632c6dbfc8342eefdea5c363cbeab8d4b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -68,8 +72,9 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-zcl"
-version = "0.1.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#77753b3c02383d51c2e565e3cdb09caa551c7048"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aacdb540d772e95f9913b30fc809a9bc4989ed2a810a1dff57b273a92f49eb53"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -87,8 +92,9 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-zdp"
-version = "0.1.2"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?branch=smarthomelib#77753b3c02383d51c2e565e3cdb09caa551c7048"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c253b507324f0887cf8885fabd5839bd63a38ec8ef0d138591117ecd618ea65"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -276,7 +282,7 @@ dependencies = [
 
 [[package]]
 name = "ezsp"
-version = "5.2.0"
+version = "5.2.1"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",

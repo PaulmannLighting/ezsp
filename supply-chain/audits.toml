@@ -37,13 +37,6 @@ criteria = "safe-to-deploy"
 delta = "1.2.7 -> 8.1.0"
 notes = "AI-assisted: reviewed major diff 1.2.7 -> 8.1.0; no new unsafe code in src (unsafe removed from old helper), protocol logic refactored to actor architecture"
 
-[[audits.ashv2]]
-who = "Codex"
-criteria = "safe-to-deploy"
-delta = "8.1.0 -> 8.1.1@git:2dcd71bcaa8526691f4c9c1453f07b787fbf1f77"
-importable = false
-notes = "AI-assisted: reviewed local diff 8.1.0 -> 8.1.1@git:2dcd71bcaa8526691f4c9c1453f07b787fbf1f77; source code unchanged, only manifest/readme/architecture/lockfile updates. Crate denies unsafe_code and has no new ambient capability surface beyond serial I/O."
-
 [[audits.autocfg]]
 who = "Codex"
 criteria = "safe-to-deploy"

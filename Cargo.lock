@@ -110,7 +110,8 @@ dependencies = [
 [[package]]
 name = "ashv2"
 version = "8.1.1"
-source = "git+https://github.com/PaulmannLighting/ashv2/#2dcd71bcaa8526691f4c9c1453f07b787fbf1f77"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "65f0064404520e21c5cc587b731e96d4cc0cd4e876037e99d38c058d61e1e70d"
 dependencies = [
  "bitflags 2.13.0",
  "const_env",

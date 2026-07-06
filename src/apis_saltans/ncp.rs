@@ -120,6 +120,10 @@ where
             metadata.profile().map(Into::into),
             metadata.cluster_id(),
             metadata.source_endpoint().unwrap_or_default().into(),
+            metadata
+                .source_endpoint()
+                .unwrap_or(Endpoint::Broadcast)
+                .into(),
             payload.iter().copied().collect(),
         )
         .await?
@@ -135,6 +139,10 @@ where
             metadata.profile().map(Into::into),
             metadata.cluster_id(),
             metadata.source_endpoint().unwrap_or_default().into(),
+            metadata
+                .source_endpoint()
+                .unwrap_or(Endpoint::Broadcast)
+                .into(),
             payload.iter().copied().collect(),
         )
         .await

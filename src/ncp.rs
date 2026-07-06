@@ -35,8 +35,6 @@ mod message;
 mod response_receiver;
 mod scans;
 
-const BROADCAST_ENDPOINT: u8 = 0xFF;
-
 /// Host-side helper for an EZSP Network Co-Processor.
 ///
 /// `Ncp<T>` owns the underlying transport and dereferences to it, so all normal
@@ -278,6 +276,7 @@ where
         profile_id: Option<u16>,
         cluster_id: u16,
         source_endpoint: u8,
+        destination_endpoint: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<ResponseReceiver, Error> {
         let tag = self.next_message_tag();
@@ -285,7 +284,7 @@ where
             profile_id,
             cluster_id,
             source_endpoint,
-            BROADCAST_ENDPOINT,
+            destination_endpoint,
             group_id,
         );
 
@@ -321,10 +320,17 @@ where
         profile_id: Option<u16>,
         cluster_id: u16,
         source_endpoint: u8,
+        destination_endpoint: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
         let tag = self.next_message_tag();
-        let aps_frame = self.next_aps_frame(profile_id, cluster_id, source_endpoint, 0xFF, 0x0000);
+        let aps_frame = self.next_aps_frame(
+            profile_id,
+            cluster_id,
+            source_endpoint,
+            destination_endpoint,
+            0x0000,
+        );
         debug!(
             "Sending broadcast to: {short_id:#06X}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
             message.as_slice()

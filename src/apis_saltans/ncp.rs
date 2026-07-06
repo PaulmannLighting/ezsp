@@ -18,6 +18,7 @@ use apis_saltans_hw::{
 use macaddr::MacAddr8;
 
 use crate::ember::concentrator;
+use crate::types::ByteSizedVec;
 use crate::{Configuration, Messaging, Ncp, Networking, Security, Utilities};
 
 mod builder;
@@ -97,7 +98,7 @@ where
             metadata.profile().into(),
             metadata.cluster_id(),
             destination_endpoint.into(),
-            payload.iter().copied().collect(),
+            payload.into_iter().collect(),
         )
         .await?
         .await
@@ -119,7 +120,7 @@ where
             metadata.profile().into(),
             metadata.cluster_id(),
             metadata.profile().broadcast_endpoint().into(),
-            payload.iter().copied().collect(),
+            payload.into_iter().collect(),
         )
         .await?
         .await
@@ -134,7 +135,7 @@ where
             metadata.profile().into(),
             metadata.cluster_id(),
             metadata.profile().broadcast_endpoint().into(),
-            payload.iter().copied().collect(),
+            payload.into_iter().collect(),
         )
         .await
         .map_err(Into::into)
@@ -147,6 +148,7 @@ where
     ) -> ParallelUnicastResult {
         let (metadata, payload) = frame.into_parts();
         let mut responses = BTreeMap::new();
+        let payload: ByteSizedVec<u8> = payload.into_iter().collect();
 
         for (short_id, endpoint) in targets.into_iter().flat_map(|(short_id, endpoints)| {
             endpoints
@@ -161,7 +163,7 @@ where
                     metadata.profile().into(),
                     metadata.cluster_id(),
                     endpoint.into(),
-                    payload.iter().copied().collect(),
+                    payload.clone(),
                 )
                 .await?,
             );

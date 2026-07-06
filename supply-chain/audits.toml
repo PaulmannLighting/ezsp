@@ -1,6 +1,36 @@
 
 # cargo-vet audits file
 
+[[audits.apis-saltans-aps]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.0 -> 0.3.0"
+notes = "AI-assisted: reviewed diff 0.2.0 -> 0.3.0; crate source unchanged, only version/dependency bump to apis-saltans-core 0.4."
+
+[[audits.apis-saltans-core]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.3.0 -> 0.4.0"
+notes = "AI-assisted: reviewed diff 0.3.0 -> 0.4.0; adds Cluster profile/manufacturer metadata and Profile::broadcast_endpoint helper. No unsafe code or ambient I/O/process/network changes."
+
+[[audits.apis-saltans-hw]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.0 -> 0.3.0"
+notes = "AI-assisted: reviewed diff 0.2.0 -> 0.3.0; frame metadata now requires profile and stores Box<[u8]> payloads, plus dependency bumps. Existing unsafe constructors remain invariant-only wrappers with safe constructors; no new I/O/process/network capabilities."
+
+[[audits.apis-saltans-zcl]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.0 -> 0.3.0"
+notes = "AI-assisted: reviewed diff 0.2.0 -> 0.3.0; macro/trait changes move profile/manufacturer metadata onto Cluster implementations. No new ambient capabilities; existing unsafe APIs remain invariant/documentation helpers."
+
+[[audits.apis-saltans-zdp]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.2.0 -> 0.3.0"
+notes = "AI-assisted: reviewed diff 0.2.0 -> 0.3.0; generated ZDP commands now expose Profile::Network metadata and delegate profile through enums. No unsafe code or ambient I/O/process/network changes."
+
 [[audits.ashv2]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -10,9 +40,9 @@ notes = "AI-assisted: reviewed major diff 1.2.7 -> 8.1.0; no new unsafe code in 
 [[audits.ashv2]]
 who = "Codex"
 criteria = "safe-to-deploy"
-delta = "8.1.1 -> 8.1.1@git:825689d127eb97ac2db295081755fc902f7e6006"
+delta = "8.1.0 -> 8.1.1@git:2dcd71bcaa8526691f4c9c1453f07b787fbf1f77"
 importable = false
-notes = "AI-assisted: reviewed diff 8.1.1 -> 8.1.1@git:825689d127eb97ac2db295081755fc902f7e6006 (0 files changed)"
+notes = "AI-assisted: reviewed local diff 8.1.0 -> 8.1.1@git:2dcd71bcaa8526691f4c9c1453f07b787fbf1f77; source code unchanged, only manifest/readme/architecture/lockfile updates. Crate denies unsafe_code and has no new ambient capability surface beyond serial I/O."
 
 [[audits.autocfg]]
 who = "Codex"
@@ -31,6 +61,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "1.2.53 -> 1.2.65"
 notes = "AI-assisted: reviewed diff 1.2.53 -> 1.2.65"
+
+[[audits.cc]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.2.65 -> 1.2.66"
+notes = "AI-assisted: reviewed diff 1.2.65 -> 1.2.66; target parsing/QNX support and kache wrapper additions. No new unsafe code paths; process execution remains expected compiler/probe behavior for cc build helper."
 
 [[audits.chacha20]]
 who = "Codex"
@@ -91,6 +127,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 version = "5.2.0"
 notes = "AI-assisted: inspected local crate source for ezsp 5.2.0; crate denies unsafe code and the current changes are protocol frame/parameter macro and enum generation refactors."
+
+[[audits.ezsp]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "7.0.0"
+notes = "AI-assisted: inspected local crate source for ezsp 7.0.0; NCP API, apis-saltans integration, parameter macros, and documentation updates. Existing unsafe surface is limited to explicitly marked unchecked value constructors; no new ambient capability surface beyond configured transport serial I/O and async channels."
 
 [[audits.ezsp]]
 who = "Codex"
@@ -176,11 +218,23 @@ criteria = "safe-to-deploy"
 delta = "5.0.0 -> 10.1.2"
 notes = "AI-assisted: reviewed diff 5.0.0 -> 10.1.2"
 
+[[audits.le-stream]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "10.1.2 -> 10.1.4"
+notes = "AI-assisted: reviewed diff 10.1.2 -> 10.1.4; mostly documentation/tests clarifying collection semantics and feature coverage. No unsafe code or ambient I/O/process/network changes."
+
 [[audits.le-stream-derive]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "1.3.2 -> 1.3.8"
 notes = "AI-assisted: reviewed diff 1.3.2 -> 1.3.8"
+
+[[audits.le-stream-derive]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.3.8 -> 1.3.10"
+notes = "AI-assisted: reviewed diff 1.3.8 -> 1.3.10; derive docs updated and enum ToLeStream generation now uses explicit discriminants instead of unsafe repr pointer reads. No new ambient capabilities."
 
 [[audits.log]]
 who = "Codex"
@@ -313,6 +367,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.1.6 -> 0.1.8"
 notes = "AI-assisted: reviewed diff 0.1.6 -> 0.1.8"
+
+[[audits.unescaper]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.8 -> 0.1.10"
+notes = "AI-assisted: reviewed diff 0.1.8 -> 0.1.10; adds unescape_lossy parsing, vertical-tab escape support, tests, docs, and CI metadata. No unsafe code or ambient I/O/process/network changes in library code."
 
 [[audits.wasm-bindgen]]
 who = "Codex"

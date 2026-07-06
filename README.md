@@ -130,7 +130,7 @@ available.
 - broadcast APS sends with immediate confirmation,
 - source endpoint selection for outgoing APS frames from the configured local
   endpoint output clusters,
-- message tag, APS sequence, and transaction sequence counters,
+- message tag and APS sequence counters,
 - clean event-handler shutdown through `Ncp::terminate()`.
 
 `Ncp::build(transport, callbacks)` returns `Builder<T>`. The builder stores

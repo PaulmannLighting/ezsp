@@ -84,7 +84,7 @@ correlation or local sequence state:
 - broadcast APS sends with status validation
 - source endpoint selection for outgoing APS frames from configured local
   endpoint output clusters
-- message tag, APS sequence, and transaction sequence counters
+- message tag and APS sequence counters
 - background event-handler termination through `Ncp::terminate()`
 
 `Ncp<T>` dereferences to `T`, so callers can still use all command traits on the
@@ -182,7 +182,7 @@ This layer is implemented in `src/apis_saltans`.
 - `Ncp<T>`
   - wraps EZSP transport
   - implements `apis_saltans_hw::NcpDriver` when the feature is enabled
-  - tracks message/APS/transaction sequence counters
+  - tracks message tag and APS sequence counters
   - bridges request/response APIs with callback-driven events
 - `Builder<T>` (`src/ncp/builder.rs`)
   - startup/configuration DSL for network bootstrap

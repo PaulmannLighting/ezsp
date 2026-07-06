@@ -2,9 +2,8 @@
 //!
 //! [`Ncp`] wraps an EZSP [`Transport`](crate::Transport) and adds the state
 //! needed by host-side Zigbee workflows: endpoint cluster metadata, APS
-//! sequence numbers, EZSP message tags, transaction sequence numbers, scan
-//! aggregation, message-sent correlation, and callback dispatch through a
-//! background event handler.
+//! sequence numbers, EZSP message tags, scan aggregation, message-sent
+//! correlation, and callback dispatch through a background event handler.
 //!
 //! The type is available without the `apis-saltans` feature. When that feature
 //! is enabled, additional implementations adapt [`Ncp`] and [`Builder`] to the

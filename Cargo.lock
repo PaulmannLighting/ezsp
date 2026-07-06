@@ -283,7 +283,7 @@ dependencies = [
 
 [[package]]
 name = "ezsp"
-version = "7.2.0"
+version = "7.2.1"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",

@@ -14,11 +14,16 @@ use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessag
 use crate::parameters::security::handler::Handler as Security;
 use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
 
-/// Actor for processing incoming events.
+/// Actor translating EZSP callbacks into `apis_saltans_hw` events.
 ///
-/// This actor actually receives messages of type [`Message`] which can be wrapped raw EZSP events
-/// ("Callbacks"), subscription requests or requests to start a channel or network scan.
-/// Also, termination signals may be received.
+/// The actor receives [`Message`] values from the callback bridge and from
+/// [`crate::Ncp`] operations. It handles four kinds of work:
+///
+/// - forwarding network, child, trust-center, and APS message callbacks as
+///   `apis_saltans_hw::Event` values,
+/// - aggregating active and energy scan callback streams,
+/// - correlating `messageSent` callbacks with outgoing message tags,
+/// - stopping when a termination message is received.
 #[derive(Debug)]
 pub struct EventHandler {
     output: Sender<Event>,
@@ -52,10 +57,10 @@ impl EventHandler {
                 self.forward_event((*child_join).into()).await;
             }
             Networking::NetworkFound(network_found) => {
-                self.scans.add_network((*network_found).into());
+                self.scans.add_network(*network_found);
             }
             Networking::EnergyScanResult(energy_scan_result) => {
-                self.scans.add_channel((*energy_scan_result).into());
+                self.scans.add_channel(*energy_scan_result);
             }
             Networking::ScanComplete(_) => {
                 self.scans.pop();

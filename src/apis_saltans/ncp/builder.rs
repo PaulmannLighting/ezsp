@@ -22,7 +22,17 @@ impl<T> Start for Builder<T>
 where
     T: Transport + Sync + 'static,
 {
-    /// Starts the network manager on the given transport implementation.
+    /// Configures the EZSP stack and starts an `apis_saltans_hw` NCP actor.
+    ///
+    /// The startup sequence applies configured policies and stack values,
+    /// registers the supplied endpoints, initializes or reforms the Zigbee
+    /// network, waits for `NetworkUp`, sends a many-to-one route request, and
+    /// returns an `apis_saltans_hw::NcpHandle` plus the translated event stream.
+    ///
+    /// # Errors
+    ///
+    /// Returns an `apis_saltans_hw::Error` if endpoint validation, EZSP stack
+    /// setup, network initialization, or actor startup fails.
     #[expect(clippy::too_many_lines)]
     async fn start(
         mut self,

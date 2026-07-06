@@ -26,7 +26,7 @@ EmberZNet 6.x/7.x API surface where that naming is reflected in the crate.
 ## Features
 
 - `ashv2`: enables the ASHv2 serial transport (`uart::Uart`).
-- `apis-saltans`: enables Zigbee host integration (`apis_saltans::EzspNetworkManager`) and pulls in `apis-saltans` APS/core/hardware/ZDP crates.
+- `apis-saltans`: enables `apis_saltans_hw` integration for `Ncp`/`Builder` and pulls in `apis-saltans` APS/core/hardware/ZDP crates.
 - `semver`: enables `semver` support for EZSP version APIs.
 
 ## Protocol Model
@@ -69,6 +69,8 @@ The crate is transport-first:
 - `Transport` defines the low-level async connection and request/response primitives.
 - EZSP command traits (`Configuration`, `Messaging`, `Networking`, `Security`, ...) are blanket-implemented for any `T: Transport`.
 - `Ezsp` is a convenience trait that combines all command traits.
+- `Ncp<T>` wraps a transport and adds host-side NCP helpers for scans, APS send
+  confirmation, transaction/message sequence counters, and callback correlation.
 - Protocol types are exposed through `ember`, `ezsp`, and the typed frame/parameter model.
 
 Implementing `Transport` gives access to the full typed command surface.
@@ -114,23 +116,48 @@ async fn example() -> Result<(), ezsp::Error> {
 }
 ```
 
-## `apis-saltans` integration (`apis-saltans` feature)
+## NCP Helper
 
-When `apis-saltans` is enabled, the crate exposes `apis_saltans::EzspNetworkManager<T>`.
+`Ncp<T>` is the high-level host helper for an EZSP Network Co-Processor. It owns
+the transport and dereferences to it, so all normal command traits remain
+available.
 
-- `EzspNetworkManager<T>: apis_saltans_hw::NcpDriver` when
+`Ncp` adds behavior that needs more than a single command/response exchange:
+
+- active and energy scans with callback aggregation,
+- neighbor table collection,
+- unicast and multicast APS sends with `messageSent` confirmation,
+- broadcast APS sends with immediate confirmation,
+- message tag, APS sequence, and transaction sequence counters,
+- clean event-handler shutdown through `Ncp::terminate()`.
+
+`Ncp::build(transport, callbacks)` returns `Builder<T>`. The builder stores
+policies, configuration values, security keys, APS options, concentrator
+settings, network formation settings, and channel buffer sizing for the startup
+implementation.
+
+If `ashv2` is enabled, `Ncp::ashv2(serial_port)` and
+`Builder::<uart::Uart>::ashv2(serial_port)` create a builder backed by the
+crate's ASHv2 UART transport.
+
+## `apis-saltans` Integration (`apis-saltans` Feature)
+
+When `apis-saltans` is enabled, the crate adapts `Ncp` and `Builder` to the
+`apis_saltans_hw` traits.
+
+- `Ncp<T>: apis_saltans_hw::NcpDriver` when
   `T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync`.
-- `EzspNetworkManager::build(transport, callbacks)` returns `Builder<T>`.
 - `Builder<T>: apis_saltans_hw::Start` when `T: Transport + Sync + 'static`.
-- `Start::start(...)` configures the NCP, starts callback translation, and returns
+- `Start::start(endpoints)` configures the EZSP stack, starts callback
+  translation, spawns the NCP actor, and returns
   `(apis_saltans_hw::NcpHandle, tokio::sync::mpsc::Receiver<apis_saltans_hw::Event>)`.
-- `EzspNetworkManager::terminate()` stops the event handler and returns the underlying transport.
+- `Ncp::terminate()` stops the event handler and returns the underlying transport.
 
-The integration layer translates EZSP callbacks into `apis_saltans_hw::Event`, including network-up/down/open/closed events, child join/leave events, trust-center join/rejoin/leave events, and incoming APS messages. It separately aggregates scan callbacks for `NcpDriver` scan calls and correlates `MessageSent` callbacks with outgoing message tags.
-
-If both `apis-saltans` and `ashv2` are enabled, convenience constructors are available:
-
-- `apis_saltans::EzspNetworkManager::ashv2(serial_port)`
+The integration layer translates EZSP callbacks into `apis_saltans_hw::Event`,
+including network-up/down/open/closed events, child join/leave events,
+trust-center join/rejoin/leave events, and incoming APS messages. It also
+aggregates scan callbacks for `NcpDriver` scan calls and correlates
+`messageSent` callbacks with outgoing message tags.
 
 ## Legal
 

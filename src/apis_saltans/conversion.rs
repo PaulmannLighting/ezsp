@@ -1,4 +1,9 @@
-//! Conversion implementations from EZSP data structures to Zigbee Nwk data structures.
+//! Conversion implementations between EZSP callback data and `apis-saltans` types.
+//!
+//! These conversions are used by the feature-gated NCP driver adapter and event
+//! handler. They translate incoming APS frames, scan results, join/leave
+//! callbacks, and stack status callbacks into the types expected by
+//! `apis_saltans_aps`, `apis_saltans_core`, and `apis_saltans_hw`.
 
 use apis_saltans_aps::{Data, Destination, Extended};
 use log::trace;

@@ -1,4 +1,13 @@
-//! Network manager for Zigbee networks.
+//! High-level EZSP Network Co-Processor helper.
+//!
+//! [`Ncp`] wraps an EZSP [`Transport`](crate::Transport) and adds the state
+//! needed by host-side Zigbee workflows: APS sequence numbers, EZSP message
+//! tags, transaction sequence numbers, scan aggregation, message-sent
+//! correlation, and callback dispatch through a background event handler.
+//!
+//! The type is available without the `apis-saltans` feature. When that feature
+//! is enabled, additional implementations adapt [`Ncp`] and [`Builder`] to the
+//! `apis_saltans_hw` traits.
 
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
@@ -26,7 +35,14 @@ mod message;
 mod response_receiver;
 mod scans;
 
-/// Network manager for Zigbee networks.
+const BROADCAST_ENDPOINT: u8 = 0xFF;
+
+/// Host-side helper for an EZSP Network Co-Processor.
+///
+/// `Ncp<T>` owns the underlying transport and dereferences to it, so all normal
+/// EZSP command traits remain available. Its own methods provide higher-level
+/// operations that need callback correlation, such as scans and outgoing APS
+/// message confirmation.
 #[derive(Debug)]
 pub struct Ncp<T> {
     transport: T,
@@ -40,9 +56,9 @@ pub struct Ncp<T> {
 }
 
 impl<T> Ncp<T> {
-    /// Creates a new `NetworkManager` with the given transport.
+    /// Creates a new `Ncp` with the given transport and event handler.
     #[must_use]
-    pub(crate) const fn new(
+    pub const fn new(
         transport: T,
         profile: u16,
         aps_options: aps::Options,
@@ -61,7 +77,7 @@ impl<T> Ncp<T> {
         }
     }
 
-    /// Creates a new `Builder` for constructing a `NetworkManager`.
+    /// Creates a new [`Builder`] for constructing an [`Ncp`].
     #[must_use]
     pub const fn build(transport: T, callbacks: Receiver<Callback>) -> Builder<T> {
         Builder::new(transport, callbacks)
@@ -81,6 +97,7 @@ impl<T> Ncp<T> {
         seq
     }
 
+    /// Returns the next transaction sequence number and increments the internal counter.
     pub const fn next_transaction_seq(&mut self) -> u8 {
         let seq = self.transaction_seq;
         self.transaction_seq = self.transaction_seq.wrapping_add(1);
@@ -107,7 +124,7 @@ impl<T> Ncp<T> {
         )
     }
 
-    /// Terminate the network manager.
+    /// Terminates the background event handler and returns the underlying transport.
     ///
     /// # Errors
     ///
@@ -129,6 +146,12 @@ impl<T> Ncp<T>
 where
     T: Networking + Send + Sync,
 {
+    /// Starts an active network scan and returns all `networkFound` callback results.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if registering the scan, sending `startScan`, or
+    /// receiving the scan result fails.
     pub async fn scan_networks(
         &mut self,
         channel_mask: u32,
@@ -142,6 +165,12 @@ where
         Ok(rx.await?)
     }
 
+    /// Starts an energy scan and returns all `energyScanResult` callback results.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if registering the scan, sending `startScan`, or
+    /// receiving the scan result fails.
     pub async fn scan_channels(
         &mut self,
         channel_mask: u32,
@@ -155,6 +184,12 @@ where
         Ok(rx.await?)
     }
 
+    /// Reads the neighbor table as a map from IEEE address to short ID.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if an EZSP command fails with anything other than
+    /// the stack's end-of-table `ErrFatal` sentinel.
     pub async fn get_neighbors(&mut self) -> Result<BTreeMap<MacAddr8, u16>, Error> {
         let mut neighbors = BTreeMap::new();
 
@@ -178,6 +213,15 @@ impl<T> Ncp<T>
 where
     T: Messaging + Send + Sync,
 {
+    /// Sends a unicast APS message and returns a future for its `messageSent` status.
+    ///
+    /// The returned response receiver resolves to the APS sequence number if
+    /// the stack reports `EMBER_SUCCESS`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if registering the message tag or sending the EZSP
+    /// command fails.
     pub async fn unicast(
         &mut self,
         short_id: u16,
@@ -216,6 +260,16 @@ where
         Ok(ResponseReceiver::new(rx, seq))
     }
 
+    /// Sends a multicast APS message and returns a future for its `messageSent` status.
+    ///
+    /// The returned response receiver resolves to the APS sequence number if
+    /// the stack reports `EMBER_SUCCESS`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if registering the message tag or sending the EZSP
+    /// command fails.
+    #[expect(clippy::too_many_arguments)]
     pub async fn multicast(
         &mut self,
         group_id: u16,
@@ -227,8 +281,13 @@ where
         message: ByteSizedVec<u8>,
     ) -> Result<ResponseReceiver, Error> {
         let tag = self.next_message_tag();
-        let aps_frame =
-            self.next_aps_frame(profile_id, cluster_id, source_endpoint, 0xFF, group_id);
+        let aps_frame = self.next_aps_frame(
+            profile_id,
+            cluster_id,
+            source_endpoint,
+            BROADCAST_ENDPOINT,
+            group_id,
+        );
 
         debug!(
             "Sending multicast: Hops: {hops}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
@@ -249,6 +308,12 @@ where
         Ok(ResponseReceiver::new(rx, seq))
     }
 
+    /// Sends a broadcast APS message and waits for its `messageSent` status.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if registering the message tag, sending the EZSP
+    /// command, or receiving a successful `messageSent` callback fails.
     pub async fn broadcast(
         &mut self,
         short_id: u16,
@@ -285,7 +350,7 @@ where
 
 #[cfg(feature = "ashv2")]
 impl Ncp<crate::uart::Uart> {
-    /// Creates a new `Builder` for constructing a `NetworkManager`.
+    /// Creates a new [`Builder`] backed by an `ASHv2` UART transport.
     ///
     /// # Errors
     ///

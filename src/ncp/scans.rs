@@ -7,7 +7,12 @@ use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 
 mod scan;
 
-/// Struct to manage scans and their respective results.
+/// Aggregates scan callbacks until the matching `scanComplete` callback arrives.
+///
+/// EZSP reports active network scans and energy scans as a stream of callbacks,
+/// followed by `scanComplete`. `Scans` keeps the registered scan queue and
+/// result buffers so the event handler can resolve the corresponding one-shot
+/// request.
 #[derive(Debug, Default)]
 pub struct Scans {
     queue: VecDeque<Scan>,
@@ -16,22 +21,22 @@ pub struct Scans {
 }
 
 impl Scans {
-    /// Add a new scan onto the queue.
+    /// Adds a new pending scan to the queue.
     pub fn push(&mut self, scan: Scan) {
         self.queue.push_back(scan);
     }
 
-    /// Add a channel to the channels buffer.
+    /// Adds an energy scan result to the current channel buffer.
     pub fn add_channel(&mut self, scanned: EnergyScanResult) {
         self.channels.push(scanned);
     }
 
-    /// Add a network to the networks buffer.
+    /// Adds an active scan result to the current network buffer.
     pub fn add_network(&mut self, found: NetworkFound) {
         self.networks.push(found);
     }
 
-    /// Conclude the last scan.
+    /// Completes the oldest pending scan and sends the buffered results.
     pub fn pop(&mut self) {
         if let Some(scan) = self.queue.pop_front() {
             match scan {

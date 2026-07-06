@@ -12,7 +12,13 @@ use crate::ezsp::{config, policy};
 const RADIO_CHANNEL: u8 = 11;
 const RADIO_POWER: i8 = 8;
 
-/// Builder for Zigbee device configuration.
+/// Builder for [`Ncp`](crate::Ncp) startup configuration.
+///
+/// The builder stores EZSP policies, stack configuration values, endpoint and
+/// security inputs, radio settings, and callback buffers until a feature-specific
+/// startup implementation consumes it. With the `apis-saltans` feature enabled,
+/// this builder implements `apis_saltans_hw::Start`.
+#[cfg_attr(not(feature = "apis-saltans"), expect(dead_code))]
 pub struct Builder<T> {
     pub(crate) transport: T,
     pub(crate) callbacks: Receiver<Callback>,
@@ -33,7 +39,7 @@ pub struct Builder<T> {
 }
 
 impl<T> Builder<T> {
-    /// Creates a new `Builder` with the given transport.
+    /// Creates a new builder with the given transport and callback stream.
     #[must_use]
     pub const fn new(transport: T, callbacks: Receiver<Callback>) -> Self {
         Self {
@@ -56,105 +62,105 @@ impl<T> Builder<T> {
         }
     }
 
-    /// Adds a policy decision to the configuration.
+    /// Adds one EZSP policy decision to apply during startup.
     #[must_use]
     pub fn with_policy(mut self, policy: policy::Id, decision: impl Into<u8>) -> Self {
         self.policy.insert(policy, decision.into());
         self
     }
 
-    /// Adds multiple policy decisions to the configuration.
+    /// Adds multiple EZSP policy decisions to apply during startup.
     #[must_use]
     pub fn with_policies(mut self, policies: BTreeMap<policy::Id, u8>) -> Self {
         self.policy.extend(policies);
         self
     }
 
-    /// Adds a configuration value to the configuration.
+    /// Adds one EZSP configuration value to apply during startup.
     #[must_use]
     pub fn with_configuration(mut self, config: config::Id, value: u16) -> Self {
         self.configuration.insert(config, value);
         self
     }
 
-    /// Adds multiple configuration values to the configuration.
+    /// Adds multiple EZSP configuration values to apply during startup.
     #[must_use]
     pub fn with_configurations(mut self, configurations: BTreeMap<config::Id, u16>) -> Self {
         self.configuration.extend(configurations);
         self
     }
 
-    /// Sets the concentrator parameters for the configuration.
+    /// Sets the many-to-one route concentrator parameters.
     #[must_use]
     pub const fn with_concentrator(mut self, concentrator: concentrator::Parameters) -> Self {
         self.concentrator.replace(concentrator);
         self
     }
 
-    /// Sets the APS options.
+    /// Sets the default APS options for outgoing APS messages created by [`Ncp`](crate::Ncp).
     #[must_use]
     pub const fn with_aps_options(mut self, options: aps::Options) -> Self {
         self.aps_options = options;
         self
     }
 
-    /// Sets the link key for the configuration.
+    /// Sets the preconfigured link key used when reinitializing security state.
     #[must_use]
     pub const fn with_link_key(mut self, link_key: Key) -> Self {
         self.link_key.replace(link_key);
         self
     }
 
-    /// Sets the network key for the configuration.
+    /// Sets the network key used when reinitializing security state.
     #[must_use]
     pub const fn with_network_key(mut self, network_key: Key) -> Self {
         self.network_key.replace(network_key);
         self
     }
 
-    /// Sets the join method for the configuration.
+    /// Sets the join method used when forming a network during reinitialization.
     #[must_use]
     pub const fn with_join_method(mut self, join_method: join::Method) -> Self {
         self.join_method = join_method;
         self
     }
 
-    /// Sets the PAN ID for the configuration.
+    /// Sets the PAN ID used when forming a network during reinitialization.
     #[must_use]
     pub const fn with_pan_id(mut self, pan_id: u16) -> Self {
         self.pan_id.replace(pan_id);
         self
     }
 
-    /// Sets the IEEE address for the configuration.
+    /// Sets the extended PAN ID used when forming a network during reinitialization.
     #[must_use]
     pub const fn with_ieee_address(mut self, ieee_address: MacAddr8) -> Self {
         self.ieee_address.replace(ieee_address);
         self
     }
 
-    /// Sets the radio channel for the configuration.
+    /// Sets the radio channel used during network formation.
     #[must_use]
     pub const fn with_radio_channel(mut self, radio_channel: u8) -> Self {
         self.radio_channel = radio_channel;
         self
     }
 
-    /// Sets the radio power for the configuration.
+    /// Sets the radio transmit power used after startup and during network formation.
     #[must_use]
     pub const fn with_radio_power(mut self, radio_power: i8) -> Self {
         self.radio_power = radio_power;
         self
     }
 
-    /// Sets whether to reinitialize the network.
+    /// Sets whether startup should leave any existing network and form a new one.
     #[must_use]
     pub const fn with_reinitialize(mut self, reinitialize: bool) -> Self {
         self.reinitialize = reinitialize;
         self
     }
 
-    /// Set the channels' buffer size.
+    /// Sets the buffer size used for callback, event, and NCP actor channels.
     #[must_use]
     pub const fn with_buffers(mut self, buffers: usize) -> Self {
         self.buffers = buffers;
@@ -168,7 +174,7 @@ impl Builder<crate::uart::Uart> {
     ///
     /// # Errors
     ///
-    /// Returns an [`Error`] if the serial port cannot be used for `ASHv2` communication.
+    /// Returns a [`crate::Error`] if the serial port cannot be used for `ASHv2` communication.
     pub fn ashv2<T>(serial_port: T) -> Result<Self, crate::Error>
     where
         T: ashv2::SerialPort + ashv2::TryCloneNative + Sync + 'static,
@@ -180,7 +186,7 @@ impl Builder<crate::uart::Uart> {
     ///
     /// # Errors
     ///
-    /// Returns an [`Error`] if the serial port cannot be used for `ASHv2` communication.
+    /// Returns a [`crate::Error`] if the serial port cannot be used for `ASHv2` communication.
     pub fn ashv2_with_buffers<T>(
         serial_port: T,
         buffers: &crate::uart::Buffers,

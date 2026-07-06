@@ -1,4 +1,9 @@
-//! Network manager for Zigbee networks.
+//! `apis_saltans_hw::NcpDriver` implementation for [`crate::Ncp`].
+//!
+//! This module maps the generic hardware-driver operations expected by
+//! `apis-saltans` to EZSP command traits. Direct NCP operations are forwarded to
+//! the wrapped transport, while APS sends use [`crate::Ncp`] so that EZSP
+//! `messageSent` callbacks can be correlated with the originating request.
 
 use std::collections::BTreeMap;
 use std::time::Duration;
@@ -14,7 +19,6 @@ use crate::{Configuration, Messaging, Ncp, Networking, Security, Utilities};
 
 mod builder;
 mod event_handler;
-mod response_receiver;
 
 impl<T> NcpDriver for Ncp<T>
 where
@@ -94,7 +98,7 @@ where
                 .unwrap_or(destination_endpoint)
                 .into(),
             destination_endpoint.into(),
-            payload.into_iter().copied().collect(),
+            payload.iter().copied().collect(),
         )
         .await?
         .await
@@ -116,7 +120,7 @@ where
             metadata.profile().map(Into::into),
             metadata.cluster_id(),
             metadata.source_endpoint().unwrap_or_default().into(),
-            payload.into_iter().copied().collect(),
+            payload.iter().copied().collect(),
         )
         .await?
         .await
@@ -131,7 +135,7 @@ where
             metadata.profile().map(Into::into),
             metadata.cluster_id(),
             metadata.source_endpoint().unwrap_or_default().into(),
-            payload.into_iter().copied().collect(),
+            payload.iter().copied().collect(),
         )
         .await
         .map_err(Into::into)
@@ -159,7 +163,7 @@ where
                     metadata.cluster_id(),
                     metadata.source_endpoint().unwrap_or(endpoint).into(),
                     endpoint.into(),
-                    payload.into_iter().copied().collect(),
+                    payload.iter().copied().collect(),
                 )
                 .await?,
             );

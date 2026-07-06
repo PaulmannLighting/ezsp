@@ -4,27 +4,31 @@ use crate::Callback;
 use crate::ember::Status;
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 
-/// Messages exchanged with the message handler.
+/// Messages exchanged with the NCP event handler.
+///
+/// The event handler receives raw EZSP callbacks, one-shot registration
+/// requests for scans and outgoing message confirmations, and a termination
+/// signal used by [`Ncp::terminate`](crate::Ncp::terminate).
 #[derive(Debug)]
 pub enum Message {
     /// An incoming callback.
     Callback(Box<Callback>),
 
-    /// A request to scan networks.
+    /// Registers a receiver for the next active network scan.
     NetworkScan(Sender<Vec<NetworkFound>>),
 
-    /// A request to scan channels.
+    /// Registers a receiver for the next energy scan.
     ChannelScan(Sender<Vec<EnergyScanResult>>),
 
-    /// Register message sent
+    /// Registers a receiver for a `messageSent` callback with the given tag.
     Sent {
         /// The message tag.
         tag: u8,
-        /// The result of the sending from the stack.
+        /// The result sender for the stack status reported by `messageSent`.
         sender: Sender<Result<Status, u8>>,
     },
 
-    /// Termination signal.
+    /// Stops the event handler.
     Terminate,
 }
 

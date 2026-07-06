@@ -2,13 +2,13 @@ use tokio::sync::oneshot::Sender;
 
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 
-/// Types of scans that may be completed by a `ScanComplete` handler.
+/// Pending scan result type completed by a `scanComplete` callback.
 #[derive(Debug)]
 pub enum Scan {
-    /// A channel scan.
+    /// Energy scan result stream.
     Channel(Sender<Vec<EnergyScanResult>>),
 
-    /// A network scan.
+    /// Active network scan result stream.
     Network(Sender<Vec<NetworkFound>>),
 }
 

@@ -11,13 +11,14 @@ The crate has three layers:
    - frame/header/parameter model and parsing
    - shared error/result/types
    - transport abstraction (`Transport`)
+   - host-side NCP helper (`Ncp`) and startup builder (`Builder`)
 
 2. ASHv2 transport layer (`feature = "ashv2"`)
    - concrete serial transport implementation (`uart::Uart`)
    - EZSP-over-ASHv2 encoding/decoding and frame routing
 
 3. `apis-saltans` integration layer (`feature = "apis-saltans"`)
-   - `apis_saltans_hw` driver integration (`apis_saltans::EzspNetworkManager`)
+   - `apis_saltans_hw` driver integration for `Ncp` and `Builder`
    - callback-to-event translation, scan aggregation, and network startup orchestration
 
 ```mermaid
@@ -28,7 +29,7 @@ flowchart TD
     D --> E[ASHv2 actor/proxy]
     E --> F[NCP]
 
-    A --> G[apis_saltans::EzspNetworkManager]
+    A --> G[ezsp::Ncp]
     G --> B
     G --> H[apis_saltans_hw::NcpDriver]
 ```
@@ -42,6 +43,7 @@ flowchart TD
 - command traits: `Configuration`, `Messaging`, `Networking`, `Security`, `Utilities`, ...
 - convenience super-trait: `Ezsp`
 - transport trait: `Transport`
+- NCP helper and startup state: `Ncp`, `Builder`, `Message`, `Scans`
 - frame model: `Frame`, `Header`, `Parameters`, `Response`, `Callback`, ...
 - extension traits: `ConfigurationExt`, `PolicyExt`, `Displayable`
 - core error/result types
@@ -68,6 +70,28 @@ Each typed command method builds a parameter struct and calls `communicate(...)`
 
 `Ezsp` in this crate is a convenience trait that combines all command traits.
 It does not add lifecycle methods beyond those provided by `Transport`.
+
+### NCP helper
+
+`Ncp<T>` wraps an EZSP transport and provides operations that require callback
+correlation or local sequence state:
+
+- active network scans and energy scans, resolved from `networkFound`,
+  `energyScanResult`, and `scanComplete` callbacks
+- neighbor table collection
+- unicast and multicast APS sends, resolved by awaiting the matching
+  `messageSent` callback
+- broadcast APS sends with status validation
+- message tag, APS sequence, and transaction sequence counters
+- background event-handler termination through `Ncp::terminate()`
+
+`Ncp<T>` dereferences to `T`, so callers can still use all command traits on the
+underlying transport.
+
+`Builder<T>` stores startup configuration for an `Ncp`: EZSP policy and
+configuration values, concentrator parameters, APS options, link and network
+keys, join method, PAN ID, extended PAN ID, radio channel, radio power,
+reinitialization mode, and buffer sizes.
 
 ### Frame/parameter model
 
@@ -147,11 +171,12 @@ This layer is implemented in `src/apis_saltans`.
 
 ### Main types
 
-- `apis_saltans::EzspNetworkManager<T>`
-  - wraps EZSP transport and implements `apis_saltans_hw::NcpDriver`
+- `Ncp<T>`
+  - wraps EZSP transport
+  - implements `apis_saltans_hw::NcpDriver` when the feature is enabled
   - tracks message/APS/transaction sequence counters
   - bridges request/response APIs with callback-driven events
-- `Builder<T>` (`src/apis_saltans/network_manager/builder.rs`)
+- `Builder<T>` (`src/ncp/builder.rs`)
   - startup/configuration DSL for network bootstrap
   - implements `apis_saltans_hw::Start`
 - `EventHandler`
@@ -164,7 +189,7 @@ This layer is implemented in `src/apis_saltans`.
 
 ### Trait coupling
 
-`EzspNetworkManager<T>` implements `NcpDriver` when:
+`Ncp<T>` implements `NcpDriver` when:
 
 - `T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync`
 
@@ -172,7 +197,9 @@ This layer is implemented in `src/apis_saltans`.
 
 - `T: Transport + Sync + 'static`
 
-When `ashv2` is also enabled, `EzspNetworkManager<uart::Uart>` exposes an `ashv2(serial_port)` convenience constructor. The builder also has an ASHv2 helper that accepts explicit `uart::Buffers`.
+When `ashv2` is also enabled, `Ncp<uart::Uart>` exposes an
+`ashv2(serial_port)` convenience constructor. The builder also has an ASHv2
+helper that accepts explicit `uart::Buffers`.
 
 ### Startup flow (`Builder::start`)
 
@@ -188,7 +215,7 @@ When `ashv2` is also enabled, `EzspNetworkManager<uart::Uart>` exposes an `ashv2
    - normal path: `network_init`
 7. wait for network-up event
 8. runtime radio power, state logging, and many-to-one route-request setup
-9. spawn `EzspNetworkManager` actor and return `NcpHandle` + event receiver
+9. spawn the `Ncp` actor and return `NcpHandle` + event receiver
 
 Builder configuration includes policy values, configuration values, concentrator parameters, APS options, link/network keys, join method, PAN ID, IEEE address, radio channel, radio power, reinitialization mode, and channel buffer size.
 
@@ -200,4 +227,5 @@ The `apis-saltans` layer keeps three planes separate:
 2. response-correlation plane (message tags -> `MessageSent` one-shot responses)
 3. event plane (EZSP callbacks -> translated `apis_saltans_hw::Event` stream)
 
-`EzspNetworkManager::terminate()` sends a termination message to the event handler and returns the underlying transport after the handler task exits.
+`Ncp::terminate()` sends a termination message to the event handler and returns
+the underlying transport after the handler task exits.

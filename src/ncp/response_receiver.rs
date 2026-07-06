@@ -6,7 +6,11 @@ use tokio::sync::oneshot::Receiver;
 use crate::Error;
 use crate::ember::Status;
 
-/// Response receiver for Ember responses.
+/// Future resolving an outgoing APS message confirmation.
+///
+/// `Ncp::unicast` and `Ncp::multicast` return this value after the immediate
+/// send command succeeds. Awaiting it waits for the matching `messageSent`
+/// callback and resolves to the APS sequence number on success.
 #[derive(Debug)]
 pub struct ResponseReceiver {
     inner: Receiver<Result<Status, u8>>,
@@ -14,7 +18,7 @@ pub struct ResponseReceiver {
 }
 
 impl ResponseReceiver {
-    /// Create a new response receiver.
+    /// Creates a new response receiver from a `messageSent` status channel and APS sequence.
     #[must_use]
     pub const fn new(inner: Receiver<Result<Status, u8>>, seq: u8) -> Self {
         Self { inner, seq }

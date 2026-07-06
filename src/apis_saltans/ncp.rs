@@ -6,19 +6,17 @@
 //! `messageSent` callbacks can be correlated with the originating request. The
 //! APS profile and cluster are taken from `apis_saltans_hw::Frame` metadata;
 //! the local source endpoint is selected by [`crate::Ncp`] from the registered
-//! endpoint output clusters.
+//! endpoint output clusters. Unicast sends address one destination endpoint per
+//! call; callers that need fan-out should issue multiple unicast requests.
 
 use std::collections::BTreeMap;
 use std::time::Duration;
 
 use apis_saltans_core::Endpoint;
-use apis_saltans_hw::{
-    Error, FoundNetwork, Frame, NcpDriver, ParallelUnicastResult, ScannedChannel,
-};
+use apis_saltans_hw::{Error, FoundNetwork, Frame, NcpDriver, ScannedChannel};
 use macaddr::MacAddr8;
 
 use crate::ember::concentrator;
-use crate::types::ByteSizedVec;
 use crate::{Configuration, Messaging, Ncp, Networking, Security, Utilities};
 
 mod builder;
@@ -100,7 +98,6 @@ where
             destination_endpoint.into(),
             payload.into_iter().collect(),
         )
-        .await?
         .await
         .map_err(Into::into)
     }
@@ -122,7 +119,6 @@ where
             metadata.profile().broadcast_endpoint().into(),
             payload.into_iter().collect(),
         )
-        .await?
         .await
         .map_err(Into::into)
     }
@@ -139,42 +135,5 @@ where
         )
         .await
         .map_err(Into::into)
-    }
-
-    async fn parallel_unicast(
-        &mut self,
-        targets: BTreeMap<u16, Box<[Endpoint]>>,
-        frame: Frame,
-    ) -> ParallelUnicastResult {
-        let (metadata, payload) = frame.into_parts();
-        let mut responses = BTreeMap::new();
-        let payload: ByteSizedVec<u8> = payload.into_iter().collect();
-
-        for (short_id, endpoint) in targets.into_iter().flat_map(|(short_id, endpoints)| {
-            endpoints
-                .into_iter()
-                .map(move |endpoint| (short_id, endpoint))
-        }) {
-            responses.insert(
-                (short_id, endpoint),
-                Self::unicast(
-                    self,
-                    short_id,
-                    metadata.profile().into(),
-                    metadata.cluster_id(),
-                    endpoint.into(),
-                    payload.clone(),
-                )
-                .await?,
-            );
-        }
-
-        let mut results = BTreeMap::new();
-
-        for (ident, response) in responses {
-            results.insert(ident, response.await.map_err(Into::into));
-        }
-
-        Ok(results)
     }
 }

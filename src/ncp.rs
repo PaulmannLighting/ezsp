@@ -21,7 +21,6 @@ use tokio::task::{JoinError, JoinHandle};
 
 pub use self::builder::Builder;
 pub use self::message::Message;
-use self::response_receiver::ResponseReceiver;
 pub use self::scans::Scans;
 use crate::ember::aps;
 use crate::ember::message::Destination;
@@ -34,7 +33,6 @@ use crate::{Callback, Error, Messaging, Networking, ember};
 
 mod builder;
 mod message;
-mod response_receiver;
 mod scans;
 
 // The ZDP profile ID.
@@ -270,7 +268,7 @@ where
         cluster_id: u16,
         destination_endpoint: u8,
         message: ByteSizedVec<u8>,
-    ) -> Result<ResponseReceiver, Error> {
+    ) -> Result<u8, Error> {
         let tag = self.next_message_tag();
         let aps_frame = self.next_aps_frame(
             profile_id,
@@ -297,7 +295,10 @@ where
             .send_unicast(destination, aps_frame, tag, message)
             .await?;
 
-        Ok(ResponseReceiver::new(rx, seq))
+        match rx.await? {
+            Ok(ember::Status::Success) => Ok(seq),
+            other => Err(Error::Status(Status::Ember(other))),
+        }
     }
 
     /// Sends a multicast APS message and returns a future for its `messageSent` status.
@@ -323,7 +324,7 @@ where
         cluster_id: u16,
         destination_endpoint: u8,
         message: ByteSizedVec<u8>,
-    ) -> Result<ResponseReceiver, Error> {
+    ) -> Result<u8, Error> {
         let tag = self.next_message_tag();
         let aps_frame = self.next_aps_frame(
             profile_id,
@@ -349,7 +350,10 @@ where
             .send_multicast(aps_frame, hops, radius, tag, message)
             .await?;
 
-        Ok(ResponseReceiver::new(rx, seq))
+        match rx.await? {
+            Ok(ember::Status::Success) => Ok(seq),
+            other => Err(Error::Status(Status::Ember(other))),
+        }
     }
 
     /// Sends a broadcast APS message and waits for its `messageSent` status.

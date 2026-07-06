@@ -169,7 +169,8 @@ aggregates scan callbacks for `NcpDriver` scan calls and correlates
 `messageSent` callbacks with outgoing message tags. Outgoing `NcpDriver` frames
 use the frame metadata for the APS profile and cluster; unicast calls use the
 requested destination endpoint, while multicast and broadcast calls use the
-profile's broadcast endpoint.
+profile's broadcast endpoint. Unicast sends target one destination endpoint per
+call; callers that need fan-out should issue multiple unicast requests.
 
 ## Legal
 

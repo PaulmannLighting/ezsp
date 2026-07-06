@@ -245,7 +245,9 @@ The `apis-saltans` layer keeps three planes separate:
 For outgoing `NcpDriver` APS sends, the adapter takes the profile and cluster
 from `apis_saltans_hw::Frame` metadata. Unicast sends pass through the requested
 destination endpoint; multicast and broadcast sends use the profile's broadcast
-endpoint. Source endpoint selection remains centralized in `Ncp`.
+endpoint. Unicast sends are single-target operations; fan-out is represented as
+multiple unicast requests. Source endpoint selection remains centralized in
+`Ncp`.
 
 `Ncp::terminate()` sends a termination message to the event handler and returns
 the underlying transport after the handler task exits.

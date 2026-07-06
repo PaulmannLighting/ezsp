@@ -7,7 +7,7 @@ repository = "https://github.com/PaulmannLighting/ezsp"
 keywords = ["Ember", "ZNet", "Serial", "Zigbee"]
 categories = ["hardware-support", "network-programming"]
 documentation = "https://docs.rs/ezsp"
-version = "5.2.1"
+version = "6.0.0"
 edition = "2024"
 exclude = [".github", ".gitignore", "ARCHITECTURE.md"]
 

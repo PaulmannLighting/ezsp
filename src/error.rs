@@ -47,6 +47,9 @@ pub enum Error {
         negotiated: version::Response,
     },
 
+    /// No configured local endpoint advertises the requested output cluster.
+    NoMatchingSourceEndpoint(u16),
+
     /// An error occurred while receiving from a channel.
     RecvError(RecvError),
 
@@ -79,6 +82,9 @@ impl Display for Error {
                     negotiated.protocol_version()
                 )
             }
+            Self::NoMatchingSourceEndpoint(cluster_id) => {
+                write!(f, "No matching source endpoint found: {cluster_id}")
+            }
             Self::RecvError(error) => write!(f, "Receive error: {error}"),
             Self::SendError => write!(f, "Send error"),
             Self::NotConfigured => write!(f, "NCP is not configured"),
@@ -95,7 +101,8 @@ impl core::error::Error for Error {
             Self::Status(status) => Some(status),
             Self::ValueError(value_error) => Some(value_error),
             Self::RecvError(error) => Some(error),
-            Self::UnexpectedResponse(_)
+            Self::NoMatchingSourceEndpoint(_)
+            | Self::UnexpectedResponse(_)
             | Self::InvalidCommand(_)
             | Self::ProtocolVersionMismatch { .. }
             | Self::SendError

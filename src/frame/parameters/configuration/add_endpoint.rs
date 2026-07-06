@@ -74,6 +74,18 @@ impl Clusters {
             output_clusters,
         }
     }
+
+    /// Return the input clusters.
+    #[must_use]
+    pub fn input_clusters(&self) -> &[u16] {
+        &self.input_clusters
+    }
+
+    /// Return the output clusters.
+    #[must_use]
+    pub fn output_clusters(&self) -> &[u16] {
+        &self.output_clusters
+    }
 }
 
 impl FromLeStream for Clusters {

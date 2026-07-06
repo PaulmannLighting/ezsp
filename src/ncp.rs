@@ -1,9 +1,10 @@
 //! High-level EZSP Network Co-Processor helper.
 //!
 //! [`Ncp`] wraps an EZSP [`Transport`](crate::Transport) and adds the state
-//! needed by host-side Zigbee workflows: APS sequence numbers, EZSP message
-//! tags, transaction sequence numbers, scan aggregation, message-sent
-//! correlation, and callback dispatch through a background event handler.
+//! needed by host-side Zigbee workflows: endpoint cluster metadata, APS
+//! sequence numbers, EZSP message tags, transaction sequence numbers, scan
+//! aggregation, message-sent correlation, and callback dispatch through a
+//! background event handler.
 //!
 //! The type is available without the `apis-saltans` feature. When that feature
 //! is enabled, additional implementations adapt [`Ncp`] and [`Builder`] to the
@@ -26,6 +27,7 @@ use crate::ember::aps;
 use crate::ember::message::Destination;
 use crate::error::Status;
 use crate::ezsp::network::scan;
+use crate::parameters::configuration::add_endpoint::Clusters;
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 use crate::types::ByteSizedVec;
 use crate::{Callback, Error, Messaging, Networking, ember};
@@ -39,39 +41,44 @@ mod scans;
 ///
 /// `Ncp<T>` owns the underlying transport and dereferences to it, so all normal
 /// EZSP command traits remain available. Its own methods provide higher-level
-/// operations that need callback correlation, such as scans and outgoing APS
-/// message confirmation.
+/// operations that need callback correlation or local host state, such as
+/// scans, outgoing APS message confirmation, and automatic source endpoint
+/// selection from the configured endpoint cluster lists.
 #[derive(Debug)]
 pub struct Ncp<T> {
     transport: T,
-    profile: u16,
     aps_options: aps::Options,
     message_tag: u8,
     aps_seq: u8,
     transaction_seq: u8,
     event_handler_proxy: Sender<Message>,
     event_handler_handle: JoinHandle<()>,
+    endpoints: Box<[Clusters]>,
 }
 
 impl<T> Ncp<T> {
-    /// Creates a new `Ncp` with the given transport and event handler.
+    /// Creates a new `Ncp` with the given transport, event handler, and endpoints.
+    ///
+    /// `endpoints` must contain the local endpoint cluster metadata in endpoint
+    /// order. Outgoing APS helpers use this list to select the source endpoint
+    /// for a cluster.
     #[must_use]
     pub const fn new(
         transport: T,
-        profile: u16,
         aps_options: aps::Options,
         event_handler_proxy: Sender<Message>,
         event_handler_handle: JoinHandle<()>,
+        endpoints: Box<[Clusters]>,
     ) -> Self {
         Self {
             transport,
-            profile,
             aps_options,
             message_tag: 0,
             aps_seq: 0,
             transaction_seq: 0,
             event_handler_proxy,
             event_handler_handle,
+            endpoints,
         }
     }
 
@@ -102,17 +109,41 @@ impl<T> Ncp<T> {
         seq
     }
 
+    /// Returns the first local endpoint that lists the given cluster as an output cluster.
+    ///
+    /// Endpoints are stored in the same order they were supplied to the builder.
+    /// The returned endpoint number is one-based, matching the EZSP endpoint
+    /// numbering used for outgoing APS frames.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoMatchingSourceEndpoint`] when no configured local
+    /// endpoint advertises `cluster_id` as an output cluster.
+    pub fn source_endpoint(&self, cluster_id: u16) -> Result<u8, Error> {
+        self.endpoints
+            .iter()
+            .enumerate()
+            .find_map(|(index, endpoint)| {
+                if endpoint.output_clusters().contains(&cluster_id) {
+                    index.checked_add(1).and_then(|index| index.try_into().ok())
+                } else {
+                    None
+                }
+            })
+            .ok_or(Error::NoMatchingSourceEndpoint(cluster_id))
+    }
+
     /// Creates a new APS frame with the given parameters.
-    fn next_aps_frame(
+    const fn next_aps_frame(
         &mut self,
-        profile_id: Option<u16>,
+        profile_id: u16,
         cluster_id: u16,
         source_endpoint: u8,
         destination_endpoint: u8,
         group_id: u16,
     ) -> aps::Frame {
         aps::Frame::new(
-            profile_id.unwrap_or(self.profile),
+            profile_id,
             cluster_id,
             source_endpoint,
             destination_endpoint,
@@ -213,19 +244,23 @@ where
 {
     /// Sends a unicast APS message and returns a future for its `messageSent` status.
     ///
+    /// The APS frame uses `profile_id`, `cluster_id`, and
+    /// `destination_endpoint` directly. Its source endpoint is selected from
+    /// the first configured local endpoint that lists `cluster_id` as an output
+    /// cluster.
+    ///
     /// The returned response receiver resolves to the APS sequence number if
     /// the stack reports `EMBER_SUCCESS`.
     ///
     /// # Errors
     ///
-    /// Returns an [`Error`] if registering the message tag or sending the EZSP
-    /// command fails.
+    /// Returns an [`Error`] if no matching source endpoint exists, registering
+    /// the message tag fails, or sending the EZSP command fails.
     pub async fn unicast(
         &mut self,
         short_id: u16,
-        profile_id: Option<u16>,
+        profile_id: u16,
         cluster_id: u16,
-        source_endpoint: u8,
         destination_endpoint: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<ResponseReceiver, Error> {
@@ -233,7 +268,7 @@ where
         let aps_frame = self.next_aps_frame(
             profile_id,
             cluster_id,
-            source_endpoint,
+            self.source_endpoint(cluster_id)?,
             destination_endpoint,
             0x0000,
         );
@@ -260,22 +295,25 @@ where
 
     /// Sends a multicast APS message and returns a future for its `messageSent` status.
     ///
+    /// The APS frame uses `profile_id`, `cluster_id`, `destination_endpoint`,
+    /// and `group_id` directly. Its source endpoint is selected from the first
+    /// configured local endpoint that lists `cluster_id` as an output cluster.
+    ///
     /// The returned response receiver resolves to the APS sequence number if
     /// the stack reports `EMBER_SUCCESS`.
     ///
     /// # Errors
     ///
-    /// Returns an [`Error`] if registering the message tag or sending the EZSP
-    /// command fails.
+    /// Returns an [`Error`] if no matching source endpoint exists, registering
+    /// the message tag fails, or sending the EZSP command fails.
     #[expect(clippy::too_many_arguments)]
     pub async fn multicast(
         &mut self,
         group_id: u16,
         hops: u8,
         radius: u8,
-        profile_id: Option<u16>,
+        profile_id: u16,
         cluster_id: u16,
-        source_endpoint: u8,
         destination_endpoint: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<ResponseReceiver, Error> {
@@ -283,7 +321,7 @@ where
         let aps_frame = self.next_aps_frame(
             profile_id,
             cluster_id,
-            source_endpoint,
+            self.source_endpoint(cluster_id)?,
             destination_endpoint,
             group_id,
         );
@@ -309,18 +347,22 @@ where
 
     /// Sends a broadcast APS message and waits for its `messageSent` status.
     ///
+    /// The APS frame uses `profile_id`, `cluster_id`, and
+    /// `destination_endpoint` directly. Its source endpoint is selected from
+    /// the first configured local endpoint that lists `cluster_id` as an output
+    /// cluster.
+    ///
     /// # Errors
     ///
-    /// Returns an [`Error`] if registering the message tag, sending the EZSP
-    /// command, or receiving a successful `messageSent` callback fails.
-    #[expect(clippy::too_many_arguments)]
+    /// Returns an [`Error`] if no matching source endpoint exists, registering
+    /// the message tag fails, sending the EZSP command fails, or receiving a
+    /// successful `messageSent` callback fails.
     pub async fn broadcast(
         &mut self,
         short_id: u16,
         radius: u8,
-        profile_id: Option<u16>,
+        profile_id: u16,
         cluster_id: u16,
-        source_endpoint: u8,
         destination_endpoint: u8,
         message: ByteSizedVec<u8>,
     ) -> Result<u8, Error> {
@@ -328,7 +370,7 @@ where
         let aps_frame = self.next_aps_frame(
             profile_id,
             cluster_id,
-            source_endpoint,
+            self.source_endpoint(cluster_id)?,
             destination_endpoint,
             0x0000,
         );

@@ -17,7 +17,9 @@ const RADIO_POWER: i8 = 8;
 /// The builder stores EZSP policies, stack configuration values, endpoint and
 /// security inputs, radio settings, and callback buffers until a feature-specific
 /// startup implementation consumes it. With the `apis-saltans` feature enabled,
-/// this builder implements `apis_saltans_hw::Start`.
+/// this builder implements `apis_saltans_hw::Start`; the supplied endpoint
+/// descriptors are also retained as cluster metadata so [`Ncp`](crate::Ncp) can
+/// select source endpoints for outgoing APS frames.
 #[cfg_attr(not(feature = "apis-saltans"), expect(dead_code))]
 pub struct Builder<T> {
     pub(crate) transport: T,

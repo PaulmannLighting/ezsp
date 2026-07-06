@@ -15,10 +15,10 @@ exclude = [".github", ".gitignore", "ARCHITECTURE.md"]
 all-features = true
 
 [dependencies]
-apis-saltans-aps = { version = "0.2", optional = true }
-apis-saltans-core = { version = "0.3", optional = true }
-apis-saltans-hw = { version = "0.2", optional = true }
-apis-saltans-zdp = { version = "0.2", optional = true }
+apis-saltans-aps = { version = "0.3", optional = true }
+apis-saltans-core = { version = "0.4", optional = true }
+apis-saltans-hw = { version = "0.3", optional = true }
+apis-saltans-zdp = { version = "0.3", optional = true }
 ashv2 = { version = "8", git = "https://github.com/PaulmannLighting/ashv2/", optional = true }
 bitflags = "2"
 enum-iterator = "2"

@@ -1,9 +1,10 @@
 //! Conversion implementations between EZSP callback data and `apis-saltans` types.
 //!
 //! These conversions are used by the feature-gated NCP driver adapter and event
-//! handler. They translate incoming APS frames, scan results, join/leave
-//! callbacks, and stack status callbacks into the types expected by
-//! `apis_saltans_aps`, `apis_saltans_core`, and `apis_saltans_hw`.
+//! handler. They translate incoming APS frames, endpoint descriptors, scan
+//! results, join/leave callbacks, and stack status callbacks into the types
+//! expected by `apis_saltans_aps`, `apis_saltans_core`,
+//! `apis_saltans_hw`, and the EZSP endpoint registration command.
 
 use apis_saltans_aps::{Data, Destination, Extended};
 use log::trace;
@@ -13,6 +14,7 @@ use crate::ember::message::Incoming;
 use crate::parameters::messaging::handler::IncomingMessage;
 
 mod address;
+mod clusters;
 mod error;
 mod event;
 mod found_network;

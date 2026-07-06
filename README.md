@@ -128,6 +128,8 @@ available.
 - neighbor table collection,
 - unicast and multicast APS sends with `messageSent` confirmation,
 - broadcast APS sends with immediate confirmation,
+- source endpoint selection for outgoing APS frames from the configured local
+  endpoint output clusters,
 - message tag, APS sequence, and transaction sequence counters,
 - clean event-handler shutdown through `Ncp::terminate()`.
 
@@ -135,6 +137,11 @@ available.
 policies, configuration values, security keys, APS options, concentrator
 settings, network formation settings, and channel buffer sizing for the startup
 implementation.
+
+Outgoing APS helper methods take the APS profile ID, cluster ID, destination
+endpoint, and message payload. They derive the source endpoint from the first
+configured local endpoint that advertises the cluster ID as an output cluster.
+If no endpoint matches, the send fails with `Error::NoMatchingSourceEndpoint`.
 
 If `ashv2` is enabled, `Ncp::ashv2(serial_port)` and
 `Builder::<uart::Uart>::ashv2(serial_port)` create a builder backed by the
@@ -149,7 +156,9 @@ When `apis-saltans` is enabled, the crate adapts `Ncp` and `Builder` to the
   `T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync`.
 - `Builder<T>: apis_saltans_hw::Start` when `T: Transport + Sync + 'static`.
 - `Start::start(endpoints)` configures the EZSP stack, starts callback
-  translation, spawns the NCP actor, and returns
+  translation, registers each `SimpleDescriptor` as an EZSP endpoint, stores
+  the descriptor cluster lists for later source endpoint selection, spawns the
+  NCP actor, and returns
   `(apis_saltans_hw::NcpHandle, tokio::sync::mpsc::Receiver<apis_saltans_hw::Event>)`.
 - `Ncp::terminate()` stops the event handler and returns the underlying transport.
 
@@ -157,7 +166,10 @@ The integration layer translates EZSP callbacks into `apis_saltans_hw::Event`,
 including network-up/down/open/closed events, child join/leave events,
 trust-center join/rejoin/leave events, and incoming APS messages. It also
 aggregates scan callbacks for `NcpDriver` scan calls and correlates
-`messageSent` callbacks with outgoing message tags.
+`messageSent` callbacks with outgoing message tags. Outgoing `NcpDriver` frames
+use the frame metadata for the APS profile and cluster; unicast calls use the
+requested destination endpoint, while multicast and broadcast calls use the
+profile's broadcast endpoint.
 
 ## Legal
 

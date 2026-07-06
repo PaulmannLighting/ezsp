@@ -82,11 +82,19 @@ correlation or local sequence state:
 - unicast and multicast APS sends, resolved by awaiting the matching
   `messageSent` callback
 - broadcast APS sends with status validation
+- source endpoint selection for outgoing APS frames from configured local
+  endpoint output clusters
 - message tag, APS sequence, and transaction sequence counters
 - background event-handler termination through `Ncp::terminate()`
 
 `Ncp<T>` dereferences to `T`, so callers can still use all command traits on the
 underlying transport.
+
+The helper stores one cluster-list record per local endpoint. Before sending an
+APS frame, it searches those records for the first endpoint whose output cluster
+list contains the requested cluster ID and uses that one-based endpoint number
+as the APS source endpoint. If no endpoint advertises the cluster, the helper
+returns `Error::NoMatchingSourceEndpoint` before issuing the EZSP send command.
 
 `Builder<T>` stores startup configuration for an `Ncp`: EZSP policy and
 configuration values, concentrator parameters, APS options, link and network
@@ -185,6 +193,8 @@ This layer is implemented in `src/apis_saltans`.
   - collects active and energy scan callback streams into one-shot scan responses
 - conversion modules (`src/apis_saltans/conversion`)
   - map EZSP structures into `apis-saltans` address, APS data, event, found-network, and scanned-channel types
+  - convert `apis_saltans_zdp::SimpleDescriptor` endpoint cluster lists into
+    the EZSP cluster metadata stored by `Ncp`
   - convert `ChildJoin`, `StackStatus`, and `TrustCenterJoin` callbacks into join/leave/rejoin/network events
 
 ### Trait coupling
@@ -219,6 +229,11 @@ helper that accepts explicit `uart::Buffers`.
 
 Builder configuration includes policy values, configuration values, concentrator parameters, APS options, link/network keys, join method, PAN ID, IEEE address, radio channel, radio power, reinitialization mode, and channel buffer size.
 
+The same `SimpleDescriptor` list used for `add_endpoint` is converted into
+`Clusters` and stored in the resulting `Ncp`. That stored metadata is not used
+for incoming event translation; it is used by the outgoing APS helpers to choose
+the local source endpoint for each cluster ID.
+
 ### Data planes
 
 The `apis-saltans` layer keeps three planes separate:
@@ -226,6 +241,11 @@ The `apis-saltans` layer keeps three planes separate:
 1. command plane (`NcpDriver` calls -> EZSP commands)
 2. response-correlation plane (message tags -> `MessageSent` one-shot responses)
 3. event plane (EZSP callbacks -> translated `apis_saltans_hw::Event` stream)
+
+For outgoing `NcpDriver` APS sends, the adapter takes the profile and cluster
+from `apis_saltans_hw::Frame` metadata. Unicast sends pass through the requested
+destination endpoint; multicast and broadcast sends use the profile's broadcast
+endpoint. Source endpoint selection remains centralized in `Ncp`.
 
 `Ncp::terminate()` sends a termination message to the event handler and returns
 the underlying transport after the handler task exits.

@@ -25,9 +25,10 @@ where
     /// Configures the EZSP stack and starts an `apis_saltans_hw` NCP actor.
     ///
     /// The startup sequence applies configured policies and stack values,
-    /// registers the supplied endpoints, initializes or reforms the Zigbee
-    /// network, waits for `NetworkUp`, sends a many-to-one route request, and
-    /// returns an `apis_saltans_hw::NcpHandle` plus the translated event stream.
+    /// registers the supplied endpoints, stores their cluster lists for later
+    /// APS source endpoint selection, initializes or reforms the Zigbee network,
+    /// waits for `NetworkUp`, sends a many-to-one route request, and returns an
+    /// `apis_saltans_hw::NcpHandle` plus the translated event stream.
     ///
     /// # Errors
     ///
@@ -152,15 +153,10 @@ where
 
         let (_handle, ncp) = Ncp::new(
             self.transport,
-            // FIXME: Use first valid endpoint for now.
-            endpoints
-                .iter()
-                .find_map(|endpoint| endpoint.profile().ok())
-                .ok_or(apis_saltans_hw::Error::NoEndpoints)?
-                .into(),
             self.aps_options,
             message_tx,
             event_mux_handle,
+            endpoints.iter().map(Into::into).collect(),
         )
         .spawn(self.buffers);
         Ok((ncp, events_rx))

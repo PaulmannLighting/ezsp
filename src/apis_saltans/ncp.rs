@@ -3,7 +3,10 @@
 //! This module maps the generic hardware-driver operations expected by
 //! `apis-saltans` to EZSP command traits. Direct NCP operations are forwarded to
 //! the wrapped transport, while APS sends use [`crate::Ncp`] so that EZSP
-//! `messageSent` callbacks can be correlated with the originating request.
+//! `messageSent` callbacks can be correlated with the originating request. The
+//! APS profile and cluster are taken from `apis_saltans_hw::Frame` metadata;
+//! the local source endpoint is selected by [`crate::Ncp`] from the registered
+//! endpoint output clusters.
 
 use std::collections::BTreeMap;
 use std::time::Duration;
@@ -91,12 +94,8 @@ where
         let (metadata, payload) = frame.into_parts();
         self.unicast(
             short_id,
-            metadata.profile().map(Into::into),
+            metadata.profile().into(),
             metadata.cluster_id(),
-            metadata
-                .source_endpoint()
-                .unwrap_or(destination_endpoint)
-                .into(),
             destination_endpoint.into(),
             payload.iter().copied().collect(),
         )
@@ -117,13 +116,9 @@ where
             group_id,
             hops,
             radius,
-            metadata.profile().map(Into::into),
+            metadata.profile().into(),
             metadata.cluster_id(),
-            metadata.source_endpoint().unwrap_or_default().into(),
-            metadata
-                .source_endpoint()
-                .unwrap_or(Endpoint::Broadcast)
-                .into(),
+            metadata.profile().broadcast_endpoint().into(),
             payload.iter().copied().collect(),
         )
         .await?
@@ -136,13 +131,9 @@ where
         self.broadcast(
             short_id,
             radius,
-            metadata.profile().map(Into::into),
+            metadata.profile().into(),
             metadata.cluster_id(),
-            metadata.source_endpoint().unwrap_or_default().into(),
-            metadata
-                .source_endpoint()
-                .unwrap_or(Endpoint::Broadcast)
-                .into(),
+            metadata.profile().broadcast_endpoint().into(),
             payload.iter().copied().collect(),
         )
         .await
@@ -167,9 +158,8 @@ where
                 Self::unicast(
                     self,
                     short_id,
-                    metadata.profile().map(Into::into),
+                    metadata.profile().into(),
                     metadata.cluster_id(),
-                    metadata.source_endpoint().unwrap_or(endpoint).into(),
                     endpoint.into(),
                     payload.iter().copied().collect(),
                 )

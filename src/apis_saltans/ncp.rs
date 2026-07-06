@@ -26,10 +26,6 @@ impl<T> NcpDriver for Ncp<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync,
 {
-    fn next_transaction_seq(&mut self) -> u8 {
-        Self::next_transaction_seq(self)
-    }
-
     async fn get_pan_id(&mut self) -> Result<u16, Error> {
         Ok(self.get_node_id().await?)
     }

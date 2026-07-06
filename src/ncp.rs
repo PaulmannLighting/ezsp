@@ -51,7 +51,6 @@ pub struct Ncp<T> {
     aps_options: aps::Options,
     message_tag: u8,
     aps_seq: u8,
-    transaction_seq: u8,
     event_handler_proxy: Sender<Message>,
     event_handler_handle: JoinHandle<()>,
     endpoints: Box<[Clusters]>,
@@ -76,7 +75,6 @@ impl<T> Ncp<T> {
             aps_options,
             message_tag: 0,
             aps_seq: 0,
-            transaction_seq: 0,
             event_handler_proxy,
             event_handler_handle,
             endpoints,
@@ -100,13 +98,6 @@ impl<T> Ncp<T> {
     const fn next_aps_seq(&mut self) -> u8 {
         let seq = self.aps_seq;
         self.aps_seq = self.aps_seq.wrapping_add(1);
-        seq
-    }
-
-    /// Returns the next transaction sequence number and increments the internal counter.
-    pub const fn next_transaction_seq(&mut self) -> u8 {
-        let seq = self.transaction_seq;
-        self.transaction_seq = self.transaction_seq.wrapping_add(1);
         seq
     }
 

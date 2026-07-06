@@ -1,8 +1,8 @@
-use apis_saltans_hw::{FoundNetwork, ScannedChannel};
 use tokio::sync::oneshot::Sender;
 
 use crate::Callback;
 use crate::ember::Status;
+use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 
 /// Messages exchanged with the message handler.
 #[derive(Debug)]
@@ -11,10 +11,10 @@ pub enum Message {
     Callback(Box<Callback>),
 
     /// A request to scan networks.
-    NetworkScan(Sender<Vec<FoundNetwork>>),
+    NetworkScan(Sender<Vec<NetworkFound>>),
 
     /// A request to scan channels.
-    ChannelScan(Sender<Vec<ScannedChannel>>),
+    ChannelScan(Sender<Vec<EnergyScanResult>>),
 
     /// Register message sent
     Sent {
@@ -40,14 +40,14 @@ impl From<Callback> for Message {
     }
 }
 
-impl From<Sender<Vec<FoundNetwork>>> for Message {
-    fn from(sender: Sender<Vec<FoundNetwork>>) -> Self {
+impl From<Sender<Vec<NetworkFound>>> for Message {
+    fn from(sender: Sender<Vec<NetworkFound>>) -> Self {
         Self::NetworkScan(sender)
     }
 }
 
-impl From<Sender<Vec<ScannedChannel>>> for Message {
-    fn from(sender: Sender<Vec<ScannedChannel>>) -> Self {
+impl From<Sender<Vec<EnergyScanResult>>> for Message {
+    fn from(sender: Sender<Vec<EnergyScanResult>>) -> Self {
         Self::ChannelScan(sender)
     }
 }

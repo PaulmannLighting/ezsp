@@ -1,4 +1,3 @@
-use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use apis_saltans_hw::{AwaitEvent, Event, EventTranslator, NcpDriver, NcpHandle, Start, bridge};
@@ -11,170 +10,13 @@ use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, channel};
 
 use super::event_handler::EventHandler;
-use crate::apis_saltans::EzspNetworkManager;
 use crate::ember::security::initial;
-use crate::ember::{aps, concentrator, join, network};
-use crate::ezsp::network::InitBitmask;
-use crate::ezsp::{config, policy};
+use crate::ember::{concentrator, network};
+use crate::ezsp::config;
 use crate::{
-    Callback, Configuration, ConfigurationExt, Displayable, Error, Messaging, Networking,
+    Builder, Configuration, ConfigurationExt, Displayable, Error, Messaging, Ncp, Networking,
     PolicyExt, Security, Transport, Utilities,
 };
-
-mod ashv2;
-
-const RADIO_CHANNEL: u8 = 11;
-const RADIO_POWER: i8 = 8;
-
-/// Builder for Zigbee device configuration.
-pub struct Builder<T> {
-    transport: T,
-    callbacks: Receiver<Callback>,
-    policy: BTreeMap<policy::Id, u8>,
-    configuration: BTreeMap<config::Id, u16>,
-    concentrator: Option<concentrator::Parameters>,
-    init_bitmask: InitBitmask,
-    aps_options: aps::Options,
-    link_key: Option<Key>,
-    network_key: Option<Key>,
-    join_method: join::Method,
-    pan_id: Option<u16>,
-    ieee_address: Option<MacAddr8>,
-    radio_channel: u8,
-    radio_power: i8,
-    reinitialize: bool,
-    buffers: usize,
-}
-
-impl<T> Builder<T> {
-    /// Creates a new `Builder` with the given transport.
-    #[must_use]
-    pub const fn new(transport: T, callbacks: Receiver<Callback>) -> Self {
-        Self {
-            transport,
-            callbacks,
-            policy: BTreeMap::new(),
-            configuration: BTreeMap::new(),
-            concentrator: None,
-            init_bitmask: InitBitmask::NO_OPTIONS,
-            aps_options: aps::Options::empty(),
-            link_key: None,
-            network_key: None,
-            join_method: join::Method::MacAssociation,
-            pan_id: None,
-            ieee_address: None,
-            radio_channel: RADIO_CHANNEL,
-            radio_power: RADIO_POWER,
-            reinitialize: false,
-            buffers: 1024,
-        }
-    }
-
-    /// Adds a policy decision to the configuration.
-    #[must_use]
-    pub fn with_policy(mut self, policy: policy::Id, decision: impl Into<u8>) -> Self {
-        self.policy.insert(policy, decision.into());
-        self
-    }
-
-    /// Adds multiple policy decisions to the configuration.
-    #[must_use]
-    pub fn with_policies(mut self, policies: BTreeMap<policy::Id, u8>) -> Self {
-        self.policy.extend(policies);
-        self
-    }
-
-    /// Adds a configuration value to the configuration.
-    #[must_use]
-    pub fn with_configuration(mut self, config: config::Id, value: u16) -> Self {
-        self.configuration.insert(config, value);
-        self
-    }
-
-    /// Adds multiple configuration values to the configuration.
-    #[must_use]
-    pub fn with_configurations(mut self, configurations: BTreeMap<config::Id, u16>) -> Self {
-        self.configuration.extend(configurations);
-        self
-    }
-
-    /// Sets the concentrator parameters for the configuration.
-    #[must_use]
-    pub const fn with_concentrator(mut self, concentrator: concentrator::Parameters) -> Self {
-        self.concentrator.replace(concentrator);
-        self
-    }
-
-    /// Sets the APS options.
-    #[must_use]
-    pub const fn with_aps_options(mut self, options: aps::Options) -> Self {
-        self.aps_options = options;
-        self
-    }
-
-    /// Sets the link key for the configuration.
-    #[must_use]
-    pub const fn with_link_key(mut self, link_key: Key) -> Self {
-        self.link_key.replace(link_key);
-        self
-    }
-
-    /// Sets the network key for the configuration.
-    #[must_use]
-    pub const fn with_network_key(mut self, network_key: Key) -> Self {
-        self.network_key.replace(network_key);
-        self
-    }
-
-    /// Sets the join method for the configuration.
-    #[must_use]
-    pub const fn with_join_method(mut self, join_method: join::Method) -> Self {
-        self.join_method = join_method;
-        self
-    }
-
-    /// Sets the PAN ID for the configuration.
-    #[must_use]
-    pub const fn with_pan_id(mut self, pan_id: u16) -> Self {
-        self.pan_id.replace(pan_id);
-        self
-    }
-
-    /// Sets the IEEE address for the configuration.
-    #[must_use]
-    pub const fn with_ieee_address(mut self, ieee_address: MacAddr8) -> Self {
-        self.ieee_address.replace(ieee_address);
-        self
-    }
-
-    /// Sets the radio channel for the configuration.
-    #[must_use]
-    pub const fn with_radio_channel(mut self, radio_channel: u8) -> Self {
-        self.radio_channel = radio_channel;
-        self
-    }
-
-    /// Sets the radio power for the configuration.
-    #[must_use]
-    pub const fn with_radio_power(mut self, radio_power: i8) -> Self {
-        self.radio_power = radio_power;
-        self
-    }
-
-    /// Sets whether to reinitialize the network.
-    #[must_use]
-    pub const fn with_reinitialize(mut self, reinitialize: bool) -> Self {
-        self.reinitialize = reinitialize;
-        self
-    }
-
-    /// Set the channels' buffer size.
-    #[must_use]
-    pub const fn with_buffers(mut self, buffers: usize) -> Self {
-        self.buffers = buffers;
-        self
-    }
-}
 
 impl<T> Start for Builder<T>
 where
@@ -298,13 +140,14 @@ where
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
-        let (_handle, ncp) = EzspNetworkManager::new(
+        let (_handle, ncp) = Ncp::new(
             self.transport,
             // FIXME: Use first valid endpoint for now.
             endpoints
                 .iter()
                 .find_map(|endpoint| endpoint.profile().ok())
-                .ok_or(apis_saltans_hw::Error::NoEndpoints)?,
+                .ok_or(apis_saltans_hw::Error::NoEndpoints)?
+                .into(),
             self.aps_options,
             message_tx,
             event_mux_handle,

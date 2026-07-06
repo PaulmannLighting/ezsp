@@ -1,7 +1,5 @@
 //! Zigbee interface implementation.
 
-pub use self::network_manager::EzspNetworkManager;
-
 mod conversion;
 mod error;
-mod network_manager;
+mod ncp;

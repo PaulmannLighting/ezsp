@@ -1,9 +1,9 @@
 use std::collections::VecDeque;
 
-use apis_saltans_hw::{FoundNetwork, ScannedChannel};
 use log::error;
 
 use self::scan::Scan;
+use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 
 mod scan;
 
@@ -11,8 +11,8 @@ mod scan;
 #[derive(Debug, Default)]
 pub struct Scans {
     queue: VecDeque<Scan>,
-    channels: Vec<ScannedChannel>,
-    networks: Vec<FoundNetwork>,
+    channels: Vec<EnergyScanResult>,
+    networks: Vec<NetworkFound>,
 }
 
 impl Scans {
@@ -22,12 +22,12 @@ impl Scans {
     }
 
     /// Add a channel to the channels buffer.
-    pub fn add_channel(&mut self, scanned: ScannedChannel) {
+    pub fn add_channel(&mut self, scanned: EnergyScanResult) {
         self.channels.push(scanned);
     }
 
     /// Add a network to the networks buffer.
-    pub fn add_network(&mut self, found: FoundNetwork) {
+    pub fn add_network(&mut self, found: NetworkFound) {
         self.networks.push(found);
     }
 

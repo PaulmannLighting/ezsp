@@ -3,6 +3,9 @@
 use core::convert::Infallible;
 use core::fmt::{self, Debug, Display, Formatter};
 
+use tokio::sync::mpsc::error::SendError;
+use tokio::sync::oneshot::error::RecvError;
+
 pub use self::decode::Decode;
 pub use self::status::Status;
 pub use self::value_error::ValueError;
@@ -44,6 +47,12 @@ pub enum Error {
         negotiated: version::Response,
     },
 
+    /// An error occurred while receiving from a channel.
+    RecvError(RecvError),
+
+    /// An error while sending though a channel occurred.
+    SendError,
+
     /// The NCP is not configured.
     NotConfigured,
 
@@ -70,6 +79,8 @@ impl Display for Error {
                     negotiated.protocol_version()
                 )
             }
+            Self::RecvError(error) => write!(f, "Receive error: {error}"),
+            Self::SendError => write!(f, "Send error"),
             Self::NotConfigured => write!(f, "NCP is not configured"),
             Self::ChannelClosed => write!(f, "Response channel is closed"),
         }
@@ -83,9 +94,11 @@ impl core::error::Error for Error {
             Self::Decode(decode) => Some(decode),
             Self::Status(status) => Some(status),
             Self::ValueError(value_error) => Some(value_error),
+            Self::RecvError(error) => Some(error),
             Self::UnexpectedResponse(_)
             | Self::InvalidCommand(_)
             | Self::ProtocolVersionMismatch { .. }
+            | Self::SendError
             | Self::NotConfigured
             | Self::ChannelClosed => None,
         }
@@ -174,5 +187,17 @@ impl From<invalid_command::Response> for Error {
 impl From<Infallible> for Error {
     fn from(infallible: Infallible) -> Self {
         match infallible {}
+    }
+}
+
+impl<T> From<SendError<T>> for Error {
+    fn from(_: SendError<T>) -> Self {
+        Self::SendError
+    }
+}
+
+impl From<RecvError> for Error {
+    fn from(error: RecvError) -> Self {
+        Self::RecvError(error)
     }
 }

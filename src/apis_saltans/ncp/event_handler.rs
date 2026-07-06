@@ -6,17 +6,13 @@ use log::{debug, error, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::oneshot;
 
-pub use self::message::Message;
-use self::scans::Scans;
 use crate::Callback;
 use crate::ember::Status;
 use crate::frame::parameters::networking::handler::Handler as Networking;
+pub use crate::ncp::{Message, Scans};
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
 use crate::parameters::security::handler::Handler as Security;
 use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
-
-mod message;
-mod scans;
 
 /// Actor for processing incoming events.
 ///

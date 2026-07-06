@@ -37,6 +37,9 @@ mod message;
 mod response_receiver;
 mod scans;
 
+// The ZDP profile ID.
+const ZDP: u16 = 0x0000;
+
 /// Host-side helper for an EZSP Network Co-Processor.
 ///
 /// `Ncp<T>` owns the underlying transport and dereferences to it, so all normal
@@ -119,7 +122,11 @@ impl<T> Ncp<T> {
     ///
     /// Returns [`Error::NoMatchingSourceEndpoint`] when no configured local
     /// endpoint advertises `cluster_id` as an output cluster.
-    pub fn source_endpoint(&self, cluster_id: u16) -> Result<u8, Error> {
+    pub fn source_endpoint(&self, profile_id: u16, cluster_id: u16) -> Result<u8, Error> {
+        if profile_id == ZDP {
+            return Ok(0);
+        }
+
         self.endpoints
             .iter()
             .enumerate()
@@ -268,7 +275,7 @@ where
         let aps_frame = self.next_aps_frame(
             profile_id,
             cluster_id,
-            self.source_endpoint(cluster_id)?,
+            self.source_endpoint(profile_id, cluster_id)?,
             destination_endpoint,
             0x0000,
         );
@@ -321,7 +328,7 @@ where
         let aps_frame = self.next_aps_frame(
             profile_id,
             cluster_id,
-            self.source_endpoint(cluster_id)?,
+            self.source_endpoint(profile_id, cluster_id)?,
             destination_endpoint,
             group_id,
         );
@@ -370,7 +377,7 @@ where
         let aps_frame = self.next_aps_frame(
             profile_id,
             cluster_id,
-            self.source_endpoint(cluster_id)?,
+            self.source_endpoint(profile_id, cluster_id)?,
             destination_endpoint,
             0x0000,
         );

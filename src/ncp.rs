@@ -313,6 +313,7 @@ where
     ///
     /// Returns an [`Error`] if registering the message tag, sending the EZSP
     /// command, or receiving a successful `messageSent` callback fails.
+    #[expect(clippy::too_many_arguments)]
     pub async fn broadcast(
         &mut self,
         short_id: u16,

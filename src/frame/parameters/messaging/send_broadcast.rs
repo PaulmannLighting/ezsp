@@ -9,7 +9,13 @@ use crate::types::ByteSizedVec;
 
 crate::frame::parameters::frame!(
     0x0036,
-    { destination: NodeId, aps_frame: Frame, radius: u8, message_tag: u8, message_contents: ByteSizedVec<u8> },
+    {
+        destination: NodeId,
+        aps_frame: Frame,
+        radius: u8,
+        message_tag: u8,
+        message_contents: ByteSizedVec<u8>,
+    },
     impl {
         impl Command {
             /// Creates command parameters.

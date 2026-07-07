@@ -13,12 +13,14 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-aps"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9af31f9c1c1c9e51be0d237412efa7e6d8ae531cf83c759ffc2e5f99bc8544c2"
+checksum = "f79a770968775d783f103f32b9ad3f9eb97229438c4f5270d16542531d708564"
 dependencies = [
  "apis-saltans-core",
+ "apis-saltans-nwk",
  "bitflags 2.13.0",
+ "bytes",
  "le-stream",
  "log",
  "num-derive",
@@ -27,9 +29,9 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-core"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74a1325a15c5b43585aaa51ab2e98461438252d889b3f0960180051b49af7a68"
+checksum = "55ec4397bac58d695c0bf9ac0c9e87c4973ed2c03c42cf1db95fb59ff34692a5"
 dependencies = [
  "bitflags 2.13.0",
  "chrono",
@@ -45,17 +47,18 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-hw"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c9cc88b6fb3b3a610fd7983caa4bb81be1189e1525a59e1c10a5c5afccccee9"
+checksum = "f104edc1fa30011df4d1e0c9321ccf7a27fecc102f19bcea53cb7196a803c337"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
+ "apis-saltans-nwk",
  "apis-saltans-zcl",
  "apis-saltans-zdp",
+ "bytes",
  "le-stream",
  "log",
- "macaddr",
  "tokio",
 ]
 
@@ -71,20 +74,29 @@ dependencies = [
 ]
 
 [[package]]
-name = "apis-saltans-zcl"
-version = "0.3.0"
+name = "apis-saltans-nwk"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f144c086efabb7e46cc47e8ee4351a4917a1be9b3ed415773bc0750513e936cb"
+checksum = "6225797420a68b01f3c1984c0dff1c2d50199df899c7e6e641ee7de1f2150c43"
+dependencies = [
+ "apis-saltans-core",
+]
+
+[[package]]
+name = "apis-saltans-zcl"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cfe3ff66adf52216c1c49b8782bcb30b90d9d03dcf1edbc2a9dc1c11b071248b"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
  "apis-saltans-macros",
  "bitflags 2.13.0",
+ "bytes",
  "chrono",
  "either",
  "heapless",
  "le-stream",
- "macaddr",
  "num-derive",
  "num-traits",
  "repr-discriminant",
@@ -92,16 +104,16 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-zdp"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56d89b805ae01ce0153d0f4b6b6e03086baa5e88d9601d77fb30b2958e1702e6"
+checksum = "d96e9894fd3eac6c61b191a6722f46a50125f8bf527fc2dcdab15a25a4f40dff"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
  "bitflags 2.13.0",
+ "bytes",
  "heapless",
  "le-stream",
- "macaddr",
  "num-derive",
  "num-traits",
  "repr-discriminant",
@@ -154,6 +166,12 @@ name = "byteorder"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
+
+[[package]]
+name = "bytes"
+version = "1.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ae3f5d315924270530207e2a68396c3cc547f6dca3fbdca317cfb1a51edb593"
 
 [[package]]
 name = "cc"
@@ -283,14 +301,16 @@ dependencies = [
 
 [[package]]
 name = "ezsp"
-version = "7.2.1"
+version = "7.3.0"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
  "apis-saltans-hw",
+ "apis-saltans-nwk",
  "apis-saltans-zdp",
  "ashv2",
  "bitflags 2.13.0",
+ "bytes",
  "enum-iterator",
  "heapless",
  "le-stream",
@@ -574,9 +594,9 @@ dependencies = [
 
 [[package]]
 name = "rustversion"
-version = "1.0.22"
+version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
+checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
 
 [[package]]
 name = "scopeguard"

@@ -7,7 +7,11 @@ use crate::ember::{Certificate283k1Data, PublicKey283k1Data, Status};
 
 crate::frame::parameters::frame!(
     0x00EA,
-    { am_initiator: bool, partner_certificate: Certificate283k1Data, partner_ephemeral_public_key: PublicKey283k1Data },
+    {
+        am_initiator: bool,
+        partner_certificate: Certificate283k1Data,
+        partner_ephemeral_public_key: PublicKey283k1Data,
+    },
     impl {
         impl Command {
             /// Creates command parameters.

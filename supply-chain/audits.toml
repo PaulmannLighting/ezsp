@@ -7,11 +7,29 @@ criteria = "safe-to-deploy"
 delta = "0.2.0 -> 0.3.0"
 notes = "AI-assisted: reviewed diff 0.2.0 -> 0.3.0; crate source unchanged, only version/dependency bump to apis-saltans-core 0.4."
 
+[[audits.apis-saltans-aps]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.3.0 -> 0.4.0"
+notes = "AI-assisted: reviewed diff 0.3.0 -> 0.4.0; adds APS defragmentation over NWK envelopes and bytes::Bytes payloads, plus dependency bumps. Existing unsafe constructors remain invariant wrappers; no new filesystem/process/network capabilities."
+
 [[audits.apis-saltans-core]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.3.0 -> 0.4.0"
 notes = "AI-assisted: reviewed diff 0.3.0 -> 0.4.0; adds Cluster profile/manufacturer metadata and Profile::broadcast_endpoint helper. No unsafe code or ambient I/O/process/network changes."
+
+[[audits.apis-saltans-core]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.4.0 -> 0.5.0"
+notes = "AI-assisted: reviewed diff 0.4.0 -> 0.5.0; introduces IeeeAddress/Eui64 newtype around MacAddr8 and migrates address-bearing types to it. Existing unsafe endpoint constructor unchanged; no new ambient capabilities."
+
+[[audits.apis-saltans-hw]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.6.0"
+notes = "AI-assisted: inspected source 0.6.0 and reviewed diff 0.3.0 -> 0.6.0; frame payloads move from Box<[u8]> to bytes::Bytes, events carry NWK envelopes, and NCP traits use IeeeAddress. Unsafe frame constructor/conversions remain metadata-payload invariant wrappers; no new ambient capabilities beyond caller-provided async driver."
 
 [[audits.apis-saltans-hw]]
 who = "Codex"
@@ -19,17 +37,35 @@ criteria = "safe-to-deploy"
 delta = "0.2.0 -> 0.3.0"
 notes = "AI-assisted: reviewed diff 0.2.0 -> 0.3.0; frame metadata now requires profile and stores Box<[u8]> payloads, plus dependency bumps. Existing unsafe constructors remain invariant-only wrappers with safe constructors; no new I/O/process/network capabilities."
 
+[[audits.apis-saltans-nwk]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.2.0"
+notes = "AI-assisted: inspected full source 0.2.0; no_std value types for NWK Envelope, Metadata, and Source with optional serde/le-stream derives. No unsafe code and no filesystem/process/network capabilities."
+
 [[audits.apis-saltans-zcl]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.2.0 -> 0.3.0"
 notes = "AI-assisted: reviewed diff 0.2.0 -> 0.3.0; macro/trait changes move profile/manufacturer metadata onto Cluster implementations. No new ambient capabilities; existing unsafe APIs remain invariant/documentation helpers."
 
+[[audits.apis-saltans-zcl]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.3.0 -> 0.4.0"
+notes = "AI-assisted: reviewed diff 0.3.0 -> 0.4.0; migrates address fields to apis-saltans-core::IeeeAddress and adds TryFrom<APS Data<Bytes>> parsing. Existing unsafe constructors remain invariant wrappers; no new ambient capabilities."
+
 [[audits.apis-saltans-zdp]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.2.0 -> 0.3.0"
 notes = "AI-assisted: reviewed diff 0.2.0 -> 0.3.0; generated ZDP commands now expose Profile::Network metadata and delegate profile through enums. No unsafe code or ambient I/O/process/network changes."
+
+[[audits.apis-saltans-zdp]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.3.0 -> 0.4.0"
+notes = "AI-assisted: reviewed diff 0.3.0 -> 0.4.0; migrates ZDP address fields to IeeeAddress and adds parsing from APS Data<Bytes> with endpoint/destination validation. No unsafe code or new ambient capabilities."
 
 [[audits.ashv2]]
 who = "Codex"
@@ -48,6 +84,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "2.11.1 -> 2.13.0"
 notes = "AI-assisted: reviewed diff 2.11.1 -> 2.13.0"
+
+[[audits.bytes]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "1.12.0"
+notes = "AI-assisted: inspected source 1.12.0 and diff 1.11.1 -> 1.12.0; changes add BytesMut::extend_from_within/try_unsplit, fix zero-length get_int sign extension, and pass vtable data by value while preserving existing refcount/raw-pointer ownership invariants. No filesystem/process/network capabilities in library code."
 
 [[audits.cc]]
 who = "Codex"
@@ -126,6 +168,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 version = "7.0.0"
 notes = "AI-assisted: inspected local crate source for ezsp 7.0.0; NCP API, apis-saltans integration, parameter macros, and documentation updates. Existing unsafe surface is limited to explicitly marked unchecked value constructors; no new ambient capability surface beyond configured transport serial I/O and async channels."
+
+[[audits.ezsp]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "7.3.0"
+notes = "AI-assisted: inspected local crate source for ezsp 7.3.0; updates cover apis-saltans conversion/NCP API changes, documentation, parameter macro callsite formatting, and dependency bumps. No new unsafe code; ambient capability surface remains configured serial transport plus async task/channel usage."
 
 [[audits.ezsp]]
 who = "Codex"
@@ -294,6 +342,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 version = "2.0.0"
 notes = "AI-assisted: inspected full source 2.0.0"
+
+[[audits.rustversion]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "1.0.23"
+notes = "AI-assisted: inspected source 1.0.23 and diff 1.0.22 -> 1.0.23; build script still only invokes configured rustc/wrapper with --version, writes generated data under OUT_DIR, and emits cfgs. No unsafe code; ambient process/filesystem use is expected build-script behavior."
 
 [[audits.serialport]]
 who = "Codex"

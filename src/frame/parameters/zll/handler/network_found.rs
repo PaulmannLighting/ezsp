@@ -2,7 +2,13 @@ use crate::ember::zll::{DeviceInfoRecord, Network};
 
 crate::frame::parameters::handler!(
     0x00B6,
-    { network_info: Network, is_device_info_null: bool, device_info: DeviceInfoRecord, last_hop_lqi: u8, last_hop_rssi: i8 },
+    {
+        network_info: Network,
+        is_device_info_null: bool,
+        device_info: DeviceInfoRecord,
+        last_hop_lqi: u8,
+        last_hop_rssi: i8,
+    },
     impl {
         impl Handler {
             /// Information about the network.

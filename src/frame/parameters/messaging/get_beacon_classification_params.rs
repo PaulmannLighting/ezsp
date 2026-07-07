@@ -9,7 +9,10 @@ use crate::ember::beacon::ClassificationParams;
 crate::frame::parameters::frame!(
     0x00F3,
     {},
-    { status: u8, param: ClassificationParams } => Messaging(messaging)::GetBeaconClassificationParams,
+    {
+        status: u8,
+        param: ClassificationParams,
+    } => Messaging(messaging)::GetBeaconClassificationParams,
     impl {
         /// Converts the response into the [`ClassificationParams`] or an appropriate [`Error`] depending on its status.
         impl TryFrom<Response> for ClassificationParams {

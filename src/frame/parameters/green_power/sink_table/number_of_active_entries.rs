@@ -3,7 +3,9 @@
 crate::frame::parameters::frame!(
     0x0118,
     {},
-    { number_of_entries: u8 } => GreenPower(green_power)::SinkTable(sink_table)::NumberOfActiveEntries,
+    {
+        number_of_entries: u8,
+    } => GreenPower(green_power)::SinkTable(sink_table)::NumberOfActiveEntries,
     impl {
         impl Response {
             /// The number of active entries in the sink table.

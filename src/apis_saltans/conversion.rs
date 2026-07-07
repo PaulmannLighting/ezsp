@@ -7,6 +7,7 @@
 //! `apis_saltans_hw`, and the EZSP endpoint registration command.
 
 use apis_saltans_aps::{Data, Destination, Extended};
+use bytes::Bytes;
 use log::trace;
 
 pub use self::error::ParseApsFrameError;
@@ -15,12 +16,14 @@ use crate::parameters::messaging::handler::IncomingMessage;
 
 mod address;
 mod clusters;
+mod envelope;
 mod error;
 mod event;
 mod found_network;
+mod metadata;
 mod scanned_channel;
 
-impl TryFrom<IncomingMessage> for Data<Vec<u8>> {
+impl TryFrom<IncomingMessage> for Data<Bytes> {
     type Error = ParseApsFrameError;
 
     fn try_from(message: IncomingMessage) -> Result<Self, Self::Error> {

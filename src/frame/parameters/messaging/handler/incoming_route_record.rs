@@ -3,7 +3,13 @@ use crate::types::ByteSizedVec;
 
 crate::frame::parameters::handler!(
     0x0059,
-    { source: NodeId, source_eui: Eui64, last_hop_lqi: u8, last_hop_rssi: i8, relays: ByteSizedVec<u8> },
+    {
+        source: NodeId,
+        source_eui: Eui64,
+        last_hop_lqi: u8,
+        last_hop_rssi: i8,
+        relays: ByteSizedVec<u8>,
+    },
     impl {
         impl Handler {
             /// Returns the source node id.

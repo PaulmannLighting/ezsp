@@ -10,7 +10,14 @@ use crate::types::ByteSizedVec;
 
 crate::frame::parameters::handler!(
     0x003F,
-    { typ: u8, index_or_destination: u16, aps_frame: Frame, message_tag: u8, status: u8, message: ByteSizedVec<u8> },
+    {
+        typ: u8,
+        index_or_destination: u16,
+        aps_frame: Frame,
+        message_tag: u8,
+        status: u8,
+        message: ByteSizedVec<u8>,
+    },
     impl {
         impl Handler {
             /// The type of message sent.

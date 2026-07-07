@@ -7,7 +7,11 @@ use crate::ember::{Certificate283k1Data, MessageDigest, Signature283k1Data, Stat
 
 crate::frame::parameters::frame!(
     0x00B0,
-    { digest: MessageDigest, signer_certificate: Certificate283k1Data, received_sig: Signature283k1Data },
+    {
+        digest: MessageDigest,
+        signer_certificate: Certificate283k1Data,
+        received_sig: Signature283k1Data,
+    },
     impl {
         impl Command {
             /// Creates command parameters.

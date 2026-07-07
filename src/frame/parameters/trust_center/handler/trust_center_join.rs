@@ -4,7 +4,13 @@ use crate::ember::{Eui64, NodeId};
 
 crate::frame::parameters::handler!(
     0x0024,
-    { new_node_id: NodeId, new_node_eui64: Eui64, status: u8, policy_decision: u8, parent_of_new_node_id: NodeId },
+    {
+        new_node_id: NodeId,
+        new_node_eui64: Eui64,
+        status: u8,
+        policy_decision: u8,
+        parent_of_new_node_id: NodeId,
+    },
     impl {
         impl Handler {
             /// The Node Id of the node whose status changed

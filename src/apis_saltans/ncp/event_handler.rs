@@ -1,6 +1,5 @@
 use std::collections::BTreeMap;
 
-use apis_saltans_aps::data::Frame;
 use apis_saltans_hw::{Event, EventTranslator};
 use log::{debug, error, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
@@ -93,15 +92,9 @@ impl EventHandler {
     async fn handle_incoming_message(&self, incoming_message: IncomingMessage) {
         debug!("Incoming message: {incoming_message:?}");
 
-        let src_address = incoming_message.sender();
-
-        match Frame::try_from(incoming_message) {
-            Ok(aps_frame) => {
-                self.forward_event(Event::MessageReceived {
-                    src_address,
-                    aps_frame,
-                })
-                .await;
+        match incoming_message.try_into() {
+            Ok(envelope) => {
+                self.forward_event(Event::MessageReceived(envelope)).await;
             }
             Err(error) => {
                 warn!("Ignoring malformed APS frame: {error}");

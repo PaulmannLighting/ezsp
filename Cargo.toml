@@ -7,7 +7,7 @@ repository = "https://github.com/PaulmannLighting/ezsp"
 keywords = ["Ember", "ZNet", "Serial", "Zigbee"]
 categories = ["hardware-support", "network-programming"]
 documentation = "https://docs.rs/ezsp"
-version = "7.2.1"
+version = "7.3.0"
 edition = "2024"
 exclude = [".github", ".gitignore", "ARCHITECTURE.md"]
 
@@ -15,12 +15,14 @@ exclude = [".github", ".gitignore", "ARCHITECTURE.md"]
 all-features = true
 
 [dependencies]
-apis-saltans-aps = { version = "0.3", optional = true }
-apis-saltans-core = { version = "0.4", optional = true }
-apis-saltans-hw = { version = "0.5", optional = true }
-apis-saltans-zdp = { version = "0.3", optional = true }
+apis-saltans-aps = { version = "0.4", optional = true }
+apis-saltans-core = { version = "0.5", optional = true }
+apis-saltans-hw = { version = "0.6", optional = true }
+apis-saltans-nwk = { version = "0.2", optional = true }
+apis-saltans-zdp = { version = "0.4", optional = true }
 ashv2 = { version = "8", optional = true }
 bitflags = "2"
+bytes = { version = "1", optional = true }
 enum-iterator = "2"
 heapless = "0.9"
 le-stream = { version = "10", features = ["derive", "macaddr", "heapless"] }
@@ -38,7 +40,7 @@ tokio-task-pool = { version = "0.1", optional = true }
 [features]
 ashv2 = ["dep:ashv2", "dep:tokio-task-pool", "tokio/time"]
 semver = ["dep:semver"]
-apis-saltans = ["dep:apis-saltans-aps", "dep:apis-saltans-core", "dep:apis-saltans-hw", "dep:apis-saltans-zdp", "dep:rand"]
+apis-saltans = ["dep:apis-saltans-aps", "dep:apis-saltans-core", "dep:apis-saltans-hw", "apis-saltans-nwk", "dep:apis-saltans-zdp", "dep:bytes", "dep:rand"]
 
 [profile.release]
 opt-level = 3

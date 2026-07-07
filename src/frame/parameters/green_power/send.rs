@@ -9,7 +9,15 @@ use crate::types::ByteSizedVec;
 
 crate::frame::parameters::frame!(
     0x00C6,
-    { action: bool, use_cca: bool, addr: Address, gpd_command_id: u8, gpd_asdu: ByteSizedVec<u8>, gpep_handle: u8, gp_tx_queue_entry_lifetime_ms: u16 },
+    {
+        action: bool,
+        use_cca: bool,
+        addr: Address,
+        gpd_command_id: u8,
+        gpd_asdu: ByteSizedVec<u8>,
+        gpep_handle: u8,
+        gp_tx_queue_entry_lifetime_ms: u16,
+    },
     impl {
         impl Command {
             /// Creates command parameters.

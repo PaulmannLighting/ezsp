@@ -3,7 +3,13 @@ use crate::types::ByteSizedVec;
 
 crate::frame::parameters::handler!(
     0x0046,
-    { filter_index_match: u8, legacy_passthrough_type: u8, last_hop_lqi: u8, last_hop_rssi: i8, message: ByteSizedVec<u8> },
+    {
+        filter_index_match: u8,
+        legacy_passthrough_type: u8,
+        last_hop_lqi: u8,
+        last_hop_rssi: i8,
+        message: ByteSizedVec<u8>,
+    },
     impl {
         impl Handler {
             /// The index of the filter that was matched.

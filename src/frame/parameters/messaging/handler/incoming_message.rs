@@ -5,7 +5,17 @@ use crate::types::ByteSizedVec;
 
 crate::frame::parameters::handler!(
     0x0045,
-    { typ: u8, aps_frame: Frame, last_hop_lqi: u8, last_hop_rssi: i8, sender: NodeId, binding_index: u8, address_index: u8, message: ByteSizedVec<u8>, source_route_overhead: Option<u8> },
+    {
+        typ: u8,
+        aps_frame: Frame,
+        last_hop_lqi: u8,
+        last_hop_rssi: i8,
+        sender: NodeId,
+        binding_index: u8,
+        address_index: u8,
+        message: ByteSizedVec<u8>,
+        source_route_overhead: Option<u8>,
+    },
     impl {
         impl Handler {
             /// The type of the incoming message.

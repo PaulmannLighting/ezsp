@@ -9,7 +9,7 @@ impl From<NetworkFound> for FoundNetwork {
             Network::new(
                 network.channel(),
                 network.pan_id(),
-                network.extended_pan_id(),
+                network.extended_pan_id().into(),
                 network.allowing_join(),
                 network.stack_profile(),
                 network.nwk_update_id(),

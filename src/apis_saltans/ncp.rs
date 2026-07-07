@@ -12,9 +12,8 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use apis_saltans_core::Endpoint;
+use apis_saltans_core::{Endpoint, IeeeAddress};
 use apis_saltans_hw::{Error, FoundNetwork, Frame, NcpDriver, ScannedChannel};
-use macaddr::MacAddr8;
 
 use crate::ember::concentrator;
 use crate::{Configuration, Messaging, Ncp, Networking, Security, Utilities};
@@ -30,8 +29,8 @@ where
         Ok(self.get_node_id().await?)
     }
 
-    async fn get_ieee_address(&mut self) -> Result<MacAddr8, Error> {
-        Ok(self.get_eui64().await?)
+    async fn get_ieee_address(&mut self) -> Result<IeeeAddress, Error> {
+        Ok(self.get_eui64().await?.into())
     }
 
     async fn scan_networks(
@@ -62,8 +61,12 @@ where
         Ok(Duration::from_secs(u64::from(seconds)))
     }
 
-    async fn get_neighbors(&mut self) -> Result<BTreeMap<MacAddr8, u16>, Error> {
-        Ok(Self::get_neighbors(self).await?)
+    async fn get_neighbors(&mut self) -> Result<BTreeMap<IeeeAddress, u16>, Error> {
+        Ok(Self::get_neighbors(self)
+            .await?
+            .into_iter()
+            .map(|(ieee_address, short_id)| (ieee_address.into(), short_id))
+            .collect())
     }
 
     async fn route_request(&mut self, radius: u8) -> Result<(), Error> {
@@ -72,12 +75,12 @@ where
             .await?)
     }
 
-    async fn short_id_to_ieee_address(&mut self, short_id: u16) -> Result<MacAddr8, Error> {
-        Ok(self.lookup_eui64_by_node_id(short_id).await?)
+    async fn short_id_to_ieee_address(&mut self, short_id: u16) -> Result<IeeeAddress, Error> {
+        Ok(self.lookup_eui64_by_node_id(short_id).await?.into())
     }
 
-    async fn ieee_address_to_short_id(&mut self, ieee_address: MacAddr8) -> Result<u16, Error> {
-        Ok(self.lookup_node_id_by_eui64(ieee_address).await?)
+    async fn ieee_address_to_short_id(&mut self, ieee_address: IeeeAddress) -> Result<u16, Error> {
+        Ok(self.lookup_node_id_by_eui64(ieee_address.into()).await?)
     }
 
     async fn unicast(

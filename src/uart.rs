@@ -19,7 +19,7 @@ use std::sync::atomic::{AtomicU8, Ordering};
 use std::time::Duration;
 
 use ashv2::{
-    Actor, FlowControl, NativeSerialPort, Payload, Proxy, SerialPort, Tasks, TryCloneNative, open,
+    Actor, FlowControl, Handle, NativeSerialPort, Payload, SerialPort, Tasks, TryCloneNative, open,
 };
 use le_stream::ToLeStream;
 use log::{debug, error, info, trace, warn};
@@ -70,7 +70,7 @@ impl Uart {
     /// to support non-legacy commands.
     #[must_use]
     pub fn new(
-        ash_proxy: Proxy,
+        ash_v2: Handle,
         ash_rx: Receiver<Payload>,
         callbacks: Sender<Callback>,
         protocol_version: u8,
@@ -91,7 +91,7 @@ impl Uart {
             protocol_version,
             negotiated_version,
             connection: Connection::Disconnected,
-            encoder: Encoder::new(ash_proxy),
+            encoder: Encoder::new(ash_v2),
             responses_tx,
             responses_rx,
             splitter,

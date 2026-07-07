@@ -20,7 +20,7 @@ apis-saltans-core = { version = "0.5", optional = true }
 apis-saltans-hw = { version = "0.7", optional = true }
 apis-saltans-nwk = { version = "0.2", optional = true }
 apis-saltans-zdp = { version = "0.4", optional = true }
-ashv2 = { version = "8", optional = true }
+ashv2 = { version = "8", path = "../ashv2", optional = true }
 bitflags = "2"
 bytes = { version = "1", optional = true }
 enum-iterator = "2"

@@ -1,7 +1,7 @@
 use core::fmt::Debug;
 use std::io;
 
-use ashv2::{MAX_PAYLOAD_SIZE, Payload, Proxy};
+use ashv2::{Handle, MAX_PAYLOAD_SIZE, Payload};
 use le_stream::ToLeStream;
 use log::trace;
 
@@ -11,16 +11,16 @@ use crate::{Error, MAX_HEADER_SIZE, MAX_PARAMETER_SIZE};
 /// Encodes EZSP headers and parameters into `ASHv2` DATA payloads.
 #[derive(Debug)]
 pub struct Encoder {
-    proxy: Proxy,
+    ash_v2: Handle,
     header: heapless::Vec<u8, MAX_HEADER_SIZE>,
     parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
 }
 
 impl Encoder {
     /// Create a new `Encoder`.
-    pub const fn new(proxy: Proxy) -> Self {
+    pub const fn new(ash_v2: Handle) -> Self {
         Self {
-            proxy,
+            ash_v2,
             header: heapless::Vec::new(),
             parameters: heapless::Vec::new(),
         }
@@ -71,6 +71,6 @@ impl Encoder {
             .map_err(io::Error::other)?;
         payload.extend_from_slice(chunk).map_err(io::Error::other)?;
         trace!("Sending chunk: {payload:#04X?}");
-        self.proxy.send(payload).await
+        self.ash_v2.send(payload).await
     }
 }

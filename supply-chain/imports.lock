@@ -1,10 +1,6 @@
 
 # cargo-vet imports lock
 
-[[unpublished.ezsp]]
-version = "7.3.1"
-audited_as = "7.3.0"
-
 [[publisher.apis-saltans-aps]]
 version = "0.2.0"
 when = "2026-07-05"
@@ -59,6 +55,13 @@ version = "1.2.30"
 when = "2025-07-18"
 user-id = 55123
 user-login = "rust-lang-owner"
+
+[[publisher.ezsp]]
+version = "7.3.1"
+when = "2026-07-07"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
 
 [[publisher.find-msvc-tools]]
 version = "0.1.0"

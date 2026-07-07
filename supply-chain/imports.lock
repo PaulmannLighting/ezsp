@@ -1,6 +1,10 @@
 
 # cargo-vet imports lock
 
+[[unpublished.ezsp]]
+version = "7.3.1"
+audited_as = "7.3.0"
+
 [[publisher.apis-saltans-aps]]
 version = "0.2.0"
 when = "2026-07-05"
@@ -15,16 +19,16 @@ user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
-[[publisher.apis-saltans-macros]]
-version = "0.1.1"
-when = "2026-07-01"
+[[publisher.apis-saltans-hw]]
+version = "0.7.0"
+when = "2026-07-07"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-zcl]]
-version = "0.2.0"
-when = "2026-07-05"
+version = "0.5.1"
+when = "2026-07-07"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"

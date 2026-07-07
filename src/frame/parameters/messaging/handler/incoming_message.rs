@@ -5,7 +5,7 @@ use crate::types::ByteSizedVec;
 
 crate::frame::parameters::handler!(
     0x0045,
-    { typ: u8, aps_frame: Frame, last_hop_lqi: u8, last_hop_rssi: i8, sender: NodeId, binding_index: u8, address_index: u8, message: ByteSizedVec<u8>, unknown: Option<u8> },
+    { typ: u8, aps_frame: Frame, last_hop_lqi: u8, last_hop_rssi: i8, sender: NodeId, binding_index: u8, address_index: u8, message: ByteSizedVec<u8>, source_route_overhead: Option<u8> },
     impl {
         impl Handler {
             /// The type of the incoming message.
@@ -67,6 +67,12 @@ crate::frame::parameters::handler!(
             #[must_use]
             pub fn message(&self) -> &[u8] {
                 self.message.as_ref()
+            }
+
+            /// Returns the source route overhead, if any.
+            #[must_use]
+            pub const fn source_route_overhead(&self) -> Option<u8> {
+                self.source_route_overhead
             }
 
             /// Consumes the handler and returns the incoming message.

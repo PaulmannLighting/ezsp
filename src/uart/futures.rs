@@ -1,6 +1,6 @@
 use std::pin::Pin;
 
-type BoxedFuture<T> = Pin<Box<dyn Future<Output = T> + 'static>>;
+type BoxedFuture<T> = Pin<Box<dyn Future<Output = T> + Send + 'static>>;
 
 /// Futures that drive an EZSP-UART transport.
 ///

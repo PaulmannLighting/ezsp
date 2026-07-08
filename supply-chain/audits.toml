@@ -76,6 +76,12 @@ notes = "AI-assisted: inspected source 9.0.0 and reviewed diff 8.1.0 -> 9.0.0; a
 [[audits.ashv2]]
 who = "Codex"
 criteria = "safe-to-deploy"
+version = "10.0.0"
+notes = "AI-assisted: inspected source 10.0.0 and reviewed local registry diff 9.0.0 -> 10.0.0; public start API now returns Handle plus named Futures for caller-owned spawning, removes internal Tokio task ownership/Tasks shutdown API, updates async-serialport to 0.3.0, and reports not-connected/closed-channel payload sends instead of delayed requeueing. Crate continues to deny unsafe code; no new filesystem/process/network capabilities beyond caller-provided serial I/O."
+
+[[audits.ashv2]]
+who = "Codex"
+criteria = "safe-to-deploy"
 delta = "1.2.7 -> 8.1.0"
 notes = "AI-assisted: reviewed major diff 1.2.7 -> 8.1.0; no new unsafe code in src (unsafe removed from old helper), protocol logic refactored to actor architecture"
 
@@ -84,12 +90,6 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "8.1.0 -> 9.0.0"
 notes = "AI-assisted: reviewed diff 8.1.0 -> 9.0.0; actor handle/task split and frame/status refactors. Crate continues to deny unsafe code; ambient capability remains caller-provided serial I/O through async traits."
-
-[[audits.ashv2]]
-who = "Codex"
-criteria = "safe-to-deploy"
-version = "10.0.0"
-notes = "AI-assisted: inspected source 10.0.0 and reviewed local registry diff 9.0.0 -> 10.0.0; public start API now returns Handle plus named Futures for caller-owned spawning, removes internal Tokio task ownership/Tasks shutdown API, updates async-serialport to 0.3.0, and reports not-connected/closed-channel payload sends instead of delayed requeueing. Crate continues to deny unsafe code; no new filesystem/process/network capabilities beyond caller-provided serial I/O."
 
 [[audits.async-serialport]]
 who = "Codex"

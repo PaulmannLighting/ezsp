@@ -14,9 +14,9 @@ use std::ops::{Deref, DerefMut};
 
 use log::debug;
 use macaddr::MacAddr8;
+use tokio::sync::mpsc::error::SendError;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::oneshot::channel;
-use tokio::task::{JoinError, JoinHandle};
 
 pub use self::builder::Builder;
 pub use self::message::Message;
@@ -51,7 +51,6 @@ pub struct Ncp<T> {
     message_tag: u8,
     aps_seq: u8,
     event_handler_proxy: Sender<Message>,
-    event_handler_handle: JoinHandle<()>,
     endpoints: Box<[Clusters]>,
 }
 
@@ -66,7 +65,6 @@ impl<T> Ncp<T> {
         transport: T,
         aps_options: aps::Options,
         event_handler_proxy: Sender<Message>,
-        event_handler_handle: JoinHandle<()>,
         endpoints: Box<[Clusters]>,
     ) -> Self {
         Self {
@@ -75,7 +73,6 @@ impl<T> Ncp<T> {
             message_tag: 0,
             aps_seq: 0,
             event_handler_proxy,
-            event_handler_handle,
             endpoints,
         }
     }
@@ -157,12 +154,8 @@ impl<T> Ncp<T> {
     /// # Panics
     ///
     /// This method may panic if the termination signal cannot be sent to the message handler.
-    pub async fn terminate(self) -> Result<T, JoinError> {
-        self.event_handler_proxy
-            .send(Message::Terminate)
-            .await
-            .expect("Failed to send terminate message to message handler actor");
-        self.event_handler_handle.await.map(|()| self.transport)
+    pub async fn terminate(self) -> Result<(), SendError<Message>> {
+        self.event_handler_proxy.send(Message::Terminate).await
     }
 }
 
@@ -408,16 +401,7 @@ impl Ncp<crate::uart::Uart> {
     /// # Errors
     ///
     /// Returns an [`Error`] if the building of the UART fails.
-    pub fn ashv2<T>(
-        serial_port: T,
-    ) -> (
-        Builder<crate::uart::Uart>,
-        ashv2::Futures<
-            impl Future<Output = T> + Send + 'static,
-            impl Future<Output = ()> + Send + 'static,
-            impl Future<Output = ()> + Send + 'static,
-        >,
-    )
+    pub fn ashv2<T>(serial_port: T) -> (Builder<crate::uart::Uart>, crate::uart::Futures<T>)
     where
         T: crate::uart::SerialPort + Sync + 'static,
     {

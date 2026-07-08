@@ -19,23 +19,19 @@ use core::fmt::Debug;
 use core::num::TryFromIntError;
 use std::borrow::Cow;
 use std::num::NonZero;
+use std::pin::Pin;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU8, Ordering};
-use std::time::Duration;
 
-use ashv2::Futures;
 pub use ashv2::{FlowControl, Handle, NativeSerialPort, Payload, SerialPort, open, start};
 use le_stream::ToLeStream;
-use log::{debug, error, info, trace, warn};
-use tokio::spawn;
-use tokio::sync::mpsc::{Receiver, Sender, WeakSender, channel};
-use tokio::task::{JoinError, JoinHandle};
-use tokio::time::sleep;
-use tokio_task_pool::Pool;
+use log::{debug, info, warn};
+use tokio::sync::mpsc::{Receiver, Sender, channel};
 
 pub use self::buffers::Buffers;
 pub use self::channel_sizes::ChannelSizes;
 use self::encoder::Encoder;
+pub use self::futures::Futures;
 use crate::constants::MIN_NON_LEGACY_VERSION;
 use crate::error::Error;
 use crate::frame::{Command, Header, Parameter};
@@ -49,9 +45,10 @@ mod buffers;
 mod channel_sizes;
 mod decoder;
 mod encoder;
+mod futures;
 mod splitter;
 
-const REQUEUE_GRACE_PERIOD: Duration = Duration::from_millis(100);
+type SplitterFuture = Pin<Box<dyn Future<Output = ()> + Send + 'static>>;
 
 /// An EZSP host using `ASHv2` as the UART link layer.
 #[derive(Debug)]
@@ -62,9 +59,7 @@ pub struct Uart {
     responses_tx: Sender<Result<Parameters, Error>>,
     responses_rx: Receiver<Result<Parameters, Error>>,
     encoder: Encoder,
-    splitter: JoinHandle<()>,
     sequence: u8,
-    tasks: Pool,
 }
 
 impl Uart {
@@ -83,29 +78,27 @@ impl Uart {
         callbacks: Sender<Callback>,
         protocol_version: u8,
         channel_size: usize,
-    ) -> Self {
+    ) -> (Self, SplitterFuture) {
         let negotiated_version = Arc::new(AtomicU8::new(0));
         let (responses_tx, responses_rx) = channel(channel_size);
-        let splitter = spawn(
-            Splitter::new(
-                Decoder::new(ash_rx, negotiated_version.clone()),
-                responses_tx.clone(),
-                callbacks,
-            )
-            .run(),
-        );
+        let splitter = Splitter::new(
+            Decoder::new(ash_rx, negotiated_version.clone()),
+            responses_tx.clone(),
+            callbacks,
+        )
+        .run();
 
-        Self {
+        let instance = Self {
             protocol_version,
             negotiated_version,
             connection: Connection::Disconnected,
             encoder: Encoder::new(ash_v2),
             responses_tx,
             responses_rx,
-            splitter,
             sequence: 0,
-            tasks: Pool::bounded(channel_size),
-        }
+        };
+
+        (instance, Box::pin(splitter))
     }
 
     /// Open a new EZSP-UART transport from a serial port.
@@ -117,40 +110,26 @@ impl Uart {
     /// # Errors
     ///
     /// Returns an [`Error`] if any I/O operations fail.
-    #[expect(clippy::type_complexity)]
     pub fn from_serial_port<T>(
         serial_port: T,
         protocol_version: u8,
         channel_sizes: &ChannelSizes,
-    ) -> Result<
-        (
-            Self,
-            Futures<
-                impl Future<Output = T> + Send + 'static,
-                impl Future<Output = ()> + Send + 'static,
-                impl Future<Output = ()> + Send + 'static,
-            >,
-            Receiver<Callback>,
-        ),
-        Error,
-    >
+    ) -> Result<(Self, Receiver<Callback>, Futures<T>), Error>
     where
         T: SerialPort + Sync + 'static,
     {
         let (tx, rx) = channel(channel_sizes.payload);
         let (ash_v2, futures) = start(serial_port, tx);
         let (callbacks_tx, callbacks_rx) = channel(channel_sizes.callbacks);
-        Ok((
-            Self::new(
-                ash_v2,
-                rx,
-                callbacks_tx,
-                protocol_version,
-                channel_sizes.responses,
-            ),
-            futures,
-            callbacks_rx,
-        ))
+        let (instance, splitter) = Self::new(
+            ash_v2,
+            rx,
+            callbacks_tx,
+            protocol_version,
+            channel_sizes.responses,
+        );
+        let futures = Futures::new(splitter, futures);
+        Ok((instance, callbacks_rx, futures))
     }
 
     /// Open a new EZSP-UART transport from a serial port path.
@@ -161,24 +140,12 @@ impl Uart {
     /// # Errors
     ///
     /// Returns an [`Error`] if any I/O operations fail.
-    #[expect(clippy::type_complexity)]
     pub fn open<'a, T>(
         path: T,
         flow_control: FlowControl,
         protocol_version: u8,
         channel_sizes: &ChannelSizes,
-    ) -> Result<
-        (
-            Self,
-            Futures<
-                impl Future<Output = impl SerialPort> + Send + 'static,
-                impl Future<Output = ()> + Send + 'static,
-                impl Future<Output = ()> + Send + 'static,
-            >,
-            Receiver<Callback>,
-        ),
-        Error,
-    >
+    ) -> Result<(Self, Receiver<Callback>, Futures<impl SerialPort>), Error>
     where
         T: Into<Cow<'a, str>>,
     {
@@ -256,16 +223,6 @@ impl Uart {
             })
         }
     }
-
-    /// Abort the UART background task.
-    ///
-    /// # Errors
-    ///
-    /// Returns a [`JoinError`] if any of the threads fail to abort.
-    pub async fn abort(self) -> Result<(), JoinError> {
-        self.splitter.abort();
-        self.splitter.await
-    }
 }
 
 impl Transport for Uart {
@@ -308,44 +265,15 @@ impl Transport for Uart {
             match T::try_from(parameters?) {
                 Ok(frame) => return Ok(frame),
                 Err(error) => {
-                    self.tasks
-                        .spawn(requeue(
-                            self.responses_tx.downgrade(),
-                            error.into(),
-                            REQUEUE_GRACE_PERIOD,
-                        ))
+                    let parameters = error.into();
+                    warn!("Received unexpected response: {parameters:?}, re-queueing.");
+
+                    self.responses_tx
+                        .send(Ok(parameters))
                         .await
-                        .map_or_else(
-                            |error| {
-                                error!("Failed to re-queue response: {error:?}");
-                            },
-                            drop,
-                        );
+                        .expect("Re-queueing channel should be open. This is a bug.");
                 }
             }
         }
     }
-}
-
-/// Async task to requeue in the background.
-async fn requeue(
-    responses: WeakSender<Result<Parameters, Error>>,
-    parameters: Parameters,
-    delay: Duration,
-) {
-    warn!(
-        "Received unexpected response: {parameters:?}, re-queueing in {}ms.",
-        delay.as_millis()
-    );
-    sleep(delay).await;
-
-    let Some(responses) = responses.upgrade() else {
-        trace!("Re-queueing channel is closed, aborting");
-        return;
-    };
-
-    responses
-        .send(Ok(parameters))
-        .await
-        .expect("Re-queueing channel should be open. This is a bug.");
 }

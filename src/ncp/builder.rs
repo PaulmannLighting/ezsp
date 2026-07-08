@@ -179,16 +179,7 @@ impl Builder<crate::uart::Uart> {
     /// # Errors
     ///
     /// Returns a [`crate::Error`] if the serial port cannot be used for `ASHv2` communication.
-    pub fn ashv2<T>(
-        serial_port: T,
-    ) -> (
-        Self,
-        ashv2::Futures<
-            impl Future<Output = T> + Send + 'static,
-            impl Future<Output = ()> + Send + 'static,
-            impl Future<Output = ()> + Send + 'static,
-        >,
-    )
+    pub fn ashv2<T>(serial_port: T) -> (Self, crate::uart::Futures<T>)
     where
         T: crate::uart::SerialPort + Sync + 'static,
     {
@@ -207,27 +198,23 @@ impl Builder<crate::uart::Uart> {
     pub fn ashv2_with_buffers<T>(
         serial_port: T,
         buffers: crate::uart::Buffers,
-    ) -> (
-        Self,
-        ashv2::Futures<
-            impl Future<Output = T> + Send + 'static,
-            impl Future<Output = ()> + Send + 'static,
-            impl Future<Output = ()> + Send + 'static,
-        >,
-    )
+    ) -> (Self, crate::uart::Futures<T>)
     where
         T: crate::uart::SerialPort + Sync + 'static,
     {
         let (ash_tx, ash_rx) = tokio::sync::mpsc::channel(buffers.ash_receiver);
         let (ash_v2, futures) = crate::uart::start(serial_port, ash_tx);
         let (callbacks_tx, callbacks_rx) = tokio::sync::mpsc::channel(buffers.ezsp_callbacks);
-        let uart = crate::uart::Uart::new(
+        let (uart, splitter) = crate::uart::Uart::new(
             ash_v2,
             ash_rx,
             callbacks_tx,
             crate::MIN_NON_LEGACY_VERSION,
             buffers.ezsp_messages,
         );
-        (Self::new(uart, callbacks_rx), futures)
+        (
+            Self::new(uart, callbacks_rx),
+            crate::uart::Futures::new(splitter, futures),
+        )
     }
 }

@@ -2,8 +2,8 @@
 # cargo-vet imports lock
 
 [[unpublished.ezsp]]
-version = "9.0.0"
-audited_as = "8.1.0"
+version = "9.0.1"
+audited_as = "9.0.0"
 
 [[publisher.apis-saltans-aps]]
 version = "0.2.0"
@@ -54,7 +54,7 @@ user-id = 55123
 user-login = "rust-lang-owner"
 
 [[publisher.ezsp]]
-version = "8.1.0"
+version = "9.0.0"
 when = "2026-07-08"
 user-id = 290593
 user-login = "neumann-paulmann"

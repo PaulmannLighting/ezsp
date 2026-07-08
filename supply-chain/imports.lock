@@ -1,6 +1,10 @@
 
 # cargo-vet imports lock
 
+[[unpublished.ezsp]]
+version = "8.1.0"
+audited_as = "8.0.0"
+
 [[publisher.apis-saltans-aps]]
 version = "0.2.0"
 when = "2026-07-05"

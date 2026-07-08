@@ -117,6 +117,7 @@ impl Uart {
     /// # Errors
     ///
     /// Returns an [`Error`] if any I/O operations fail.
+    #[expect(clippy::type_complexity)]
     pub fn from_serial_port<T>(
         serial_port: T,
         protocol_version: u8,
@@ -160,6 +161,7 @@ impl Uart {
     /// # Errors
     ///
     /// Returns an [`Error`] if any I/O operations fail.
+    #[expect(clippy::type_complexity)]
     pub fn open<'a, T>(
         path: T,
         flow_control: FlowControl,

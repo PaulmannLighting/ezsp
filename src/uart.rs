@@ -23,7 +23,8 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::time::Duration;
 
-pub use ashv2::{FlowControl, Handle, NativeSerialPort, Payload, SerialPort, Tasks, open, start};
+use ashv2::Futures;
+pub use ashv2::{FlowControl, Handle, NativeSerialPort, Payload, SerialPort, open, start};
 use le_stream::ToLeStream;
 use log::{debug, error, info, trace, warn};
 use tokio::spawn;
@@ -116,26 +117,37 @@ impl Uart {
     /// # Errors
     ///
     /// Returns an [`Error`] if any I/O operations fail.
-    pub fn from_serial_port<P>(
-        serial_port: P,
+    pub fn from_serial_port<T>(
+        serial_port: T,
         protocol_version: u8,
         channel_sizes: &ChannelSizes,
-    ) -> Result<(Self, Tasks<P>, Receiver<Callback>), Error>
+    ) -> Result<
+        (
+            Self,
+            Futures<
+                impl Future<Output = T> + Send + 'static,
+                impl Future<Output = ()> + Send + 'static,
+                impl Future<Output = ()> + Send + 'static,
+            >,
+            Receiver<Callback>,
+        ),
+        Error,
+    >
     where
-        P: SerialPort + Sync + 'static,
+        T: SerialPort + Sync + 'static,
     {
         let (tx, rx) = channel(channel_sizes.payload);
-        let (tasks, proxy) = start(serial_port, tx);
+        let (ash_v2, futures) = start(serial_port, tx);
         let (callbacks_tx, callbacks_rx) = channel(channel_sizes.callbacks);
         Ok((
             Self::new(
-                proxy,
+                ash_v2,
                 rx,
                 callbacks_tx,
                 protocol_version,
                 channel_sizes.responses,
             ),
-            tasks,
+            futures,
             callbacks_rx,
         ))
     }
@@ -148,14 +160,25 @@ impl Uart {
     /// # Errors
     ///
     /// Returns an [`Error`] if any I/O operations fail.
-    pub fn open<'a, P>(
-        path: P,
+    pub fn open<'a, T>(
+        path: T,
         flow_control: FlowControl,
         protocol_version: u8,
         channel_sizes: &ChannelSizes,
-    ) -> Result<(Self, Tasks<NativeSerialPort>, Receiver<Callback>), Error>
+    ) -> Result<
+        (
+            Self,
+            Futures<
+                impl Future<Output = impl SerialPort> + Send + 'static,
+                impl Future<Output = ()> + Send + 'static,
+                impl Future<Output = ()> + Send + 'static,
+            >,
+            Receiver<Callback>,
+        ),
+        Error,
+    >
     where
-        P: Into<Cow<'a, str>>,
+        T: Into<Cow<'a, str>>,
     {
         Self::from_serial_port(
             open(path, flow_control).map_err(|error| Error::Io(error.into()))?,

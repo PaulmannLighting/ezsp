@@ -408,9 +408,18 @@ impl Ncp<crate::uart::Uart> {
     /// # Errors
     ///
     /// Returns an [`Error`] if the building of the UART fails.
-    pub fn ashv2<P>(serial_port: P) -> Result<Builder<crate::uart::Uart>, Error>
+    pub fn ashv2<T>(
+        serial_port: T,
+    ) -> (
+        Builder<crate::uart::Uart>,
+        ashv2::Futures<
+            impl Future<Output = T> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
+        >,
+    )
     where
-        P: crate::uart::SerialPort + Sync + 'static,
+        T: crate::uart::SerialPort + Sync + 'static,
     {
         Builder::ashv2(serial_port)
     }

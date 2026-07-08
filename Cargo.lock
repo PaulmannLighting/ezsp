@@ -110,9 +110,9 @@ dependencies = [
 
 [[package]]
 name = "ashv2"
-version = "9.0.0"
+version = "10.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "399588fb0b61c69746686607ee8ef3aaf0c23a4dc6d694be2f9c21cce63a59d7"
+checksum = "d61d75e6137078483246e790ddb5af3c72df667cda773fe522e333b58e3ee524"
 dependencies = [
  "async-serialport",
  "bitflags 2.13.0",
@@ -131,9 +131,9 @@ dependencies = [
 
 [[package]]
 name = "async-serialport"
-version = "0.1.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73bff3187a6278012c3dc297c815835955670f820abdd868bdc0e45ef0d24da5"
+checksum = "3cdae575e0f2714ad187f9633a8f4a3996d1b21c4e590d9d3374cdd2c706bac9"
 dependencies = [
  "bytes",
  "serialport",
@@ -172,9 +172,9 @@ checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
 
 [[package]]
 name = "bytes"
-version = "1.12.0"
+version = "1.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ae3f5d315924270530207e2a68396c3cc547f6dca3fbdca317cfb1a51edb593"
+checksum = "fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04"
 
 [[package]]
 name = "cc"

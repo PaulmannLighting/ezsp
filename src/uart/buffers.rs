@@ -2,7 +2,7 @@
 const DEFAULT_BUF_SIZE: usize = 128;
 
 /// Buffer sizes to set up the `ASHv2` communication channels.
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct Buffers {
     /// Buffer size for the `ASHv2` receiver channel.
     pub ash_receiver: usize,

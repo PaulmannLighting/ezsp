@@ -110,14 +110,15 @@ dependencies = [
 
 [[package]]
 name = "ashv2"
-version = "8.1.1"
+version = "9.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "399588fb0b61c69746686607ee8ef3aaf0c23a4dc6d694be2f9c21cce63a59d7"
 dependencies = [
  "async-serialport",
  "bitflags 2.13.0",
  "bytes",
  "const_env",
  "crc",
- "either",
  "heapless",
  "log",
  "num-derive",
@@ -131,7 +132,8 @@ dependencies = [
 [[package]]
 name = "async-serialport"
 version = "0.1.0"
-source = "git+https://github.com/PaulmannLighting/async-serialport.git#4666e57d1f4e8035bbfce41da13150d2ac8e2072"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73bff3187a6278012c3dc297c815835955670f820abdd868bdc0e45ef0d24da5"
 dependencies = [
  "bytes",
  "serialport",
@@ -302,7 +304,7 @@ dependencies = [
 
 [[package]]
 name = "ezsp"
-version = "7.3.1"
+version = "8.0.0"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",

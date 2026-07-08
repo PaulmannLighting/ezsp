@@ -7,9 +7,6 @@ pub struct Buffers {
     /// Buffer size for the `ASHv2` receiver channel.
     pub ash_receiver: usize,
 
-    /// Buffer size for the `ASHv2` transmitter channel.
-    pub ash_transmitter: usize,
-
     /// Buffer size for the EZSP callback channel.
     pub ezsp_callbacks: usize,
 
@@ -21,7 +18,6 @@ impl Default for Buffers {
     fn default() -> Self {
         Self {
             ash_receiver: DEFAULT_BUF_SIZE,
-            ash_transmitter: DEFAULT_BUF_SIZE,
             ezsp_callbacks: DEFAULT_BUF_SIZE,
             ezsp_messages: DEFAULT_BUF_SIZE,
         }

@@ -197,9 +197,7 @@ impl Builder<crate::uart::Uart> {
         T: ashv2::SerialPort + Sync + 'static,
     {
         let (ash_tx, ash_rx) = tokio::sync::mpsc::channel(buffers.ash_receiver);
-        let (_ashv2_tasks, proxy) = ashv2::Actor::new(serial_port, ash_tx, buffers.ash_transmitter)
-            .map_err(std::io::Error::from)?
-            .spawn();
+        let (_ashv2_tasks, proxy) = ashv2::start(serial_port, ash_tx);
         let (callbacks_tx, callbacks_rx) = tokio::sync::mpsc::channel(buffers.ezsp_callbacks);
         let uart = crate::uart::Uart::new(
             proxy,

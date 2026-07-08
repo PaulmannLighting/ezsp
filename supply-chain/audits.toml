@@ -70,8 +70,26 @@ notes = "AI-assisted: reviewed diff 0.3.0 -> 0.4.0; migrates ZDP address fields 
 [[audits.ashv2]]
 who = "Codex"
 criteria = "safe-to-deploy"
+version = "9.0.0"
+notes = "AI-assisted: inspected source 9.0.0 and reviewed diff 8.1.0 -> 9.0.0; actor handle/task split and frame/status refactors. Crate denies unsafe code; ambient capability remains caller-provided serial I/O through async traits."
+
+[[audits.ashv2]]
+who = "Codex"
+criteria = "safe-to-deploy"
 delta = "1.2.7 -> 8.1.0"
 notes = "AI-assisted: reviewed major diff 1.2.7 -> 8.1.0; no new unsafe code in src (unsafe removed from old helper), protocol logic refactored to actor architecture"
+
+[[audits.ashv2]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "8.1.0 -> 9.0.0"
+notes = "AI-assisted: reviewed diff 8.1.0 -> 9.0.0; actor handle/task split and frame/status refactors. Crate continues to deny unsafe code; ambient capability remains caller-provided serial I/O through async traits."
+
+[[audits.async-serialport]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.1.0"
+notes = "AI-assisted: inspected full source 0.1.0; tokio AsyncRead/AsyncWrite wrapper around a caller-provided serialport::SerialPort using channels and a background task. No unsafe code, filesystem, process, or network access beyond the wrapped serial port."
 
 [[audits.autocfg]]
 who = "Codex"
@@ -127,6 +145,12 @@ criteria = "safe-to-deploy"
 version = "0.1.5"
 notes = "AI-assisted: inspected full source 0.1.5"
 
+[[audits.core-foundation]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.10.1"
+notes = "AI-assisted: inspected source 0.10.1; safe Rust wrappers over CoreFoundation FFI with reference-count ownership rules. Unsafe code is concentrated in CFType wrapping/release and platform API calls; no process/network capabilities."
+
 [[audits.cpufeatures]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -139,6 +163,18 @@ criteria = "safe-to-deploy"
 delta = "0.2.2 -> 0.3.0"
 notes = "AI-assisted: reviewed diff 0.2.2 -> 0.3.0"
 
+[[audits.crc]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "3.4.0"
+notes = "AI-assisted: inspected source 3.4.0; CRC calculation tables/algorithms only, crate forbids unsafe code and has no ambient filesystem/process/network capabilities."
+
+[[audits.crc-catalog]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "2.5.0"
+notes = "AI-assisted: inspected source 2.5.0; static CRC algorithm catalog data only, no unsafe code and no ambient filesystem/process/network capabilities."
+
 [[audits.crc-catalog]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -148,8 +184,20 @@ notes = "AI-assisted: reviewed diff 2.4.0 -> 2.5.0"
 [[audits.enum-iterator]]
 who = "Codex"
 criteria = "safe-to-deploy"
+version = "2.3.0"
+notes = "AI-assisted: inspected source 2.3.0; enum iteration traits and helpers only, no unsafe code and no ambient filesystem/process/network capabilities."
+
+[[audits.enum-iterator]]
+who = "Codex"
+criteria = "safe-to-deploy"
 delta = "2.1.0 -> 2.3.0"
 notes = "AI-assisted: reviewed diff 2.1.0 -> 2.3.0"
+
+[[audits.enum-iterator-derive]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "1.5.0"
+notes = "AI-assisted: inspected source 1.5.0; proc-macro generates enum iterator implementations from parsed input. No unsafe code and no filesystem/process/network access."
 
 [[audits.enum-iterator-derive]]
 who = "Codex"
@@ -178,6 +226,12 @@ notes = "AI-assisted: inspected local crate source for ezsp 7.3.0; updates cover
 [[audits.ezsp]]
 who = "Codex"
 criteria = "safe-to-deploy"
+version = "8.0.0"
+notes = "AI-assisted: inspected local crate source for ezsp 8.0.0; dependency/API updates introduce async-serialport and apis-saltans-hw 0.7 integration. No new unsafe code; ambient capability surface remains configured serial transport plus async task/channel usage."
+
+[[audits.ezsp]]
+who = "Codex"
+criteria = "safe-to-deploy"
 delta = "1.2.4 -> 1.5.0"
 notes = "AI-assisted: reviewed diff 1.2.4 -> 1.5.0"
 
@@ -186,6 +240,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.1.8 -> 0.1.9"
 notes = "AI-assisted: reviewed diff 0.1.8 -> 0.1.9"
+
+[[audits.futures-sink]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.3.32"
+notes = "AI-assisted: inspected source 0.3.32; Sink trait definitions and blanket impls. Unsafe use is limited to Pin projection in impls for pinned containers; no ambient filesystem/process/network capabilities."
 
 [[audits.futures-task]]
 who = "Codex"
@@ -217,6 +277,18 @@ criteria = "safe-to-deploy"
 version = "0.4.3"
 notes = "AI-assisted: inspected full source 0.4.3"
 
+[[audits.hash32]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.3.1"
+notes = "AI-assisted: inspected source 0.3.1; no_std 32-bit hashing traits/adapters. No unsafe code and no ambient filesystem/process/network capabilities."
+
+[[audits.heapless]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.9.3"
+notes = "AI-assisted: inspected source 0.9.3; fixed-capacity no_std collections. Unsafe code is internal storage/queue management with bounds/capacity checks; no ambient filesystem/process/network capabilities."
+
 [[audits.heapless]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -240,6 +312,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 version = "0.1.0"
 notes = "AI-assisted: inspected full source 0.1.0"
+
+[[audits.io-kit-sys]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.4.1"
+notes = "AI-assisted: inspected source 0.4.1; raw macOS IOKit/CoreFoundation FFI declarations used for device enumeration. Unsafe surface is FFI declarations only; no process/network capabilities."
 
 [[audits.js-sys]]
 who = "Codex"
@@ -277,6 +355,18 @@ criteria = "safe-to-deploy"
 delta = "1.3.8 -> 1.3.10"
 notes = "AI-assisted: reviewed diff 1.3.8 -> 1.3.10; derive docs updated and enum ToLeStream generation now uses explicit discriminants instead of unsafe repr pointer reads. No new ambient capabilities."
 
+[[audits.libudev]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.3.0"
+notes = "AI-assisted: inspected source 0.3.0; safe wrapper over libudev for Linux device enumeration. Unsafe code is FFI boundary/reference handling; ambient capability is read-only device metadata enumeration."
+
+[[audits.libudev-sys]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.1.4"
+notes = "AI-assisted: inspected source 0.1.4; libudev FFI declarations and pkg-config build discovery. No library runtime process/network access; build script behavior is expected pkg-config probing."
+
 [[audits.log]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -289,11 +379,29 @@ criteria = "safe-to-deploy"
 delta = "0.4.32 -> 0.4.33"
 notes = "AI-assisted: reviewed diff 0.4.32 -> 0.4.33"
 
+[[audits.macaddr]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "1.0.1"
+notes = "AI-assisted: inspected source 1.0.1; MAC address parsing/formatting value types, crate forbids unsafe code and has no ambient filesystem/process/network capabilities."
+
+[[audits.mach2]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.4.3"
+notes = "AI-assisted: inspected source 0.4.3; raw macOS Mach FFI bindings. Unsafe surface is platform FFI declarations/wrappers; no process/network capabilities beyond exposed OS APIs."
+
 [[audits.memchr]]
 who = "Codex"
 criteria = "safe-to-deploy"
 delta = "2.7.5 -> 2.8.2"
 notes = "AI-assisted: reviewed diff 2.7.5 -> 2.8.2"
+
+[[audits.nix]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.26.4"
+notes = "AI-assisted: inspected source 0.26.4; Unix syscall wrappers used transitively by serialport. Unsafe code is FFI/memory layout handling around OS APIs; no hidden process/network behavior beyond explicitly exposed nix APIs."
 
 [[audits.once_cell]]
 who = "Codex"
@@ -312,6 +420,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.2.16 -> 0.2.17"
 notes = "AI-assisted: reviewed diff 0.2.16 -> 0.2.17"
+
+[[audits.pkg-config]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.3.33"
+notes = "AI-assisted: inspected source 0.3.33; build-time pkg-config probing via environment/filesystem/process execution as advertised. No runtime library capabilities."
 
 [[audits.r-efi]]
 who = "Codex"
@@ -348,6 +462,18 @@ who = "Codex"
 criteria = "safe-to-deploy"
 version = "1.0.23"
 notes = "AI-assisted: inspected source 1.0.23 and diff 1.0.22 -> 1.0.23; build script still only invokes configured rustc/wrapper with --version, writes generated data under OUT_DIR, and emits cfgs. No unsafe code; ambient process/filesystem use is expected build-script behavior."
+
+[[audits.scopeguard]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "1.2.0"
+notes = "AI-assisted: inspected source 1.2.0; scope guard/drop helper only, no unsafe code and no ambient filesystem/process/network capabilities."
+
+[[audits.serialport]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "4.9.0"
+notes = "AI-assisted: inspected source 4.9.0; cross-platform serial port enumeration/configuration/I/O. Unsafe code is platform FFI to libc, Windows SetupAPI, registry, and IOKit around advertised serial operations; no unexpected process/network capabilities."
 
 [[audits.serialport]]
 who = "Codex"
@@ -403,11 +529,29 @@ criteria = "safe-to-deploy"
 delta = "2.0.17 -> 2.0.18"
 notes = "AI-assisted: reviewed diff 2.0.17 -> 2.0.18"
 
+[[audits.tokio-stream]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.1.18"
+notes = "AI-assisted: inspected source 0.1.18 and diff 0.1.17 -> 0.1.18; async Stream adapters/wrappers. Unsafe is limited to marker impls for empty streams; no ambient filesystem/process/network capabilities."
+
 [[audits.tokio-task-pool]]
 who = "Codex"
 criteria = "safe-to-deploy"
 version = "0.1.8"
 notes = "AI-assisted: inspected full source 0.1.8"
+
+[[audits.tokio-util]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.7.18"
+notes = "AI-assisted: inspected source 0.7.18 and diff 0.7.16 -> 0.7.18; codecs, cancellation utilities, sync helpers, and UDP framing. Unsafe code is internal pin/projection/buffer management; ambient I/O only through caller-provided tokio I/O types."
+
+[[audits.unescaper]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.1.10"
+notes = "AI-assisted: inspected source 0.1.10; string escape parsing only, no unsafe code and no ambient filesystem/process/network capabilities."
 
 [[audits.unescaper]]
 who = "Codex"
@@ -468,6 +612,36 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.2.125 -> 0.2.126"
 notes = "AI-assisted: reviewed diff 0.2.125 -> 0.2.126"
+
+[[audits.windows_aarch64_msvc]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.52.6"
+notes = "AI-assisted: inspected source 0.52.6; Windows target import library metadata crate. No Rust code, unsafe code, or ambient capabilities."
+
+[[audits.windows_i686_gnu]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.52.6"
+notes = "AI-assisted: inspected source 0.52.6; Windows target import library metadata crate. No Rust code, unsafe code, or ambient capabilities."
+
+[[audits.windows_i686_msvc]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.52.6"
+notes = "AI-assisted: inspected source 0.52.6; Windows target import library metadata crate. No Rust code, unsafe code, or ambient capabilities."
+
+[[audits.windows_x86_64_gnu]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.52.6"
+notes = "AI-assisted: inspected source 0.52.6; Windows target import library metadata crate. No Rust code, unsafe code, or ambient capabilities."
+
+[[audits.windows_x86_64_msvc]]
+who = "Codex"
+criteria = "safe-to-deploy"
+version = "0.52.6"
+notes = "AI-assisted: inspected source 0.52.6; Windows target import library metadata crate. No Rust code, unsafe code, or ambient capabilities."
 
 [[audits.zmij]]
 who = "Codex"

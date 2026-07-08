@@ -18,7 +18,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::time::Duration;
 
-use ashv2::{Actor, FlowControl, Handle, NativeSerialPort, Payload, SerialPort, Tasks, open};
+use ashv2::{FlowControl, Handle, NativeSerialPort, Payload, SerialPort, Tasks, open, start};
 use le_stream::ToLeStream;
 use log::{debug, error, info, trace, warn};
 use tokio::spawn;
@@ -112,9 +112,7 @@ impl Uart {
         P: SerialPort + Sync + 'static,
     {
         let (tx, rx) = channel(channel_sizes.payload);
-        let (tasks, proxy) = Actor::new(serial_port, tx, channel_sizes.message_queue)
-            .map_err(|error| Error::Io(error.into()))?
-            .spawn();
+        let (tasks, proxy) = start(serial_port, tx);
         let (callbacks_tx, callbacks_rx) = channel(channel_sizes.callbacks);
         Ok((
             Self::new(

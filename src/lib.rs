@@ -8,7 +8,8 @@
 //! This crate provides typed EZSP frame headers, parameter structures,
 //! command/response traits, and transport-independent command traits. With the
 //! `ashv2` feature enabled, it also provides a UART transport for EZSP over
-//! `ASHv2`.
+//! `ASHv2`; the [`uart`] module re-exports the `ASHv2` types used by that public
+//! transport API.
 //!
 //! Protocol details are documented by Silicon Labs in the
 //! [Simplicity SDK EZSP Reference Guide](https://docs.silabs.com/zigbee/latest/sisdk-ezsp-reference-guide/).

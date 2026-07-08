@@ -402,12 +402,15 @@ where
 impl Ncp<crate::uart::Uart> {
     /// Creates a new [`Builder`] backed by an `ASHv2` UART transport.
     ///
+    /// The serial port must implement [`crate::uart::SerialPort`], which is
+    /// re-exported by the UART module from the `ASHv2` transport crate.
+    ///
     /// # Errors
     ///
     /// Returns an [`Error`] if the building of the UART fails.
     pub fn ashv2<P>(serial_port: P) -> Result<Builder<crate::uart::Uart>, Error>
     where
-        P: ashv2::SerialPort + Sync + 'static,
+        P: crate::uart::SerialPort + Sync + 'static,
     {
         Builder::ashv2(serial_port)
     }

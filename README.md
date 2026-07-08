@@ -61,6 +61,9 @@ EZSP-specific work in this crate:
 - `uart::Decoder` parses ASHv2 payloads back into typed EZSP frames.
 - `uart::Splitter` routes normal responses to the pending request path and UART
   asynchronous callbacks to the callback channel.
+- `uart` re-exports the ASHv2 types and helpers used by the public transport
+  API: `FlowControl`, `Handle`, `NativeSerialPort`, `Payload`, `SerialPort`,
+  `Tasks`, `open`, and `start`.
 
 ## Core API
 
@@ -87,24 +90,27 @@ The crate currently ships one concrete transport implementation: `uart::Uart` (`
 - serial constructors:
   - `Uart::open(path, flow_control, protocol_version, &ChannelSizes)`
   - `Uart::from_serial_port(serial_port, protocol_version, &ChannelSizes)`
-  - `Uart::new(proxy, ash_rx, callbacks_tx, protocol_version, channel_size)` (advanced integration)
+  - `Uart::new(handle, ash_rx, callbacks_tx, protocol_version, channel_size)` (advanced integration)
 - `Uart::abort()` for aborting the background splitter task
 
 Additional types:
 
 - `uart::ChannelSizes` to tune queue capacities for `Uart::open` / `from_serial_port`
 - `uart::Buffers` for ASHv2 queue sizing in integration helper constructors
+- `uart::SerialPort`, `uart::FlowControl`, `uart::Tasks`, and the other
+  re-exported ASHv2 items needed to integrate the UART transport without
+  importing `ashv2` paths directly
 
 ### Minimal `ashv2` usage
 
 ```rust
-use ezsp::uart::{ChannelSizes, Uart};
+use ezsp::uart::{ChannelSizes, SerialPort, Uart};
 use ezsp::{Transport, Utilities};
 
 // Requires feature = "ashv2"
 // Requires a Tokio runtime.
 async fn example() -> Result<(), ezsp::Error> {
-    let serial_port = /* your serial port implementing ashv2::SerialPort */;
+    let serial_port = /* your serial port implementing SerialPort */;
     let sizes = ChannelSizes::default();
 
     let (mut uart, _ash_tasks, _callbacks) =
@@ -145,7 +151,8 @@ If no endpoint matches, the send fails with `Error::NoMatchingSourceEndpoint`.
 
 If `ashv2` is enabled, `Ncp::ashv2(serial_port)` and
 `Builder::<uart::Uart>::ashv2(serial_port)` create a builder backed by the
-crate's ASHv2 UART transport.
+crate's ASHv2 UART transport. The serial port type is constrained by the
+re-exported `uart::SerialPort` trait.
 
 ## `apis-saltans` Integration (`apis-saltans` Feature)
 

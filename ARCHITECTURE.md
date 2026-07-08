@@ -26,7 +26,7 @@ flowchart TD
     A[User code] --> B[EZSP command traits]
     B --> C[Transport]
     C --> D[uart::Uart]
-    D --> E[ASHv2 actor/proxy]
+    D --> E[ASHv2 tasks/handle]
     E --> F[NCP]
 
     A --> G[ezsp::Ncp]
@@ -119,6 +119,9 @@ It unifies transport I/O, decode failures, status conversion errors, and protoco
 ## ASHv2 transport (`feature = "ashv2"`)
 
 This layer is implemented in `src/uart`.
+The module re-exports the ASHv2 types and helpers used by its public API:
+`Handle`, `Payload`, `SerialPort`, `Tasks`, `FlowControl`, `NativeSerialPort`,
+`open`, and `start`.
 
 ### Main components
 
@@ -126,6 +129,11 @@ This layer is implemented in `src/uart`.
   - concrete `Transport` implementation
   - tracks connection state and negotiated protocol version
   - owns response queue and callback splitter task
+- re-exported ASHv2 integration surface
+  - `uart::SerialPort` bounds custom serial port implementations
+  - `uart::FlowControl` configures native serial ports opened by `uart::open`
+  - `uart::Handle`, `uart::Payload`, and `uart::Tasks` support advanced
+    integrations that start the ASHv2 link separately
 - `Encoder`
   - serializes EZSP headers/parameters
   - fragments large EZSP payloads into ASHv2 payload chunks
@@ -155,7 +163,7 @@ This layer is implemented in `src/uart`.
 1. select next EZSP header format (legacy/extended) from negotiated version
 2. serialize header + command parameters
 3. chunk payload to fit ASHv2 max payload size
-4. send chunks via `ashv2::Proxy`
+4. send chunks via the `uart::Handle` re-exported from the ASHv2 layer
 
 ### RX path
 
@@ -208,8 +216,9 @@ This layer is implemented in `src/apis_saltans`.
 - `T: Transport + Sync + 'static`
 
 When `ashv2` is also enabled, `Ncp<uart::Uart>` exposes an
-`ashv2(serial_port)` convenience constructor. The builder also has an ASHv2
-helper that accepts explicit `uart::Buffers`.
+`ashv2(serial_port)` convenience constructor for serial ports implementing
+`uart::SerialPort`. The builder also has an ASHv2 helper that accepts explicit
+`uart::Buffers`.
 
 ### Startup flow (`Builder::start`)
 

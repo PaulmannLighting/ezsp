@@ -174,17 +174,23 @@ impl<T> Builder<T> {
 impl Builder<crate::uart::Uart> {
     /// Create a new builder using an `ASHv2` UART on the given serial port.
     ///
+    /// The serial port must implement [`crate::uart::SerialPort`].
+    ///
     /// # Errors
     ///
     /// Returns a [`crate::Error`] if the serial port cannot be used for `ASHv2` communication.
     pub fn ashv2<T>(serial_port: T) -> Result<Self, crate::Error>
     where
-        T: ashv2::SerialPort + Sync + 'static,
+        T: crate::uart::SerialPort + Sync + 'static,
     {
         Self::ashv2_with_buffers(serial_port, &crate::uart::Buffers::default())
     }
 
     /// Create a new builder using an `ASHv2` UART on the given serial port.
+    ///
+    /// The serial port must implement [`crate::uart::SerialPort`]. Use
+    /// [`crate::uart::Buffers`] to size the EZSP and `ASHv2` channels used by the
+    /// constructed transport.
     ///
     /// # Errors
     ///
@@ -194,13 +200,13 @@ impl Builder<crate::uart::Uart> {
         buffers: &crate::uart::Buffers,
     ) -> Result<Self, crate::Error>
     where
-        T: ashv2::SerialPort + Sync + 'static,
+        T: crate::uart::SerialPort + Sync + 'static,
     {
         let (ash_tx, ash_rx) = tokio::sync::mpsc::channel(buffers.ash_receiver);
-        let (_ashv2_tasks, proxy) = ashv2::start(serial_port, ash_tx);
+        let (_ashv2_tasks, handle) = crate::uart::start(serial_port, ash_tx);
         let (callbacks_tx, callbacks_rx) = tokio::sync::mpsc::channel(buffers.ezsp_callbacks);
         let uart = crate::uart::Uart::new(
-            proxy,
+            handle,
             ash_rx,
             callbacks_tx,
             crate::MIN_NON_LEGACY_VERSION,

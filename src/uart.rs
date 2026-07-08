@@ -9,6 +9,11 @@
 //! the EZSP-specific pieces: protocol-version negotiation, EZSP header
 //! selection, typed request/response exchange, and asynchronous callback
 //! demultiplexing.
+//!
+//! The `ASHv2` types used by the public constructors are re-exported from this
+//! module. Users can import [`FlowControl`], [`Handle`], [`NativeSerialPort`],
+//! [`Payload`], [`SerialPort`], [`Tasks`], [`open`], and [`start`] from
+//! `ezsp::uart` without naming the underlying transport crate directly.
 
 use core::fmt::Debug;
 use core::num::TryFromIntError;
@@ -18,7 +23,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::time::Duration;
 
-use ashv2::{FlowControl, Handle, NativeSerialPort, Payload, SerialPort, Tasks, open, start};
+pub use ashv2::{FlowControl, Handle, NativeSerialPort, Payload, SerialPort, Tasks, open, start};
 use le_stream::ToLeStream;
 use log::{debug, error, info, trace, warn};
 use tokio::spawn;
@@ -62,7 +67,11 @@ pub struct Uart {
 }
 
 impl Uart {
-    /// Creates an EZSP host from an already running `ASHv2` proxy.
+    /// Creates an EZSP host from an already running `ASHv2` link handle.
+    ///
+    /// This constructor is intended for integrations that start `ASHv2`
+    /// themselves through [`start`] or another compatible setup and pass the
+    /// resulting [`Handle`] plus inbound [`Payload`] stream into the EZSP layer.
     ///
     /// A minimum protocol version of [`MIN_NON_LEGACY_VERSION`] is required
     /// to support non-legacy commands.
@@ -100,6 +109,10 @@ impl Uart {
 
     /// Open a new EZSP-UART transport from a serial port.
     ///
+    /// The serial port must implement the re-exported [`SerialPort`] trait. The
+    /// returned [`Tasks`] value owns the `ASHv2` background work and must be kept
+    /// alive by the caller.
+    ///
     /// # Errors
     ///
     /// Returns an [`Error`] if any I/O operations fail.
@@ -128,6 +141,9 @@ impl Uart {
     }
 
     /// Open a new EZSP-UART transport from a serial port path.
+    ///
+    /// The path is opened through the re-exported [`open`] helper using the
+    /// requested [`FlowControl`] mode.
     ///
     /// # Errors
     ///

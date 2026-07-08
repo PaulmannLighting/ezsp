@@ -35,10 +35,9 @@ repr-discriminant = { version = "3", features = ["derive"] }
 semver = { version = "1", optional = true }
 silizium = { version = "3", features = ["le-stream"] }
 tokio = { version = "1", features = ["sync"] }
-tokio-task-pool = { version = "0.1", optional = true }
 
 [features]
-ashv2 = ["dep:ashv2", "dep:tokio-task-pool", "tokio/time"]
+ashv2 = ["dep:ashv2"]
 semver = ["dep:semver"]
 apis-saltans = ["dep:apis-saltans-aps", "dep:apis-saltans-core", "dep:apis-saltans-hw", "apis-saltans-nwk", "dep:apis-saltans-zdp", "dep:bytes", "dep:rand"]
 

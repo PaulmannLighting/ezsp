@@ -326,7 +326,6 @@ dependencies = [
  "semver",
  "silizium",
  "tokio",
- "tokio-task-pool",
 ]
 
 [[package]]
@@ -744,15 +743,6 @@ checksum = "32da49809aab5c3bc678af03902d4ccddea2a87d028d86392a4b1560c6906c70"
 dependencies = [
  "futures-core",
  "pin-project-lite",
- "tokio",
-]
-
-[[package]]
-name = "tokio-task-pool"
-version = "0.1.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd1cc4999dd379a2d021b96baec016cd8597373d6b4c4915393ad836b06acda3"
-dependencies = [
  "tokio",
 ]
 

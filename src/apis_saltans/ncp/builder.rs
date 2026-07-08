@@ -46,7 +46,7 @@ where
         let (message_tx, message_rx) = channel(self.buffers);
         spawn(bridge(self.callbacks, message_tx.clone()));
         let (events_tx, mut events_rx) = channel(self.buffers);
-        let event_mux_handle = spawn(EventHandler::new(events_tx).run(message_rx));
+        spawn(EventHandler::new(events_tx).run(message_rx));
 
         debug!("Setting concentrator");
         self.transport.set_concentrator(self.concentrator).await?;
@@ -155,7 +155,6 @@ where
             self.transport,
             self.aps_options,
             message_tx,
-            event_mux_handle,
             endpoints.iter().map(Into::into).collect(),
         )
         .spawn(self.buffers);

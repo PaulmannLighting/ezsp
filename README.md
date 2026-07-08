@@ -63,7 +63,7 @@ EZSP-specific work in this crate:
   asynchronous callbacks to the callback channel.
 - `uart` re-exports the ASHv2 types and helpers used by the public transport
   API: `FlowControl`, `Handle`, `NativeSerialPort`, `Payload`, `SerialPort`,
-  `Tasks`, `open`, and `start`.
+  `open`, and `start`.
 
 ## Core API
 
@@ -87,17 +87,22 @@ The crate currently ships one concrete transport implementation: `uart::Uart` (`
 - protocol negotiation through `Transport::connect()` / `Transport::ensure_connection()`
 - typed EZSP request/response handling over ASHv2 payload framing
 - response/callback demultiplexing
+- caller-driven transport futures through `uart::Futures`
 - serial constructors:
-  - `Uart::open(path, flow_control, protocol_version, &ChannelSizes)`
+  - `Uart::open(path, flow_control, protocol_version, &ChannelSizes)` returns
+    `(Uart, callbacks, Futures<_>)`
   - `Uart::from_serial_port(serial_port, protocol_version, &ChannelSizes)`
-  - `Uart::new(handle, ash_rx, callbacks_tx, protocol_version, channel_size)` (advanced integration)
-- `Uart::abort()` for aborting the background splitter task
+    returns `(Uart, callbacks, Futures<_>)`
+  - `Uart::new(handle, ash_rx, callbacks_tx, protocol_version, channel_size)`
+    returns `(Uart, splitter_future)` for advanced integration
 
 Additional types:
 
 - `uart::ChannelSizes` to tune queue capacities for `Uart::open` / `from_serial_port`
 - `uart::Buffers` for ASHv2 queue sizing in integration helper constructors
-- `uart::SerialPort`, `uart::FlowControl`, `uart::Tasks`, and the other
+- `uart::Futures` for the serial worker, ASHv2 transmitter/receiver, and EZSP
+  frame splitter futures that the caller must poll or spawn
+- `uart::SerialPort`, `uart::FlowControl`, and the other
   re-exported ASHv2 items needed to integrate the UART transport without
   importing `ashv2` paths directly
 
@@ -106,19 +111,30 @@ Additional types:
 ```rust
 use ezsp::uart::{ChannelSizes, SerialPort, Uart};
 use ezsp::{Transport, Utilities};
+use tokio::task::LocalSet;
 
 // Requires feature = "ashv2"
-// Requires a Tokio runtime.
+// Requires a Tokio runtime. The returned futures must be driven by the caller.
 async fn example() -> Result<(), ezsp::Error> {
     let serial_port = /* your serial port implementing SerialPort */;
     let sizes = ChannelSizes::default();
 
-    let (mut uart, _ash_tasks, _callbacks) =
+    let (mut uart, _callbacks, futures) =
         Uart::from_serial_port(serial_port, ezsp::MIN_NON_LEGACY_VERSION, &sizes)?;
 
-    uart.ensure_connection().await?;
-    let _eui64 = uart.get_eui64().await?;
-    Ok(())
+    let local = LocalSet::new();
+    local.spawn_local(futures.serial_worker);
+    local.spawn_local(futures.ash_transmitter);
+    local.spawn_local(futures.ash_receiver);
+    local.spawn_local(futures.frame_splitter);
+
+    local
+        .run_until(async move {
+            uart.ensure_connection().await?;
+            let _eui64 = uart.get_eui64().await?;
+            Ok(())
+        })
+        .await
 }
 ```
 
@@ -152,7 +168,8 @@ If no endpoint matches, the send fails with `Error::NoMatchingSourceEndpoint`.
 If `ashv2` is enabled, `Ncp::ashv2(serial_port)` and
 `Builder::<uart::Uart>::ashv2(serial_port)` create a builder backed by the
 crate's ASHv2 UART transport. The serial port type is constrained by the
-re-exported `uart::SerialPort` trait.
+re-exported `uart::SerialPort` trait. These constructors return the builder and
+the `uart::Futures` set that must be driven alongside the NCP.
 
 ## `apis-saltans` Integration (`apis-saltans` Feature)
 

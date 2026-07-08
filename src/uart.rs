@@ -12,7 +12,7 @@
 //!
 //! The `ASHv2` types used by the public constructors are re-exported from this
 //! module. Users can import [`FlowControl`], [`Handle`], [`NativeSerialPort`],
-//! [`Payload`], [`SerialPort`], [`Tasks`], [`open`], and [`start`] from
+//! [`Payload`], [`SerialPort`], [`open`], and [`start`] from
 //! `ezsp::uart` without naming the underlying transport crate directly.
 
 use core::fmt::Debug;
@@ -68,6 +68,8 @@ impl Uart {
     /// This constructor is intended for integrations that start `ASHv2`
     /// themselves through [`start`] or another compatible setup and pass the
     /// resulting [`Handle`] plus inbound [`Payload`] stream into the EZSP layer.
+    /// The returned future drives the EZSP frame splitter and must be polled for
+    /// responses and callbacks to be routed.
     ///
     /// A minimum protocol version of [`MIN_NON_LEGACY_VERSION`] is required
     /// to support non-legacy commands.
@@ -103,9 +105,10 @@ impl Uart {
 
     /// Open a new EZSP-UART transport from a serial port.
     ///
-    /// The serial port must implement the re-exported [`SerialPort`] trait. The
-    /// returned [`Tasks`] value owns the `ASHv2` background work and must be kept
-    /// alive by the caller.
+    /// The serial port must implement the re-exported [`SerialPort`] trait.
+    /// The returned [`Futures`] value contains the `ASHv2` actor futures and EZSP
+    /// frame splitter future; all of them must be polled or spawned by the
+    /// caller.
     ///
     /// # Errors
     ///
@@ -135,7 +138,8 @@ impl Uart {
     /// Open a new EZSP-UART transport from a serial port path.
     ///
     /// The path is opened through the re-exported [`open`] helper using the
-    /// requested [`FlowControl`] mode.
+    /// requested [`FlowControl`] mode. The returned [`Futures`] value must be
+    /// driven by the caller for the transport to make progress.
     ///
     /// # Errors
     ///

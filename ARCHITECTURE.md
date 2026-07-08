@@ -120,19 +120,24 @@ It unifies transport I/O, decode failures, status conversion errors, and protoco
 
 This layer is implemented in `src/uart`.
 The module re-exports the ASHv2 types and helpers used by its public API:
-`Handle`, `Payload`, `SerialPort`, `Tasks`, `FlowControl`, `NativeSerialPort`,
-`open`, and `start`.
+`Handle`, `Payload`, `SerialPort`, `FlowControl`, `NativeSerialPort`, `open`,
+and `start`.
 
 ### Main components
 
 - `Uart`
   - concrete `Transport` implementation
   - tracks connection state and negotiated protocol version
-  - owns response queue and callback splitter task
+  - owns response queue state and returns a caller-driven splitter future
+- `uart::Futures`
+  - groups the serial worker, ASHv2 transmitter, ASHv2 receiver, and EZSP frame
+    splitter futures
+  - must be spawned or otherwise polled by the application for the UART link to
+    make progress
 - re-exported ASHv2 integration surface
   - `uart::SerialPort` bounds custom serial port implementations
   - `uart::FlowControl` configures native serial ports opened by `uart::open`
-  - `uart::Handle`, `uart::Payload`, and `uart::Tasks` support advanced
+  - `uart::Handle` and `uart::Payload` support advanced
     integrations that start the ASHv2 link separately
 - `Encoder`
   - serializes EZSP headers/parameters
@@ -165,9 +170,25 @@ The module re-exports the ASHv2 types and helpers used by its public API:
 3. chunk payload to fit ASHv2 max payload size
 4. send chunks via the `uart::Handle` re-exported from the ASHv2 layer
 
+### Runtime futures
+
+`Uart::open` and `Uart::from_serial_port` return `(Uart, callbacks, Futures<_>)`.
+The caller owns the returned futures and must run them on an executor:
+
+1. `serial_worker` owns the blocking serial port and services async read/write
+   requests.
+2. `ash_transmitter` sends outbound ASHv2 frames.
+3. `ash_receiver` receives inbound ASHv2 frames and forwards DATA payloads.
+4. `frame_splitter` decodes EZSP frames and routes them into response or
+   callback channels.
+
+`Uart::new` is the advanced constructor for callers that already created an
+ASHv2 `Handle` and inbound `Payload` stream. It returns `(Uart, splitter)`, and
+the caller is still responsible for running the ASHv2 futures from its own setup.
+
 ### RX path
 
-A background splitter task continuously:
+The frame splitter future continuously:
 
 1. receives ASHv2 payloads
 2. decodes/reassembles EZSP frame fragments
@@ -177,9 +198,8 @@ A background splitter task continuously:
 ### Response handling strategy
 
 `Uart::receive::<T>()` consumes the response queue and attempts typed conversion.
-If conversion fails because the response belongs to a different waiter, it requeues the message after a short grace period using a bounded task pool (`tokio_task_pool::Pool`).
-
-`Uart::abort()` aborts the splitter task and joins it.
+If conversion fails because the response belongs to a different waiter, it
+requeues the message on the response channel.
 
 ## `apis-saltans` integration (`feature = "apis-saltans"`)
 
@@ -218,7 +238,8 @@ This layer is implemented in `src/apis_saltans`.
 When `ashv2` is also enabled, `Ncp<uart::Uart>` exposes an
 `ashv2(serial_port)` convenience constructor for serial ports implementing
 `uart::SerialPort`. The builder also has an ASHv2 helper that accepts explicit
-`uart::Buffers`.
+`uart::Buffers`. Both constructors return `uart::Futures` that the caller must
+run alongside the NCP.
 
 ### Startup flow (`Builder::start`)
 

@@ -174,11 +174,9 @@ impl<T> Builder<T> {
 impl Builder<crate::uart::Uart> {
     /// Create a new builder using an `ASHv2` UART on the given serial port.
     ///
-    /// The serial port must implement [`crate::uart::SerialPort`].
-    ///
-    /// # Errors
-    ///
-    /// Returns a [`crate::Error`] if the serial port cannot be used for `ASHv2` communication.
+    /// The serial port must implement [`crate::uart::SerialPort`]. The returned
+    /// [`crate::uart::Futures`] value must be spawned or otherwise polled by the
+    /// caller for the UART transport to make progress.
     pub fn ashv2<T>(serial_port: T) -> (Self, crate::uart::Futures<T>)
     where
         T: crate::uart::SerialPort + Sync + 'static,
@@ -190,11 +188,9 @@ impl Builder<crate::uart::Uart> {
     ///
     /// The serial port must implement [`crate::uart::SerialPort`]. Use
     /// [`crate::uart::Buffers`] to size the EZSP and `ASHv2` channels used by the
-    /// constructed transport.
-    ///
-    /// # Errors
-    ///
-    /// Returns a [`crate::Error`] if the serial port cannot be used for `ASHv2` communication.
+    /// constructed transport. The returned [`crate::uart::Futures`] value must
+    /// be spawned or otherwise polled by the caller for the UART transport to
+    /// make progress.
     pub fn ashv2_with_buffers<T>(
         serial_port: T,
         buffers: crate::uart::Buffers,

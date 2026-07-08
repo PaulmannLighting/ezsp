@@ -145,15 +145,12 @@ impl<T> Ncp<T> {
         )
     }
 
-    /// Terminates the background event handler and returns the underlying transport.
+    /// Sends a termination request to the background event handler.
     ///
     /// # Errors
     ///
-    /// Returns a [`JoinError`] if joining the message handler fails.
-    ///
-    /// # Panics
-    ///
-    /// This method may panic if the termination signal cannot be sent to the message handler.
+    /// Returns [`tokio::sync::mpsc::error::SendError`] if the termination
+    /// request cannot be sent to the message handler.
     pub async fn terminate(self) -> Result<(), SendError<Message>> {
         self.event_handler_proxy.send(Message::Terminate).await
     }
@@ -396,11 +393,9 @@ impl Ncp<crate::uart::Uart> {
     /// Creates a new [`Builder`] backed by an `ASHv2` UART transport.
     ///
     /// The serial port must implement [`crate::uart::SerialPort`], which is
-    /// re-exported by the UART module from the `ASHv2` transport crate.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] if the building of the UART fails.
+    /// re-exported by the UART module from the `ASHv2` transport crate. The
+    /// returned [`crate::uart::Futures`] value must be spawned or otherwise
+    /// polled by the caller for the UART transport to make progress.
     pub fn ashv2<T>(serial_port: T) -> (Builder<crate::uart::Uart>, crate::uart::Futures<T>)
     where
         T: crate::uart::SerialPort + Sync + 'static,

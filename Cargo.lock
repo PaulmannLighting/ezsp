@@ -110,9 +110,9 @@ dependencies = [
 
 [[package]]
 name = "ashv2"
-version = "10.0.0"
+version = "10.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d61d75e6137078483246e790ddb5af3c72df667cda773fe522e333b58e3ee524"
+checksum = "1b8d077bfddc4e82f080d0aa6ba8bcda1f2ef66070dc56f2e85fa968cde86e68"
 dependencies = [
  "async-serialport",
  "bitflags 2.13.0",

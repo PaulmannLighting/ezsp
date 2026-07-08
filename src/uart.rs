@@ -18,9 +18,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::time::Duration;
 
-use ashv2::{
-    Actor, FlowControl, Handle, NativeSerialPort, Payload, SerialPort, Tasks, TryCloneNative, open,
-};
+use ashv2::{Actor, FlowControl, Handle, NativeSerialPort, Payload, SerialPort, Tasks, open};
 use le_stream::ToLeStream;
 use log::{debug, error, info, trace, warn};
 use tokio::spawn;
@@ -111,7 +109,7 @@ impl Uart {
         channel_sizes: &ChannelSizes,
     ) -> Result<(Self, Tasks<P>, Receiver<Callback>), Error>
     where
-        P: SerialPort + TryCloneNative + Sync + 'static,
+        P: SerialPort + Sync + 'static,
     {
         let (tx, rx) = channel(channel_sizes.payload);
         let (tasks, proxy) = Actor::new(serial_port, tx, channel_sizes.message_queue)

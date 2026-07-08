@@ -407,7 +407,7 @@ impl Ncp<crate::uart::Uart> {
     /// Returns an [`Error`] if the building of the UART fails.
     pub fn ashv2<P>(serial_port: P) -> Result<Builder<crate::uart::Uart>, Error>
     where
-        P: ashv2::SerialPort + ashv2::TryCloneNative + Sync + 'static,
+        P: ashv2::SerialPort + Sync + 'static,
     {
         Builder::ashv2(serial_port)
     }

@@ -179,7 +179,7 @@ impl Builder<crate::uart::Uart> {
     /// Returns a [`crate::Error`] if the serial port cannot be used for `ASHv2` communication.
     pub fn ashv2<T>(serial_port: T) -> Result<Self, crate::Error>
     where
-        T: ashv2::SerialPort + ashv2::TryCloneNative + Sync + 'static,
+        T: ashv2::SerialPort + Sync + 'static,
     {
         Self::ashv2_with_buffers(serial_port, &crate::uart::Buffers::default())
     }
@@ -194,7 +194,7 @@ impl Builder<crate::uart::Uart> {
         buffers: &crate::uart::Buffers,
     ) -> Result<Self, crate::Error>
     where
-        T: ashv2::SerialPort + ashv2::TryCloneNative + Sync + 'static,
+        T: ashv2::SerialPort + Sync + 'static,
     {
         let (ash_tx, ash_rx) = tokio::sync::mpsc::channel(buffers.ash_receiver);
         let (_ashv2_tasks, proxy) = ashv2::Actor::new(serial_port, ash_tx, buffers.ash_transmitter)

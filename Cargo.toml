@@ -39,7 +39,7 @@ tokio = { version = "1", features = ["sync"] }
 [features]
 ashv2 = ["dep:ashv2"]
 semver = ["dep:semver"]
-apis-saltans = ["dep:apis-saltans-aps", "dep:apis-saltans-core", "dep:apis-saltans-hw", "apis-saltans-nwk", "dep:apis-saltans-zdp", "dep:bytes", "dep:rand"]
+apis-saltans = ["dep:apis-saltans-aps", "dep:apis-saltans-core", "dep:apis-saltans-hw", "apis-saltans-nwk", "dep:apis-saltans-zdp", "dep:bytes", "dep:rand", "tokio/rt"]
 
 [profile.release]
 opt-level = 3

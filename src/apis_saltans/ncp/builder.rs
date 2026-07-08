@@ -1,4 +1,6 @@
+use std::io::ErrorKind;
 use std::sync::Arc;
+use std::time::Duration;
 
 use apis_saltans_hw::{AwaitEvent, Event, EventTranslator, NcpDriver, NcpHandle, Start, bridge};
 use apis_saltans_zdp::SimpleDescriptor;
@@ -8,6 +10,7 @@ use rand::random;
 use silizium::zigbee::security::man::Key;
 use tokio::spawn;
 use tokio::sync::mpsc::{Receiver, channel};
+use tokio::time::sleep;
 
 use super::event_handler::EventHandler;
 use crate::ember::security::initial;
@@ -18,6 +21,41 @@ use crate::{
     PolicyExt, Security, Transport, Utilities,
 };
 
+const TICK: Duration = Duration::from_secs(1);
+
+impl<T> Builder<T>
+where
+    T: Transport,
+{
+    /// Connects the underlying transport before startup configuration begins.
+    ///
+    /// `ASHv2` transports may report [`ErrorKind::NotConnected`] while their
+    /// caller-owned futures are still establishing the serial link. In that
+    /// case this helper waits for [`TICK`] and retries. Any other connection
+    /// error is returned immediately.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if the transport reports a connection error other
+    /// than [`ErrorKind::NotConnected`].
+    async fn connect(&mut self) -> Result<(), Error> {
+        loop {
+            let Err(error) = self.transport.connect().await else {
+                return Ok(());
+            };
+
+            if let Error::Io(io_error) = &error
+                && io_error.kind() == ErrorKind::NotConnected
+            {
+                debug!("ASHv2 is not yet connected. Waiting...");
+                sleep(TICK).await;
+            } else {
+                return Err(error);
+            }
+        }
+    }
+}
+
 impl<T> Start for Builder<T>
 where
     T: Transport + Sync + 'static,
@@ -25,15 +63,17 @@ where
     /// Configures the EZSP stack and starts an `apis_saltans_hw` NCP actor.
     ///
     /// The startup sequence applies configured policies and stack values,
-    /// registers the supplied endpoints, stores their cluster lists for later
-    /// APS source endpoint selection, initializes or reforms the Zigbee network,
-    /// waits for `NetworkUp`, sends a many-to-one route request, and returns an
-    /// `apis_saltans_hw::NcpHandle` plus the translated event stream.
+    /// waits for the transport to connect, registers the supplied endpoints,
+    /// stores their cluster lists for later APS source endpoint selection,
+    /// initializes or reforms the Zigbee network, waits for `NetworkUp`, sends
+    /// a many-to-one route request, and returns an `apis_saltans_hw::NcpHandle`
+    /// plus the translated event stream.
     ///
     /// # Errors
     ///
     /// Returns an `apis_saltans_hw::Error` if endpoint validation, EZSP stack
-    /// setup, network initialization, or actor startup fails.
+    /// setup, transport connection, network initialization, or actor startup
+    /// fails.
     #[expect(clippy::too_many_lines)]
     async fn start(
         mut self,
@@ -42,6 +82,8 @@ where
         if endpoints.is_empty() {
             return Err(apis_saltans_hw::Error::NoEndpoints);
         }
+
+        self.connect().await?;
 
         let (message_tx, message_rx) = channel(self.buffers);
         spawn(bridge(self.callbacks, message_tx.clone()));

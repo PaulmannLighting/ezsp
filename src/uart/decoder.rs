@@ -2,10 +2,9 @@
 //!
 //! `ASHv2` validates, acknowledges, un-stuffs, and de-randomizes UART frames
 //! before this decoder sees their DATA fields. The decoder is responsible for
-//! parsing the EZSP header and accumulating the EZSP parameters into a typed
+//! parsing the EZSP header and parameters from each DATA field into one typed
 //! [`Frame`].
 
-use std::io::ErrorKind;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU8, Ordering};
 
@@ -50,26 +49,15 @@ impl Decoder {
         Some(self.parse_frame(frame))
     }
 
-    /// Try to parse a frame fragment from a chunk of bytes.
+    /// Parse one EZSP frame from one `ASHv2` DATA payload.
     ///
-    /// `ASHv2` DATA fields are limited by the UART link layer. Large EZSP
-    /// parameter bodies may therefore arrive split across multiple `ASHv2`
-    /// payloads:
-    ///
-    /// <EZSP Header><Payload Fragment 1>, <EZSP Header><Payload Fragment 2>, ...
-    ///
-    /// This method will parse these potentially fragmented EZSP frames by matching the headers
-    /// and appending the remaining bytes to the parameter buffer.
-    ///
-    /// # Returns
-    ///
-    /// Returns <code>Some([Frame])</code> if the frame fragment was successfully parsed.
-    ///
-    /// Returns `None` if the decoder needs more data to decode the frame.
+    /// EZSP has no protocol-level fragmentation, and `ASHv2` DATA payloads carry
+    /// complete EZSP frames. The first bytes are parsed as the EZSP header; all
+    /// remaining bytes are parsed as the frame parameters.
     ///
     /// # Errors
     ///
-    /// Returns an [`Error`] if the frame fragment could not be parsed.
+    /// Returns an [`Error`] if the frame could not be parsed.
     fn parse_frame(&self, frame: Payload) -> Result<Frame, Error> {
         trace!("Decoding ASHv2 frame: {frame:#04X?}");
 
@@ -87,7 +75,7 @@ impl Decoder {
             }
         }
 
-        trace!("Accumulated parameters: {:#04X?}", stream);
+        trace!("Accumulated parameters: {stream:#04X?}");
 
         if header.id() == invalid_command::Response::ID {
             return Err(invalid_command::Response::from_le_stream_exact(&mut stream)

@@ -141,10 +141,9 @@ and `start`.
     integrations that start the ASHv2 link separately
 - `Encoder`
   - serializes EZSP headers/parameters
-  - fragments large EZSP payloads into ASHv2 payload chunks
+  - sends each EZSP frame as one ASHv2 DATA payload
 - `Decoder`
-  - parses ASHv2 payload chunks back into EZSP frames
-  - supports fragmented EZSP frame reassembly across multiple ASHv2 payloads
+  - parses each ASHv2 DATA payload as one EZSP frame
 - `Splitter`
   - routes decoded frames:
     - responses -> response queue
@@ -167,8 +166,12 @@ and `start`.
 
 1. select next EZSP header format (legacy/extended) from negotiated version
 2. serialize header + command parameters
-3. chunk payload to fit ASHv2 max payload size
-4. send chunks via the `uart::Handle` re-exported from the ASHv2 layer
+3. send the complete EZSP frame as one ASHv2 DATA payload via the `uart::Handle`
+   re-exported from the ASHv2 layer
+
+EZSP has no protocol-level fragmentation and ASHv2 does not fragment EZSP DATA
+payloads. If the serialized EZSP frame does not fit in one ASHv2 DATA payload,
+encoding fails before anything is sent.
 
 ### Runtime futures
 
@@ -191,7 +194,7 @@ the caller is still responsible for running the ASHv2 futures from its own setup
 The frame splitter future continuously:
 
 1. receives ASHv2 payloads
-2. decodes/reassembles EZSP frame fragments
+2. decodes one EZSP frame from each ASHv2 DATA payload
 3. parses typed parameters from frame ID
 4. routes frame contents into response or callback channels
 

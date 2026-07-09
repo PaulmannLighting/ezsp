@@ -21,10 +21,11 @@ impl Encoder {
         Self { ash_v2 }
     }
 
-    /// Encode an EZSP header and parameters into one or more `ASHv2` payloads.
+    /// Encode an EZSP header and parameters into one `ASHv2` DATA payload.
     ///
-    /// `ASHv2` DATA fields have a bounded payload size. Each emitted payload
-    /// repeats the EZSP header and carries the next parameter chunk.
+    /// EZSP has no protocol-level fragmentation, and `ASHv2` does not fragment
+    /// EZSP DATA payloads. If the serialized header and parameters do not fit
+    /// in one `ASHv2` payload, encoding fails and nothing is sent.
     pub async fn send<T>(&self, header: Header, parameters: T) -> Result<(), Error>
     where
         T: Debug + ToLeStream,

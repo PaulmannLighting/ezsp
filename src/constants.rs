@@ -8,8 +8,9 @@ pub const MAX_HEADER_SIZE: usize = 5;
 /// Largest parameter body size handled by this implementation.
 ///
 /// This is the maximum size of the EZSP parameters, not including the EZSP
-/// header. `ASHv2` DATA payloads are smaller, so the UART encoder chunks a large
-/// EZSP parameter body across multiple `ASHv2` payloads.
+/// header. This is a protocol model limit, not a UART fragmentation limit.
+/// EZSP has no protocol-level fragmentation, and each UART EZSP frame must fit
+/// in a single `ASHv2` DATA payload.
 ///
 /// The largest parameter body in the referenced protocol definition is the
 /// `addEndpoint` command:

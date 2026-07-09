@@ -64,28 +64,28 @@ impl Splitter {
         match parameters {
             Parameters::Response(response) => {
                 trace!("Forwarding response: {response:?}");
-                self.handle_response(Parameters::Response(response)).await;
+                self.send_response(Parameters::Response(response)).await;
             }
             Parameters::Callback(callback) => {
                 if header.is_async_callback() {
                     trace!("Forwarding async callback: {callback:?}");
-                    self.handle_callback(callback).await;
+                    self.send_callback(callback).await;
                 } else {
                     trace!("Forwarding non-async callback as response: {callback:?}");
-                    self.handle_response(Parameters::Callback(callback)).await;
+                    self.send_response(Parameters::Callback(callback)).await;
                 }
             }
         }
     }
 
-    async fn handle_response(&self, parameters: Parameters) {
+    async fn send_response(&self, parameters: Parameters) {
         self.responses
             .send(Ok(parameters))
             .await
             .expect("Response channel should be open. This is a bug.");
     }
 
-    async fn handle_callback(&self, handler: Callback) {
+    async fn send_callback(&self, handler: Callback) {
         self.callbacks
             .send(handler)
             .await

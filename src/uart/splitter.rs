@@ -12,6 +12,7 @@ use crate::frame::{Callback, Frame, Parameters};
 /// On EZSP-UART, callbacks are asynchronous by default. The response frame
 /// control byte identifies whether a callback arrived asynchronously or as part
 /// of a normal command/response exchange.
+#[derive(Debug)]
 pub struct Splitter {
     incoming: Decoder,
     responses: Sender<Result<Parameters, Error>>,
@@ -89,15 +90,5 @@ impl Splitter {
             .send(handler)
             .await
             .expect("Callback channel should be open. This is a bug");
-    }
-}
-
-impl Debug for Splitter {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Splitter")
-            .field("incoming", &self.incoming)
-            .field("responses", &self.responses)
-            .field("callbacks", &"...")
-            .finish()
     }
 }

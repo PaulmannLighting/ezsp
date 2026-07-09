@@ -1,3 +1,4 @@
+use std::io;
 use std::pin::Pin;
 
 type BoxedFuture<T> = Pin<Box<dyn Future<Output = T> + Send + 'static>>;
@@ -19,14 +20,17 @@ pub struct Futures<T> {
     pub ash_receiver: BoxedFuture<()>,
 
     /// Routes decoded EZSP frames into response and callback channels.
-    pub frame_splitter: BoxedFuture<()>,
+    ///
+    /// Resolves with an error if a destination channel closes before the
+    /// splitter finishes.
+    pub frame_splitter: BoxedFuture<io::Result<()>>,
 }
 
 impl<T> Futures<T> {
     /// Create an EZSP-UART future set from the EZSP splitter future and `ASHv2`
     /// actor futures.
     pub fn new(
-        frame_splitter: BoxedFuture<()>,
+        frame_splitter: BoxedFuture<io::Result<()>>,
         ash_futures: ashv2::Futures<
             impl Future<Output = T> + Send + 'static,
             impl Future<Output = ()> + Send + 'static,

@@ -149,6 +149,8 @@ and `start`.
     - responses -> response queue
     - async callbacks -> callback queue
     - non-async callbacks -> response queue
+  - returns `std::io::Result<()>` when run, reporting closed destination
+    channels as errors
 
 ### Connection lifecycle
 
@@ -183,11 +185,13 @@ The caller owns the returned futures and must run them on an executor:
 2. `ash_transmitter` sends outbound ASHv2 frames.
 3. `ash_receiver` receives inbound ASHv2 frames and forwards DATA payloads.
 4. `frame_splitter` decodes EZSP frames and routes them into response or
-   callback channels.
+   callback channels, resolving with `std::io::Result<()>`.
 
 `Uart::new` is the advanced constructor for callers that already created an
 ASHv2 `Handle` and inbound `Payload` stream. It returns `(Uart, splitter)`, and
 the caller is still responsible for running the ASHv2 futures from its own setup.
+The splitter future reports closed response or callback channels as
+`std::io::Result` errors.
 
 ### RX path
 

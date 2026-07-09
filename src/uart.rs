@@ -18,6 +18,7 @@
 use core::fmt::Debug;
 use core::num::TryFromIntError;
 use std::borrow::Cow;
+use std::io;
 use std::num::NonZero;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -48,7 +49,7 @@ mod encoder;
 mod futures;
 mod splitter;
 
-type SplitterFuture = Pin<Box<dyn Future<Output = ()> + Send + 'static>>;
+type SplitterFuture = Pin<Box<dyn Future<Output = io::Result<()>> + Send + 'static>>;
 
 /// An EZSP host using `ASHv2` as the UART link layer.
 #[derive(Debug)]
@@ -69,7 +70,8 @@ impl Uart {
     /// themselves through [`start`] or another compatible setup and pass the
     /// resulting [`Handle`] plus inbound [`Payload`] stream into the EZSP layer.
     /// The returned future drives the EZSP frame splitter and must be polled for
-    /// responses and callbacks to be routed.
+    /// responses and callbacks to be routed. It resolves with an error if a
+    /// destination channel closes before the splitter finishes.
     ///
     /// A minimum protocol version of [`MIN_NON_LEGACY_VERSION`] is required
     /// to support non-legacy commands.

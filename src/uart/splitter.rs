@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::io;
 
 use log::{trace, warn};
 use tokio::sync::mpsc::Sender;
@@ -40,55 +41,56 @@ impl Splitter {
     /// Run the splitter.
     ///
     /// Continuously decodes incoming frames and forwards them as responses or callbacks.
-    pub async fn run(mut self) {
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the response or callback destination channel closes.
+    pub async fn run(mut self) -> io::Result<()> {
         while let Some(frame) = self.incoming.decode().await {
             match frame {
                 Ok(frame) => {
                     trace!("Received frame: {frame:?}");
-                    self.handle_frame(frame).await;
+                    self.handle_frame(frame).await?;
                 }
                 Err(error) => {
                     warn!("Failed to decode frame: {error}");
                     self.responses
                         .send(Err(error))
                         .await
-                        .expect("Response channel should be open. This is a bug.");
+                        .map_err(|_| io::Error::from(io::ErrorKind::BrokenPipe))?;
                 }
             }
         }
+
+        Ok(())
     }
 
-    async fn handle_frame(&self, frame: Frame) {
+    async fn handle_frame(&self, frame: Frame) -> io::Result<()> {
         let (header, parameters) = frame.into();
 
         match parameters {
             Parameters::Response(response) => {
                 trace!("Forwarding response: {response:?}");
-                self.send_response(Parameters::Response(response)).await;
+                self.responses
+                    .send(Ok(Parameters::Response(response)))
+                    .await
+                    .map_err(|_| io::Error::from(io::ErrorKind::BrokenPipe))
             }
             Parameters::Callback(callback) => {
                 if header.is_async_callback() {
                     trace!("Forwarding async callback: {callback:?}");
-                    self.send_callback(callback).await;
+                    self.callbacks
+                        .send(callback)
+                        .await
+                        .map_err(|_| io::Error::from(io::ErrorKind::BrokenPipe))
                 } else {
                     trace!("Forwarding non-async callback as response: {callback:?}");
-                    self.send_response(Parameters::Callback(callback)).await;
+                    self.responses
+                        .send(Ok(Parameters::Callback(callback)))
+                        .await
+                        .map_err(|_| io::Error::from(io::ErrorKind::BrokenPipe))
                 }
             }
         }
-    }
-
-    async fn send_response(&self, parameters: Parameters) {
-        self.responses
-            .send(Ok(parameters))
-            .await
-            .expect("Response channel should be open. This is a bug.");
-    }
-
-    async fn send_callback(&self, handler: Callback) {
-        self.callbacks
-            .send(handler)
-            .await
-            .expect("Callback channel should be open. This is a bug");
     }
 }

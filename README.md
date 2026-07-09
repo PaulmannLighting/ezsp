@@ -64,7 +64,8 @@ EZSP-specific work in this crate:
 - `uart::Encoder` serializes EZSP headers and parameters into ASHv2 payloads.
 - `uart::Decoder` parses ASHv2 payloads back into typed EZSP frames.
 - `uart::Splitter` routes normal responses to the pending request path and UART
-  asynchronous callbacks to the callback channel.
+  asynchronous callbacks to the callback channel. Its future returns an error if
+  one of those destination channels closes before the splitter finishes.
 - `uart` re-exports the ASHv2 types and helpers used by the public transport
   API: `FlowControl`, `Handle`, `NativeSerialPort`, `Payload`, `SerialPort`,
   `open`, and `start`.
@@ -98,14 +99,16 @@ The crate currently ships one concrete transport implementation: `uart::Uart` (`
   - `Uart::from_serial_port(serial_port, protocol_version, &ChannelSizes)`
     returns `(Uart, callbacks, Futures<_>)`
   - `Uart::new(handle, ash_rx, callbacks_tx, protocol_version, channel_size)`
-    returns `(Uart, splitter_future)` for advanced integration
+    returns `(Uart, splitter_future)` for advanced integration. The splitter
+    future resolves to `std::io::Result<()>`.
 
 Additional types:
 
 - `uart::ChannelSizes` to tune queue capacities for `Uart::open` / `from_serial_port`
 - `uart::Buffers` for ASHv2 queue sizing in integration helper constructors
 - `uart::Futures` for the serial worker, ASHv2 transmitter/receiver, and EZSP
-  frame splitter futures that the caller must poll or spawn
+  frame splitter futures that the caller must poll or spawn. The frame splitter
+  future resolves to `std::io::Result<()>`.
 - `uart::SerialPort`, `uart::FlowControl`, and the other
   re-exported ASHv2 items needed to integrate the UART transport without
   importing `ashv2` paths directly
@@ -130,7 +133,12 @@ async fn example() -> Result<(), ezsp::Error> {
     local.spawn_local(futures.serial_worker);
     local.spawn_local(futures.ash_transmitter);
     local.spawn_local(futures.ash_receiver);
-    local.spawn_local(futures.frame_splitter);
+    local.spawn_local(async move {
+        futures
+            .frame_splitter
+            .await
+            .expect("EZSP frame splitter failed");
+    });
 
     local
         .run_until(async move {

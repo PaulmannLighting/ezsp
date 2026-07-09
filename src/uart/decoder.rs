@@ -5,6 +5,7 @@
 //! parsing the EZSP header and accumulating the EZSP parameters into a typed
 //! [`Frame`].
 
+use std::io::ErrorKind;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU8, Ordering};
 
@@ -14,20 +15,16 @@ use log::trace;
 use tokio::sync::mpsc::Receiver;
 
 use crate::error::Decode;
-use crate::frame::parsable::Parsable;
+use crate::frame::parsable::{Parsable, WarnExcessBytes};
 use crate::frame::{Frame, Header};
 use crate::parameters::utilities::invalid_command;
-use crate::{
-    Error, Extended, Legacy, LowByte, MAX_PARAMETER_SIZE, MIN_NON_LEGACY_VERSION, Parameters, ezsp,
-};
+use crate::{Error, Extended, Legacy, LowByte, MIN_NON_LEGACY_VERSION, Parameters, ezsp};
 
 /// Decodes `ASHv2` payloads into typed EZSP frames.
 #[derive(Debug)]
 pub struct Decoder {
     source: Receiver<Payload>,
     negotiated_version: Arc<AtomicU8>,
-    header: Option<Header>,
-    parameters: heapless::Vec<u8, MAX_PARAMETER_SIZE>,
 }
 
 impl Decoder {
@@ -40,8 +37,6 @@ impl Decoder {
         Self {
             source,
             negotiated_version,
-            header: None,
-            parameters: heapless::Vec::new(),
         }
     }
 
@@ -51,22 +46,8 @@ impl Decoder {
     ///
     /// Returns an [`Error`] if no frame could be decoded.
     pub async fn decode(&mut self) -> Option<Result<Frame, Error>> {
-        self.parameters.clear();
-
-        while let Some(frame) = self.source.recv().await {
-            match self.try_parse_frame_fragment(frame) {
-                Ok(maybe_frame) => {
-                    if let Some(frame) = maybe_frame {
-                        return Some(Ok(frame));
-                    }
-                }
-                Err(error) => {
-                    return Some(Err(error));
-                }
-            }
-        }
-
-        None
+        let frame = self.source.recv().await?;
+        Some(self.parse_frame(frame))
     }
 
     /// Try to parse a frame fragment from a chunk of bytes.
@@ -89,14 +70,14 @@ impl Decoder {
     /// # Errors
     ///
     /// Returns an [`Error`] if the frame fragment could not be parsed.
-    fn try_parse_frame_fragment(&mut self, frame: Payload) -> Result<Option<Frame>, Error> {
+    fn parse_frame(&self, frame: Payload) -> Result<Frame, Error> {
         trace!("Decoding ASHv2 frame: {frame:#04X?}");
 
         let mut stream = frame.into_iter();
-        let next_header = self.read_header(&mut stream).ok_or(Decode::TooFewBytes)?;
-        trace!("Next header: {next_header}");
+        let header = self.read_header(&mut stream).ok_or(Decode::TooFewBytes)?;
+        trace!("Decoded header: {header}");
 
-        if let LowByte::Response(response) = next_header.low_byte() {
+        if let LowByte::Response(response) = header.low_byte() {
             if response.is_truncated() {
                 return Err(ezsp::Status::Error(ezsp::Error::Truncated).into());
             }
@@ -106,26 +87,20 @@ impl Decoder {
             }
         }
 
-        if let Some(header) = self.header.take()
-            && header != next_header
-        {
-            self.parameters.clear();
-            return Err(Decode::FrameIdMismatch {
-                expected: header.id(),
-                found: next_header.id(),
-            }
-            .into());
+        trace!("Accumulated parameters: {:#04X?}", stream);
+
+        if header.id() == invalid_command::Response::ID {
+            return Err(invalid_command::Response::from_le_stream_exact(&mut stream)
+                .warn_excess_bytes(stream)?
+                .into());
         }
 
-        self.parameters.extend(stream);
-        trace!("Accumulated parameters: {:#04X?}", self.parameters);
-
-        match Parameters::parse_from_le_stream(next_header.id(), self.parameters.iter().copied()) {
+        match Parameters::parse_from_le_stream(header.id(), stream) {
             Ok(parameters) => {
                 trace!("Decoded parameters: {parameters:?}");
-                Ok(Some(Frame::new(next_header, parameters)))
+                Ok(Frame::new(header, parameters))
             }
-            Err(error) => self.handle_error(error, next_header),
+            Err(error) => Err(error.into()),
         }
     }
 
@@ -139,24 +114,5 @@ impl Decoder {
         } else {
             Extended::from_le_stream(stream).map(Header::Extended)
         }
-    }
-
-    /// Handle an error that occurred during frame parsing.
-    fn handle_error(&mut self, error: Decode, header: Header) -> Result<Option<Frame>, Error> {
-        if let Ok(invalid_command) =
-            invalid_command::Response::parse_from_le_stream(header.id(), self.parameters.drain(..))
-        {
-            trace!("Received invalid command error.");
-            return Err(Error::InvalidCommand(invalid_command));
-        }
-
-        if error != Decode::TooFewBytes {
-            trace!("Received and error during frame parsing: {error:?}");
-            return Err(error.into());
-        }
-
-        trace!("Frame appears fragmented. Waiting for more data...");
-        self.header.replace(header);
-        Ok(None)
     }
 }

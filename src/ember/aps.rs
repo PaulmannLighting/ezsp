@@ -1,9 +1,13 @@
 //! Application Support Sublayer (APS) module.
 
 use std::fmt::Display;
+use std::num::NonZero;
 
 use bitflags::bitflags;
 use le_stream::{FromLeStream, ToLeStream};
+
+const INDEX_MASK: u16 = 0x00FF;
+const BLOCK_MASK: u16 = 0xFF00;
 
 /// Ember APS options.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Hash, FromLeStream, ToLeStream)]
@@ -144,6 +148,16 @@ impl Frame {
         self.sequence
     }
 
+    /// Set the APS sequence number.
+    pub const fn set_sequence(&mut self, sequence: u8) {
+        self.sequence = sequence;
+    }
+
+    /// Enable APS retry for this frame.
+    pub fn enable_retry(&mut self) {
+        self.options.insert(Options::RETRY);
+    }
+
     /// Return fragmentation information if the message is fragmented.
     ///
     /// # Returns
@@ -154,16 +168,30 @@ impl Frame {
     #[must_use]
     pub const fn fragmentation(&self) -> Option<(u8, Option<u8>)> {
         if self.options.contains(Options::FRAGMENT) {
-            let index = (self.group_id & 0x00FF) as u8;
+            let index = (self.group_id & INDEX_MASK) as u8;
 
             if index == 0 {
-                Some((index, Some(((self.group_id & 0xFF00) >> 8) as u8)))
+                let blocks =
+                    ((self.group_id & BLOCK_MASK) >> BLOCK_MASK.trailing_zeros()).to_le_bytes()[0];
+                Some((index, Some(blocks)))
             } else {
                 Some((index, None))
             }
         } else {
             None
         }
+    }
+
+    /// Mark this frame as the first fragment of a fragmented APS message.
+    pub fn set_first_fragment(&mut self, blocks: u8) {
+        self.options.insert(Options::FRAGMENT);
+        self.group_id = u16::from(blocks) << BLOCK_MASK.trailing_zeros();
+    }
+
+    /// Mark this frame as a follow-up fragment of a fragmented APS message.
+    pub fn set_followup_fragment(&mut self, index: NonZero<u8>) {
+        self.options.insert(Options::FRAGMENT);
+        self.group_id = u16::from(index.get());
     }
 }
 

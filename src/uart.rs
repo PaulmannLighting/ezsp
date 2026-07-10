@@ -40,7 +40,9 @@ use crate::parameters::configuration::version;
 use crate::transport::Transport;
 use crate::uart::decoder::Decoder;
 use crate::uart::splitter::Splitter;
-use crate::{Callback, Configuration, Connection, Extended, Legacy, Parameters, ValueError};
+use crate::{
+    Builder, Callback, Configuration, Connection, Extended, Legacy, Ncp, Parameters, ValueError,
+};
 
 mod buffers;
 mod channel_sizes;
@@ -281,5 +283,21 @@ impl Transport for Uart {
                 }
             }
         }
+    }
+}
+
+#[cfg(feature = "ashv2")]
+impl Ncp<Uart> {
+    /// Creates a new [`Builder`] backed by an `ASHv2` UART transport.
+    ///
+    /// The serial port must implement [`SerialPort`], which is
+    /// re-exported by the UART module from the `ASHv2` transport crate. The
+    /// returned [`Futures`] value must be spawned or otherwise
+    /// polled by the caller for the UART transport to make progress.
+    pub fn ashv2<T>(serial_port: T) -> (Builder<Uart>, Futures<T>)
+    where
+        T: SerialPort + Sync + 'static,
+    {
+        Builder::ashv2(serial_port)
     }
 }

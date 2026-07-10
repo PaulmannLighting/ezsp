@@ -14,8 +14,6 @@ dependencies = [
 [[package]]
 name = "apis-saltans-aps"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f79a770968775d783f103f32b9ad3f9eb97229438c4f5270d16542531d708564"
 dependencies = [
  "apis-saltans-core",
  "apis-saltans-nwk",
@@ -30,8 +28,6 @@ dependencies = [
 [[package]]
 name = "apis-saltans-core"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "55ec4397bac58d695c0bf9ac0c9e87c4973ed2c03c42cf1db95fb59ff34692a5"
 dependencies = [
  "bitflags 2.13.0",
  "chrono",
@@ -48,54 +44,25 @@ dependencies = [
 [[package]]
 name = "apis-saltans-hw"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8f0dabdc0353f0b10bff629a182b68957bc05a0a924126dc5100f47991cdc86"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
  "apis-saltans-nwk",
- "apis-saltans-zcl",
  "apis-saltans-zdp",
  "bytes",
- "le-stream",
- "log",
  "tokio",
 ]
 
 [[package]]
 name = "apis-saltans-nwk"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6225797420a68b01f3c1984c0dff1c2d50199df899c7e6e641ee7de1f2150c43"
 dependencies = [
  "apis-saltans-core",
-]
-
-[[package]]
-name = "apis-saltans-zcl"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d890e519861f6d861deef4d26b7c9341924227e283386a2ef7638566fd0b6bc0"
-dependencies = [
- "apis-saltans-aps",
- "apis-saltans-core",
- "bitflags 2.13.0",
- "bytes",
- "chrono",
- "const_env",
- "either",
- "heapless",
- "le-stream",
- "num-derive",
- "num-traits",
- "repr-discriminant",
 ]
 
 [[package]]
 name = "apis-saltans-zdp"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d96e9894fd3eac6c61b191a6722f46a50125f8bf527fc2dcdab15a25a4f40dff"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -277,12 +244,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "217698eaf96b4a3f0bc4f3662aaa55bdf913cd54d7204591faa790070c6d0853"
 
 [[package]]
-name = "either"
-version = "1.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91622ff5e7162018101f2fea40d6ebf4a78bbe5a49736a2020649edf9693679e"
-
-[[package]]
 name = "enum-iterator"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -448,9 +409,9 @@ dependencies = [
 
 [[package]]
 name = "le-stream"
-version = "10.1.4"
+version = "10.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2e2c83c7e271e6c1af6d50f57de755353342a896a8ab0156e0831b561f2706e"
+checksum = "42537ed5e918288237bfa43d0ab3be58d58f74ed1b96983d082a8892da9f5acf"
 dependencies = [
  "heapless",
  "intx",

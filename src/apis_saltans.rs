@@ -3,11 +3,11 @@
 //! Enabling the `apis-saltans` feature adapts [`crate::Ncp`] and
 //! [`crate::Builder`] to the `apis_saltans_hw` API:
 //!
-//! - [`crate::Ncp`] implements `apis_saltans_hw::NcpDriver` when the
+//! - [`crate::Ncp`] implements `apis_saltans_hw::Driver` when the
 //!   wrapped transport implements the required EZSP command traits.
-//! - [`crate::Builder`] implements `apis_saltans_hw::Start` and performs
-//!   EZSP stack setup before spawning an `NcpDriver` actor. Endpoint simple
-//!   descriptors supplied to `Start::start` are registered with the NCP and
+//! - [`crate::Builder`] provides startup helpers for `apis_saltans_hw` and performs
+//!   EZSP stack setup before spawning a `Driver` actor. Endpoint simple
+//!   descriptors supplied to startup are registered with the NCP and
 //!   kept as local cluster metadata for outgoing APS source endpoint selection.
 //! - EZSP callbacks are translated into `apis_saltans_hw::Event` values.
 

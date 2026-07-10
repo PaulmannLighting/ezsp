@@ -2,7 +2,7 @@ use std::io::ErrorKind;
 use std::sync::Arc;
 use std::time::Duration;
 
-use apis_saltans_hw::{AwaitEvent, Event, EventTranslator, NcpDriver, NcpHandle, Start, bridge};
+use apis_saltans_hw::{Driver, Event, EventTranslator, NcpHandle, bridge};
 use apis_saltans_zdp::SimpleDescriptor;
 use log::{debug, info};
 use macaddr::MacAddr8;
@@ -17,8 +17,8 @@ use crate::ember::security::initial;
 use crate::ember::{concentrator, network};
 use crate::ezsp::config;
 use crate::{
-    Builder, Configuration, ConfigurationExt, Displayable, Error, Messaging, Ncp, Networking,
-    PolicyExt, Security, Transport, Utilities,
+    Builder, Callback, Configuration, ConfigurationExt, Displayable, Error, Message, Messaging,
+    Ncp, Networking, PolicyExt, Security, Transport, Utilities,
 };
 
 const TICK: Duration = Duration::from_secs(1);
@@ -56,9 +56,26 @@ where
     }
 }
 
-impl<T> Start for Builder<T>
+impl<T> apis_saltans_hw::Backend for Builder<T>
 where
-    T: Transport + Sync + 'static,
+    T: Transport + Send + Sync + 'static,
+{
+    type HardwareEvent = Callback;
+    type Message = Message;
+    type EventTranslator = EventHandler;
+}
+
+impl<T> Builder<T>
+where
+    T: Configuration
+        + Security
+        + Messaging
+        + Networking
+        + Utilities
+        + Transport
+        + Send
+        + Sync
+        + 'static,
 {
     /// Configures the EZSP stack and starts an `apis_saltans_hw` NCP actor.
     ///
@@ -132,10 +149,7 @@ where
 
         if self.reinitialize {
             if self.transport.leave_network().await.is_ok() {
-                events_rx
-                    .network_down()
-                    .await
-                    .expect("Events channel must be open at this point.");
+                wait_for_event(&mut events_rx, Event::NetworkDown).await?;
                 info!("Left existing network.");
             }
 
@@ -165,10 +179,7 @@ where
             self.transport.network_init(self.init_bitmask).await?;
         }
 
-        events_rx
-            .network_up()
-            .await
-            .expect("Events channel must be open at this point.");
+        wait_for_event(&mut events_rx, Event::NetworkUp).await?;
         info!("Network is up.");
 
         debug!("Setting radio power to {}", self.radio_power);
@@ -193,15 +204,31 @@ where
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
-        let (_handle, ncp) = Ncp::new(
+        let (ncp, actor) = Ncp::new(
             self.transport,
             self.aps_options,
             message_tx,
             endpoints.iter().map(Into::into).collect(),
         )
         .spawn(self.buffers);
+        spawn(actor);
         Ok((ncp, events_rx))
     }
+}
+
+async fn wait_for_event(
+    events: &mut Receiver<Event>,
+    expected: Event,
+) -> Result<(), apis_saltans_hw::Error> {
+    while let Some(event) = events.recv().await {
+        if event == expected {
+            return Ok(());
+        }
+
+        debug!("Ignoring event while waiting for {expected:?}: {event:?}");
+    }
+
+    Err(apis_saltans_hw::Error::DriverRecv)
 }
 
 fn build_initial_security_state(link_key: Option<Key>, network_key: Option<Key>) -> initial::State {

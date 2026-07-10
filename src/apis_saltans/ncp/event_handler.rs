@@ -52,9 +52,12 @@ impl EventHandler {
     async fn handle_networking_callbacks(&mut self, networking: Networking) {
         match networking {
             Networking::StackStatus(status) => self.handle_stack_status(status.result()).await,
-            Networking::ChildJoin(child_join) => {
-                self.forward_event((*child_join).into()).await;
-            }
+            Networking::ChildJoin(child_join) => match Event::try_from(*child_join) {
+                Ok(event) => self.forward_event(event).await,
+                Err(child_join) => {
+                    warn!("Ignoring child join event with invalid address: {child_join:?}");
+                }
+            },
             Networking::NetworkFound(network_found) => {
                 self.scans.add_network(*network_found);
             }
@@ -173,7 +176,7 @@ impl EventHandler {
     }
 }
 impl EventTranslator for EventHandler {
-    type Input = Message;
+    type Message = Message;
 
     fn new(output: Sender<Event>) -> Self {
         Self {
@@ -183,7 +186,7 @@ impl EventTranslator for EventHandler {
         }
     }
 
-    async fn run(mut self, mut callbacks: Receiver<Self::Input>) {
+    async fn run(mut self, mut callbacks: Receiver<Self::Message>) {
         while let Some(message) = callbacks.recv().await {
             match message {
                 Message::Callback(callback) => {

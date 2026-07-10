@@ -5,12 +5,14 @@ use crate::ember::device::Update;
 use crate::parameters::networking::handler::ChildJoin;
 use crate::parameters::trust_center::handler::TrustCenterJoin;
 
-impl From<ChildJoin> for Event {
-    fn from(child_join: ChildJoin) -> Self {
+impl TryFrom<ChildJoin> for Event {
+    type Error = ChildJoin;
+
+    fn try_from(child_join: ChildJoin) -> Result<Self, Self::Error> {
         if child_join.joining() {
-            Self::DeviceJoined(child_join.into())
+            Ok(Self::DeviceJoined(child_join.try_into()?))
         } else {
-            Self::DeviceLeft(child_join.into())
+            Ok(Self::DeviceLeft(child_join.try_into()?))
         }
     }
 }
@@ -38,16 +40,18 @@ impl TryFrom<TrustCenterJoin> for Event {
         };
 
         Ok(match status {
-            Update::StandardSecurityUnsecuredJoin => Self::DeviceJoined(trust_center_join.into()),
+            Update::StandardSecurityUnsecuredJoin => {
+                Self::DeviceJoined(trust_center_join.try_into()?)
+            }
             Update::StandardSecurityUnsecuredRejoin => Self::DeviceRejoined {
-                address: trust_center_join.into(),
+                address: trust_center_join.try_into()?,
                 secured: false,
             },
             Update::StandardSecuritySecuredRejoin => Self::DeviceRejoined {
-                address: trust_center_join.into(),
+                address: trust_center_join.try_into()?,
                 secured: true,
             },
-            Update::DeviceLeft => Self::DeviceLeft(trust_center_join.into()),
+            Update::DeviceLeft => Self::DeviceLeft(trust_center_join.try_into()?),
         })
     }
 }

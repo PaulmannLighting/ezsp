@@ -1,27 +1,29 @@
-//! `apis_saltans_hw::NcpDriver` implementation for [`crate::Ncp`].
+//! `apis_saltans_hw::Driver` implementation for [`crate::Ncp`].
 //!
 //! This module maps the generic hardware-driver operations expected by
 //! `apis-saltans` to EZSP command traits. Direct NCP operations are forwarded to
 //! the wrapped transport, while APS sends use [`crate::Ncp`] so that EZSP
 //! `messageSent` callbacks can be correlated with the originating request. The
-//! APS profile and cluster are taken from `apis_saltans_hw::Frame` metadata;
+//! APS profile and cluster are taken from `apis_saltans_hw::Datagram` metadata;
 //! the local source endpoint is selected by [`crate::Ncp`] from the registered
-//! endpoint output clusters. Unicast sends address one destination endpoint per
-//! call; callers that need fan-out should issue multiple unicast requests.
+//! endpoint output clusters.
 
-use std::collections::BTreeMap;
 use std::time::Duration;
 
-use apis_saltans_core::{Endpoint, IeeeAddress};
-use apis_saltans_hw::{Error, FoundNetwork, Frame, NcpDriver, ScannedChannel};
+use apis_saltans_core::{Destination, IeeeAddress};
+use apis_saltans_hw::{Datagram, Driver, Error, FoundNetwork, ScannedChannel};
 
 use crate::ember::concentrator;
-use crate::{Configuration, Messaging, Ncp, Networking, Security, Utilities};
+use crate::{Configuration, Messaging, MulticastOptions, Ncp, Networking, Security, Utilities};
 
 mod builder;
 mod event_handler;
 
-impl<T> NcpDriver for Ncp<T>
+const DEFAULT_BROADCAST_RADIUS: u8 = 0;
+const DEFAULT_MULTICAST_HOPS: u8 = 0;
+const DEFAULT_MULTICAST_NONMEMBER_RADIUS: u8 = 0;
+
+impl<T> Driver for Ncp<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync,
 {
@@ -61,14 +63,6 @@ where
         Ok(Duration::from_secs(u64::from(seconds)))
     }
 
-    async fn get_neighbors(&mut self) -> Result<BTreeMap<IeeeAddress, u16>, Error> {
-        Ok(Self::get_neighbors(self)
-            .await?
-            .into_iter()
-            .map(|(ieee_address, short_id)| (ieee_address.into(), short_id))
-            .collect())
-    }
-
     async fn route_request(&mut self, radius: u8) -> Result<(), Error> {
         Ok(self
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius)
@@ -83,56 +77,53 @@ where
         Ok(self.lookup_node_id_by_eui64(ieee_address.into()).await?)
     }
 
-    async fn unicast(
+    async fn transmit(
         &mut self,
-        short_id: u16,
-        destination_endpoint: Endpoint,
-        frame: Frame,
-    ) -> Result<u8, Error> {
-        let (metadata, payload) = frame.into_parts();
-        self.unicast(
-            short_id,
-            metadata.profile().into(),
-            metadata.cluster_id(),
-            destination_endpoint.into(),
-            payload.into_iter().collect(),
-        )
-        .await
-        .map_err(Into::into)
-    }
+        destination: Destination,
+        datagram: Datagram,
+    ) -> Result<(), Error> {
+        let (metadata, payload) = datagram.into_parts();
+        let profile = metadata.profile();
+        let profile_id = profile.into();
+        let cluster_id = metadata.cluster_id();
 
-    async fn multicast(
-        &mut self,
-        group_id: u16,
-        hops: u8,
-        radius: u8,
-        frame: Frame,
-    ) -> Result<u8, Error> {
-        let (metadata, payload) = frame.into_parts();
-        self.multicast(
-            group_id,
-            hops,
-            radius,
-            metadata.profile().into(),
-            metadata.cluster_id(),
-            metadata.profile().broadcast_endpoint().into(),
-            payload.into_iter().collect(),
-        )
-        .await
-        .map_err(Into::into)
-    }
-
-    async fn broadcast(&mut self, short_id: u16, radius: u8, frame: Frame) -> Result<u8, Error> {
-        let (metadata, payload) = frame.into_parts();
-        self.broadcast(
-            short_id,
-            radius,
-            metadata.profile().into(),
-            metadata.cluster_id(),
-            metadata.profile().broadcast_endpoint().into(),
-            payload.into_iter().collect(),
-        )
-        .await
+        match destination {
+            Destination::Device(device) => {
+                self.unicast(
+                    device.device().into(),
+                    profile_id,
+                    cluster_id,
+                    device.endpoint().into(),
+                    payload,
+                )
+                .await
+            }
+            Destination::Broadcast(broadcast) => {
+                self.broadcast(
+                    broadcast.address().as_u16(),
+                    DEFAULT_BROADCAST_RADIUS,
+                    profile_id,
+                    cluster_id,
+                    broadcast.endpoint().into(),
+                    payload,
+                )
+                .await
+            }
+            Destination::Group(group_id) => {
+                self.multicast(
+                    group_id.as_u16(),
+                    MulticastOptions::new(
+                        DEFAULT_MULTICAST_HOPS,
+                        DEFAULT_MULTICAST_NONMEMBER_RADIUS,
+                    ),
+                    profile_id,
+                    cluster_id,
+                    profile.broadcast_endpoint().into(),
+                    payload,
+                )
+                .await
+            }
+        }
         .map_err(Into::into)
     }
 }

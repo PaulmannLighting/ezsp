@@ -139,6 +139,12 @@ criteria = "safe-to-deploy"
 delta = "1.2.65 -> 1.2.66"
 notes = "AI-assisted: reviewed diff 1.2.65 -> 1.2.66; target parsing/QNX support and kache wrapper additions. No new unsafe code paths; process execution remains expected compiler/probe behavior for cc build helper."
 
+[[audits.cc]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.2.66 -> 1.2.67"
+notes = "AI-assisted: reviewed diff 1.2.66 -> 1.2.67; adds aarch64-unknown-linux-pauthtest target handling, requiring Clang and explicit PAUTHTEST_SYSROOT/PAUTHTEST_RESOURCE_DIR inputs for compiler/link flags, plus regenerated target data and clippy/nightly maintenance. No new unsafe code paths; process execution remains the existing compiler/probe behavior of the cc build helper."
+
 [[audits.chacha20]]
 who = "Codex"
 criteria = "safe-to-deploy"

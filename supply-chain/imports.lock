@@ -22,13 +22,6 @@ user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
-[[publisher.apis-saltans-zcl]]
-version = "0.5.1"
-when = "2026-07-07"
-user-id = 290593
-user-login = "neumann-paulmann"
-user-name = "Richard Neumann"
-
 [[publisher.apis-saltans-zdp]]
 version = "0.2.0"
 when = "2026-07-05"
@@ -78,8 +71,8 @@ user-login = "alexcrichton"
 user-name = "Alex Crichton"
 
 [[publisher.le-stream]]
-version = "10.1.2"
-when = "2026-06-23"
+version = "10.2.0"
+when = "2026-07-10"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
@@ -402,34 +395,6 @@ version = "0.8.7"
 notes = "OSX system APIs"
 aggregated-from = "https://chromium.googlesource.com/chromium/src/+/main/third_party/rust/chromium_crates_io/supply-chain/audits.toml?format=TEXT"
 
-[[audits.google.audits.either]]
-who = "Manish Goregaokar <manishearth@google.com>"
-criteria = "safe-to-deploy"
-version = "1.13.0"
-notes = "Unsafe code pertaining to wrapping Pin APIs. Mostly passes invariants down."
-aggregated-from = "https://chromium.googlesource.com/chromium/src/+/main/third_party/rust/chromium_crates_io/supply-chain/audits.toml?format=TEXT"
-
-[[audits.google.audits.either]]
-who = "Daniel Cheng <dcheng@chromium.org>"
-criteria = "safe-to-deploy"
-delta = "1.13.0 -> 1.14.0"
-notes = """
-Inheriting ub-risk-1 from the baseline review of 1.13.0. While the delta has some diffs in unsafe code, they are either:
-- migrating code to use helper macros
-- migrating match patterns to take advantage of default bindings mode from RFC 2005
-Either way, the result is code that does exactly the same thing and does not change the risk of UB.
-
-See https://crrev.com/c/6323164 for more audit details.
-"""
-aggregated-from = "https://chromium.googlesource.com/chromium/src/+/main/third_party/rust/chromium_crates_io/supply-chain/audits.toml?format=TEXT"
-
-[[audits.google.audits.either]]
-who = "Lukasz Anforowicz <lukasza@chromium.org>"
-criteria = "safe-to-deploy"
-delta = "1.14.0 -> 1.15.0"
-notes = 'The delta in `lib.rs` only tweaks doc comments and `#[cfg(feature = "std")]`.'
-aggregated-from = "https://chromium.googlesource.com/chromium/src/+/main/third_party/rust/chromium_crates_io/supply-chain/audits.toml?format=TEXT"
-
 [[audits.google.audits.iana-time-zone]]
 who = "Manish Goregaokar <manishearth@google.com>"
 criteria = "safe-to-deploy"
@@ -700,12 +665,6 @@ who = "Jan-Erik Rediger <jrediger@mozilla.com>"
 criteria = "safe-to-deploy"
 delta = "1.2.41 -> 1.2.53"
 aggregated-from = "https://raw.githubusercontent.com/mozilla/glean/main/supply-chain/audits.toml"
-
-[[audits.mozilla.audits.either]]
-who = "Erich Gubler <erichdongubler@gmail.com>"
-criteria = "safe-to-deploy"
-delta = "1.15.0 -> 1.16.0"
-aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
 
 [[audits.mozilla.audits.find-msvc-tools]]
 who = "Jan-Erik Rediger <jrediger@mozilla.com>"

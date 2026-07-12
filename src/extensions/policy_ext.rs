@@ -13,7 +13,7 @@ pub trait PolicyExt {
     /// Retrieves all policy values in a `BTreeMap`.
     fn get_policies(
         &mut self,
-    ) -> impl Future<Output = Result<BTreeMap<policy::Id, decision::Id>, Error>>;
+    ) -> impl Future<Output = Result<BTreeMap<policy::Id, decision::Id>, Error>> + Send;
 }
 
 impl<T> PolicyExt for T

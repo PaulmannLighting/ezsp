@@ -267,11 +267,7 @@ dependencies = [
 name = "ezsp"
 version = "9.0.2"
 dependencies = [
- "apis-saltans-aps",
- "apis-saltans-core",
  "apis-saltans-hw",
- "apis-saltans-nwk",
- "apis-saltans-zdp",
  "ashv2",
  "bitflags 2.13.0",
  "bytes",

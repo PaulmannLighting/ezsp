@@ -1,4 +1,4 @@
-use apis_saltans_nwk::Metadata;
+use apis_saltans_hw::nwk::Metadata;
 
 use crate::parameters::messaging::handler::IncomingMessage;
 

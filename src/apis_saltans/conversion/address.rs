@@ -1,5 +1,5 @@
-use apis_saltans_core::FullAddress;
-use apis_saltans_core::short_id::Device;
+use apis_saltans_hw::core::FullAddress;
+use apis_saltans_hw::core::short_id::Device;
 
 use crate::parameters::networking::handler::ChildJoin;
 use crate::parameters::trust_center::handler::TrustCenterJoin;

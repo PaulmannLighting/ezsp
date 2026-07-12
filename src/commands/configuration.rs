@@ -98,7 +98,7 @@ pub trait Configuration {
         &mut self,
         policy_id: policy::Id,
         decision_id: u8,
-    ) -> impl Future<Output = Result<(), Error>>;
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Writes a value to the NCP.
     fn set_value(

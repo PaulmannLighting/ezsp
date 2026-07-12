@@ -14,7 +14,7 @@ pub trait ConfigurationExt {
     /// Retrieves all configuration values in a `BTreeMap`.
     fn get_configuration(
         &mut self,
-    ) -> impl Future<Output = Result<BTreeMap<config::Id, u16>, Error>>;
+    ) -> impl Future<Output = Result<BTreeMap<config::Id, u16>, Error>> + Send;
 }
 
 impl<T> ConfigurationExt for T

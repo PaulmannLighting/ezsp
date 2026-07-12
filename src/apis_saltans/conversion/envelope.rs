@@ -1,5 +1,5 @@
-use apis_saltans_aps::Data;
-use apis_saltans_nwk::{Envelope, Metadata, Source};
+use apis_saltans_hw::aps::Data;
+use apis_saltans_hw::nwk::{Envelope, Metadata, Source};
 use bytes::Bytes;
 
 use crate::parameters::messaging::handler::IncomingMessage;

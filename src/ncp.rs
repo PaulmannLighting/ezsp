@@ -13,8 +13,8 @@ use std::num::NonZero;
 use std::ops::{Deref, DerefMut};
 
 use log::debug;
+use tokio::sync::mpsc::Sender;
 use tokio::sync::mpsc::error::SendError;
-use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::oneshot::channel;
 
 pub use self::builder::Builder;
@@ -28,9 +28,9 @@ use crate::ezsp::network::scan;
 use crate::parameters::configuration::add_endpoint::Clusters;
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 use crate::types::ByteSizedVec;
-use crate::{Callback, Error, Messaging, Networking};
+use crate::{Error, Messaging, Networking};
 
-mod builder;
+pub mod builder;
 mod message;
 mod scans;
 
@@ -106,12 +106,6 @@ impl<T> Ncp<T> {
             event_handler_proxy,
             endpoints,
         }
-    }
-
-    /// Creates a new [`Builder`] for constructing an [`Ncp`].
-    #[must_use]
-    pub const fn build(transport: T, callbacks: Receiver<Callback>) -> Builder<T> {
-        Builder::new(transport, callbacks)
     }
 
     /// Returns the next message tag and increments the internal counter.

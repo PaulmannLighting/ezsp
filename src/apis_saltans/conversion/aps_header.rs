@@ -1,8 +1,8 @@
 use std::num::NonZero;
 
-use apis_saltans_aps::data::Header;
-use apis_saltans_aps::{Destination, ExtendedControl};
-use apis_saltans_core::Endpoint;
+use apis_saltans_hw::aps::data::Header;
+use apis_saltans_hw::aps::{Destination, ExtendedControl};
+use apis_saltans_hw::core::Endpoint;
 
 use crate::ember::aps::{Frame, Options};
 

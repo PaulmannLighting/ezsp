@@ -3,13 +3,12 @@
 //! These conversions are used by the feature-gated NCP driver adapter and event
 //! handler. They translate incoming APS frames, endpoint descriptors, scan
 //! results, join/leave callbacks, and stack status callbacks into the types
-//! expected by `apis_saltans_aps`, `apis_saltans_core`,
-//! `apis_saltans_hw`, and the EZSP endpoint registration command.
+//! expected by `apis_saltans_hw` and the EZSP endpoint registration command.
 
-use apis_saltans_aps::data::Header;
-use apis_saltans_aps::{Data, Destination, Extended};
-use apis_saltans_core::endpoint::{Application, Broadcast};
-use apis_saltans_core::{Endpoint, GroupId};
+use apis_saltans_hw::aps::data::Header;
+use apis_saltans_hw::aps::{Data, Destination, Extended};
+use apis_saltans_hw::core::endpoint::{Application, Broadcast};
+use apis_saltans_hw::core::{Endpoint, GroupId};
 use bytes::Bytes;
 use log::trace;
 

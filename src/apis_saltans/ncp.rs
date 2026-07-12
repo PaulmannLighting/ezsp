@@ -10,7 +10,7 @@
 
 use std::time::Duration;
 
-use apis_saltans_core::{Destination, IeeeAddress};
+use apis_saltans_hw::core::{Destination, IeeeAddress};
 use apis_saltans_hw::{Datagram, Driver, Error, FoundNetwork, ScannedChannel};
 
 use crate::ember::concentrator;

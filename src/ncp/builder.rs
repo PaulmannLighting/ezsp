@@ -8,18 +8,17 @@ use crate::Callback;
 use crate::ember::{aps, concentrator, join};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
+#[cfg(feature = "apis-saltans")]
+use crate::parameters::configuration::add_endpoint::Clusters;
 
 const RADIO_CHANNEL: u8 = 11;
 const RADIO_POWER: i8 = 8;
 
 /// Builder for [`Ncp`](crate::Ncp) startup configuration.
 ///
-/// The builder stores EZSP policies, stack configuration values, endpoint and
-/// security inputs, radio settings, and callback buffers until a feature-specific
-/// startup implementation consumes it. With the `apis-saltans` feature enabled,
-/// this builder implements `apis_saltans_hw::Start`; the supplied endpoint
-/// descriptors are also retained as cluster metadata so [`Ncp`](crate::Ncp) can
-/// select source endpoints for outgoing APS frames.
+/// The builder stores EZSP policies, stack configuration values, security
+/// inputs, radio settings, and callback buffers until a feature-specific
+/// startup implementation consumes it.
 #[cfg_attr(not(feature = "apis-saltans"), expect(dead_code))]
 pub struct Builder<T> {
     pub(crate) transport: T,
@@ -38,6 +37,54 @@ pub struct Builder<T> {
     pub(crate) radio_power: i8,
     pub(crate) reinitialize: bool,
     pub(crate) buffers: usize,
+}
+
+/// Local endpoint configuration used during NCP startup.
+#[cfg(feature = "apis-saltans")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Endpoint {
+    profile_id: u16,
+    device_id: u16,
+    app_flags: u8,
+    clusters: Clusters,
+}
+
+#[cfg(feature = "apis-saltans")]
+impl Endpoint {
+    /// Creates a local endpoint configuration.
+    #[must_use]
+    pub const fn new(profile_id: u16, device_id: u16, app_flags: u8, clusters: Clusters) -> Self {
+        Self {
+            profile_id,
+            device_id,
+            app_flags,
+            clusters,
+        }
+    }
+
+    /// Returns the profile ID.
+    #[must_use]
+    pub const fn profile_id(&self) -> u16 {
+        self.profile_id
+    }
+
+    /// Returns the device ID.
+    #[must_use]
+    pub const fn device_id(&self) -> u16 {
+        self.device_id
+    }
+
+    /// Returns the application flags.
+    #[must_use]
+    pub const fn app_flags(&self) -> u8 {
+        self.app_flags
+    }
+
+    /// Returns the cluster lists.
+    #[must_use]
+    pub const fn clusters(&self) -> &Clusters {
+        &self.clusters
+    }
 }
 
 impl<T> Builder<T> {

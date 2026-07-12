@@ -2,8 +2,8 @@ use std::io::ErrorKind;
 use std::sync::Arc;
 use std::time::Duration;
 
-use apis_saltans_hw::{Driver, Event, EventTranslator, NcpHandle, bridge};
-use apis_saltans_zdp::SimpleDescriptor;
+use apis_saltans_hw::zdp::SimpleDescriptor;
+use apis_saltans_hw::{Backend, Driver, Event, EventTranslator, NcpHandle, bridge};
 use log::{debug, info};
 use macaddr::MacAddr8;
 use rand::random;
@@ -56,10 +56,11 @@ where
     }
 }
 
-impl<T> apis_saltans_hw::Backend for Builder<T>
+impl<T> Backend for Builder<T>
 where
     T: Transport + Send + Sync + 'static,
 {
+    type Driver = Ncp<T>;
     type HardwareEvent = Callback;
     type Message = Message;
     type EventTranslator = EventHandler;
@@ -92,7 +93,7 @@ where
     /// setup, transport connection, network initialization, or actor startup
     /// fails.
     #[expect(clippy::too_many_lines)]
-    async fn start(
+    pub async fn start(
         mut self,
         endpoints: &[SimpleDescriptor],
     ) -> Result<(NcpHandle, Receiver<Event>), apis_saltans_hw::Error> {
@@ -210,7 +211,7 @@ where
             message_tx,
             endpoints.iter().map(Into::into).collect(),
         )
-        .spawn(self.buffers);
+        .run(32);
         spawn(actor);
         Ok((ncp, events_rx))
     }

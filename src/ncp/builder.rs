@@ -8,8 +8,6 @@ use crate::Callback;
 use crate::ember::{aps, concentrator, join};
 use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
-#[cfg(feature = "apis-saltans")]
-use crate::parameters::configuration::add_endpoint::Clusters;
 
 const RADIO_CHANNEL: u8 = 11;
 const RADIO_POWER: i8 = 8;
@@ -37,54 +35,6 @@ pub struct Builder<T> {
     pub(crate) radio_power: i8,
     pub(crate) reinitialize: bool,
     pub(crate) buffers: usize,
-}
-
-/// Local endpoint configuration used during NCP startup.
-#[cfg(feature = "apis-saltans")]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Endpoint {
-    profile_id: u16,
-    device_id: u16,
-    app_flags: u8,
-    clusters: Clusters,
-}
-
-#[cfg(feature = "apis-saltans")]
-impl Endpoint {
-    /// Creates a local endpoint configuration.
-    #[must_use]
-    pub const fn new(profile_id: u16, device_id: u16, app_flags: u8, clusters: Clusters) -> Self {
-        Self {
-            profile_id,
-            device_id,
-            app_flags,
-            clusters,
-        }
-    }
-
-    /// Returns the profile ID.
-    #[must_use]
-    pub const fn profile_id(&self) -> u16 {
-        self.profile_id
-    }
-
-    /// Returns the device ID.
-    #[must_use]
-    pub const fn device_id(&self) -> u16 {
-        self.device_id
-    }
-
-    /// Returns the application flags.
-    #[must_use]
-    pub const fn app_flags(&self) -> u8 {
-        self.app_flags
-    }
-
-    /// Returns the cluster lists.
-    #[must_use]
-    pub const fn clusters(&self) -> &Clusters {
-        &self.clusters
-    }
 }
 
 impl<T> Builder<T> {

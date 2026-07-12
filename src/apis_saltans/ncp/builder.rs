@@ -3,7 +3,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use apis_saltans_hw::zdp::SimpleDescriptor;
-use apis_saltans_hw::{Backend, Driver, Event, EventTranslator, NcpHandle, bridge};
+use apis_saltans_hw::{Driver, Event, EventTranslator, NcpHandle, bridge};
 use log::{debug, info};
 use macaddr::MacAddr8;
 use rand::random;
@@ -17,8 +17,8 @@ use crate::ember::security::initial;
 use crate::ember::{concentrator, network};
 use crate::ezsp::config;
 use crate::{
-    Builder, Callback, Configuration, ConfigurationExt, Displayable, Error, Message, Messaging,
-    Ncp, Networking, PolicyExt, Security, Transport, Utilities,
+    Builder, Configuration, ConfigurationExt, Displayable, Error, Messaging, Ncp, Networking,
+    PolicyExt, Security, Transport, Utilities,
 };
 
 const TICK: Duration = Duration::from_secs(1);
@@ -54,16 +54,6 @@ where
             }
         }
     }
-}
-
-impl<T> Backend for Builder<T>
-where
-    T: Transport + Send + Sync + 'static,
-{
-    type Driver = Ncp<T>;
-    type HardwareEvent = Callback;
-    type Message = Message;
-    type EventTranslator = EventHandler;
 }
 
 impl<T> Builder<T>

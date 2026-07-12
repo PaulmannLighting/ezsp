@@ -18,7 +18,8 @@ The crate has three layers:
    - EZSP-over-ASHv2 encoding/decoding and frame routing
 
 3. `apis-saltans` integration layer (`feature = "apis-saltans"`)
-   - `apis_saltans_hw` driver integration for `Ncp` and `Builder`
+   - `apis_saltans_hw` driver integration for `Ncp`
+   - custom `Builder` startup orchestration
    - callback-to-event translation, scan aggregation, and network startup orchestration
 
 ```mermaid
@@ -31,7 +32,7 @@ flowchart TD
 
     A --> G[ezsp::Ncp]
     G --> B
-    G --> H[apis_saltans_hw::NcpDriver]
+    G --> H[apis_saltans_hw::Driver]
 ```
 
 ## Core layer
@@ -216,12 +217,12 @@ This layer is implemented in `src/apis_saltans`.
 
 - `Ncp<T>`
   - wraps EZSP transport
-  - implements `apis_saltans_hw::NcpDriver` when the feature is enabled
+  - implements `apis_saltans_hw::Driver` when the feature is enabled
   - tracks message tag and APS sequence counters
   - bridges request/response APIs with callback-driven events
 - `Builder<T>` (`src/ncp/builder.rs`)
   - startup/configuration DSL for network bootstrap
-  - implements `apis_saltans_hw::Start`
+  - provides custom `start` helpers for `apis-saltans` NCP startup
 - `EventHandler`
   - translates EZSP callbacks to `apis_saltans_hw::Event`
   - correlates outgoing message tags with `MessageSent` callbacks
@@ -234,13 +235,13 @@ This layer is implemented in `src/apis_saltans`.
 
 ### Trait coupling
 
-`Ncp<T>` implements `NcpDriver` when:
+`Ncp<T>` implements `Driver` when:
 
 - `T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync`
 
-`Builder<T>` implements `Start` when:
+`Builder::start` is available when:
 
-- `T: Transport + Sync + 'static`
+- `T: Configuration + Security + Messaging + Networking + Utilities + Transport + Send + Sync + 'static`
 
 When `ashv2` is also enabled, `Ncp<uart::Uart>` exposes an
 `ashv2(serial_port)` convenience constructor for serial ports implementing

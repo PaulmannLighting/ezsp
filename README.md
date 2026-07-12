@@ -185,13 +185,12 @@ the `uart::Futures` set that must be driven alongside the NCP.
 
 ## `apis-saltans` Integration (`apis-saltans` Feature)
 
-When `apis-saltans` is enabled, the crate adapts `Ncp` and `Builder` to the
-`apis_saltans_hw` traits.
+When `apis-saltans` is enabled, the crate adapts `Ncp` to the
+`apis_saltans_hw` driver traits and provides custom `Builder` startup helpers.
 
-- `Ncp<T>: apis_saltans_hw::NcpDriver` when
+- `Ncp<T>: apis_saltans_hw::Driver` when
   `T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync`.
-- `Builder<T>: apis_saltans_hw::Start` when `T: Transport + Sync + 'static`.
-- `Start::start(endpoints)` configures the EZSP stack, starts callback
+- `Builder::start(endpoints)` configures the EZSP stack, starts callback
   translation, registers each `SimpleDescriptor` as an EZSP endpoint, stores
   the descriptor cluster lists for later source endpoint selection, spawns the
   NCP actor, and returns
@@ -201,8 +200,8 @@ When `apis-saltans` is enabled, the crate adapts `Ncp` and `Builder` to the
 The integration layer translates EZSP callbacks into `apis_saltans_hw::Event`,
 including network-up/down/open/closed events, child join/leave events,
 trust-center join/rejoin/leave events, and incoming APS messages. It also
-aggregates scan callbacks for `NcpDriver` scan calls and correlates
-`messageSent` callbacks with outgoing message tags. Outgoing `NcpDriver` frames
+aggregates scan callbacks for `Driver` scan calls and correlates
+`messageSent` callbacks with outgoing message tags. Outgoing `Driver` frames
 use the frame metadata for the APS profile and cluster; unicast calls use the
 requested destination endpoint, while multicast and broadcast calls use the
 profile's broadcast endpoint. Unicast sends target one destination endpoint per

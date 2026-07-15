@@ -8,10 +8,11 @@
 //! the local source endpoint is selected by [`crate::Ncp`] from the registered
 //! endpoint output clusters.
 
+use std::collections::BTreeMap;
 use std::time::Duration;
 
-use apis_saltans_hw::core::{Destination, IeeeAddress};
-use apis_saltans_hw::{Datagram, Driver, Error, FoundNetwork, ScannedChannel};
+use apis_saltans_hw::core::{Application, Destination, IeeeAddress};
+use apis_saltans_hw::{Clusters, Datagram, Driver, Error, FoundNetwork, ScannedChannel};
 
 use crate::ember::concentrator;
 use crate::{Configuration, Messaging, MulticastOptions, Ncp, Networking, Security, Utilities};
@@ -27,6 +28,17 @@ impl<T> Driver for Ncp<T>
 where
     T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync,
 {
+    async fn get_endpoints(&self) -> Result<BTreeMap<Application, Clusters>, Error> {
+        Ok(self
+            .endpoints
+            .iter()
+            .enumerate()
+            .map_while(|(index, cluster)| u8::try_from(index).ok().map(|index| (index, cluster)))
+            .filter_map(|(index, cluster)| Application::new(index).map(|app| (app, cluster)))
+            .map(|(index, endpoint)| (index, endpoint.into()))
+            .collect())
+    }
+
     async fn get_pan_id(&mut self) -> Result<u16, Error> {
         Ok(self.get_node_id().await?)
     }

@@ -83,7 +83,7 @@ pub struct Ncp<T> {
     aps_options: aps::Options,
     message_tag: u8,
     pub(crate) event_handler_proxy: Sender<Message>,
-    endpoints: Box<[Clusters]>,
+    pub(crate) endpoints: Box<[Clusters]>,
 }
 
 impl<T> Ncp<T> {

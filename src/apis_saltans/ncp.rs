@@ -33,6 +33,7 @@ where
             .endpoints
             .iter()
             .enumerate()
+            .map_while(|(index, cluster)| index.checked_add(1).map(move |index| (index, cluster)))
             .map_while(|(index, cluster)| u8::try_from(index).ok().map(|index| (index, cluster)))
             .filter_map(|(index, cluster)| Application::new(index).map(|app| (app, cluster)))
             .map(|(index, endpoint)| (index, endpoint.into()))

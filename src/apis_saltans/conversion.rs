@@ -7,7 +7,6 @@
 
 use apis_saltans_hw::aps::data::Header;
 use apis_saltans_hw::aps::{Data, Destination, Extended};
-use apis_saltans_hw::core::endpoint::{Application, Broadcast};
 use apis_saltans_hw::core::{Endpoint, GroupId};
 use bytes::Bytes;
 use log::trace;
@@ -36,12 +35,12 @@ impl TryFrom<IncomingMessage> for Data<Bytes> {
         let destination_endpoint = aps_frame.destination_endpoint();
         let destination = match typ {
             Incoming::Broadcast | Incoming::BroadcastLoopback => Destination::Broadcast(
-                Broadcast::try_from(destination_endpoint)
-                    .map_err(ParseApsFrameError::BroadcastEndpoint)?,
+                Endpoint::try_from(destination_endpoint)
+                    .map_err(ParseApsFrameError::InvalidEndpoint)?,
             ),
             Incoming::Unicast | Incoming::UnicastReply => Destination::Unicast(
-                Application::try_from(destination_endpoint)
-                    .map_err(ParseApsFrameError::ApplicationEndpoint)?,
+                Endpoint::try_from(destination_endpoint)
+                    .map_err(ParseApsFrameError::InvalidEndpoint)?,
             ),
             Incoming::Multicast | Incoming::MulticastLoopback => Destination::Group(
                 GroupId::try_from(aps_frame.group_id()).map_err(ParseApsFrameError::GroupId)?,

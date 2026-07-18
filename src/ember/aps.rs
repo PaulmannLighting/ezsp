@@ -5,8 +5,8 @@ use std::num::NonZero;
 
 use bitflags::bitflags;
 use le_stream::{FromLeStream, ToLeStream};
+use log::info;
 
-const INDEX_MASK: u16 = 0x00FF;
 const BLOCK_MASK: u16 = 0xFF00;
 
 /// Ember APS options.
@@ -166,13 +166,14 @@ impl Frame {
     /// - `Some((index, None))` if this is a subsequent fragment.
     /// - `None` if the message is not fragmented.
     #[must_use]
-    pub const fn fragmentation(&self) -> Option<(u8, Option<u8>)> {
+    pub fn fragmentation(&self) -> Option<(u8, Option<u8>)> {
+        info!("GROUP ID: {:#06X}", self.group_id);
+
         if self.options.contains(Options::FRAGMENT) {
-            let index = (self.group_id & INDEX_MASK) as u8;
+            let [index, blocks] = self.group_id.to_le_bytes();
+            info!("Index: {index:#04X}, blocks: {blocks:#04X}");
 
             if index == 0 {
-                let blocks =
-                    ((self.group_id & BLOCK_MASK) >> BLOCK_MASK.trailing_zeros()).to_le_bytes()[0];
                 Some((index, Some(blocks)))
             } else {
                 Some((index, None))

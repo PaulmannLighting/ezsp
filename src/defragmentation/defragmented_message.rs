@@ -33,6 +33,11 @@ impl DefragmentedMessage {
     pub const fn message(&self) -> &[u8] {
         &self.payload
     }
+    /// Consumes the message and returns its complete APS payload.
+    #[must_use]
+    pub fn into_message(self) -> Box<[u8]> {
+        self.payload
+    }
     /// Returns the APS frame.
     #[must_use]
     pub const fn aps_frame(&self) -> &ApsFrame {

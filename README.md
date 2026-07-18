@@ -58,12 +58,13 @@ EZSP and ASHv2 do not add a protocol-level fragmentation layer. On UART, one
 EZSP frame is carried in exactly one ASHv2 DATA payload, and one ASHv2 DATA
 payload is decoded as exactly one EZSP frame.
 
-The standalone `Defragmenter<T>` reassembles APS-level fragmented unicasts for
-any `T: Transport` through its blanket `Messaging` implementation. It accepts
+`Defragmenter<T>` reassembles APS-level fragmented unicasts for any
+`T: Transport` through its blanket `Messaging` implementation. It accepts
 either a transport or a `SharedTransport<T>` clone. Its asynchronous `handle`
 method consumes each `IncomingMessage`, sends the empty `sendReply` required for
 fragments, and returns a `Defragmented` message once the payload is complete.
-The helper is not yet wired into `Ncp` or the `apis-saltans` event actor.
+The `apis-saltans` event handler owns a defragmenter and emits incoming-message
+events only for complete APS payloads.
 
 Reassembly follows the EZSP fragment window, keys messages by sender and APS
 sequence, bounds the payload to 4096 bytes, and expires incomplete messages
@@ -219,7 +220,8 @@ When `apis-saltans` is enabled, the crate adapts `Ncp` to the
 The integration layer translates EZSP callbacks into `apis_saltans_hw::Event`,
 including network-up/down/open/closed events, child join/leave events,
 trust-center join/rejoin/leave events, and incoming APS messages. It also
-aggregates scan callbacks for `Driver` scan calls and correlates
+reassembles fragmented incoming APS messages, aggregates scan callbacks for
+`Driver` scan calls, and correlates
 `messageSent` callbacks with outgoing message tags. Outgoing `Driver` frames
 use the frame metadata for the APS profile and cluster; unicast calls use the
 requested destination endpoint, while multicast and broadcast calls use the

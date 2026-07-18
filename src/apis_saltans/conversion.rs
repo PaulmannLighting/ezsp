@@ -6,14 +6,13 @@
 //! expected by `apis_saltans_hw` and the EZSP endpoint registration command.
 
 use apis_saltans_hw::aps::data::Header;
-use apis_saltans_hw::aps::{Data, Destination, Extended};
+use apis_saltans_hw::aps::{Data, Destination};
 use apis_saltans_hw::core::{Endpoint, GroupId};
 use bytes::Bytes;
-use log::trace;
 
 pub use self::error::ParseApsFrameError;
+use crate::DefragmentedMessage;
 use crate::ember::message::Incoming;
-use crate::parameters::messaging::handler::IncomingMessage;
 
 mod address;
 mod aps_header;
@@ -25,10 +24,10 @@ mod found_network;
 mod metadata;
 mod scanned_channel;
 
-impl TryFrom<IncomingMessage> for Data<Bytes> {
+impl TryFrom<DefragmentedMessage> for Data<Bytes> {
     type Error = ParseApsFrameError;
 
-    fn try_from(message: IncomingMessage) -> Result<Self, Self::Error> {
+    fn try_from(message: DefragmentedMessage) -> Result<Self, Self::Error> {
         let aps_frame = message.aps_frame();
         let typ = message.typ().map_err(ParseApsFrameError::MessageType)?;
 
@@ -51,32 +50,13 @@ impl TryFrom<IncomingMessage> for Data<Bytes> {
         let source_endpoint = Endpoint::try_from(aps_frame.source_endpoint())
             .map_err(|endpoint| ParseApsFrameError::SourceEndpoint(endpoint.into()))?;
 
-        let extended = match aps_frame.fragmentation() {
-            Some((0, Some(size))) => {
-                trace!("Received initial fragment.");
-                Some(Extended::first_fragment(size))
-            }
-            Some((index, None)) => {
-                trace!("Received follow-up fragment.");
-                Some(Extended::followup_fragment(index))
-            }
-            None => {
-                trace!("Received non-fragmented frame.");
-                None
-            }
-            Some((index, Some(size))) => {
-                trace!("Received invalid fragmentation information: {index}/{size}");
-                return Err(ParseApsFrameError::Fragmentation { index, size });
-            }
-        };
-
         let header = Header::new(
             destination,
             aps_frame.cluster_id(),
             aps_frame.profile_id(),
             source_endpoint,
             aps_frame.sequence(),
-            extended,
+            None,
         );
         Ok(Self::raw(
             header,

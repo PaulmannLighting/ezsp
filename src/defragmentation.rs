@@ -349,6 +349,10 @@ mod tests {
     #[derive(Debug)]
     struct MockTransport;
 
+    #[expect(
+        clippy::manual_async_fn,
+        reason = "trait implementations must return a Send future explicitly"
+    )]
     impl Transport for MockTransport {
         fn connect(&mut self) -> impl Future<Output = Result<version::Response, Error>> + Send {
             async { Err(Error::NotConfigured) }

@@ -97,7 +97,8 @@ without holding the lock during callback correlation.
 ```mermaid
 flowchart LR
     ncp[Ncp] --> shared[SharedTransport]
-    defragmenter[Defragmenter] --> shared
+    eventHandler[EventHandler] --> defragmenter[Defragmenter]
+    defragmenter --> shared
     shared --> mutex[Async mutex]
     mutex --> transport[Transport]
 ```
@@ -189,23 +190,24 @@ encoding fails before anything is sent.
 
 ### APS fragment reassembly
 
-`Defragmenter<T>` provides standalone APS-level reassembly for a messaging
-transport. It follows the EZSP host fragmentation model: packets are keyed by
-sender and APS sequence, fragments are accepted within the configured fragment
-window, every fragment triggers an empty `sendReply`, and incomplete packets
-are removed by a periodic timeout tick. It is not yet integrated into `Ncp` or
-the optional `apis-saltans` event actor.
+`Defragmenter<T>` provides APS-level reassembly for a messaging transport. It
+follows the EZSP host fragmentation model: packets are keyed by sender and APS
+sequence, fragments are accepted within the configured fragment window, every
+fragment triggers an empty `sendReply`, and incomplete packets are removed by
+a timeout tick. The optional `apis-saltans` event actor owns a defragmenter,
+ticks it before handling incoming APS callbacks, and only translates complete
+messages into events.
 
 ```mermaid
 flowchart LR
-    caller[Caller] --> handle[Defragmenter handle]
+    eventHandler[EventHandler] --> handle[Defragmenter handle]
     handle --> fragment{APS fragment?}
     fragment -- no --> complete[Some Defragmented]
     fragment -- yes --> reply[Send empty sendReply]
     reply --> reassemble[Store fragment]
     reassemble -- incomplete --> pending[None]
     reassemble -- complete --> complete
-    tick[Caller invokes tick] --> reassemble
+    tick[EventHandler invokes tick] --> reassemble
 ```
 
 ### Runtime futures
@@ -257,6 +259,7 @@ This layer is implemented in `src/apis_saltans`.
   - provides custom `start` helpers for `apis-saltans` NCP startup
 - `EventHandler`
   - translates EZSP callbacks to `apis_saltans_hw::Event`
+  - owns a `Defragmenter<T>` sharing the NCP transport and emits only complete incoming APS messages
   - correlates outgoing message tags with `MessageSent` callbacks
   - collects active and energy scan callback streams into one-shot scan responses
 - conversion modules (`src/apis_saltans/conversion`)

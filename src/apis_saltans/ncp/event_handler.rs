@@ -5,13 +5,13 @@ use log::{debug, error, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::oneshot;
 
-use crate::Callback;
 use crate::ember::Status;
 use crate::frame::parameters::networking::handler::Handler as Networking;
 pub use crate::ncp::{Message, Scans};
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
 use crate::parameters::security::handler::Handler as Security;
 use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
+use crate::{Callback, Defragmenter, SharedTransport, Transport};
 
 /// Actor translating EZSP callbacks into `apis_saltans_hw` events.
 ///
@@ -24,19 +24,27 @@ use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCent
 /// - correlating `messageSent` callbacks with outgoing message tags,
 /// - stopping when a termination message is received.
 #[derive(Debug)]
-pub struct EventHandler {
+pub struct EventHandler<T>
+where
+    T: Transport,
+{
     output: Sender<Event>,
     scans: Scans,
     responses: BTreeMap<u8, oneshot::Sender<Result<Status, u8>>>,
+    defragmenter: Defragmenter<T>,
 }
 
-impl EventHandler {
+impl<T> EventHandler<T>
+where
+    T: Transport,
+{
     /// Creates an event handler that forwards translated events to `output`.
-    pub(super) fn new(output: Sender<Event>) -> Self {
+    pub(super) fn new(output: Sender<Event>, transport: SharedTransport<T>) -> Self {
         Self {
             output,
             scans: Scans::default(),
             responses: BTreeMap::new(),
+            defragmenter: Defragmenter::new(transport),
         }
     }
 
@@ -101,10 +109,15 @@ impl EventHandler {
         }
     }
 
-    async fn handle_incoming_message(&self, incoming_message: IncomingMessage) {
+    async fn handle_incoming_message(&mut self, incoming_message: IncomingMessage) {
         debug!("Incoming message: {incoming_message:?}");
+        self.defragmenter.tick();
 
-        match incoming_message.try_into() {
+        let Some(defragmented_message) = self.defragmenter.handle(incoming_message).await else {
+            return;
+        };
+
+        match defragmented_message.try_into() {
             Ok(envelope) => {
                 self.forward_event(Event::MessageReceived(envelope)).await;
             }
@@ -184,7 +197,10 @@ impl EventHandler {
         }
     }
 }
-impl EventTranslator for EventHandler {
+impl<T> EventTranslator for EventHandler<T>
+where
+    T: Transport,
+{
     type Message = Message;
 
     async fn run(mut self, mut callbacks: Receiver<Self::Message>) {

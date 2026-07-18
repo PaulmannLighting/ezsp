@@ -21,14 +21,6 @@ pub enum ParseApsFrameError {
 
     /// The profile ID is invalid.
     Profile(u16),
-
-    /// The fragmentation information is invalid.
-    Fragmentation {
-        /// The index of the fragment.
-        index: u8,
-        /// The total number of fragments.
-        size: u8,
-    },
 }
 
 impl Display for ParseApsFrameError {
@@ -43,10 +35,6 @@ impl Display for ParseApsFrameError {
                 write!(f, "Invalid APS source endpoint ID: {endpoint}")
             }
             Self::Profile(profile) => write!(f, "Invalid profile ID: {profile}"),
-            Self::Fragmentation { index, size } => write!(
-                f,
-                "Invalid fragmentation information: index: {index}, total fragments: {size}"
-            ),
         }
     }
 }

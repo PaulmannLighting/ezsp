@@ -178,21 +178,23 @@ encoding fails before anything is sent.
 
 ### APS fragment reassembly
 
-The optional `apis-saltans` event actor performs APS-level reassembly before
-converting an `incomingMessageHandler` callback into a `MessageReceived` event.
-It follows the EZSP host fragmentation model: packets are keyed by sender and
-APS sequence, fragments are accepted within the configured fragment window,
-and incomplete packets are removed by a periodic timeout tick.
+`Defragmenter<T>` provides standalone APS-level reassembly for a messaging
+transport. It follows the EZSP host fragmentation model: packets are keyed by
+sender and APS sequence, fragments are accepted within the configured fragment
+window, every fragment triggers an empty `sendReply`, and incomplete packets
+are removed by a periodic timeout tick. It is not yet integrated into `Ncp` or
+the optional `apis-saltans` event actor.
 
 ```mermaid
 flowchart LR
-    callback[incomingMessageHandler] --> fragment{APS fragment?}
-    fragment -- no --> convert[Convert callback to event]
-    fragment -- yes --> reassemble[Defragmenter]
-    reassemble -- incomplete --> discard[Suppress callback]
-    reassemble -- complete --> convert
-    tick[Periodic actor tick] --> reassemble
-    convert --> event[MessageReceived]
+    caller[Caller] --> handle[Defragmenter handle]
+    handle --> fragment{APS fragment?}
+    fragment -- no --> complete[Some Defragmented]
+    fragment -- yes --> reply[Send empty sendReply]
+    reply --> reassemble[Store fragment]
+    reassemble -- incomplete --> pending[None]
+    reassemble -- complete --> complete
+    tick[Caller invokes tick] --> reassemble
 ```
 
 ### Runtime futures

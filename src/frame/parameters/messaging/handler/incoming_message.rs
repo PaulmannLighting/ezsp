@@ -36,6 +36,12 @@ crate::frame::parameters::handler!(
                 Incoming::try_from(self.typ)
             }
 
+            /// Returns the raw incoming message type value.
+            #[must_use]
+            pub const fn typ_value(&self) -> u8 {
+                self.typ
+            }
+
             /// The APS frame from the incoming message.
             #[must_use]
             pub const fn aps_frame(&self) -> &Frame {

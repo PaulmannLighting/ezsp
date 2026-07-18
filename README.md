@@ -58,11 +58,15 @@ EZSP and ASHv2 do not add a protocol-level fragmentation layer. On UART, one
 EZSP frame is carried in exactly one ASHv2 DATA payload, and one ASHv2 DATA
 payload is decoded as exactly one EZSP frame.
 
-When the `apis-saltans` integration receives APS-level fragmented unicasts, it
-reassembles them before emitting a `MessageReceived` event. Reassembly follows
-the EZSP fragment window, keys messages by sender and APS sequence, bounds the
-payload to 4096 bytes, and expires incomplete messages after a five-second
-timeout. The compile-time environment variables
+The standalone `Defragmenter<T>` reassembles APS-level fragmented unicasts for
+any `T` that implements `Messaging`. Its asynchronous `handle` method consumes
+each `IncomingMessage`, sends the empty `sendReply` required for fragments, and
+returns a `Defragmented` message once the payload is complete. The helper is not
+yet wired into `Ncp` or the `apis-saltans` event actor.
+
+Reassembly follows the EZSP fragment window, keys messages by sender and APS
+sequence, bounds the payload to 4096 bytes, and expires incomplete messages
+after a five-second timeout. The compile-time environment variables
 `EZSP_DEFRAGMENTATION_MAX_INCOMING_PACKETS`,
 `EZSP_DEFRAGMENTATION_DEFAULT_WINDOW_SIZE`,
 `EZSP_DEFRAGMENTATION_RECEIVE_BUFFER_LENGTH`, and

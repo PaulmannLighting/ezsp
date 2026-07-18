@@ -16,7 +16,7 @@ impl From<&SimpleDescriptor> for Clusters {
 
 impl From<&Clusters> for apis_saltans_hw::Clusters {
     fn from(clusters: &Clusters) -> Self {
-        apis_saltans_hw::Clusters::new(
+        Self::new(
             clusters
                 .input_clusters()
                 .iter()

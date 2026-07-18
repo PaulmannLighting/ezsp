@@ -166,12 +166,9 @@ impl Frame {
     /// - `Some((index, None))` if this is a subsequent fragment.
     /// - `None` if the message is not fragmented.
     #[must_use]
-    pub fn fragmentation(&self) -> Option<(u8, Option<u8>)> {
-        info!("GROUP ID: {:#06X}", self.group_id);
-
+    pub const fn fragmentation(&self) -> Option<(u8, Option<u8>)> {
         if self.options.contains(Options::FRAGMENT) {
             let [index, blocks] = self.group_id.to_le_bytes();
-            info!("Index: {index:#04X}, blocks: {blocks:#04X}");
 
             if index == 0 {
                 Some((index, Some(blocks)))

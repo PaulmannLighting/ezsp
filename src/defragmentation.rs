@@ -10,8 +10,13 @@ use std::time::{Duration, Instant};
 
 use const_env::env_item;
 
+pub use self::defragmented_message::DefragmentedMessage;
+pub use self::message::Message;
 use crate::ember::NodeId;
 use crate::parameters::messaging::handler::IncomingMessage;
+
+mod defragmented_message;
+mod message;
 
 /// The number of fragmented messages accepted concurrently by the EZSP host.
 ///
@@ -52,24 +57,6 @@ struct Packet {
     expected_fragments: Option<u8>,
     window_base: u8,
     deadline: Instant,
-}
-
-/// An incoming APS message after fragment handling.
-#[derive(Debug)]
-pub enum Message {
-    /// A non-fragmented message that can be forwarded immediately.
-    Complete(IncomingMessage),
-
-    /// A fragmented message whose payload has been reassembled.
-    Defragmented {
-        /// The callback that completed the fragmented message.
-        incoming_message: IncomingMessage,
-        /// The reassembled APS payload.
-        payload: Vec<u8>,
-    },
-
-    /// A fragment was stored or deliberately ignored.
-    Incomplete,
 }
 
 /// Reassembles fragmented incoming APS messages.
@@ -125,7 +112,7 @@ impl Defragmenter {
     fn handle_at(&mut self, incoming_message: IncomingMessage, now: Instant) -> Message {
         let Some((fragment, expected_fragments)) = incoming_message.aps_frame().fragmentation()
         else {
-            return Message::Complete(incoming_message);
+            return Message::Complete(incoming_message.into());
         };
 
         if self.window_size == 0 || self.window_size > MAX_WINDOW_SIZE {
@@ -158,9 +145,11 @@ impl Defragmenter {
 
         completed.map_or_else(
             || Message::Incomplete,
-            |payload| Message::Defragmented {
-                incoming_message,
-                payload,
+            |payload| {
+                Message::Complete(DefragmentedMessage::from_incoming_message(
+                    incoming_message,
+                    payload.into(),
+                ))
             },
         )
     }

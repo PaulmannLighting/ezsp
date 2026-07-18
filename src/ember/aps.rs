@@ -190,6 +190,12 @@ impl Frame {
         self.options.insert(Options::FRAGMENT);
         self.group_id = u16::from(index.get());
     }
+
+    /// Removes APS fragmentation metadata from this frame.
+    pub fn clear_fragmentation(&mut self) {
+        self.options.remove(Options::FRAGMENT);
+        self.group_id = 0;
+    }
 }
 
 impl Display for Frame {

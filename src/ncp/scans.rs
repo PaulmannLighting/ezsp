@@ -21,6 +21,14 @@ pub struct Scans {
 }
 
 impl Scans {
+    pub const fn new() -> Self {
+        Self {
+            queue: VecDeque::new(),
+            channels: Vec::new(),
+            networks: Vec::new(),
+        }
+    }
+
     /// Adds a new pending scan to the queue.
     pub fn push(&mut self, scan: Scan) {
         self.queue.push_back(scan);

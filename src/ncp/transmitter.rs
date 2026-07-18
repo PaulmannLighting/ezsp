@@ -1,12 +1,12 @@
 //! High-level EZSP Network Co-Processor helper.
 //!
-//! [`Ncp`] wraps an EZSP [`Transport`](crate::Transport) and adds the state
+//! [`Transmitter`] wraps an EZSP [`Transport`](crate::Transport) and adds the state
 //! needed by host-side Zigbee workflows: endpoint cluster metadata, APS
 //! EZSP message tags, scan aggregation, message-sent correlation, and callback
 //! dispatch through a background event handler.
 //!
 //! The type is available without the `apis-saltans` feature. When that feature
-//! is enabled, additional implementations adapt [`Ncp`] and [`Builder`] to the
+//! is enabled, additional implementations adapt [`Transmitter`] and [`Builder`] to the
 //! `apis_saltans_hw` traits.
 
 use std::num::NonZero;
@@ -17,25 +17,16 @@ use tokio::sync::mpsc::Sender;
 use tokio::sync::mpsc::error::SendError;
 use tokio::sync::oneshot::channel;
 
-pub use self::builder::Builder;
-pub use self::message::Message;
-pub use self::scans::Scans;
 use crate::ember::aps::Frame as ApsFrame;
 use crate::ember::message::Destination as EmberDestination;
 use crate::ember::{Status as EmberStatus, aps};
 use crate::error::Status as ErrorStatus;
 use crate::ezsp::network::scan;
+use crate::ncp::messages::ToReceiver;
 use crate::parameters::configuration::add_endpoint::Clusters;
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 use crate::types::ByteSizedVec;
 use crate::{Error, Messaging, Networking};
-
-pub mod builder;
-mod message;
-mod messages;
-mod receiver;
-mod scans;
-mod transmitter;
 
 // The ZDP profile ID.
 const ZDP: u16 = 0x0000;
@@ -43,7 +34,7 @@ const STACK_ASSIGNED_APS_SEQUENCE: u8 = 0;
 const FIRST_FRAGMENT_INDEX: usize = 0;
 const MAX_FRAGMENT_COUNT: usize = u8::MAX as usize;
 
-/// Multicast delivery options for [`Ncp::multicast`].
+/// Multicast delivery options for [`Transmitter::multicast`].
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct MulticastOptions {
     hops: u8,
@@ -81,15 +72,15 @@ impl MulticastOptions {
 /// scans, outgoing APS message confirmation, and automatic source endpoint
 /// selection from the configured endpoint cluster lists.
 #[derive(Debug)]
-pub struct Ncp<T> {
+pub struct Transmitter<T> {
     pub(crate) transport: T,
     aps_options: aps::Options,
     message_tag: u8,
-    pub(crate) event_handler_proxy: Sender<Message>,
+    pub(crate) event_handler_proxy: Sender<ToReceiver>,
     pub(crate) endpoints: Box<[Clusters]>,
 }
 
-impl<T> Ncp<T> {
+impl<T> Transmitter<T> {
     /// Creates a new `Ncp` with the given transport, event handler, and endpoints.
     ///
     /// `endpoints` must contain the local endpoint cluster metadata in endpoint
@@ -99,7 +90,7 @@ impl<T> Ncp<T> {
     pub const fn new(
         transport: T,
         aps_options: aps::Options,
-        event_handler_proxy: Sender<Message>,
+        event_handler_proxy: Sender<ToReceiver>,
         endpoints: Box<[Clusters]>,
     ) -> Self {
         Self {
@@ -179,12 +170,12 @@ impl<T> Ncp<T> {
     ///
     /// Returns [`SendError`] if the termination
     /// request cannot be sent to the message handler.
-    pub async fn terminate(self) -> Result<(), SendError<Message>> {
-        self.event_handler_proxy.send(Message::Terminate).await
+    pub async fn terminate(self) -> Result<(), SendError<ToReceiver>> {
+        self.event_handler_proxy.send(ToReceiver::Terminate).await
     }
 }
 
-impl<T> Ncp<T>
+impl<T> Transmitter<T>
 where
     T: Messaging + Send + Sync,
 {
@@ -256,7 +247,7 @@ where
 
         let (tx, rx) = channel();
         self.event_handler_proxy
-            .send(Message::Sent { tag, sender: tx })
+            .send(ToReceiver::Sent { tag, sender: tx })
             .await?;
 
         let _sequence = self
@@ -305,7 +296,7 @@ where
 
         let (tx, rx) = channel();
         self.event_handler_proxy
-            .send(Message::Sent { tag, sender: tx })
+            .send(ToReceiver::Sent { tag, sender: tx })
             .await?;
 
         let _sequence = self
@@ -372,7 +363,7 @@ where
 
         let (tx, rx) = channel();
         self.event_handler_proxy
-            .send(Message::Sent { tag, sender: tx })
+            .send(ToReceiver::Sent { tag, sender: tx })
             .await?;
 
         let sequence = self
@@ -398,7 +389,7 @@ where
     }
 }
 
-impl<T> Ncp<T>
+impl<T> Transmitter<T>
 where
     T: Networking + Send + Sync,
 {
@@ -441,7 +432,7 @@ where
     }
 }
 
-impl<T> Deref for Ncp<T> {
+impl<T> Deref for Transmitter<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -449,7 +440,7 @@ impl<T> Deref for Ncp<T> {
     }
 }
 
-impl<T> DerefMut for Ncp<T> {
+impl<T> DerefMut for Transmitter<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.transport
     }

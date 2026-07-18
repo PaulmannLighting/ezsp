@@ -5,7 +5,6 @@ use std::num::NonZero;
 
 use bitflags::bitflags;
 use le_stream::{FromLeStream, ToLeStream};
-use log::info;
 
 const BLOCK_MASK: u16 = 0xFF00;
 

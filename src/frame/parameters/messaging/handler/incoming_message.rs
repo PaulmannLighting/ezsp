@@ -36,21 +36,10 @@ crate::frame::parameters::handler!(
                 Incoming::try_from(self.typ)
             }
 
-            /// Returns the raw incoming message type value.
-            #[must_use]
-            pub const fn typ_value(&self) -> u8 {
-                self.typ
-            }
-
             /// The APS frame from the incoming message.
             #[must_use]
             pub const fn aps_frame(&self) -> &Frame {
                 &self.aps_frame
-            }
-
-            /// Removes APS fragmentation metadata after host-side reassembly.
-            pub fn clear_fragmentation(&mut self) {
-                self.aps_frame.clear_fragmentation();
             }
 
             /// The link quality from the node that last relayed the message.

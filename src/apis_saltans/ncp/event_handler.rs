@@ -4,22 +4,14 @@ use apis_saltans_hw::{Event, EventTranslator};
 use log::{debug, error, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::oneshot;
-use tokio::time::timeout;
 
 use crate::Callback;
-use crate::apis_saltans::conversion::defragmented_envelope;
-use crate::defragmentation::{
-    DEFAULT_REASSEMBLY_TIMEOUT, DEFAULT_WINDOW_SIZE, DefragmentedMessage, Defragmenter,
-    Message as DefragmentationMessage,
-};
 use crate::ember::Status;
 use crate::frame::parameters::networking::handler::Handler as Networking;
 pub use crate::ncp::{Message, Scans};
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
 use crate::parameters::security::handler::Handler as Security;
 use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
-
-const DEFRAGMENTATION_TICK_INTERVAL: std::time::Duration = std::time::Duration::from_secs(1);
 
 /// Actor translating EZSP callbacks into `apis_saltans_hw` events.
 ///
@@ -36,23 +28,9 @@ pub struct EventHandler {
     output: Sender<Event>,
     scans: Scans,
     responses: BTreeMap<u8, oneshot::Sender<Result<Status, u8>>>,
-    defragmenter: Defragmenter,
 }
 
 impl EventHandler {
-    pub(super) fn with_fragment_window(output: Sender<Event>, window_size: u8) -> Self {
-        Self {
-            output,
-            scans: Scans::default(),
-            responses: BTreeMap::new(),
-            defragmenter: Defragmenter::new(
-                crate::defragmentation::DEFAULT_RECEIVE_BUFFER_LENGTH,
-                window_size,
-                DEFAULT_REASSEMBLY_TIMEOUT,
-            ),
-        }
-    }
-
     /// Translates EZSP callbacks into Zigbee events and sends them to the outgoing channel.
     async fn process_callback(&mut self, callback: Callback) {
         match callback {
@@ -114,23 +92,16 @@ impl EventHandler {
         }
     }
 
-    async fn handle_incoming_message(&mut self, incoming_message: IncomingMessage) {
+    async fn handle_incoming_message(&self, incoming_message: IncomingMessage) {
         debug!("Incoming message: {incoming_message:?}");
 
-        match self.defragmenter.handle(incoming_message) {
-            DefragmentationMessage::Complete(message) => {
-                self.forward_defragmented_message(message).await;
+        match incoming_message.try_into() {
+            Ok(envelope) => {
+                self.forward_event(Event::MessageReceived(envelope)).await;
             }
-            DefragmentationMessage::Incomplete => {
-                trace!("Fragment handled by APS defragmenter.");
+            Err(error) => {
+                warn!("Ignoring malformed APS frame: {error}");
             }
-        }
-    }
-
-    async fn forward_defragmented_message(&self, message: DefragmentedMessage) {
-        match defragmented_envelope(&message) {
-            Ok(envelope) => self.forward_event(Event::MessageReceived(envelope)).await,
-            Err(error) => warn!("Ignoring malformed defragmented APS frame: {error}"),
         }
     }
 
@@ -208,26 +179,15 @@ impl EventTranslator for EventHandler {
     type Message = Message;
 
     fn new(output: Sender<Event>) -> Self {
-        Self::with_fragment_window(output, DEFAULT_WINDOW_SIZE)
+        Self {
+            output,
+            scans: Scans::default(),
+            responses: BTreeMap::new(),
+        }
     }
 
     async fn run(mut self, mut callbacks: Receiver<Self::Message>) {
-        loop {
-            let message = match timeout(DEFRAGMENTATION_TICK_INTERVAL, callbacks.recv()).await {
-                Ok(Some(message)) => {
-                    self.defragmenter.tick();
-                    message
-                }
-                Ok(None) => {
-                    warn!("Callback channel closed. Message handler terminating.");
-                    return;
-                }
-                Err(_) => {
-                    self.defragmenter.tick();
-                    continue;
-                }
-            };
-
+        while let Some(message) = callbacks.recv().await {
             match message {
                 Message::Callback(callback) => {
                     self.process_callback(*callback).await;
@@ -249,5 +209,7 @@ impl EventTranslator for EventHandler {
                 }
             }
         }
+
+        warn!("Callback channel closed. Message handler terminating.");
     }
 }

@@ -23,7 +23,6 @@ pub use self::commands::{
 };
 pub use self::connection::Connection;
 pub use self::constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE, MIN_NON_LEGACY_VERSION};
-pub use self::defragmentation::Defragmenter;
 pub use self::error::{Error, ValueError};
 pub use self::extensions::{ConfigurationExt, Displayable, PolicyExt};
 pub use self::frame::{
@@ -40,7 +39,6 @@ pub mod apis_saltans;
 mod commands;
 mod connection;
 mod constants;
-mod defragmentation;
 pub mod ember;
 mod error;
 mod extensions;

@@ -10,7 +10,6 @@ use crate::frame::parameters::networking::handler::Handler as Networking;
 pub use crate::ncp::Scans;
 use crate::ncp::messages::{ToReceiver, ToTransmitter};
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
-use crate::parameters::trust_center::handler::TrustCenterJoin;
 
 pub struct Receiver {
     transmitter: Sender<ToTransmitter>,
@@ -105,12 +104,12 @@ impl Receiver {
                 .send(ToTransmitter::SendReply {
                     node_id: incoming_message.sender(),
                     aps_frame: incoming_message.aps_frame().clone(),
-                    payload: incoming_message.message().iter().copied().collect(),
+                    payload: Box::new(incoming_message.message().iter().copied().collect()),
                 })
                 .await
                 .unwrap_or_else(|error| {
                     error!("Failed to send reply via transmitter handle: {error}");
-                })
+                });
         }
 
         self.forward_callback(Callback::Messaging(Messaging::IncomingMessage(

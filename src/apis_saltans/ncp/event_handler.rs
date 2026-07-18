@@ -9,7 +9,8 @@ use tokio::time::timeout;
 use crate::Callback;
 use crate::apis_saltans::conversion::defragmented_envelope;
 use crate::defragmentation::{
-    DEFAULT_REASSEMBLY_TIMEOUT, DEFAULT_WINDOW_SIZE, Defragmenter, Message as DefragmentedMessage,
+    DEFAULT_REASSEMBLY_TIMEOUT, DEFAULT_WINDOW_SIZE, DefragmentedMessage, Defragmenter,
+    Message as DefragmentationMessage,
 };
 use crate::ember::Status;
 use crate::frame::parameters::networking::handler::Handler as Networking;
@@ -117,35 +118,17 @@ impl EventHandler {
         debug!("Incoming message: {incoming_message:?}");
 
         match self.defragmenter.handle(incoming_message) {
-            DefragmentedMessage::Complete(incoming_message) => {
-                self.forward_incoming_message(incoming_message).await;
+            DefragmentationMessage::Complete(message) => {
+                self.forward_defragmented_message(message).await;
             }
-            DefragmentedMessage::Defragmented {
-                incoming_message,
-                payload,
-            } => {
-                self.forward_defragmented_message(incoming_message, payload)
-                    .await;
-            }
-            DefragmentedMessage::Incomplete => {
+            DefragmentationMessage::Incomplete => {
                 trace!("Fragment handled by APS defragmenter.");
             }
         }
     }
 
-    async fn forward_incoming_message(&self, incoming_message: IncomingMessage) {
-        match incoming_message.try_into() {
-            Ok(envelope) => self.forward_event(Event::MessageReceived(envelope)).await,
-            Err(error) => warn!("Ignoring malformed APS frame: {error}"),
-        }
-    }
-
-    async fn forward_defragmented_message(
-        &self,
-        incoming_message: IncomingMessage,
-        payload: Vec<u8>,
-    ) {
-        match defragmented_envelope(&incoming_message, &payload) {
+    async fn forward_defragmented_message(&self, message: DefragmentedMessage) {
+        match defragmented_envelope(&message) {
             Ok(envelope) => self.forward_event(Event::MessageReceived(envelope)).await,
             Err(error) => warn!("Ignoring malformed defragmented APS frame: {error}"),
         }

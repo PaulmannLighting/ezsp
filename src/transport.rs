@@ -35,10 +35,10 @@ pub trait Transport: Send {
     fn connect(&mut self) -> impl Future<Output = Result<version::Response, Error>> + Send;
 
     /// Returns the current connection state.
-    fn state(&self) -> impl Future<Output = Connection> + Send;
+    fn state(&self) -> Connection;
 
     /// Returns the negotiated protocol version, if any.
-    fn negotiated_version(&self) -> impl Future<Output = Option<NonZero<u8>>> + Send;
+    fn negotiated_version(&self) -> Option<NonZero<u8>>;
 
     /// Send a command frame to the NCP.
     fn send<T>(&mut self, command: T) -> impl Future<Output = Result<u16, Error>> + Send
@@ -54,7 +54,7 @@ pub trait Transport: Send {
     /// Ensure that an EZSP connection is established and reset it if necessary.
     fn ensure_connection(&mut self) -> impl Future<Output = Result<(), Error>> + Send {
         async {
-            match self.state().await {
+            match self.state() {
                 Connection::Disconnected => {
                     info!("Initializing UART connection");
                     self.connect().await.map(drop)

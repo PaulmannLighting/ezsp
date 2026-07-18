@@ -240,11 +240,11 @@ impl Transport for Uart {
         Ok(response)
     }
 
-    async fn state(&self) -> Connection {
+    fn state(&self) -> Connection {
         self.connection
     }
 
-    async fn negotiated_version(&self) -> Option<NonZero<u8>> {
+    fn negotiated_version(&self) -> Option<NonZero<u8>> {
         NonZero::<u8>::new(self.negotiated_version.load(Ordering::Relaxed))
     }
 

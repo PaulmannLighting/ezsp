@@ -1,6 +1,6 @@
 //! High-level EZSP Network Co-Processor helper.
 //!
-//! [`Ncp`] wraps an EZSP [`Transport`](Transport) and adds the state
+//! [`Ncp`] wraps an EZSP [`Transport`](crate::Transport) and adds the state
 //! needed by host-side Zigbee workflows: endpoint cluster metadata, APS
 //! EZSP message tags, scan aggregation, message-sent correlation, and callback
 //! dispatch through a background event handler.
@@ -27,7 +27,7 @@ use crate::ezsp::network::scan;
 use crate::parameters::configuration::add_endpoint::Clusters;
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 use crate::types::ByteSizedVec;
-use crate::{Error, Messaging, Networking, Transport};
+use crate::{Error, Messaging, Networking, SharedTransport, Transport};
 
 pub mod builder;
 mod message;
@@ -80,7 +80,7 @@ pub struct Ncp<T>
 where
     T: Transport,
 {
-    pub(crate) transport: T,
+    pub(crate) transport: SharedTransport<T>,
     aps_options: aps::Options,
     message_tag: u8,
     pub(crate) event_handler_proxy: Sender<Message>,
@@ -97,19 +97,25 @@ where
     /// order. Outgoing APS helpers use this list to select the source endpoint
     /// for a cluster.
     #[must_use]
-    pub const fn new(
-        transport: T,
+    pub fn new(
+        transport: impl Into<SharedTransport<T>>,
         aps_options: aps::Options,
         event_handler_proxy: Sender<Message>,
         endpoints: Box<[Clusters]>,
     ) -> Self {
         Self {
-            transport,
+            transport: transport.into(),
             aps_options,
             message_tag: 0,
             event_handler_proxy,
             endpoints,
         }
+    }
+
+    /// Returns a clone of the shared transport handle.
+    #[must_use]
+    pub fn shared_transport(&self) -> SharedTransport<T> {
+        self.transport.clone()
     }
 
     /// Returns the next message tag and increments the internal counter.
@@ -213,7 +219,10 @@ where
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
         let destination = EmberDestination::Direct(short_id);
-        let maximum_payload_length = usize::from(self.transport.maximum_payload_length().await?);
+        let maximum_payload_length = {
+            let mut transport = self.transport.lock().await;
+            usize::from(transport.maximum_payload_length().await?)
+        };
 
         if payload.len() <= maximum_payload_length {
             self.send_unicast_fragment(destination, aps_frame, payload)
@@ -260,15 +269,18 @@ where
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
-        self.transport
-            .send_multicast(
-                aps_frame,
-                options.hops(),
-                options.nonmember_radius(),
-                tag,
-                message,
-            )
-            .await?;
+        let _sequence = {
+            let mut transport = self.transport.lock().await;
+            transport
+                .send_multicast(
+                    aps_frame,
+                    options.hops(),
+                    options.nonmember_radius(),
+                    tag,
+                    message,
+                )
+                .await?
+        };
 
         match rx.await? {
             Ok(EmberStatus::Success) => Ok(()),
@@ -309,7 +321,8 @@ where
             .await?;
 
         let _sequence = {
-            self.transport
+            let mut transport = self.transport.lock().await;
+            transport
                 .send_broadcast(short_id, aps_frame, radius, tag, message)
                 .await?
         };
@@ -377,7 +390,8 @@ where
             .await?;
 
         let sequence = {
-            self.transport
+            let mut transport = self.transport.lock().await;
+            transport
                 .send_unicast(destination, aps_frame, tag, message)
                 .await?
         };
@@ -388,11 +402,11 @@ where
         }
     }
 
-    async fn reject_oversized_payload(
-        &mut self,
-        payload: &[u8],
-    ) -> Result<ByteSizedVec<u8>, Error> {
-        let maximum_payload_length = usize::from(self.transport.maximum_payload_length().await?);
+    async fn reject_oversized_payload(&self, payload: &[u8]) -> Result<ByteSizedVec<u8>, Error> {
+        let maximum_payload_length = {
+            let mut transport = self.transport.lock().await;
+            usize::from(transport.maximum_payload_length().await?)
+        };
 
         if payload.len() > maximum_payload_length {
             Err(message_too_long())
@@ -419,9 +433,13 @@ where
     ) -> Result<Vec<NetworkFound>, Error> {
         let (tx, rx) = channel();
         self.event_handler_proxy.send(tx.into()).await?;
-        self.transport
-            .start_scan(scan::Type::ActiveScan, channel_mask, duration)
-            .await?;
+        {
+            let mut transport = self.transport.lock().await;
+            transport
+                .start_scan(scan::Type::ActiveScan, channel_mask, duration)
+                .await?;
+            drop(transport);
+        }
         Ok(rx.await?)
     }
 
@@ -438,9 +456,13 @@ where
     ) -> Result<Vec<EnergyScanResult>, Error> {
         let (tx, rx) = channel();
         self.event_handler_proxy.send(tx.into()).await?;
-        self.transport
-            .start_scan(scan::Type::EnergyScan, channel_mask, duration)
-            .await?;
+        {
+            let mut transport = self.transport.lock().await;
+            transport
+                .start_scan(scan::Type::EnergyScan, channel_mask, duration)
+                .await?;
+            drop(transport);
+        }
         Ok(rx.await?)
     }
 }

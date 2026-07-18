@@ -17,7 +17,7 @@ pub use self::defragmented_message::DefragmentedMessage;
 use crate::ember::NodeId;
 use crate::parameters::messaging::handler::IncomingMessage;
 use crate::types::ByteSizedVec;
-use crate::{Messaging, Transport};
+use crate::{Messaging, SharedTransport, Transport};
 
 mod defragmented_message;
 
@@ -76,7 +76,7 @@ pub struct Defragmenter<T>
 where
     T: Transport,
 {
-    transport: T,
+    transport: SharedTransport<T>,
     packets: BTreeMap<PacketKey, Packet>,
     receive_buffer_length: usize,
     window_size: u8,
@@ -89,7 +89,7 @@ where
 {
     /// Creates a defragmenter using the default receive limits.
     #[must_use]
-    pub const fn new(transport: T) -> Self {
+    pub fn new(transport: impl Into<SharedTransport<T>>) -> Self {
         Self::with_configuration(
             transport,
             DEFAULT_RECEIVE_BUFFER_LENGTH,
@@ -103,14 +103,14 @@ where
     /// A zero or unsupported `window_size` disables fragmented-message
     /// reception, matching the EZSP host implementation's behavior.
     #[must_use]
-    pub const fn with_configuration(
-        transport: T,
+    pub fn with_configuration(
+        transport: impl Into<SharedTransport<T>>,
         receive_buffer_length: usize,
         window_size: u8,
         timeout: Duration,
     ) -> Self {
         Self {
-            transport,
+            transport: transport.into(),
             packets: BTreeMap::new(),
             receive_buffer_length,
             window_size,
@@ -295,14 +295,16 @@ where
             return Some(incoming_message.into());
         };
 
-        let reply = self
-            .transport
-            .send_reply(
-                incoming_message.sender(),
-                incoming_message.aps_frame().clone(),
-                ByteSizedVec::new(),
-            )
-            .await;
+        let reply = {
+            let mut transport = self.transport.lock().await;
+            transport
+                .send_reply(
+                    incoming_message.sender(),
+                    incoming_message.aps_frame().clone(),
+                    ByteSizedVec::new(),
+                )
+                .await
+        };
 
         if let Err(error) = reply {
             warn!("Failed to acknowledge incoming APS fragment: {error}");
@@ -352,11 +354,11 @@ mod tests {
             async { Err(Error::NotConfigured) }
         }
 
-        async fn state(&self) -> Connection {
+        fn state(&self) -> Connection {
             Connection::Disconnected
         }
 
-        async fn negotiated_version(&self) -> Option<NonZero<u8>> {
+        fn negotiated_version(&self) -> Option<NonZero<u8>> {
             None
         }
 

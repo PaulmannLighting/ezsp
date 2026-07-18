@@ -176,6 +176,25 @@ EZSP has no protocol-level fragmentation and ASHv2 does not fragment EZSP DATA
 payloads. If the serialized EZSP frame does not fit in one ASHv2 DATA payload,
 encoding fails before anything is sent.
 
+### APS fragment reassembly
+
+The optional `apis-saltans` event actor performs APS-level reassembly before
+converting an `incomingMessageHandler` callback into a `MessageReceived` event.
+It follows the EZSP host fragmentation model: packets are keyed by sender and
+APS sequence, fragments are accepted within the configured fragment window,
+and incomplete packets are removed by a periodic timeout tick.
+
+```mermaid
+flowchart LR
+    callback[incomingMessageHandler] --> fragment{APS fragment?}
+    fragment -- no --> convert[Convert callback to event]
+    fragment -- yes --> reassemble[Defragmenter]
+    reassemble -- incomplete --> discard[Suppress callback]
+    reassemble -- complete --> convert
+    tick[Periodic actor tick] --> reassemble
+    convert --> event[MessageReceived]
+```
+
 ### Runtime futures
 
 `Uart::open` and `Uart::from_serial_port` return `(Uart, callbacks, Futures<_>)`.

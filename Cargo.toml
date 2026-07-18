@@ -19,6 +19,7 @@ apis-saltans-hw = { version = "0.7", path = "../apis-saltans/hw", optional = tru
 ashv2 = { version = "10", optional = true }
 bitflags = "2"
 bytes = { version = "1", optional = true }
+const_env = "0.1"
 enum-iterator = "2"
 heapless = "0.9"
 le-stream = { version = "10", features = ["derive", "macaddr", "heapless"] }

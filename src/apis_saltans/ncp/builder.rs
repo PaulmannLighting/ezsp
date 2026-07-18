@@ -13,6 +13,7 @@ use tokio::sync::mpsc::{Receiver, channel};
 use tokio::time::sleep;
 
 use super::event_handler::EventHandler;
+use crate::defragmentation::DEFAULT_WINDOW_SIZE;
 use crate::ember::security::initial;
 use crate::ember::{concentrator, network};
 use crate::ezsp::config;
@@ -96,7 +97,12 @@ where
         let (message_tx, message_rx) = channel(self.buffers);
         spawn(bridge(self.callbacks, message_tx.clone()));
         let (events_tx, mut events_rx) = channel(self.buffers);
-        spawn(EventHandler::new(events_tx).run(message_rx));
+        let fragment_window_size = self
+            .configuration
+            .get(&config::Id::FragmentWindowSize)
+            .and_then(|window_size| u8::try_from(*window_size).ok())
+            .unwrap_or(DEFAULT_WINDOW_SIZE);
+        spawn(EventHandler::with_fragment_window(events_tx, fragment_window_size).run(message_rx));
 
         debug!("Setting concentrator");
         self.transport.set_concentrator(self.concentrator).await?;

@@ -271,6 +271,7 @@ dependencies = [
  "ashv2",
  "bitflags 2.13.0",
  "bytes",
+ "const_env",
  "enum-iterator",
  "heapless",
  "le-stream",

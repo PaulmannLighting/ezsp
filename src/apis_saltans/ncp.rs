@@ -1,20 +1,24 @@
-//! `apis_saltans_hw::Driver` implementation for [`crate::Ncp`].
+//! `apis_saltans_hw::Driver` implementation for [`Ncp`].
 //!
 //! This module maps the generic hardware-driver operations expected by
 //! `apis-saltans` to EZSP command traits. Direct NCP operations are forwarded to
-//! the wrapped transport, while APS sends use [`crate::Ncp`] so that EZSP
+//! the wrapped transport, while APS sends use [`Ncp`] so that EZSP
 //! `messageSent` callbacks can be correlated with the originating request. The
 //! APS profile and cluster are taken from `apis_saltans_hw::Datagram` metadata;
-//! the local source endpoint is selected by [`crate::Ncp`] from the registered
+//! the local source endpoint is selected by [`Ncp`] from the registered
 //! endpoint output clusters.
 
 use std::collections::BTreeMap;
 use std::time::Duration;
 
+use apis_saltans_hw::aps::WeakDestination;
+use apis_saltans_hw::aps::data::Header;
 use apis_saltans_hw::core::{Application, Destination, IeeeAddress};
 use apis_saltans_hw::{Clusters, Datagram, Driver, Error, FoundNetwork, ScannedChannel};
 
+use crate::ember::aps::{Frame, Options};
 use crate::ember::concentrator;
+use crate::types::ByteSizedVec;
 use crate::{Configuration, Messaging, MulticastOptions, Ncp, Networking, Security, Utilities};
 
 mod builder;
@@ -137,5 +141,31 @@ where
             }
         }
         .map_err(Into::into)
+    }
+
+    async fn send_reply(&mut self, node_id: u16, aps_header: Header) -> Result<(), Error> {
+        let aps_frame = Frame::new(
+            aps_header.profile_id(),
+            aps_header.cluster_id(),
+            aps_header
+                .source_endpoint()
+                .map_or_else(Into::into, Into::into),
+            match aps_header.destination() {
+                WeakDestination::Broadcast(endpoint) | WeakDestination::Unicast(endpoint) => {
+                    endpoint
+                }
+                WeakDestination::Group(_) => 0x00,
+            },
+            Options::empty(),
+            match aps_header.destination() {
+                WeakDestination::Broadcast(_) | WeakDestination::Unicast(_) => 0x0000,
+                WeakDestination::Group(group) => group,
+            },
+            aps_header.counter(),
+        );
+        Ok(self
+            .transport
+            .send_reply(node_id, aps_frame, ByteSizedVec::new())
+            .await?)
     }
 }

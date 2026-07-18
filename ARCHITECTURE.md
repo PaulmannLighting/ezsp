@@ -74,8 +74,8 @@ It does not add lifecycle methods beyond those provided by `Transport`.
 
 ### NCP helper
 
-`Ncp<T>` wraps an EZSP transport and provides operations that require callback
-correlation or local sequence state:
+`Ncp<T>` stores a cloneable `SharedTransport<T>` and provides operations that
+require callback correlation or local sequence state:
 
 - active network scans and energy scans, resolved from `networkFound`,
   `energyScanResult`, and `scanComplete` callbacks
@@ -88,8 +88,19 @@ correlation or local sequence state:
 - message tag and APS sequence counters
 - background event-handler termination through `Ncp::terminate()`
 
-`Ncp<T>` dereferences to `T`, so callers can still use all command traits on the
-underlying transport.
+`SharedTransport<T>` contains an `Arc<tokio::sync::Mutex<T>>`. Each EZSP
+command holds the mutex across its complete command/response transaction, then
+releases it before waiting for asynchronous callbacks. This allows `Ncp`,
+`Defragmenter`, and future components to serialize access to one transport
+without holding the lock during callback correlation.
+
+```mermaid
+flowchart LR
+    ncp[Ncp] --> shared[SharedTransport]
+    defragmenter[Defragmenter] --> shared
+    shared --> mutex[Async mutex]
+    mutex --> transport[Transport]
+```
 
 The helper stores one cluster-list record per local endpoint. Before sending an
 APS frame, it searches those records for the first endpoint whose output cluster
@@ -237,7 +248,7 @@ This layer is implemented in `src/apis_saltans`.
 ### Main types
 
 - `Ncp<T>`
-  - wraps EZSP transport
+  - owns a clone of `SharedTransport<T>`
   - implements `apis_saltans_hw::Driver` when the feature is enabled
   - tracks message tag and APS sequence counters
   - bridges request/response APIs with callback-driven events
@@ -258,7 +269,7 @@ This layer is implemented in `src/apis_saltans`.
 
 `Ncp<T>` implements `Driver` when:
 
-- `T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync`
+- `T: Configuration + Security + Messaging + Networking + Utilities + Transport`
 
 `Builder::start` is available when:
 

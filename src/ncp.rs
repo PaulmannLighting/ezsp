@@ -10,7 +10,6 @@
 //! `apis_saltans_hw` traits.
 
 use std::num::NonZero;
-use std::ops::{Deref, DerefMut};
 
 use log::debug;
 use tokio::sync::mpsc::Sender;
@@ -28,7 +27,7 @@ use crate::ezsp::network::scan;
 use crate::parameters::configuration::add_endpoint::Clusters;
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 use crate::types::ByteSizedVec;
-use crate::{Error, Messaging, Networking};
+use crate::{Error, Messaging, Networking, SharedTransport, Transport};
 
 pub mod builder;
 mod message;
@@ -72,40 +71,51 @@ impl MulticastOptions {
 
 /// Host-side helper for an EZSP Network Co-Processor.
 ///
-/// `Ncp<T>` owns the underlying transport and dereferences to it, so all normal
-/// EZSP command traits remain available. Its own methods provide higher-level
-/// operations that need callback correlation or local host state, such as
-/// scans, outgoing APS message confirmation, and automatic source endpoint
-/// selection from the configured endpoint cluster lists.
+/// `Ncp<T>` shares exclusive access to the underlying transport. Its methods
+/// provide higher-level operations that need callback correlation or local
+/// host state, such as scans, outgoing APS message confirmation, and automatic
+/// source endpoint selection from the configured endpoint cluster lists.
 #[derive(Debug)]
-pub struct Ncp<T> {
-    pub(crate) transport: T,
+pub struct Ncp<T>
+where
+    T: Transport,
+{
+    pub(crate) transport: SharedTransport<T>,
     aps_options: aps::Options,
     message_tag: u8,
     pub(crate) event_handler_proxy: Sender<Message>,
     pub(crate) endpoints: Box<[Clusters]>,
 }
 
-impl<T> Ncp<T> {
+impl<T> Ncp<T>
+where
+    T: Transport,
+{
     /// Creates a new `Ncp` with the given transport, event handler, and endpoints.
     ///
     /// `endpoints` must contain the local endpoint cluster metadata in endpoint
     /// order. Outgoing APS helpers use this list to select the source endpoint
     /// for a cluster.
     #[must_use]
-    pub const fn new(
-        transport: T,
+    pub fn new(
+        transport: impl Into<SharedTransport<T>>,
         aps_options: aps::Options,
         event_handler_proxy: Sender<Message>,
         endpoints: Box<[Clusters]>,
     ) -> Self {
         Self {
-            transport,
+            transport: transport.into(),
             aps_options,
             message_tag: 0,
             event_handler_proxy,
             endpoints,
         }
+    }
+
+    /// Returns a clone of the shared transport handle.
+    #[must_use]
+    pub fn shared_transport(&self) -> SharedTransport<T> {
+        self.transport.clone()
     }
 
     /// Returns the next message tag and increments the internal counter.
@@ -183,7 +193,7 @@ impl<T> Ncp<T> {
 
 impl<T> Ncp<T>
 where
-    T: Messaging + Send + Sync,
+    T: Messaging + Transport,
 {
     /// Sends a unicast APS message and waits for its `messageSent` status.
     ///
@@ -209,7 +219,10 @@ where
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
         let destination = EmberDestination::Direct(short_id);
-        let maximum_payload_length = usize::from(self.maximum_payload_length().await?);
+        let maximum_payload_length = {
+            let mut transport = self.transport.lock().await;
+            usize::from(transport.maximum_payload_length().await?)
+        };
 
         if payload.len() <= maximum_payload_length {
             self.send_unicast_fragment(destination, aps_frame, payload)
@@ -256,16 +269,18 @@ where
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
-        let _sequence = self
-            .transport
-            .send_multicast(
-                aps_frame,
-                options.hops(),
-                options.nonmember_radius(),
-                tag,
-                message,
-            )
-            .await?;
+        let _sequence = {
+            let mut transport = self.transport.lock().await;
+            transport
+                .send_multicast(
+                    aps_frame,
+                    options.hops(),
+                    options.nonmember_radius(),
+                    tag,
+                    message,
+                )
+                .await?
+        };
 
         match rx.await? {
             Ok(EmberStatus::Success) => Ok(()),
@@ -305,10 +320,12 @@ where
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
-        let _sequence = self
-            .transport
-            .send_broadcast(short_id, aps_frame, radius, tag, message)
-            .await?;
+        let _sequence = {
+            let mut transport = self.transport.lock().await;
+            transport
+                .send_broadcast(short_id, aps_frame, radius, tag, message)
+                .await?
+        };
 
         match rx.await? {
             Ok(EmberStatus::Success) => Ok(()),
@@ -372,10 +389,12 @@ where
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
-        let sequence = self
-            .transport
-            .send_unicast(destination, aps_frame, tag, message)
-            .await?;
+        let sequence = {
+            let mut transport = self.transport.lock().await;
+            transport
+                .send_unicast(destination, aps_frame, tag, message)
+                .await?
+        };
 
         match rx.await? {
             Ok(EmberStatus::Success) => Ok(sequence),
@@ -383,11 +402,13 @@ where
         }
     }
 
-    async fn reject_oversized_payload(
-        &mut self,
-        payload: &[u8],
-    ) -> Result<ByteSizedVec<u8>, Error> {
-        if payload.len() > usize::from(self.maximum_payload_length().await?) {
+    async fn reject_oversized_payload(&self, payload: &[u8]) -> Result<ByteSizedVec<u8>, Error> {
+        let maximum_payload_length = {
+            let mut transport = self.transport.lock().await;
+            usize::from(transport.maximum_payload_length().await?)
+        };
+
+        if payload.len() > maximum_payload_length {
             Err(message_too_long())
         } else {
             byte_sized_payload(payload)
@@ -397,7 +418,7 @@ where
 
 impl<T> Ncp<T>
 where
-    T: Networking + Send + Sync,
+    T: Networking + Transport,
 {
     /// Starts an active network scan and returns all `networkFound` callback results.
     ///
@@ -412,9 +433,13 @@ where
     ) -> Result<Vec<NetworkFound>, Error> {
         let (tx, rx) = channel();
         self.event_handler_proxy.send(tx.into()).await?;
-        self.transport
-            .start_scan(scan::Type::ActiveScan, channel_mask, duration)
-            .await?;
+        {
+            let mut transport = self.transport.lock().await;
+            transport
+                .start_scan(scan::Type::ActiveScan, channel_mask, duration)
+                .await?;
+            drop(transport);
+        }
         Ok(rx.await?)
     }
 
@@ -431,24 +456,14 @@ where
     ) -> Result<Vec<EnergyScanResult>, Error> {
         let (tx, rx) = channel();
         self.event_handler_proxy.send(tx.into()).await?;
-        self.transport
-            .start_scan(scan::Type::EnergyScan, channel_mask, duration)
-            .await?;
+        {
+            let mut transport = self.transport.lock().await;
+            transport
+                .start_scan(scan::Type::EnergyScan, channel_mask, duration)
+                .await?;
+            drop(transport);
+        }
         Ok(rx.await?)
-    }
-}
-
-impl<T> Deref for Ncp<T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.transport
-    }
-}
-
-impl<T> DerefMut for Ncp<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.transport
     }
 }
 

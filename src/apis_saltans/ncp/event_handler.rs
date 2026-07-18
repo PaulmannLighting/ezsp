@@ -31,6 +31,15 @@ pub struct EventHandler {
 }
 
 impl EventHandler {
+    /// Creates an event handler that forwards translated events to `output`.
+    pub(super) fn new(output: Sender<Event>) -> Self {
+        Self {
+            output,
+            scans: Scans::default(),
+            responses: BTreeMap::new(),
+        }
+    }
+
     /// Translates EZSP callbacks into Zigbee events and sends them to the outgoing channel.
     async fn process_callback(&mut self, callback: Callback) {
         match callback {
@@ -177,14 +186,6 @@ impl EventHandler {
 }
 impl EventTranslator for EventHandler {
     type Message = Message;
-
-    fn new(output: Sender<Event>) -> Self {
-        Self {
-            output,
-            scans: Scans::default(),
-            responses: BTreeMap::new(),
-        }
-    }
 
     async fn run(mut self, mut callbacks: Receiver<Self::Message>) {
         while let Some(message) = callbacks.recv().await {

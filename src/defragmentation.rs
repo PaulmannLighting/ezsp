@@ -14,10 +14,10 @@ use const_env::env_item;
 use log::warn;
 
 pub use self::defragmented_message::DefragmentedMessage;
-use crate::Messaging;
 use crate::ember::NodeId;
 use crate::parameters::messaging::handler::IncomingMessage;
 use crate::types::ByteSizedVec;
+use crate::{Messaging, SharedTransport, Transport};
 
 mod defragmented_message;
 
@@ -72,20 +72,26 @@ struct Packet {
 /// call [`Defragmenter::tick`] regularly. This is the Rust equivalent of
 /// `ezspFragmentInit`, `ezspFragmentIncomingMessage`, and `ezspFragmentTick`.
 #[derive(Debug)]
-pub struct Defragmenter<T> {
-    messaging: T,
+pub struct Defragmenter<T>
+where
+    T: Transport,
+{
+    transport: SharedTransport<T>,
     packets: BTreeMap<PacketKey, Packet>,
     receive_buffer_length: usize,
     window_size: u8,
     timeout: Duration,
 }
 
-impl<T> Defragmenter<T> {
+impl<T> Defragmenter<T>
+where
+    T: Transport,
+{
     /// Creates a defragmenter using the default receive limits.
     #[must_use]
-    pub const fn new(messaging: T) -> Self {
+    pub fn new(transport: impl Into<SharedTransport<T>>) -> Self {
         Self::with_configuration(
-            messaging,
+            transport,
             DEFAULT_RECEIVE_BUFFER_LENGTH,
             DEFAULT_WINDOW_SIZE,
             DEFAULT_REASSEMBLY_TIMEOUT,
@@ -97,14 +103,14 @@ impl<T> Defragmenter<T> {
     /// A zero or unsupported `window_size` disables fragmented-message
     /// reception, matching the EZSP host implementation's behavior.
     #[must_use]
-    pub const fn with_configuration(
-        messaging: T,
+    pub fn with_configuration(
+        transport: impl Into<SharedTransport<T>>,
         receive_buffer_length: usize,
         window_size: u8,
         timeout: Duration,
     ) -> Self {
         Self {
-            messaging,
+            transport: transport.into(),
             packets: BTreeMap::new(),
             receive_buffer_length,
             window_size,
@@ -273,7 +279,7 @@ impl<T> Defragmenter<T> {
 
 impl<T> Defragmenter<T>
 where
-    T: Messaging,
+    T: Messaging + Transport,
 {
     /// Handles one incoming APS callback.
     ///
@@ -289,15 +295,18 @@ where
             return Some(incoming_message.into());
         };
 
-        if let Err(error) = self
-            .messaging
-            .send_reply(
-                incoming_message.sender(),
-                incoming_message.aps_frame().clone(),
-                ByteSizedVec::new(),
-            )
-            .await
-        {
+        let reply = {
+            let mut transport = self.transport.lock().await;
+            transport
+                .send_reply(
+                    incoming_message.sender(),
+                    incoming_message.aps_frame().clone(),
+                    ByteSizedVec::new(),
+                )
+                .await
+        };
+
+        if let Err(error) = reply {
             warn!("Failed to acknowledge incoming APS fragment: {error}");
             return None;
         }
@@ -315,10 +324,17 @@ where
 
 #[cfg(test)]
 mod tests {
+    use core::future::Future;
     use std::collections::BTreeMap;
+    use std::num::NonZero;
     use std::time::Instant;
 
+    use le_stream::ToLeStream;
+
     use super::{DEFAULT_REASSEMBLY_TIMEOUT, Defragmenter, Packet, PacketKey};
+    use crate::frame::Parameter;
+    use crate::parameters::configuration::version;
+    use crate::{Connection, Error, Parameters, Transport};
 
     const SENDER: u16 = 0x1234;
     const SEQUENCE: u8 = 0x56;
@@ -330,11 +346,43 @@ mod tests {
     const FIRST_PAYLOAD: &[u8] = b"one";
     const SECOND_PAYLOAD: &[u8] = b"two";
 
+    #[derive(Debug)]
+    struct MockTransport;
+
+    impl Transport for MockTransport {
+        fn connect(&mut self) -> impl Future<Output = Result<version::Response, Error>> + Send {
+            async { Err(Error::NotConfigured) }
+        }
+
+        fn state(&self) -> Connection {
+            Connection::Disconnected
+        }
+
+        fn negotiated_version(&self) -> Option<NonZero<u8>> {
+            None
+        }
+
+        fn send<T>(&mut self, _command: T) -> impl Future<Output = Result<u16, Error>> + Send
+        where
+            T: Parameter + ToLeStream,
+        {
+            async { Err(Error::NotConfigured) }
+        }
+
+        fn receive<T>(&mut self) -> impl Future<Output = Result<T, Error>> + Send
+        where
+            T: TryFrom<Parameters> + Send,
+            <T as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
+        {
+            async { Err(Error::NotConfigured) }
+        }
+    }
+
     #[test]
     fn expires_incomplete_packets() {
         let now = Instant::now();
         let mut defragmenter = Defragmenter::with_configuration(
-            (),
+            MockTransport,
             RECEIVE_BUFFER_LENGTH,
             WINDOW_SIZE,
             DEFAULT_REASSEMBLY_TIMEOUT,
@@ -366,7 +414,7 @@ mod tests {
             deadline: Instant::now() + DEFAULT_REASSEMBLY_TIMEOUT,
         };
 
-        assert!(!Defragmenter::<()>::window_is_complete(
+        assert!(!Defragmenter::<MockTransport>::window_is_complete(
             &packet,
             EXPECTED_FRAGMENTS,
             WINDOW_SIZE
@@ -381,7 +429,7 @@ mod tests {
             sequence: SEQUENCE,
         };
         let mut defragmenter = Defragmenter::with_configuration(
-            (),
+            MockTransport,
             RECEIVE_BUFFER_LENGTH,
             WINDOW_SIZE,
             DEFAULT_REASSEMBLY_TIMEOUT,

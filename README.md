@@ -59,10 +59,11 @@ EZSP frame is carried in exactly one ASHv2 DATA payload, and one ASHv2 DATA
 payload is decoded as exactly one EZSP frame.
 
 The standalone `Defragmenter<T>` reassembles APS-level fragmented unicasts for
-any `T` that implements `Messaging`. Its asynchronous `handle` method consumes
-each `IncomingMessage`, sends the empty `sendReply` required for fragments, and
-returns a `Defragmented` message once the payload is complete. The helper is not
-yet wired into `Ncp` or the `apis-saltans` event actor.
+any `T: Transport` through its blanket `Messaging` implementation. It accepts
+either a transport or a `SharedTransport<T>` clone. Its asynchronous `handle`
+method consumes each `IncomingMessage`, sends the empty `sendReply` required for
+fragments, and returns a `Defragmented` message once the payload is complete.
+The helper is not yet wired into `Ncp` or the `apis-saltans` event actor.
 
 Reassembly follows the EZSP fragment window, keys messages by sender and APS
 sequence, bounds the payload to 4096 bytes, and expires incomplete messages
@@ -89,6 +90,8 @@ EZSP-specific work in this crate:
 The crate is transport-first:
 
 - `Transport` defines the low-level async connection and request/response primitives.
+- `SharedTransport<T>` provides cloneable, asynchronously serialized access to
+  one transport.
 - EZSP command traits (`Configuration`, `Messaging`, `Networking`, `Security`, ...) are blanket-implemented for any `T: Transport`.
 - `Ezsp` is a convenience trait that combines all command traits.
 - `Ncp<T>` wraps a transport and adds host-side NCP helpers for scans, APS send
@@ -166,9 +169,11 @@ async fn example() -> Result<(), ezsp::Error> {
 
 ## NCP Helper
 
-`Ncp<T>` is the high-level host helper for an EZSP Network Co-Processor. It owns
-the transport and dereferences to it, so all normal command traits remain
-available.
+`Ncp<T>` is the high-level host helper for an EZSP Network Co-Processor. It
+stores a `SharedTransport<T>`, allowing other owners such as a `Defragmenter`
+to use the same underlying transport. `Ncp::shared_transport()` returns a clone
+of that handle. Lock the handle for one complete EZSP command and release it
+before waiting for asynchronous callbacks.
 
 `Ncp` adds behavior that needs more than a single command/response exchange:
 
@@ -203,13 +208,13 @@ When `apis-saltans` is enabled, the crate adapts `Ncp` to the
 `apis_saltans_hw` driver traits and provides custom `Builder` startup helpers.
 
 - `Ncp<T>: apis_saltans_hw::Driver` when
-  `T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync`.
+  `T: Configuration + Security + Messaging + Networking + Utilities + Transport`.
 - `Builder::start(endpoints)` configures the EZSP stack, starts callback
   translation, registers each `SimpleDescriptor` as an EZSP endpoint, stores
   the descriptor cluster lists for later source endpoint selection, spawns the
   NCP actor, and returns
   `(apis_saltans_hw::NcpHandle, tokio::sync::mpsc::Receiver<apis_saltans_hw::Event>)`.
-- `Ncp::terminate()` stops the event handler and returns the underlying transport.
+- `Ncp::terminate()` stops the event handler.
 
 The integration layer translates EZSP callbacks into `apis_saltans_hw::Event`,
 including network-up/down/open/closed events, child join/leave events,

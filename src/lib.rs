@@ -32,6 +32,7 @@ pub use self::frame::{
 };
 pub use self::ncp::{Builder, Message, MulticastOptions, Ncp, Scans};
 pub use self::result::Result;
+pub use self::shared_transport::SharedTransport;
 pub use self::transport::Transport;
 pub use self::types::SourceRouteDiscoveryMode;
 
@@ -48,6 +49,7 @@ pub mod ezsp;
 mod frame;
 mod ncp;
 mod result;
+mod shared_transport;
 mod transport;
 mod types;
 #[cfg(feature = "ashv2")]

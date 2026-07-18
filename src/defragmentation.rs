@@ -59,6 +59,7 @@ struct Packet {
 pub enum Message {
     /// A non-fragmented message that can be forwarded immediately.
     Complete(IncomingMessage),
+
     /// A fragmented message whose payload has been reassembled.
     Defragmented {
         /// The callback that completed the fragmented message.
@@ -66,6 +67,7 @@ pub enum Message {
         /// The reassembled APS payload.
         payload: Vec<u8>,
     },
+
     /// A fragment was stored or deliberately ignored.
     Incomplete,
 }

@@ -1,58 +1,43 @@
 //! Shared ownership of an EZSP transport.
 
+use std::num::NonZero;
 use std::sync::Arc;
 
-use tokio::sync::{Mutex, MutexGuard};
+use le_stream::ToLeStream;
+use tokio::sync::Mutex;
 
-use crate::Transport;
+use crate::frame::Parameter;
+use crate::parameters::configuration::version::Response;
+use crate::{Connection, Error, Parameters, Transport};
 
-/// An asynchronously locked, reference-counted EZSP transport.
-///
-/// Clones refer to the same underlying transport. Callers must hold the lock
-/// for an entire EZSP command/response transaction, then release it before
-/// waiting for asynchronous callbacks.
-#[derive(Debug)]
-pub struct SharedTransport<T>
+impl<T> Transport for Arc<Mutex<T>>
 where
     T: Transport,
 {
-    inner: Arc<Mutex<T>>,
-}
-
-impl<T> SharedTransport<T>
-where
-    T: Transport,
-{
-    /// Wraps a transport for shared ownership.
-    #[must_use]
-    pub fn new(transport: T) -> Self {
-        Self {
-            inner: Arc::new(Mutex::new(transport)),
-        }
+    async fn connect(&mut self) -> Result<Response, Error> {
+        self.lock().await.connect().await
     }
 
-    /// Locks the underlying transport for an EZSP transaction.
-    pub async fn lock(&self) -> MutexGuard<'_, T> {
-        self.inner.lock().await
+    async fn state(&self) -> Connection {
+        self.lock().await.state().await
     }
-}
 
-impl<T> Clone for SharedTransport<T>
-where
-    T: Transport,
-{
-    fn clone(&self) -> Self {
-        Self {
-            inner: Arc::clone(&self.inner),
-        }
+    async fn negotiated_version(&self) -> Option<NonZero<u8>> {
+        self.lock().await.negotiated_version().await
     }
-}
 
-impl<T> From<T> for SharedTransport<T>
-where
-    T: Transport,
-{
-    fn from(transport: T) -> Self {
-        Self::new(transport)
+    async fn send<U>(&mut self, command: U) -> Result<u16, Error>
+    where
+        U: Parameter + ToLeStream,
+    {
+        self.lock().await.send(command).await
+    }
+
+    async fn receive<U>(&mut self) -> Result<U, Error>
+    where
+        U: TryFrom<Parameters> + Send,
+        <U as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
+    {
+        self.lock().await.receive().await
     }
 }

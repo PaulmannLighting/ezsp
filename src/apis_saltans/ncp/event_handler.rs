@@ -196,6 +196,7 @@ where
         }
     }
 }
+
 impl<T> EventTranslator for EventHandler<T>
 where
     T: Communicate + Send + Sync,

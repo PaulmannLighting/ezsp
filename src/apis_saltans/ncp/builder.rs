@@ -111,22 +111,31 @@ where
 
         let mut ncp = Ncp::new(transport.clone(), self.aps_options, message_tx);
 
-        for (index, endpoint) in endpoints.iter().enumerate() {
+        for (endpoint_id, descriptor) in
+            endpoints
+                .iter()
+                .enumerate()
+                .map_while(|(index, descriptor)| {
+                    u8::try_from(index.checked_add(1)?)
+                        .ok()
+                        .map(|endpoint| (endpoint, descriptor))
+                })
+        {
             debug!(
-                "Adding endpoint: {index:#04X}, profile: {:?}, device_id: {:#04X}, app_flags: {:#04X}, input clusters: {:X?}, output clusters: {:X?}",
-                endpoint.profile_id(),
-                endpoint.device_id(),
-                endpoint.app_flags(),
-                endpoint.input_clusters(),
-                endpoint.output_clusters(),
+                "Adding endpoint: {endpoint_id:#04X}, profile: {:?}, device_id: {:#04X}, app_flags: {:#04X}, input clusters: {:X?}, output clusters: {:X?}",
+                descriptor.profile_id(),
+                descriptor.device_id(),
+                descriptor.app_flags(),
+                descriptor.input_clusters(),
+                descriptor.output_clusters(),
             );
             ncp.add_endpoint(
-                u8::try_from(index).map_err(implementation_error)?,
-                endpoint.profile_id(),
-                endpoint.device_id(),
-                endpoint.app_flags(),
-                endpoint.input_clusters().iter().copied().collect(),
-                endpoint.output_clusters().iter().copied().collect(),
+                endpoint_id,
+                descriptor.profile_id(),
+                descriptor.device_id(),
+                descriptor.app_flags(),
+                descriptor.input_clusters().iter().copied().collect(),
+                descriptor.output_clusters().iter().copied().collect(),
             )
             .await?;
         }
@@ -224,11 +233,4 @@ where
     );
 
     Ok(())
-}
-
-fn implementation_error<T>(error: T) -> apis_saltans_hw::Error
-where
-    T: std::error::Error + Send + Sync + 'static,
-{
-    apis_saltans_hw::Error::Implementation(Arc::new(error))
 }

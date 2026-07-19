@@ -44,8 +44,8 @@ flowchart TD
 - command traits: `Configuration`, `Messaging`, `Networking`, `Security`, `Utilities`, ...
 - convenience super-trait: `Ezsp`
 - transport trait: `Transport`
-- NCP helper and startup state: `Ncp`, `Builder`, `Message`, `Scans`,
-  `StackResponse`
+- NCP helper and startup state: `Ncp`, `Builder`, `InitializationParameters`,
+  `Message`, `Scans`, `StackResponse`
 - frame model: `Frame`, `Header`, `Parameters`, `Response`, `Callback`, ...
 - extension traits: `ConfigurationExt`, `PolicyExt`, `Displayable`
 - core error/result types
@@ -264,7 +264,12 @@ This layer is implemented in `src/apis_saltans`.
   - bridges request/response APIs with callback-driven events
 - `Builder<T>` (`src/ncp/builder.rs`)
   - startup/configuration DSL for network bootstrap
+  - optionally owns `InitializationParameters` for explicit network formation
   - provides custom `start` helpers for `apis-saltans` NCP startup
+- `InitializationParameters` (`src/ncp/initialization_parameters.rs`)
+  - groups the PAN identifiers, trust-center address, network and link keys,
+    radio channel, and join method needed to form a network
+  - can generate identifiers and a network key from a cryptographic RNG
 - `EventHandler`
   - translates EZSP callbacks to `apis_saltans_hw::Event`
   - owns a `Defragmenter<T>` sharing the NCP transport and emits only complete incoming APS messages
@@ -302,13 +307,19 @@ run alongside the NCP.
 4. endpoint registration via `add_endpoint`
 5. current IEEE address and network state lookup
 6. network init path:
-   - reinitialize path: leave network, set initial security, form network
-   - normal path: `network_init`
+   - with `InitializationParameters`: leave the current network, install its
+     initial security state, and form the configured network
+   - without `InitializationParameters`: resume persisted state with
+     `network_init`
 7. wait for network-up event
 8. runtime radio power, state logging, and many-to-one route-request setup
 9. spawn the `Ncp` actor and return `NcpHandle` + event receiver
 
-Builder configuration includes policy values, configuration values, concentrator parameters, APS options, link/network keys, join method, PAN ID, IEEE address, radio channel, radio power, reinitialization mode, and channel buffer size.
+Builder configuration includes policy values, configuration values,
+concentrator parameters, APS options, radio transmit power, optional
+`InitializationParameters`, and channel buffer size. Network formation values
+are kept together in `InitializationParameters` rather than configured through
+independent builder setters.
 
 The same `SimpleDescriptor` list used for `add_endpoint` is converted into
 `Clusters` and stored in the resulting `Ncp`. That stored metadata is not used

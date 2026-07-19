@@ -17,6 +17,7 @@ use tokio::sync::mpsc::error::SendError;
 use tokio::sync::oneshot::channel;
 
 pub use self::builder::Builder;
+pub use self::initialization_parameters::InitializationParameters;
 pub use self::message::Message;
 pub use self::scans::Scans;
 pub use self::stack_response::StackResponse;
@@ -31,6 +32,7 @@ use crate::types::ByteSizedVec;
 use crate::{Error, Messaging, Networking};
 
 pub mod builder;
+mod initialization_parameters;
 mod message;
 mod scans;
 mod stack_response;

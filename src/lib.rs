@@ -31,7 +31,9 @@ pub use self::frame::{
     Callback, CallbackType, Command, Extended, FormatVersion, Frame, Header, HighByte, Legacy,
     LowByte, Parameters, Parsable, Response, SleepMode, parameters,
 };
-pub use self::ncp::{Builder, Message, MulticastOptions, Ncp, Scans, StackResponse};
+pub use self::ncp::{
+    Builder, InitializationParameters, Message, MulticastOptions, Ncp, Scans, StackResponse,
+};
 pub use self::result::Result;
 pub use self::transport::Transport;
 pub use self::types::SourceRouteDiscoveryMode;

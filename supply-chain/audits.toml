@@ -463,6 +463,18 @@ criteria = "safe-to-deploy"
 version = "0.26.4"
 notes = "AI-assisted: inspected source 0.26.4; Unix syscall wrappers used transitively by serialport. Unsafe code is FFI/memory layout handling around OS APIs; no hidden process/network behavior beyond explicitly exposed nix APIs."
 
+[[audits.num_enum]]
+who = "Richard Neumann <neumann@paulmann.de>"
+criteria = "safe-to-deploy"
+delta = "0.7.2 -> 0.7.6"
+notes = "AI-assisted: Reviewed the full 0.7.2-to-0.7.6 diff. Changes update metadata and tests and select the runtime Error implementation using rustversion; no unsafe code or ambient capabilities were introduced."
+
+[[audits.num_enum_derive]]
+who = "Richard Neumann <neumann@paulmann.de>"
+criteria = "safe-to-deploy"
+delta = "0.7.2 -> 0.7.6"
+notes = "AI-assisted: Reviewed the full 0.7.2-to-0.7.6 proc-macro diff. Changes add explicit crate-path support, improve catch-all filtering and byte-literal parsing, and strengthen attribute validation; no unsafe code or ambient capabilities were introduced."
+
 [[audits.once_cell]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -570,6 +582,18 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "1.2.0 -> 1.2.1"
 notes = "AI-assisted: reviewed diff 1.2.0 -> 1.2.1"
+
+[[audits.strum]]
+who = "Richard Neumann <neumann@paulmann.de>"
+criteria = "safe-to-deploy"
+delta = "0.27.2 -> 0.28.0"
+notes = "AI-assisted: Reviewed the full 0.27.2-to-0.28.0 diff. Changes are limited to dependency and MSRV updates, documentation, and ParseError formatting through core::fmt; no unsafe code or new runtime capabilities were introduced."
+
+[[audits.strum_macros]]
+who = "Richard Neumann <neumann@paulmann.de>"
+criteria = "safe-to-deploy"
+delta = "0.27.2 -> 0.28.0"
+notes = "AI-assisted: Reviewed the full 0.27.2-to-0.28.0 proc-macro diff. Changes refine generated enum parsing and discriminants, qualify core paths, add automatically_derived annotations, and improve infallible parsing and defaults; no unsafe code or ambient capabilities were introduced."
 
 [[audits.thiserror]]
 who = "Codex"

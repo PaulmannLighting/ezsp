@@ -192,10 +192,20 @@ transaction and releases it before a returned `StackResponse` is awaited.
 - message tag and APS sequence counters,
 - clean event-handler shutdown through `Ncp::terminate()`.
 
-`Ncp::build(transport, callbacks)` returns `Builder<T>`. The builder stores
-policies, configuration values, security keys, APS options, concentrator
-settings, network formation settings, and channel buffer sizing for the startup
-implementation.
+`Builder::new(transport, callbacks)` creates a `Builder<T>`. The builder stores
+policies, configuration values, APS options, concentrator settings, radio
+transmit power, optional network initialization parameters, and channel buffer
+sizing for the startup implementation.
+
+By default, `Builder::start` resumes the stack's persisted network state with
+`networkInit`. Calling `Builder::initialize` once with an
+`InitializationParameters` value instead requests explicit network formation:
+startup leaves any current network, installs the supplied network and link
+keys plus trust-center EUI-64, and forms the configured PAN. Use
+`InitializationParameters::new` for explicit values or
+`InitializationParameters::random` to generate network identifiers and a
+network key from a cryptographically secure random-number generator. Radio
+transmit power remains a builder setting through `with_radio_tx_power`.
 
 Outgoing APS helper methods take the APS profile ID, cluster ID, destination
 endpoint, and message payload. They derive the source endpoint from the first
@@ -221,7 +231,8 @@ When `apis-saltans` is enabled, the crate adapts `Ncp` to the
 
 - `Ncp<T>: apis_saltans_hw::Driver` when
   `T: Messaging + Networking + Utilities + Send + Sync`.
-- `Builder::start(endpoints)` configures the EZSP stack, starts callback
+- `Builder::start(endpoints)` configures the EZSP stack, resumes persisted
+  network state or applies `InitializationParameters`, starts callback
   translation, registers each `SimpleDescriptor` as an EZSP endpoint, stores
   the descriptor cluster lists for later source endpoint selection, spawns the
   NCP actor, and returns

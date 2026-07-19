@@ -5,17 +5,13 @@ use std::time::Duration;
 use apis_saltans_hw::zdp::SimpleDescriptor;
 use apis_saltans_hw::{Driver, Event, EventTranslator, NcpHandle, bridge};
 use log::{debug, info};
-use macaddr::MacAddr8;
-use rand::random;
-use silizium::zigbee::security::man::Key;
 use tokio::spawn;
 use tokio::sync::Mutex;
 use tokio::sync::mpsc::{Receiver, channel};
 use tokio::time::sleep;
 
 use super::event_handler::EventHandler;
-use crate::ember::security::initial;
-use crate::ember::{concentrator, network};
+use crate::ember::concentrator;
 use crate::ezsp::config;
 use crate::{
     Builder, Communicate, Configuration, ConfigurationExt, Displayable, Error, Messaging, Ncp,
@@ -74,16 +70,16 @@ where
     /// The startup sequence applies configured policies and stack values,
     /// waits for the transport to connect, registers the supplied endpoints,
     /// stores their cluster lists for later APS source endpoint selection,
-    /// initializes or reforms the Zigbee network, waits for `NetworkUp`, sends
-    /// a many-to-one route request, and returns an `apis_saltans_hw::NcpHandle`
-    /// plus the translated event stream.
+    /// resumes persisted network state or forms the network described by
+    /// [`crate::InitializationParameters`], waits for `NetworkUp`, sends a
+    /// many-to-one route request, and returns an
+    /// `apis_saltans_hw::NcpHandle` plus the translated event stream.
     ///
     /// # Errors
     ///
     /// Returns an `apis_saltans_hw::Error` if endpoint validation, EZSP stack
     /// setup, transport connection, network initialization, or actor startup
     /// fails.
-    #[expect(clippy::too_many_lines)]
     pub async fn start(
         mut self,
         endpoints: &[SimpleDescriptor],
@@ -140,7 +136,7 @@ where
         let network_state = transport.network_state().await?;
         info!("Current network state: {network_state:?}");
 
-        if self.reinitialize {
+        if let Some(init) = self.initialization_parameters.take() {
             if transport.leave_network().await.is_ok() {
                 wait_for_event(&mut events_rx, Event::NetworkDown).await?;
                 info!("Left existing network.");
@@ -148,25 +144,12 @@ where
 
             debug!("Setting initial security state");
             transport
-                .set_initial_security_state(build_initial_security_state(
-                    self.link_key,
-                    self.network_key,
-                ))
+                .set_initial_security_state(init.initial_security_state())
                 .await?;
 
             info!("Reinitializing network");
-            #[expect(clippy::cast_sign_loss)]
             transport
-                .form_network(network::Parameters::new(
-                    self.ieee_address.unwrap_or_default(),
-                    self.pan_id.unwrap_or_else(random),
-                    self.radio_power as u8,
-                    self.radio_channel,
-                    self.join_method,
-                    0,
-                    0,
-                    1 << self.radio_channel,
-                ))
+                .form_network(init.parameters(self.radio_tx_power))
                 .await?;
         } else {
             transport.network_init(self.init_bitmask).await?;
@@ -175,8 +158,8 @@ where
         wait_for_event(&mut events_rx, Event::NetworkUp).await?;
         info!("Network is up.");
 
-        debug!("Setting radio power to {}", self.radio_power);
-        transport.set_radio_power(self.radio_power).await?;
+        debug!("Setting radio power to {}", self.radio_tx_power);
+        transport.set_radio_power(self.radio_tx_power).await?;
 
         let network_state = transport.network_state().await?;
         info!("Final network state: {network_state:?}");
@@ -221,29 +204,6 @@ async fn wait_for_event(
     }
 
     Err(Error::ChannelClosed.into())
-}
-
-fn build_initial_security_state(link_key: Option<Key>, network_key: Option<Key>) -> initial::State {
-    let mut initial_security_state_bitmask = initial::Bitmask::TRUST_CENTER_GLOBAL_LINK_KEY;
-
-    let link_key = link_key.map_or_else(Key::default, |link_key| {
-        initial_security_state_bitmask |=
-            initial::Bitmask::HAVE_PRECONFIGURED_KEY | initial::Bitmask::REQUIRE_ENCRYPTED_KEY;
-        link_key
-    });
-
-    let network_key = network_key.map_or_else(Key::default, |network_key| {
-        initial_security_state_bitmask |= initial::Bitmask::HAVE_NETWORK_KEY;
-        network_key
-    });
-
-    initial::State::new(
-        initial_security_state_bitmask,
-        link_key,
-        network_key,
-        0,
-        MacAddr8::default(),
-    )
 }
 
 async fn log_state<T>(transport: &mut T) -> Result<(), Error>

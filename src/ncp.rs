@@ -19,6 +19,7 @@ use tokio::sync::oneshot::channel;
 pub use self::builder::Builder;
 pub use self::message::Message;
 pub use self::scans::Scans;
+pub use self::transmission::Transmission;
 use crate::ember::aps::Frame as ApsFrame;
 use crate::ember::message::Destination as EmberDestination;
 use crate::ember::{Status as EmberStatus, aps};
@@ -32,6 +33,7 @@ use crate::{Error, Messaging, Networking};
 pub mod builder;
 mod message;
 mod scans;
+mod transmission;
 
 // The ZDP profile ID.
 const ZDP: u16 = 0x0000;
@@ -204,21 +206,23 @@ where
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
-    ) -> Result<(), Error> {
+    ) -> Result<Transmission, Error> {
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
         let destination = EmberDestination::Direct(short_id);
         let maximum_payload_length = usize::from(self.transport.maximum_payload_length().await?);
 
-        if payload.len() <= maximum_payload_length {
-            self.send_unicast_fragment(destination, aps_frame, payload)
+        let transmission = if payload.len() <= maximum_payload_length {
+            let (transmission, _seq) = self
+                .send_unicast_fragment(destination, aps_frame, payload)
                 .await?;
+            transmission
         } else {
             self.send_fragmented_unicast(destination, aps_frame, payload, maximum_payload_length)
-                .await?;
-        }
+                .await?
+        };
 
-        Ok(())
+        Ok(transmission)
     }
 
     /// Sends a multicast APS message and waits for its `messageSent` status.
@@ -237,7 +241,7 @@ where
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
-    ) -> Result<(), Error> {
+    ) -> Result<(Transmission, u8), Error> {
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, group_id)?;
         let tag = self.next_message_tag();
@@ -255,7 +259,8 @@ where
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
-        self.transport
+        let sequence = self
+            .transport
             .send_multicast(
                 aps_frame,
                 options.hops(),
@@ -265,10 +270,7 @@ where
             )
             .await?;
 
-        match rx.await? {
-            Ok(EmberStatus::Success) => Ok(()),
-            other => Err(Error::Status(ErrorStatus::Ember(other))),
-        }
+        Ok((rx.into(), sequence))
     }
 
     /// Sends a broadcast APS message and waits for its `messageSent` status.
@@ -287,7 +289,7 @@ where
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
-    ) -> Result<(), Error> {
+    ) -> Result<Transmission, Error> {
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
         let tag = self.next_message_tag();
@@ -307,10 +309,7 @@ where
             .send_broadcast(short_id, aps_frame, radius, tag, message)
             .await?;
 
-        match rx.await? {
-            Ok(EmberStatus::Success) => Ok(()),
-            other => Err(Error::Status(ErrorStatus::Ember(other))),
-        }
+        Ok(rx.into())
     }
 
     async fn send_fragmented_unicast(
@@ -319,8 +318,9 @@ where
         aps_frame: ApsFrame,
         payload: &[u8],
         maximum_payload_length: usize,
-    ) -> Result<(), Error> {
+    ) -> Result<Transmission, Error> {
         let fragment_count = fragment_count(payload.len(), maximum_payload_length)?;
+        let mut last_transmission = None;
         let mut sequence = None;
 
         for (index, chunk) in payload.chunks(maximum_payload_length).enumerate() {
@@ -338,16 +338,22 @@ where
                 );
             }
 
-            let fragment_sequence = self
+            let (transmission, seq) = self
                 .send_unicast_fragment(destination, fragment, chunk)
                 .await?;
 
             if index == FIRST_FRAGMENT_INDEX {
-                sequence.replace(fragment_sequence);
+                sequence.replace(seq);
+            }
+
+            if let Some(last_transmission) = last_transmission.replace(transmission) {
+                last_transmission.await?;
             }
         }
 
-        Ok(())
+        Ok(last_transmission
+            .take()
+            .expect("There will be one last transmission."))
     }
 
     async fn send_unicast_fragment(
@@ -355,7 +361,7 @@ where
         destination: EmberDestination,
         aps_frame: ApsFrame,
         payload: &[u8],
-    ) -> Result<u8, Error> {
+    ) -> Result<(Transmission, u8), Error> {
         let tag = self.next_message_tag();
         let message = byte_sized_payload(payload)?;
 
@@ -374,10 +380,7 @@ where
             .send_unicast(destination, aps_frame, tag, message)
             .await?;
 
-        match rx.await? {
-            Ok(EmberStatus::Success) => Ok(sequence),
-            other => Err(Error::Status(ErrorStatus::Ember(other))),
-        }
+        Ok((rx.into(), sequence))
     }
 
     async fn reject_oversized_payload(

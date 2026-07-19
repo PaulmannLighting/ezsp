@@ -107,7 +107,7 @@ where
         let profile_id = profile.into();
         let cluster_id = metadata.cluster_id();
 
-        match destination {
+        let transmission = match destination {
             Destination::Device(device) => {
                 self.unicast(
                     device.device().into(),
@@ -116,7 +116,7 @@ where
                     device.endpoint().into(),
                     payload,
                 )
-                .await
+                .await?
             }
             Destination::Broadcast(broadcast) => {
                 self.broadcast(
@@ -127,23 +127,26 @@ where
                     broadcast.endpoint().into(),
                     payload,
                 )
-                .await
+                .await?
             }
             Destination::Group(group_id) => {
-                self.multicast(
-                    group_id.as_u16(),
-                    MulticastOptions::new(
-                        DEFAULT_MULTICAST_HOPS,
-                        DEFAULT_MULTICAST_NONMEMBER_RADIUS,
-                    ),
-                    profile_id,
-                    cluster_id,
-                    profile.broadcast_endpoint().into(),
-                    payload,
-                )
-                .await
+                let (transmission, _seq) = self
+                    .multicast(
+                        group_id.as_u16(),
+                        MulticastOptions::new(
+                            DEFAULT_MULTICAST_HOPS,
+                            DEFAULT_MULTICAST_NONMEMBER_RADIUS,
+                        ),
+                        profile_id,
+                        cluster_id,
+                        profile.broadcast_endpoint().into(),
+                        payload,
+                    )
+                    .await?;
+                transmission
             }
-        }
-        .map_err(Into::into)
+        };
+
+        Ok(transmission.await?)
     }
 }

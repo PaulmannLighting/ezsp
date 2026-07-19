@@ -14,8 +14,6 @@ dependencies = [
 [[package]]
 name = "apis-saltans-aps"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b91c8a5359b915ef13b15b0de3823d49713cdca182cdeb6380d0a7028483969e"
 dependencies = [
  "apis-saltans-core",
  "apis-saltans-nwk",
@@ -23,15 +21,12 @@ dependencies = [
  "bytes",
  "le-stream",
  "log",
- "num-derive",
- "num-traits",
+ "num_enum",
 ]
 
 [[package]]
 name = "apis-saltans-core"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6e384e7405638389d57a2236ef6826e6db0ae3f925af2f024912baa196aabde"
 dependencies = [
  "bitflags 2.13.1",
  "chrono",
@@ -40,30 +35,27 @@ dependencies = [
  "le-stream",
  "log",
  "macaddr",
- "num-derive",
- "num-traits",
+ "num_enum",
  "repr-discriminant",
+ "thiserror 2.0.19",
 ]
 
 [[package]]
 name = "apis-saltans-hw"
 version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9df4a8cbc3d9ccd9d3a19229bec6d8b2b509aee9a362bc47274913b7c2c86cc"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
  "apis-saltans-nwk",
  "apis-saltans-zdp",
  "bytes",
+ "thiserror 2.0.19",
  "tokio",
 ]
 
 [[package]]
 name = "apis-saltans-nwk"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1f0ade477cd483d53730a2e1919e75046c9180b82b6cb93dbecc3b2e6b37d73"
 dependencies = [
  "apis-saltans-core",
 ]
@@ -71,8 +63,6 @@ dependencies = [
 [[package]]
 name = "apis-saltans-zdp"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a28483536bee5d5aa4c08c3031bf78d04e88647e0845a706663f42392a82e00"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -80,9 +70,9 @@ dependencies = [
  "bytes",
  "heapless",
  "le-stream",
- "num-derive",
- "num-traits",
+ "num_enum",
  "repr-discriminant",
+ "thiserror 2.0.19",
 ]
 
 [[package]]
@@ -514,6 +504,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
+]
+
+[[package]]
+name = "num_enum"
+version = "0.7.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d0bca838442ec211fa11de3a8b0e0e8f3a4522575b5c4c06ed722e005036f26"
+dependencies = [
+ "num_enum_derive",
+ "rustversion",
+]
+
+[[package]]
+name = "num_enum_derive"
+version = "0.7.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "680998035259dcfcafe653688bf2aa6d3e2dc05e98be6ab46afb089dc84f1df8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
 ]
 
 [[package]]

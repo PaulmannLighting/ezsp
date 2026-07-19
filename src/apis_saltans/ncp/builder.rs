@@ -220,7 +220,7 @@ async fn wait_for_event(
         debug!("Ignoring event while waiting for {expected:?}: {event:?}");
     }
 
-    Err(apis_saltans_hw::Error::DriverRecv)
+    Err(Error::ChannelClosed.into())
 }
 
 fn build_initial_security_state(link_key: Option<Key>, network_key: Option<Key>) -> initial::State {

@@ -32,7 +32,8 @@ pub use self::frame::{
     LowByte, Parameters, Parsable, Response, SleepMode, parameters,
 };
 pub use self::ncp::{
-    Builder, InitializationParameters, Message, MulticastOptions, Ncp, Scans, StackResponse,
+    Builder, InitializationParameters, Message, MulticastOptions, Ncp, NetworkCredentials, Scans,
+    StackResponse, Startup,
 };
 pub use self::result::Result;
 pub use self::transport::Transport;

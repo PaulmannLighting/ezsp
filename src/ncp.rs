@@ -7,7 +7,8 @@
 //!
 //! The type is available without the `apis-saltans` feature. When that feature
 //! is enabled, additional implementations adapt [`Ncp`] and [`Builder`] to the
-//! `apis_saltans_hw` traits.
+//! `apis_saltans_hw` traits. [`Startup`] records whether a builder should
+//! restore the NCP's persisted network or explicitly form a new network.
 
 use std::num::NonZero;
 
@@ -19,8 +20,10 @@ use tokio::sync::oneshot::channel;
 pub use self::builder::Builder;
 pub use self::initialization_parameters::InitializationParameters;
 pub use self::message::Message;
+pub use self::network_credentials::NetworkCredentials;
 pub use self::scans::Scans;
 pub use self::stack_response::StackResponse;
+pub use self::startup::Startup;
 use crate::ember::aps::Frame as ApsFrame;
 use crate::ember::message::Destination as EmberDestination;
 use crate::ember::{Status as EmberStatus, aps};
@@ -34,8 +37,10 @@ use crate::{Error, Messaging, Networking};
 pub mod builder;
 mod initialization_parameters;
 mod message;
+mod network_credentials;
 mod scans;
 mod stack_response;
+mod startup;
 
 // The ZDP profile ID.
 const ZDP: u16 = 0x0000;

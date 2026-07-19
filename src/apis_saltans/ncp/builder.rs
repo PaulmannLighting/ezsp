@@ -15,7 +15,7 @@ use crate::ember::concentrator;
 use crate::ezsp::config;
 use crate::{
     Builder, Communicate, Configuration, ConfigurationExt, Displayable, Error, Messaging, Ncp,
-    Networking, PolicyExt, Security, Utilities,
+    Networking, PolicyExt, Security, Startup, Utilities,
 };
 
 const TICK: Duration = Duration::from_secs(1);
@@ -69,10 +69,9 @@ where
     ///
     /// The startup sequence applies configured policies and stack values,
     /// waits for the transport to connect, registers the supplied endpoints,
-    /// stores their cluster lists for later APS source endpoint selection,
-    /// resumes persisted network state or forms the network described by
-    /// [`crate::InitializationParameters`], waits for `NetworkUp`, sends a
-    /// many-to-one route request, and returns an
+    /// stores their cluster lists for later APS source endpoint selection, and
+    /// applies the [`Startup`] mode supplied to the builder. It then waits for
+    /// `NetworkUp`, sends a many-to-one route request, and returns an
     /// `apis_saltans_hw::NcpHandle` plus the translated event stream.
     ///
     /// # Errors
@@ -136,23 +135,26 @@ where
         let network_state = transport.network_state().await?;
         info!("Current network state: {network_state:?}");
 
-        if let Some(init) = self.initialization_parameters.take() {
-            if transport.leave_network().await.is_ok() {
-                wait_for_event(&mut events_rx, Event::NetworkDown).await?;
-                info!("Left existing network.");
+        match self.startup {
+            Startup::Initialize(init) => {
+                if transport.leave_network().await.is_ok() {
+                    wait_for_event(&mut events_rx, Event::NetworkDown).await?;
+                    info!("Left existing network.");
+                }
+
+                debug!("Setting initial security state");
+                transport
+                    .set_initial_security_state(init.initial_security_state())
+                    .await?;
+
+                info!("Reinitializing network");
+                transport
+                    .form_network(init.parameters(self.radio_tx_power))
+                    .await?;
             }
-
-            debug!("Setting initial security state");
-            transport
-                .set_initial_security_state(init.initial_security_state())
-                .await?;
-
-            info!("Reinitializing network");
-            transport
-                .form_network(init.parameters(self.radio_tx_power))
-                .await?;
-        } else {
-            transport.network_init(self.init_bitmask).await?;
+            Startup::Resume(init_bitmask) => {
+                transport.network_init(init_bitmask).await?;
+            }
         }
 
         wait_for_event(&mut events_rx, Event::NetworkUp).await?;

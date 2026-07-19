@@ -99,6 +99,10 @@ The crate is transport-first:
 - `Ncp<T>` wraps a communicator and adds host-side NCP helpers for scans, APS send
   confirmation through `StackResponse`, transaction/message sequence counters,
   and callback correlation.
+- `Startup` makes network restoration versus explicit network formation an
+  intentional choice when constructing an NCP builder.
+- `NetworkCredentials` groups the network identifiers, trust-center identity,
+  and network key used by explicit network formation.
 - Protocol types are exposed through `ember`, `ezsp`, and the typed frame/parameter model.
 
 Every `Transport` receives a blanket `Communicate` implementation, which gives
@@ -192,20 +196,81 @@ transaction and releases it before a returned `StackResponse` is awaited.
 - message tag and APS sequence counters,
 - clean event-handler shutdown through `Ncp::terminate()`.
 
-`Builder::new(transport, callbacks)` creates a `Builder<T>`. The builder stores
-policies, configuration values, APS options, concentrator settings, radio
-transmit power, optional network initialization parameters, and channel buffer
-sizing for the startup implementation.
+`Builder::new(transport, callbacks, startup)` creates a `Builder<T>`. The
+builder stores the selected `Startup` mode, policies, configuration values, APS
+options, concentrator settings, radio transmit power, and channel buffer sizing
+for the startup implementation. There is no implicit startup default: callers
+must choose whether to resume or initialize the network.
 
-By default, `Builder::start` resumes the stack's persisted network state with
-`networkInit`. Calling `Builder::initialize` once with an
-`InitializationParameters` value instead requests explicit network formation:
-startup leaves any current network, installs the supplied network and link
-keys plus trust-center EUI-64, and forms the configured PAN. Use
-`InitializationParameters::new` for explicit values or
-`InitializationParameters::random` to generate network identifiers and a
-network key from a cryptographically secure random-number generator. Radio
-transmit power remains a builder setting through `with_radio_tx_power`.
+Use `Startup::Resume` for normal application and NCP restarts. It passes the
+supplied `ezsp::network::InitBitmask` to `networkInit` so the NCP can restore its
+persisted network state. `InitBitmask::NO_OPTIONS` is the usual coordinator or
+router choice; the other flags enable persisted-parent and reboot-rejoin
+behavior for end devices.
+
+```rust
+use ezsp::ezsp::network::InitBitmask;
+use ezsp::{Builder, Startup};
+
+let builder = Builder::new(
+    transport,
+    callbacks,
+    Startup::Resume(InitBitmask::NO_OPTIONS),
+);
+```
+
+Use `Startup::Initialize(parameters)` only when the application intends to
+replace the current network configuration. This path attempts to leave any
+current network, installs the supplied network credentials and preconfigured
+link key, and forms the configured PAN.
+
+`NetworkCredentials` groups the values that identify and secure the network:
+the extended PAN ID, PAN ID, trust-center EUI-64, and network key.
+`InitializationParameters` combines those credentials with the preconfigured
+trust-center link key, radio channel, and join method needed for formation. The
+network key and link key serve different purposes and must be supplied
+separately.
+
+```rust
+use ezsp::{Builder, InitializationParameters, NetworkCredentials, Startup};
+
+let credentials = NetworkCredentials::new(
+    extended_pan_id,
+    pan_id,
+    trust_center_eui64,
+    network_key,
+);
+
+let parameters = InitializationParameters::new(
+    credentials,
+    link_key,
+    radio_channel,
+    join_method,
+);
+let builder = Builder::new(transport, callbacks, Startup::Initialize(parameters));
+```
+
+Alternatively, sample `NetworkCredentials` using a cryptographically secure
+random-number generator. Sampling generates locally administered unicast
+EUI-64 values, a PAN ID other than the reserved `0xFFFF` value, and a random
+network key. The distribution accepts any RNG, so selecting a cryptographically
+secure implementation is the caller's responsibility.
+
+```rust
+use ezsp::NetworkCredentials;
+use rand::RngExt;
+
+let mut rng = rand::rng();
+let credentials: NetworkCredentials = rng.random();
+```
+
+`NetworkCredentials` contains the network key. Do not log its `Debug` output,
+and protect persisted or copied credentials as secret configuration. Reuse the
+same credentials when intentionally re-forming the same network; normal
+restarts should use `Startup::Resume` and the NCP's persisted state.
+
+Radio transmit power is independent of the startup mode and remains a builder
+setting through `with_radio_tx_power`.
 
 Outgoing APS helper methods take the APS profile ID, cluster ID, destination
 endpoint, and message payload. They derive the source endpoint from the first
@@ -218,11 +283,12 @@ a `StackResponse` (multicast also returns the assigned APS sequence). Await the
 `StackResponse` separately to validate the asynchronous `messageSent` callback.
 Dropping it discards the confirmation without cancelling the accepted message.
 
-If `ashv2` is enabled, `Ncp::ashv2(serial_port)` and
-`Builder::<uart::Uart>::ashv2(serial_port)` create a builder backed by the
-crate's ASHv2 UART transport. The serial port type is constrained by the
-re-exported `uart::SerialPort` trait. These constructors return the builder and
-the `uart::Futures` set that must be driven alongside the NCP.
+If `ashv2` is enabled, `Ncp::ashv2(serial_port, startup)` and
+`Builder::<uart::Uart>::ashv2(serial_port, startup)` create a builder backed by
+the crate's ASHv2 UART transport. `Ncp::ashv2` likewise takes `startup` as its
+second argument. The serial port type is constrained by the re-exported
+`uart::SerialPort` trait. These constructors return the builder and the
+`uart::Futures` set that must be driven alongside the NCP.
 
 ## `apis-saltans` Integration (`apis-saltans` Feature)
 
@@ -232,7 +298,7 @@ When `apis-saltans` is enabled, the crate adapts `Ncp` to the
 - `Ncp<T>: apis_saltans_hw::Driver` when
   `T: Messaging + Networking + Utilities + Send + Sync`.
 - `Builder::start(endpoints)` configures the EZSP stack, resumes persisted
-  network state or applies `InitializationParameters`, starts callback
+  network state or forms a new network according to `Startup`, starts callback
   translation, registers each `SimpleDescriptor` as an EZSP endpoint, stores
   the descriptor cluster lists for later source endpoint selection, spawns the
   NCP actor, and returns

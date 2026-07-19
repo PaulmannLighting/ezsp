@@ -3,46 +3,46 @@ use std::collections::BTreeMap;
 use tokio::sync::mpsc::Receiver;
 
 use crate::ember::{aps, concentrator};
-use crate::ezsp::network::InitBitmask;
 use crate::ezsp::{config, policy};
-use crate::{Callback, InitializationParameters};
+use crate::{Callback, Startup};
 
 const RADIO_POWER: i8 = 8;
 
 /// Builder for [`Ncp`](crate::Ncp) startup configuration.
 ///
-/// The builder stores EZSP policies, stack configuration values, optional
-/// network initialization parameters, radio settings, and callback buffers
-/// until a feature-specific startup implementation consumes it.
+/// The builder stores the selected [`Startup`] mode, EZSP policies, stack
+/// configuration values, radio settings, and callback buffers until a
+/// feature-specific startup implementation consumes it.
 #[cfg_attr(not(feature = "apis-saltans"), expect(dead_code))]
 pub struct Builder<T> {
     pub(crate) transport: T,
     pub(crate) callbacks: Receiver<Callback>,
+    pub(crate) startup: Startup,
     pub(crate) policy: BTreeMap<policy::Id, u8>,
     pub(crate) configuration: BTreeMap<config::Id, u16>,
     pub(crate) concentrator: Option<concentrator::Parameters>,
     pub(crate) radio_tx_power: i8,
-    pub(crate) init_bitmask: InitBitmask,
     pub(crate) aps_options: aps::Options,
     pub(crate) buffers: usize,
-    pub(crate) initialization_parameters: Option<InitializationParameters>,
 }
 
 impl<T> Builder<T> {
-    /// Creates a new builder with the given transport and callback stream.
+    /// Creates a builder with a transport, callback stream, and startup mode.
+    ///
+    /// Select [`Startup::Resume`] to restore a persisted network or
+    /// [`Startup::Initialize`] to leave any current network and form a new one.
     #[must_use]
-    pub const fn new(transport: T, callbacks: Receiver<Callback>) -> Self {
+    pub const fn new(transport: T, callbacks: Receiver<Callback>, startup: Startup) -> Self {
         Self {
             transport,
             callbacks,
+            startup,
             policy: BTreeMap::new(),
             configuration: BTreeMap::new(),
             concentrator: None,
             radio_tx_power: RADIO_POWER,
-            init_bitmask: InitBitmask::NO_OPTIONS,
             aps_options: aps::Options::empty(),
             buffers: 1024,
-            initialization_parameters: None,
         }
     }
 
@@ -101,53 +101,34 @@ impl<T> Builder<T> {
         self.buffers = buffers;
         self
     }
-
-    /// Selects explicit network initialization for startup.
-    ///
-    /// When configured, startup leaves any current network, applies the
-    /// supplied security state, and forms the requested network. Without this
-    /// call, startup resumes persisted network state through `networkInit`.
-    ///
-    /// # Errors
-    ///
-    /// Returns the supplied parameters if initialization was already selected.
-    pub fn initialize(
-        mut self,
-        initialization_parameters: InitializationParameters,
-    ) -> Result<Self, InitializationParameters> {
-        if self.initialization_parameters.is_some() {
-            Err(initialization_parameters)
-        } else {
-            self.initialization_parameters
-                .replace(initialization_parameters);
-            Ok(self)
-        }
-    }
 }
 
 #[cfg(feature = "ashv2")]
 impl Builder<crate::uart::Uart> {
-    /// Create a new builder using an `ASHv2` UART on the given serial port.
+    /// Creates a new builder using an `ASHv2` UART on the given serial port.
     ///
     /// The serial port must implement [`crate::uart::SerialPort`]. The returned
     /// [`crate::uart::Futures`] value must be spawned or otherwise polled by the
-    /// caller for the UART transport to make progress.
-    pub fn ashv2<T>(serial_port: T) -> (Self, crate::uart::Futures<T>)
+    /// caller for the UART transport to make progress. `startup` selects
+    /// whether the NCP restores its persisted network or forms a new one.
+    pub fn ashv2<T>(serial_port: T, startup: Startup) -> (Self, crate::uart::Futures<T>)
     where
         T: crate::uart::SerialPort + Sync + 'static,
     {
-        Self::ashv2_with_buffers(serial_port, crate::uart::Buffers::default())
+        Self::ashv2_with_buffers(serial_port, startup, crate::uart::Buffers::default())
     }
 
-    /// Create a new builder using an `ASHv2` UART on the given serial port.
+    /// Creates a new builder using an `ASHv2` UART on the given serial port.
     ///
     /// The serial port must implement [`crate::uart::SerialPort`]. Use
     /// [`crate::uart::Buffers`] to size the EZSP and `ASHv2` channels used by the
     /// constructed transport. The returned [`crate::uart::Futures`] value must
     /// be spawned or otherwise polled by the caller for the UART transport to
-    /// make progress.
+    /// make progress. `startup` selects whether the NCP restores its persisted
+    /// network or forms a new one.
     pub fn ashv2_with_buffers<T>(
         serial_port: T,
+        startup: Startup,
         buffers: crate::uart::Buffers,
     ) -> (Self, crate::uart::Futures<T>)
     where
@@ -164,55 +145,8 @@ impl Builder<crate::uart::Uart> {
             buffers.ezsp_messages,
         );
         (
-            Self::new(uart, callbacks_rx),
+            Self::new(uart, callbacks_rx, startup),
             crate::uart::Futures::new(splitter, futures),
-        )
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use silizium::zigbee::security::man::Key;
-    use tokio::sync::mpsc::channel;
-
-    use super::*;
-    use crate::ember::join::Method;
-    use crate::ember::{Eui64, PanId};
-
-    const EUI64_LENGTH: usize = 8;
-    const FIRST_ADDRESS_BYTE: u8 = 0x02;
-    const KEY_LENGTH: usize = 16;
-    const SECOND_ADDRESS_BYTE: u8 = 0x04;
-    const CHANNEL_SIZE: usize = 1;
-    const LINK_KEY: Key = [0x22; KEY_LENGTH];
-    const NETWORK_KEY: Key = [0x11; KEY_LENGTH];
-    const PAN_ID: PanId = 0x1234;
-    const RADIO_CHANNEL: u8 = 15;
-
-    #[test]
-    fn initialize_rejects_reconfiguration() {
-        let (_sender, receiver) = channel(CHANNEL_SIZE);
-        let first = initialization_parameters(FIRST_ADDRESS_BYTE);
-        let second = initialization_parameters(SECOND_ADDRESS_BYTE);
-        let Ok(builder) = Builder::new((), receiver).initialize(first) else {
-            panic!("first initialization should succeed");
-        };
-        let Err(returned) = builder.initialize(second) else {
-            panic!("second initialization should fail");
-        };
-
-        assert_eq!(returned, second);
-    }
-
-    fn initialization_parameters(address_byte: u8) -> InitializationParameters {
-        InitializationParameters::new(
-            Eui64::from([address_byte; EUI64_LENGTH]),
-            PAN_ID,
-            Eui64::from([address_byte; EUI64_LENGTH]),
-            NETWORK_KEY,
-            LINK_KEY,
-            RADIO_CHANNEL,
-            Method::ConfiguredNwkState,
         )
     }
 }

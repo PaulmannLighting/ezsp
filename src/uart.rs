@@ -286,11 +286,13 @@ impl Ncp<Uart> {
     /// The serial port must implement [`SerialPort`], which is
     /// re-exported by the UART module from the `ASHv2` transport crate. The
     /// returned [`Futures`] value must be spawned or otherwise
-    /// polled by the caller for the UART transport to make progress.
-    pub fn ashv2<T>(serial_port: T) -> (Builder<Uart>, Futures<T>)
+    /// polled by the caller for the UART transport to make progress. Use
+    /// [`crate::Startup::Resume`] to restore a persisted network or
+    /// [`crate::Startup::Initialize`] to form a new one.
+    pub fn ashv2<T>(serial_port: T, startup: crate::Startup) -> (Builder<Uart>, Futures<T>)
     where
         T: SerialPort + Sync + 'static,
     {
-        Builder::ashv2(serial_port)
+        Builder::ashv2(serial_port, startup)
     }
 }

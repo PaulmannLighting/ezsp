@@ -28,20 +28,5 @@ url = "https://raw.githubusercontent.com/mozilla/supply-chain/main/audits.toml"
 [imports.zcash]
 url = "https://raw.githubusercontent.com/zcash/rust-ecosystem/main/supply-chain/audits.toml"
 
-[policy.apis-saltans-aps]
-audit-as-crates-io = true
-
-[policy.apis-saltans-core]
-audit-as-crates-io = true
-
-[policy.apis-saltans-hw]
-audit-as-crates-io = true
-
-[policy.apis-saltans-nwk]
-audit-as-crates-io = true
-
-[policy.apis-saltans-zdp]
-audit-as-crates-io = true
-
 [policy.ezsp]
 audit-as-crates-io = true

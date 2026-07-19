@@ -1,30 +1,41 @@
 
 # cargo-vet imports lock
 
+[[unpublished.ezsp]]
+version = "10.0.0"
+audited_as = "9.0.2"
+
 [[publisher.apis-saltans-aps]]
-version = "0.2.0"
-when = "2026-07-05"
+version = "0.5.0"
+when = "2026-07-19"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-core]]
-version = "0.3.0"
-when = "2026-07-05"
+version = "0.6.0"
+when = "2026-07-19"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-hw]]
-version = "0.7.0"
-when = "2026-07-07"
+version = "0.8.0"
+when = "2026-07-19"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
+
+[[publisher.apis-saltans-nwk]]
+version = "0.3.0"
+when = "2026-07-19"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-zdp]]
-version = "0.2.0"
-when = "2026-07-05"
+version = "0.5.0"
+when = "2026-07-19"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
@@ -91,8 +102,8 @@ user-id = 55123
 user-login = "rust-lang-owner"
 
 [[publisher.quote]]
-version = "1.0.46"
-when = "2026-06-22"
+version = "1.0.47"
+when = "2026-07-19"
 user-id = 3618
 user-login = "dtolnay"
 user-name = "David Tolnay"
@@ -112,29 +123,36 @@ user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.syn]]
-version = "2.0.118"
-when = "2026-06-16"
+version = "2.0.119"
+when = "2026-07-15"
+user-id = 3618
+user-login = "dtolnay"
+user-name = "David Tolnay"
+
+[[publisher.syn]]
+version = "3.0.0"
+when = "2026-07-18"
 user-id = 3618
 user-login = "dtolnay"
 user-name = "David Tolnay"
 
 [[publisher.thiserror]]
-version = "2.0.18"
-when = "2026-01-18"
+version = "2.0.19"
+when = "2026-07-18"
 user-id = 3618
 user-login = "dtolnay"
 user-name = "David Tolnay"
 
 [[publisher.thiserror-impl]]
-version = "2.0.18"
-when = "2026-01-18"
+version = "2.0.19"
+when = "2026-07-18"
 user-id = 3618
 user-login = "dtolnay"
 user-name = "David Tolnay"
 
 [[publisher.tokio]]
-version = "1.52.3"
-when = "2026-05-08"
+version = "1.53.0"
+when = "2026-07-17"
 user-id = 6741
 user-login = "Darksonn"
 user-name = "Alice Ryhl"

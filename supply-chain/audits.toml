@@ -115,6 +115,12 @@ criteria = "safe-to-deploy"
 delta = "2.11.1 -> 2.13.0"
 notes = "AI-assisted: reviewed diff 2.11.1 -> 2.13.0"
 
+[[audits.bitflags]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "2.13.0 -> 2.13.1"
+notes = "AI-assisted: reviewed diff 2.13.0 -> 2.13.1; flag aggregation moves from runtime statements into an equivalent generated const, reducing LLVM IR. No new unsafe code or filesystem, process, or network capabilities."
+
 [[audits.bytes]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -144,6 +150,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "1.2.66 -> 1.2.67"
 notes = "AI-assisted: reviewed diff 1.2.66 -> 1.2.67; adds aarch64-unknown-linux-pauthtest target handling, requiring Clang and explicit PAUTHTEST_SYSROOT/PAUTHTEST_RESOURCE_DIR inputs for compiler/link flags, plus regenerated target data and clippy/nightly maintenance. No new unsafe code paths; process execution remains the existing compiler/probe behavior of the cc build helper."
+
+[[audits.cc]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.2.67 -> 1.3.0"
+notes = "AI-assisted: reviewed diff 1.2.67 -> 1.3.0; adds Cargo trim-path inheritance by translating Cargo-provided remap values into individual compiler prefix-map arguments after fixed-argument capability probes. Values are passed directly as process arguments without shell interpretation; no new unsafe code, and process/environment access remains expected build-helper behavior."
 
 [[audits.chacha20]]
 who = "Codex"
@@ -265,11 +277,23 @@ criteria = "safe-to-deploy"
 delta = "0.1.8 -> 0.1.9"
 notes = "AI-assisted: reviewed diff 0.1.8 -> 0.1.9"
 
+[[audits.futures-core]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.3.32 -> 0.3.33"
+notes = "AI-assisted: reviewed diff 0.3.32 -> 0.3.33; only package version metadata changed. No code, unsafe, or ambient capability changes."
+
 [[audits.futures-sink]]
 who = "Codex"
 criteria = "safe-to-deploy"
 version = "0.3.32"
 notes = "AI-assisted: inspected source 0.3.32; Sink trait definitions and blanket impls. Unsafe use is limited to Pin projection in impls for pinned containers; no ambient filesystem/process/network capabilities."
+
+[[audits.futures-sink]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.3.32 -> 0.3.33"
+notes = "AI-assisted: reviewed diff 0.3.32 -> 0.3.33; only package version metadata changed. No code, unsafe, or ambient capability changes."
 
 [[audits.futures-task]]
 who = "Codex"
@@ -283,6 +307,12 @@ criteria = "safe-to-deploy"
 delta = "0.3.31 -> 0.3.32"
 notes = "AI-assisted: reviewed diff 0.3.31 -> 0.3.32"
 
+[[audits.futures-task]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.3.32 -> 0.3.33"
+notes = "AI-assisted: reviewed diff 0.3.32 -> 0.3.33; updates pointer-atomic cfg gates and re-exports alloc::task::Wake where supported. No new unsafe code or filesystem, process, or network capabilities."
+
 [[audits.futures-util]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -294,6 +324,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.3.21 -> 0.3.32"
 notes = "AI-assisted: reviewed diff 0.3.21 -> 0.3.32"
+
+[[audits.futures-util]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.3.32 -> 0.3.33"
+notes = "AI-assisted: reviewed diff 0.3.32 -> 0.3.33; adds portable atomic/Arc support, corrects IterPinRef's Send bound to Fut: Sync, releases removed FuturesUnordered tasks through the existing Arc ownership path, and fixes futures 0.1 waker deallocation using a transparent UnsafeCell<Waker> wrapper. The wrapper preserves allocation layout, reconstructs the original Box<Waker>, and its Send/Sync impls rely on Waker being Send + Sync; no new ambient capabilities."
 
 [[audits.getrandom]]
 who = "Codex"
@@ -450,6 +486,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 version = "0.3.33"
 notes = "AI-assisted: inspected source 0.3.33; build-time pkg-config probing via environment/filesystem/process execution as advertised. No runtime library capabilities."
+
+[[audits.proc-macro2]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.0.106 -> 1.0.107"
+notes = "AI-assisted: reviewed diff 1.0.106 -> 1.0.107; raises MSRV, updates docs and CI, uses equivalent Option::is_some_and parsing logic, and simplifies fallback span invalidation control flow. No new unsafe code or ambient capabilities."
 
 [[audits.r-efi]]
 who = "Codex"
@@ -699,6 +741,13 @@ criteria = "safe-to-deploy"
 user-id = 290593 # Richard Neumann (neumann-paulmann)
 start = "2026-07-01"
 end = "2027-07-01"
+notes = "Trusted publisher neumann-paulmann"
+
+[[trusted.apis-saltans-nwk]]
+criteria = "safe-to-deploy"
+user-id = 290593 # Richard Neumann (neumann-paulmann)
+start = "2026-07-07"
+end = "2027-07-19"
 notes = "Trusted publisher neumann-paulmann"
 
 [[trusted.apis-saltans-zcl]]

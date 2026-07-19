@@ -44,7 +44,8 @@ flowchart TD
 - command traits: `Configuration`, `Messaging`, `Networking`, `Security`, `Utilities`, ...
 - convenience super-trait: `Ezsp`
 - transport trait: `Transport`
-- NCP helper and startup state: `Ncp`, `Builder`, `Message`, `Scans`
+- NCP helper and startup state: `Ncp`, `Builder`, `Message`, `Scans`,
+  `StackResponse`
 - frame model: `Frame`, `Header`, `Parameters`, `Response`, `Callback`, ...
 - extension traits: `ConfigurationExt`, `PolicyExt`, `Displayable`
 - core error/result types
@@ -84,9 +85,8 @@ correlation or local sequence state:
 - active network scans and energy scans, resolved from `networkFound`,
   `energyScanResult`, and `scanComplete` callbacks
 - neighbor table collection
-- unicast and multicast APS sends, resolved by awaiting the matching
-  `messageSent` callback
-- broadcast APS sends with status validation
+- unicast, multicast, and broadcast APS sends that return a `StackResponse` for
+  the matching asynchronous `messageSent` callback
 - source endpoint selection for outgoing APS frames from configured local
   endpoint output clusters
 - message tag and APS sequence counters
@@ -94,8 +94,9 @@ correlation or local sequence state:
 
 `Communicate` is implemented for `Arc<tokio::sync::Mutex<T>>` whenever `T`
 implements `Communicate`. Each EZSP command holds the mutex across its complete
-command/response transaction, then releases it before waiting for asynchronous
-callbacks. During `apis-saltans` startup, the builder connects the transport,
+command/response transaction, then releases it before the returned
+`StackResponse` is awaited. During `apis-saltans` startup, the builder connects
+the transport,
 wraps it in the shared mutex, and gives clones to `Ncp` and `EventHandler`.
 The event handler passes its clone to `Defragmenter`, allowing these components
 to serialize access without holding the lock during callback correlation.

@@ -19,7 +19,7 @@ use tokio::sync::oneshot::channel;
 pub use self::builder::Builder;
 pub use self::message::Message;
 pub use self::scans::Scans;
-pub use self::transmission::Transmission;
+pub use self::stack_response::StackResponse;
 use crate::ember::aps::Frame as ApsFrame;
 use crate::ember::message::Destination as EmberDestination;
 use crate::ember::{Status as EmberStatus, aps};
@@ -33,7 +33,7 @@ use crate::{Error, Messaging, Networking};
 pub mod builder;
 mod message;
 mod scans;
-mod transmission;
+mod stack_response;
 
 // The ZDP profile ID.
 const ZDP: u16 = 0x0000;
@@ -186,19 +186,22 @@ impl<T> Ncp<T>
 where
     T: Messaging,
 {
-    /// Sends a unicast APS message and waits for its `messageSent` status.
+    /// Starts a unicast APS send and returns its deferred [`StackResponse`].
     ///
     /// Payloads larger than the EZSP maximum APS payload length are fragmented
     /// for unicast delivery. The stack-assigned APS sequence from the first
     /// fragment is reused for follow-up fragments, matching EZSP host
-    /// fragmentation behavior.
+    /// fragmentation behavior. Responses for all non-final fragments are
+    /// awaited before this method returns the response for the final fragment.
+    /// Await the returned [`StackResponse`] to confirm that final response.
     ///
     /// # Errors
     ///
     /// Returns an [`Error`] if no matching source endpoint exists, payload
-    /// fragmentation would exceed 255 fragments, registering the message tag
-    /// fails, sending an EZSP command fails, or receiving a successful
-    /// `messageSent` callback fails.
+    /// fragmentation would exceed 255 fragments, registering a message tag or
+    /// sending an EZSP command fails, or a non-final fragment's stack response
+    /// reports failure. Errors reported by the returned [`StackResponse`] occur
+    /// when that value is awaited.
     pub async fn unicast(
         &mut self,
         short_id: u16,
@@ -206,33 +209,37 @@ where
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
-    ) -> Result<Transmission, Error> {
+    ) -> Result<StackResponse, Error> {
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
         let destination = EmberDestination::Direct(short_id);
         let maximum_payload_length = usize::from(self.transport.maximum_payload_length().await?);
 
-        let transmission = if payload.len() <= maximum_payload_length {
-            let (transmission, _seq) = self
+        let stack_response = if payload.len() <= maximum_payload_length {
+            let (stack_response, _seq) = self
                 .send_unicast_fragment(destination, aps_frame, payload)
                 .await?;
-            transmission
+            stack_response
         } else {
             self.send_fragmented_unicast(destination, aps_frame, payload, maximum_payload_length)
                 .await?
         };
 
-        Ok(transmission)
+        Ok(stack_response)
     }
 
-    /// Sends a multicast APS message and waits for its `messageSent` status.
+    /// Starts a multicast APS send.
+    ///
+    /// Returns the deferred [`StackResponse`] and the APS sequence assigned by
+    /// the NCP. Await the response to confirm the matching `messageSent`
+    /// callback.
     ///
     /// # Errors
     ///
     /// Returns an [`Error`] if no matching source endpoint exists, the payload
     /// is larger than the EZSP maximum APS payload length, registering the
-    /// message tag fails, sending the EZSP command fails, or receiving a
-    /// successful `messageSent` callback fails.
+    /// message tag fails, or sending the EZSP command fails. Errors reported by
+    /// the returned [`StackResponse`] occur when that value is awaited.
     pub async fn multicast(
         &mut self,
         group_id: u16,
@@ -241,7 +248,7 @@ where
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
-    ) -> Result<(Transmission, u8), Error> {
+    ) -> Result<(StackResponse, u8), Error> {
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, group_id)?;
         let tag = self.next_message_tag();
@@ -273,14 +280,17 @@ where
         Ok((rx.into(), sequence))
     }
 
-    /// Sends a broadcast APS message and waits for its `messageSent` status.
+    /// Starts a broadcast APS send and returns its deferred [`StackResponse`].
+    ///
+    /// Await the returned response to confirm the matching `messageSent`
+    /// callback.
     ///
     /// # Errors
     ///
     /// Returns an [`Error`] if no matching source endpoint exists, the payload
     /// is larger than the EZSP maximum APS payload length, registering the
-    /// message tag fails, sending the EZSP command fails, or receiving a
-    /// successful `messageSent` callback fails.
+    /// message tag fails, or sending the EZSP command fails. Errors reported by
+    /// the returned [`StackResponse`] occur when that value is awaited.
     pub async fn broadcast(
         &mut self,
         short_id: u16,
@@ -289,7 +299,7 @@ where
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
-    ) -> Result<Transmission, Error> {
+    ) -> Result<StackResponse, Error> {
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
         let tag = self.next_message_tag();
@@ -318,9 +328,9 @@ where
         aps_frame: ApsFrame,
         payload: &[u8],
         maximum_payload_length: usize,
-    ) -> Result<Transmission, Error> {
+    ) -> Result<StackResponse, Error> {
         let fragment_count = fragment_count(payload.len(), maximum_payload_length)?;
-        let mut last_transmission = None;
+        let mut last_stack_response = None;
         let mut sequence = None;
 
         for (index, chunk) in payload.chunks(maximum_payload_length).enumerate() {
@@ -338,7 +348,7 @@ where
                 );
             }
 
-            let (transmission, seq) = self
+            let (stack_response, seq) = self
                 .send_unicast_fragment(destination, fragment, chunk)
                 .await?;
 
@@ -346,14 +356,14 @@ where
                 sequence.replace(seq);
             }
 
-            if let Some(last_transmission) = last_transmission.replace(transmission) {
-                last_transmission.await?;
+            if let Some(stack_response) = last_stack_response.replace(stack_response) {
+                stack_response.await?;
             }
         }
 
-        Ok(last_transmission
+        Ok(last_stack_response
             .take()
-            .expect("There will be one last transmission."))
+            .expect("fragmented send always produces a final stack response"))
     }
 
     async fn send_unicast_fragment(
@@ -361,7 +371,7 @@ where
         destination: EmberDestination,
         aps_frame: ApsFrame,
         payload: &[u8],
-    ) -> Result<(Transmission, u8), Error> {
+    ) -> Result<(StackResponse, u8), Error> {
         let tag = self.next_message_tag();
         let message = byte_sized_payload(payload)?;
 

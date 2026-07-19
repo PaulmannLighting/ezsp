@@ -107,7 +107,7 @@ where
         let profile_id = profile.into();
         let cluster_id = metadata.cluster_id();
 
-        let transmission = match destination {
+        let stack_response = match destination {
             Destination::Device(device) => {
                 self.unicast(
                     device.device().into(),
@@ -130,7 +130,7 @@ where
                 .await?
             }
             Destination::Group(group_id) => {
-                let (transmission, _seq) = self
+                let (stack_response, _seq) = self
                     .multicast(
                         group_id.as_u16(),
                         MulticastOptions::new(
@@ -143,10 +143,10 @@ where
                         payload,
                     )
                     .await?;
-                transmission
+                stack_response
             }
         };
 
-        Ok(transmission.await?)
+        Ok(stack_response.await?)
     }
 }

@@ -6,42 +6,45 @@ use tokio::sync::oneshot::Receiver;
 use crate::Error;
 use crate::ember::Status;
 
-/// The pending completion of an outgoing APS transmission.
+/// A deferred stack response for an outgoing APS message.
 ///
-/// Awaiting this value returns `Ok(())` when the corresponding `messageSent`
+/// The NCP send helpers return this value after the EZSP send command has been
+/// accepted. Awaiting it returns `Ok(())` when the corresponding `messageSent`
 /// callback reports success. A failure status, including an unknown raw status
-/// value, is converted into an [`Error`]. Dropping this value discards only the
-/// completion notification; it does not cancel a transmission that has already
-/// been accepted by the NCP.
+/// value, is converted into an [`Error`]. Dropping a `StackResponse` discards
+/// only the callback notification; it does not cancel an APS message that has
+/// already been accepted by the NCP.
 ///
 /// # Panics
 ///
-/// Awaiting the transmission panics if the callback handler drops its response
-/// sender without reporting a stack status.
+/// Awaiting the `StackResponse` panics if the callback handler drops its
+/// response sender without reporting a stack status.
 #[must_use = "futures do nothing unless polled"]
 #[derive(Debug)]
-pub struct Transmission {
-    stack_response: Receiver<Result<Status, u8>>,
+pub struct StackResponse {
+    inner: Receiver<Result<Status, u8>>,
 }
 
-impl From<Receiver<Result<Status, u8>>> for Transmission {
+impl From<Receiver<Result<Status, u8>>> for StackResponse {
     fn from(stack_response: Receiver<Result<Status, u8>>) -> Self {
-        Self { stack_response }
+        Self {
+            inner: stack_response,
+        }
     }
 }
 
-impl Future for Transmission {
+impl Future for StackResponse {
     type Output = Result<(), Error>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let this = self.get_mut();
 
-        match Pin::new(&mut this.stack_response).poll(cx) {
+        match Pin::new(&mut this.inner).poll(cx) {
             Poll::Pending => Poll::Pending,
             Poll::Ready(Ok(Ok(Status::Success))) => Poll::Ready(Ok(())),
             Poll::Ready(Ok(response)) => Poll::Ready(Err(response.into())),
             Poll::Ready(Err(error)) => {
-                panic!("transmission callback response channel closed: {error}")
+                panic!("stack response channel closed before a status was reported: {error}")
             }
         }
     }
@@ -61,26 +64,26 @@ mod tests {
     #[test]
     fn remains_pending_until_callback_response_arrives() {
         let (_sender, receiver) = channel();
-        let mut transmission = Box::pin(Transmission::from(receiver));
+        let mut stack_response = Box::pin(StackResponse::from(receiver));
         let waker = Waker::noop();
         let mut context = Context::from_waker(waker);
 
         assert!(matches!(
-            transmission.as_mut().poll(&mut context),
+            stack_response.as_mut().poll(&mut context),
             Poll::Pending
         ));
     }
 
     #[test]
-    fn returns_unit_for_successful_transmission() {
+    fn returns_unit_for_successful_stack_response() {
         let (sender, receiver) = channel();
         sender.send(Ok(Status::Success)).expect("receiver is open");
-        let mut transmission = Box::pin(Transmission::from(receiver));
+        let mut stack_response = Box::pin(StackResponse::from(receiver));
         let waker = Waker::noop();
         let mut context = Context::from_waker(waker);
 
         assert!(matches!(
-            transmission.as_mut().poll(&mut context),
+            stack_response.as_mut().poll(&mut context),
             Poll::Ready(Ok(()))
         ));
     }
@@ -91,12 +94,12 @@ mod tests {
         sender
             .send(Ok(Status::DeliveryFailed))
             .expect("receiver is open");
-        let mut transmission = Box::pin(Transmission::from(receiver));
+        let mut stack_response = Box::pin(StackResponse::from(receiver));
         let waker = Waker::noop();
         let mut context = Context::from_waker(waker);
 
         assert!(matches!(
-            transmission.as_mut().poll(&mut context),
+            stack_response.as_mut().poll(&mut context),
             Poll::Ready(Err(Error::Status(ErrorStatus::Ember(Ok(
                 Status::DeliveryFailed
             )))))
@@ -107,25 +110,25 @@ mod tests {
     fn converts_unknown_stack_status_to_error() {
         let (sender, receiver) = channel();
         sender.send(Err(UNKNOWN_STATUS)).expect("receiver is open");
-        let mut transmission = Box::pin(Transmission::from(receiver));
+        let mut stack_response = Box::pin(StackResponse::from(receiver));
         let waker = Waker::noop();
         let mut context = Context::from_waker(waker);
 
         assert!(matches!(
-            transmission.as_mut().poll(&mut context),
+            stack_response.as_mut().poll(&mut context),
             Poll::Ready(Err(Error::Status(ErrorStatus::Ember(Err(UNKNOWN_STATUS)))))
         ));
     }
 
     #[test]
-    #[should_panic(expected = "transmission callback response channel closed")]
+    #[should_panic(expected = "stack response channel closed before a status was reported")]
     fn panics_when_callback_response_sender_is_dropped() {
         let (sender, receiver) = channel();
         drop(sender);
-        let mut transmission = Box::pin(Transmission::from(receiver));
+        let mut stack_response = Box::pin(StackResponse::from(receiver));
         let waker = Waker::noop();
         let mut context = Context::from_waker(waker);
 
-        _ = transmission.as_mut().poll(&mut context);
+        _ = stack_response.as_mut().poll(&mut context);
     }
 }

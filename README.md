@@ -97,7 +97,8 @@ The crate is transport-first:
 - EZSP command traits (`Configuration`, `Messaging`, `Networking`, `Security`, ...) are blanket-implemented for any `T: Communicate`.
 - `Ezsp` is a convenience trait that combines all command traits.
 - `Ncp<T>` wraps a communicator and adds host-side NCP helpers for scans, APS send
-  confirmation, transaction/message sequence counters, and callback correlation.
+  confirmation through `StackResponse`, transaction/message sequence counters,
+  and callback correlation.
 - Protocol types are exposed through `ember`, `ezsp`, and the typed frame/parameter model.
 
 Every `Transport` receives a blanket `Communicate` implementation, which gives
@@ -178,14 +179,14 @@ owns a communicator and uses it for complete EZSP command/response
 transactions. The `apis-saltans` startup path connects the supplied transport,
 wraps it in `Arc<tokio::sync::Mutex<T>>`, and gives clones to the `Ncp` and its
 event handler. The `Communicate` implementation holds the mutex for one complete
-transaction and releases it before the NCP waits for asynchronous callbacks.
+transaction and releases it before a returned `StackResponse` is awaited.
 
 `Ncp` adds behavior that needs more than a single command/response exchange:
 
 - active and energy scans with callback aggregation,
 - neighbor table collection,
-- unicast and multicast APS sends with `messageSent` confirmation,
-- broadcast APS sends with immediate confirmation,
+- unicast, multicast, and broadcast APS sends that return a `StackResponse` for
+  deferred `messageSent` confirmation,
 - source endpoint selection for outgoing APS frames from the configured local
   endpoint output clusters,
 - message tag and APS sequence counters,
@@ -200,6 +201,12 @@ Outgoing APS helper methods take the APS profile ID, cluster ID, destination
 endpoint, and message payload. They derive the source endpoint from the first
 configured local endpoint that advertises the cluster ID as an output cluster.
 If no endpoint matches, the send fails with `Error::NoMatchingSourceEndpoint`.
+
+The APS send helpers use a two-stage API. Awaiting `Ncp::unicast`,
+`Ncp::multicast`, or `Ncp::broadcast` performs the EZSP send command and returns
+a `StackResponse` (multicast also returns the assigned APS sequence). Await the
+`StackResponse` separately to validate the asynchronous `messageSent` callback.
+Dropping it discards the confirmation without cancelling the accepted message.
 
 If `ashv2` is enabled, `Ncp::ashv2(serial_port)` and
 `Builder::<uart::Uart>::ashv2(serial_port)` create a builder backed by the

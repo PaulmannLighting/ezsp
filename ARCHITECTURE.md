@@ -111,11 +111,11 @@ flowchart LR
     communicate --> transport[Inner communicator]
 ```
 
-The helper stores one cluster-list record per local endpoint. Before sending an
-APS frame, it searches those records for the first endpoint whose output cluster
-list contains the requested cluster ID and uses that one-based endpoint number
-as the APS source endpoint. If no endpoint advertises the cluster, the helper
-returns `Error::NoMatchingSourceEndpoint` before issuing the EZSP send command.
+The helper stores one output-cluster set keyed by each registered local endpoint
+number. Before sending an APS frame, it searches those records in ascending
+endpoint-number order and uses the first endpoint whose set contains the
+requested cluster ID. If no endpoint advertises the cluster, the helper returns
+`Error::NoMatchingSourceEndpoint` before issuing the EZSP send command.
 
 `Builder<T>` stores startup configuration for an `Ncp`: the required `Startup`
 mode, EZSP policy and configuration values, concentrator parameters, APS

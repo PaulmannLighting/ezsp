@@ -15,7 +15,7 @@ use apis_saltans_hw::zdp::SimpleDescriptor;
 use apis_saltans_hw::{Datagram, Driver, Error, FoundNetwork, HwResponse, ScannedChannel};
 
 use crate::ember::concentrator;
-use crate::{Messaging, MulticastOptions, Ncp, Networking, Utilities};
+use crate::{Configuration, Messaging, MulticastOptions, Ncp, Networking, Utilities};
 
 mod builder;
 mod event_handler;
@@ -26,10 +26,10 @@ const DEFAULT_MULTICAST_NONMEMBER_RADIUS: u8 = 0;
 
 impl<T> Driver for Ncp<T>
 where
-    T: Messaging + Networking + Utilities + Send + Sync,
+    T: Configuration + Messaging + Networking + Utilities + Send + Sync,
 {
     async fn get_endpoints(&self) -> Result<Box<[SimpleDescriptor]>, Error> {
-        Ok(self.endpoints.clone())
+        Ok(self.simple_descriptors.clone().into_boxed_slice())
     }
 
     async fn get_pan_id(&mut self) -> Result<u16, Error> {
@@ -45,7 +45,7 @@ where
         channel_mask: u32,
         duration: u8,
     ) -> Result<Vec<FoundNetwork>, Error> {
-        Self::scan_networks(self, channel_mask, duration)
+        self.scan_networks(channel_mask, duration)
             .await
             .map(|results| results.into_iter().map(Into::into).collect())
             .map_err(Into::into)
@@ -56,7 +56,7 @@ where
         channel_mask: u32,
         duration: u8,
     ) -> Result<Vec<ScannedChannel>, Error> {
-        Self::scan_channels(self, channel_mask, duration)
+        self.scan_channels(channel_mask, duration)
             .await
             .map(|results| results.into_iter().map(Into::into).collect())
             .map_err(Into::into)

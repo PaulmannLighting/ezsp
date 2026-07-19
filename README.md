@@ -273,9 +273,10 @@ Radio transmit power is independent of the startup mode and remains a builder
 setting through `with_radio_tx_power`.
 
 Outgoing APS helper methods take the APS profile ID, cluster ID, destination
-endpoint, and message payload. They derive the source endpoint from the first
-configured local endpoint that advertises the cluster ID as an output cluster.
-If no endpoint matches, the send fails with `Error::NoMatchingSourceEndpoint`.
+endpoint, and message payload. They derive the source endpoint from the
+lowest-numbered registered local endpoint that advertises the cluster ID as an
+output cluster. If no endpoint matches, the send fails with
+`Error::NoMatchingSourceEndpoint`.
 
 The APS send helpers use a two-stage API. Awaiting `Ncp::unicast`,
 `Ncp::multicast`, or `Ncp::broadcast` performs the EZSP send command and returns

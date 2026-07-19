@@ -11,10 +11,11 @@ use tokio::sync::mpsc::{Receiver, channel};
 use tokio::time::sleep;
 
 use super::event_handler::EventHandler;
+use crate::apis_saltans::ncp::Ncp;
 use crate::ember::concentrator;
 use crate::ezsp::config;
 use crate::{
-    Builder, Communicate, Configuration, ConfigurationExt, Displayable, Error, Messaging, Ncp,
+    Builder, Communicate, Configuration, ConfigurationExt, Displayable, Error, Messaging,
     Networking, PolicyExt, Security, Startup, Utilities,
 };
 
@@ -108,6 +109,8 @@ where
             transport.set_policy(key, value).await?;
         }
 
+        let mut ncp = Ncp::new(transport.clone(), self.aps_options, message_tx);
+
         for (index, endpoint) in endpoints.iter().enumerate() {
             debug!(
                 "Adding endpoint: {index:#04X}, profile: {:?}, device_id: {:#04X}, app_flags: {:#04X}, input clusters: {:X?}, output clusters: {:X?}",
@@ -117,16 +120,15 @@ where
                 endpoint.input_clusters(),
                 endpoint.output_clusters(),
             );
-            transport
-                .add_endpoint(
-                    u8::try_from(index).map_err(implementation_error)?,
-                    endpoint.profile_id(),
-                    endpoint.device_id(),
-                    endpoint.app_flags(),
-                    endpoint.input_clusters().iter().copied().collect(),
-                    endpoint.output_clusters().iter().copied().collect(),
-                )
-                .await?;
+            ncp.add_endpoint(
+                u8::try_from(index).map_err(implementation_error)?,
+                endpoint.profile_id(),
+                endpoint.device_id(),
+                endpoint.app_flags(),
+                endpoint.input_clusters().iter().copied().collect(),
+                endpoint.output_clusters().iter().copied().collect(),
+            )
+            .await?;
         }
 
         let ieee_address = transport.get_eui64().await?;
@@ -181,8 +183,7 @@ where
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
-        let (ncp, actor) =
-            Ncp::new(transport, self.aps_options, message_tx, endpoints).run(self.buffers);
+        let (ncp, actor) = ncp.run(self.buffers);
         spawn(actor);
         Ok((ncp, events_rx))
     }

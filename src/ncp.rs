@@ -10,6 +10,7 @@
 //! `apis_saltans_hw` traits. [`Startup`] records whether a builder should
 //! restore the NCP's persisted network or explicitly form a new network.
 
+use std::collections::{BTreeMap, BTreeSet};
 use std::num::NonZero;
 
 use log::debug;
@@ -32,7 +33,7 @@ use crate::error::Status as ErrorStatus;
 use crate::ezsp::network::scan;
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 use crate::types::ByteSizedVec;
-use crate::{Error, Messaging, Networking};
+use crate::{Configuration, Error, Messaging, Networking};
 
 pub mod builder;
 mod initialization_parameters;
@@ -62,30 +63,31 @@ pub struct Ncp<T> {
     aps_options: aps::Options,
     message_tag: u8,
     pub(crate) event_handler_proxy: Sender<Message>,
+    endpoint_output_clusters: BTreeMap<u8, BTreeSet<u16>>,
     #[cfg(feature = "apis-saltans")]
-    pub(crate) endpoints: Box<[apis_saltans_hw::zdp::SimpleDescriptor]>,
+    pub(crate) simple_descriptors: Vec<apis_saltans_hw::zdp::SimpleDescriptor>,
 }
 
 impl<T> Ncp<T> {
-    /// Creates a new `Ncp` with the given transport, event handler, and endpoints.
+    /// Creates an `Ncp` with the given transport and event-handler proxy.
     ///
-    /// `endpoints` must contain the local endpoint cluster metadata in endpoint
-    /// order. Outgoing APS helpers use this list to select the source endpoint
-    /// for a cluster.
+    /// The endpoint registry is initially empty. Register local endpoints with
+    /// [`Ncp::add_endpoint`] before sending non-ZDP messages so outgoing APS
+    /// helpers can select a source endpoint for each profile and cluster.
     #[must_use]
     pub const fn new(
         transport: T,
         aps_options: aps::Options,
         event_handler_proxy: Sender<Message>,
-        #[cfg(feature = "apis-saltans")] endpoints: Box<[apis_saltans_hw::zdp::SimpleDescriptor]>,
     ) -> Self {
         Self {
             transport,
             aps_options,
             message_tag: 0,
             event_handler_proxy,
+            endpoint_output_clusters: BTreeMap::new(),
             #[cfg(feature = "apis-saltans")]
-            endpoints,
+            simple_descriptors: Vec::new(),
         }
     }
 
@@ -123,11 +125,11 @@ impl<T> Ncp<T> {
         ))
     }
 
-    /// Returns the first local endpoint that lists the given cluster as an output cluster.
+    /// Returns the lowest-numbered local endpoint that advertises an output cluster.
     ///
-    /// Endpoints are stored in the same order they were supplied to the builder.
-    /// The returned endpoint number is one-based, matching the EZSP endpoint
-    /// numbering used for outgoing APS frames.
+    /// ZDP messages always use endpoint zero. For other profiles, the endpoint
+    /// registry is searched in ascending endpoint-number order and the first
+    /// endpoint containing `cluster_id` in its output-cluster set is returned.
     ///
     /// # Errors
     ///
@@ -138,12 +140,11 @@ impl<T> Ncp<T> {
             return Ok(0);
         }
 
-        self.endpoints
+        self.endpoint_output_clusters
             .iter()
-            .enumerate()
-            .find_map(|(index, endpoint)| {
-                if endpoint.output_clusters().contains(&cluster_id) {
-                    index.checked_add(1).and_then(|index| index.try_into().ok())
+            .find_map(|(index, output_clusters)| {
+                if output_clusters.contains(&cluster_id) {
+                    Some(*index)
                 } else {
                     None
                 }
@@ -159,6 +160,47 @@ impl<T> Ncp<T> {
     /// request cannot be sent to the message handler.
     pub async fn terminate(self) -> Result<(), SendError<Message>> {
         self.event_handler_proxy.send(Message::Terminate).await
+    }
+}
+
+impl<T> Ncp<T>
+where
+    T: Configuration,
+{
+    /// Registers a local endpoint with the NCP and records its output clusters.
+    ///
+    /// The cached output-cluster set is used by [`Ncp::source_endpoint`] when
+    /// constructing outgoing APS frames. It is updated only after the EZSP
+    /// `addEndpoint` command succeeds. Registering the same endpoint number
+    /// again replaces its cached output-cluster set after a successful command.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if the transport rejects the endpoint or the EZSP
+    /// command cannot be completed.
+    pub async fn add_endpoint(
+        &mut self,
+        endpoint: u8,
+        profile_id: u16,
+        device_id: u16,
+        app_flags: u8,
+        input_clusters: ByteSizedVec<u16>,
+        output_clusters: ByteSizedVec<u16>,
+    ) -> Result<(), Error> {
+        let output_clusters_list = output_clusters.iter().copied().collect();
+        self.transport
+            .add_endpoint(
+                endpoint,
+                profile_id,
+                device_id,
+                app_flags,
+                input_clusters,
+                output_clusters,
+            )
+            .await?;
+        self.endpoint_output_clusters
+            .insert(endpoint, output_clusters_list);
+        Ok(())
     }
 }
 

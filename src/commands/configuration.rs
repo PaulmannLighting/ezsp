@@ -239,11 +239,8 @@ where
     }
 
     async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
-        // Send and receive separately to avoid infinite recursion
-        // when checking the connection status in `Transport::communicate()`.
-        self.send(version::Command::new(desired_protocol_version))
-            .await?;
-        self.receive::<version::Response>().await
+        self.communicate(version::Command::new(desired_protocol_version))
+            .await
     }
 
     async fn write_attribute(

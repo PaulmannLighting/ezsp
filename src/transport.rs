@@ -9,7 +9,6 @@ use core::future::Future;
 use std::num::NonZero;
 
 use le_stream::ToLeStream;
-use log::{info, trace, warn};
 
 use crate::frame::{Parameter, RespondsWith};
 use crate::parameters::configuration::version;
@@ -51,26 +50,6 @@ pub trait Transport: Send {
         T: TryFrom<Parameters> + Send,
         <T as TryFrom<Parameters>>::Error: Into<Parameters> + Send;
 
-    /// Ensure that an EZSP connection is established and reset it if necessary.
-    fn ensure_connection(&mut self) -> impl Future<Output = Result<(), Error>> + Send {
-        async {
-            match self.state() {
-                Connection::Disconnected => {
-                    info!("Initializing UART connection");
-                    self.connect().await.map(drop)
-                }
-                Connection::Connected => {
-                    trace!("UART is connected");
-                    Ok(())
-                }
-                Connection::Failed => {
-                    warn!("UART connection failed, reinitializing");
-                    self.connect().await.map(drop)
-                }
-            }
-        }
-    }
-
     /// Send one command and wait for its typed response.
     fn communicate<T>(
         &mut self,
@@ -80,7 +59,6 @@ pub trait Transport: Send {
         T: Parameter + RespondsWith + ToLeStream,
     {
         async {
-            self.ensure_connection().await?;
             self.send(command).await?;
             self.receive().await
         }

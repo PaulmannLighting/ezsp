@@ -59,8 +59,7 @@ pub struct Uart {
     protocol_version: u8,
     negotiated_version: Arc<AtomicU8>,
     connection: Connection,
-    responses_tx: Sender<Result<Parameters, Error>>,
-    responses_rx: Receiver<Result<Parameters, Error>>,
+    responses: Receiver<Result<Parameters, Error>>,
     encoder: Encoder,
     sequence: u8,
 }
@@ -89,7 +88,7 @@ impl Uart {
         let (responses_tx, responses_rx) = channel(channel_size);
         let splitter = Splitter::new(
             Decoder::new(ash_rx, negotiated_version.clone()),
-            responses_tx.clone(),
+            responses_tx,
             callbacks,
         )
         .run();
@@ -99,8 +98,7 @@ impl Uart {
             negotiated_version,
             connection: Connection::Disconnected,
             encoder: Encoder::new(ash_v2),
-            responses_tx,
-            responses_rx,
+            responses: responses_rx,
             sequence: 0,
         };
 
@@ -266,20 +264,15 @@ impl Transport for Uart {
         <T as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
     {
         loop {
-            let Some(parameters) = self.responses_rx.recv().await else {
+            let Some(parameters) = self.responses.recv().await else {
                 return Err(Error::ChannelClosed);
             };
 
             match T::try_from(parameters?) {
                 Ok(frame) => return Ok(frame),
                 Err(error) => {
-                    let parameters = error.into();
-                    warn!("Received unexpected response: {parameters:?}, re-queueing.");
-
-                    self.responses_tx
-                        .send(Ok(parameters))
-                        .await
-                        .expect("Re-queueing channel should be open. This is a bug.");
+                    let parameters: Parameters = error.into();
+                    warn!("Dropping unexpected response: {parameters:?}");
                 }
             }
         }

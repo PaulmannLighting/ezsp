@@ -15,10 +15,8 @@ use crate::ember::Status;
 /// only the callback notification; it does not cancel an APS message that has
 /// already been accepted by the NCP.
 ///
-/// # Panics
-///
-/// Awaiting the `StackResponse` panics if the callback handler drops its
-/// response sender without reporting a stack status.
+/// If the callback handler drops its response sender without reporting a stack
+/// status, awaiting this value returns [`Error::RecvError`].
 #[must_use = "futures do nothing unless polled"]
 #[derive(Debug)]
 pub struct StackResponse {
@@ -43,9 +41,7 @@ impl Future for StackResponse {
             Poll::Pending => Poll::Pending,
             Poll::Ready(Ok(Ok(Status::Success))) => Poll::Ready(Ok(())),
             Poll::Ready(Ok(response)) => Poll::Ready(Err(response.into())),
-            Poll::Ready(Err(error)) => {
-                panic!("stack response channel closed before a status was reported: {error}")
-            }
+            Poll::Ready(Err(error)) => Poll::Ready(Err(error.into())),
         }
     }
 }
@@ -121,14 +117,16 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "stack response channel closed before a status was reported")]
-    fn panics_when_callback_response_sender_is_dropped() {
+    fn converts_dropped_callback_response_sender_to_error() {
         let (sender, receiver) = channel();
         drop(sender);
         let mut stack_response = Box::pin(StackResponse::from(receiver));
         let waker = Waker::noop();
         let mut context = Context::from_waker(waker);
 
-        _ = stack_response.as_mut().poll(&mut context);
+        assert!(matches!(
+            stack_response.as_mut().poll(&mut context),
+            Poll::Ready(Err(Error::RecvError(_)))
+        ));
     }
 }

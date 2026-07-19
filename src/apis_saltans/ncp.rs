@@ -12,7 +12,9 @@ use std::collections::BTreeMap;
 use std::time::Duration;
 
 use apis_saltans_hw::core::{Application, Destination, IeeeAddress};
-use apis_saltans_hw::{Clusters, Datagram, Driver, Error, FoundNetwork, ScannedChannel};
+use apis_saltans_hw::{
+    Clusters, Datagram, Driver, Error, FoundNetwork, HwResponse, ScannedChannel,
+};
 
 use crate::ember::concentrator;
 use crate::{Messaging, MulticastOptions, Ncp, Networking, Utilities};
@@ -101,7 +103,7 @@ where
         &mut self,
         destination: Destination,
         datagram: Datagram,
-    ) -> Result<(), Error> {
+    ) -> Result<HwResponse, Error> {
         let (metadata, payload) = datagram.into_parts();
         let profile = metadata.profile();
         let profile_id = profile.into();
@@ -147,6 +149,6 @@ where
             }
         };
 
-        Ok(stack_response.await?)
+        Ok(HwResponse::new(stack_response))
     }
 }

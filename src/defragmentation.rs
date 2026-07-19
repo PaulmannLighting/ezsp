@@ -298,16 +298,16 @@ where
 
         trace!("Handling fragmented message: {incoming_message:?}");
 
-        let reply = {
-            let mut transport = self.transport.lock().await;
-            let mut aps_frame = incoming_message.aps_frame().clone();
-            aps_frame.set_group_id(incoming_message.aps_frame().group_id() | BLOCK_MASK);
-            transport
-                .send_reply(incoming_message.sender(), aps_frame, ByteSizedVec::new())
-                .await
-        };
+        let mut aps_frame = incoming_message.aps_frame().clone();
+        aps_frame.set_group_id(incoming_message.aps_frame().group_id() | BLOCK_MASK);
 
-        if let Err(error) = reply {
+        if let Err(error) = self
+            .transport
+            .lock()
+            .await
+            .send_reply(incoming_message.sender(), aps_frame, ByteSizedVec::new())
+            .await
+        {
             warn!("Failed to acknowledge incoming APS fragment: {error}");
             return None;
         }

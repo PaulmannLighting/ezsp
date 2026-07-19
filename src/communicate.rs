@@ -16,6 +16,10 @@ use crate::{Connection, Error, Transport};
 /// [`Transport`] receives this implementation automatically, while alternate
 /// implementations may provide the same transaction interface without
 /// exposing the lower-level transport operations.
+///
+/// `Arc<tokio::sync::Mutex<T>>` also implements this trait when `T` does. That
+/// implementation holds the mutex across the complete command/response
+/// transaction so multiple owners cannot interleave responses.
 pub trait Communicate: Send {
     /// Ensures that the EZSP connection is established, reconnecting if needed.
     ///

@@ -71,10 +71,11 @@ impl MulticastOptions {
 
 /// Host-side helper for an EZSP Network Co-Processor.
 ///
-/// `Ncp<T>` shares exclusive access to the underlying transport. Its methods
-/// provide higher-level operations that need callback correlation or local
-/// host state, such as scans, outgoing APS message confirmation, and automatic
-/// source endpoint selection from the configured endpoint cluster lists.
+/// `Ncp<T>` owns a communicator. Its methods provide higher-level operations
+/// that need callback correlation or local host state, such as scans, outgoing
+/// APS message confirmation, and automatic source endpoint selection from the
+/// configured endpoint cluster lists. The `apis-saltans` startup path supplies
+/// an `Arc<tokio::sync::Mutex<T>>` shared with the callback event handler.
 #[derive(Debug)]
 pub struct Ncp<T> {
     pub(crate) transport: T,

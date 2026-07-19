@@ -78,8 +78,8 @@ It does not add lifecycle methods beyond those provided by `Communicate`.
 
 ### NCP helper
 
-`Ncp<T>` stores a cloneable `SharedTransport<T>` and provides operations that
-require callback correlation or local sequence state:
+`Ncp<T>` owns a communicator and provides operations that require callback
+correlation or local sequence state:
 
 - active network scans and energy scans, resolved from `networkFound`,
   `energyScanResult`, and `scanComplete` callbacks
@@ -92,19 +92,21 @@ require callback correlation or local sequence state:
 - message tag and APS sequence counters
 - background event-handler termination through `Ncp::terminate()`
 
-`SharedTransport<T>` contains an `Arc<tokio::sync::Mutex<T>>`. Each EZSP
-command holds the mutex across its complete command/response transaction, then
-releases it before waiting for asynchronous callbacks. This allows `Ncp`,
-`Defragmenter`, and future components to serialize access to one transport
-without holding the lock during callback correlation.
+`Communicate` is implemented for `Arc<tokio::sync::Mutex<T>>` whenever `T`
+implements `Communicate`. Each EZSP command holds the mutex across its complete
+command/response transaction, then releases it before waiting for asynchronous
+callbacks. During `apis-saltans` startup, the builder connects the transport,
+wraps it in the shared mutex, and gives clones to `Ncp` and `EventHandler`.
+The event handler passes its clone to `Defragmenter`, allowing these components
+to serialize access without holding the lock during callback correlation.
 
 ```mermaid
 flowchart LR
-    ncp[Ncp] --> shared[SharedTransport]
+    ncp[Ncp] --> shared[Arc&lt;Mutex&lt;T&gt;&gt;]
     eventHandler[EventHandler] --> defragmenter[Defragmenter]
     defragmenter --> shared
-    shared --> mutex[Async mutex]
-    mutex --> transport[Transport]
+    shared --> communicate[Communicate implementation]
+    communicate --> transport[Inner communicator]
 ```
 
 The helper stores one cluster-list record per local endpoint. Before sending an
@@ -255,7 +257,7 @@ This layer is implemented in `src/apis_saltans`.
 ### Main types
 
 - `Ncp<T>`
-  - owns a clone of `SharedTransport<T>`
+  - owns its communicator; the standard startup path supplies `Arc<Mutex<T>>`
   - implements `apis_saltans_hw::Driver` when the feature is enabled
   - tracks message tag and APS sequence counters
   - bridges request/response APIs with callback-driven events
@@ -277,11 +279,11 @@ This layer is implemented in `src/apis_saltans`.
 
 `Ncp<T>` implements `Driver` when:
 
-- `T: Configuration + Security + Messaging + Networking + Utilities + Transport`
+- `T: Messaging + Networking + Utilities + Send + Sync`
 
 `Builder::start` is available when:
 
-- `T: Configuration + Security + Messaging + Networking + Utilities + Transport + Send + Sync + 'static`
+- `T: Communicate + Configuration + Security + Messaging + Networking + Utilities + Send + Sync + 'static`
 
 When `ashv2` is also enabled, `Ncp<uart::Uart>` exposes an
 `ashv2(serial_port)` convenience constructor for serial ports implementing

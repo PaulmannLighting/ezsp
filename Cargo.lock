@@ -47,9 +47,9 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-hw"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc59934547ea3048436c8a32d210e1dabb459a41037a17e05699e94d51d5677d"
+checksum = "c9df4a8cbc3d9ccd9d3a19229bec6d8b2b509aee9a362bc47274913b7c2c86cc"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -275,7 +275,7 @@ dependencies = [
 
 [[package]]
 name = "ezsp"
-version = "10.0.0"
+version = "10.1.0"
 dependencies = [
  "apis-saltans-hw",
  "ashv2",

@@ -7,7 +7,7 @@ repository = "https://github.com/PaulmannLighting/ezsp"
 keywords = ["Ember", "ZNet", "Serial", "Zigbee"]
 categories = ["hardware-support", "network-programming"]
 documentation = "https://docs.rs/ezsp"
-version = "10.0.0"
+version = "10.1.0"
 edition = "2024"
 exclude = [".github", ".gitignore", "ARCHITECTURE.md"]
 
@@ -15,7 +15,7 @@ exclude = [".github", ".gitignore", "ARCHITECTURE.md"]
 all-features = true
 
 [dependencies]
-apis-saltans-hw = { version = "0.8", optional = true, features = ["driver"] }
+apis-saltans-hw = { version = "0.9", optional = true, features = ["driver"] }
 ashv2 = { version = "10", optional = true }
 bitflags = "2"
 bytes = { version = "1", optional = true }

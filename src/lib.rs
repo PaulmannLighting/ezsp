@@ -21,6 +21,7 @@ pub use self::commands::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GetValueExt, GreenPower, Messaging, Mfglib,
     Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
 };
+pub use self::communicate::Communicate;
 pub use self::connection::Connection;
 pub use self::constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE, MIN_NON_LEGACY_VERSION};
 pub use self::defragmentation::{Defragmented, DefragmentedMessage, Defragmenter};
@@ -32,13 +33,13 @@ pub use self::frame::{
 };
 pub use self::ncp::{Builder, Message, MulticastOptions, Ncp, Scans};
 pub use self::result::Result;
-pub use self::shared_transport::SharedTransport;
 pub use self::transport::Transport;
 pub use self::types::SourceRouteDiscoveryMode;
 
 #[cfg(feature = "apis-saltans")]
 pub mod apis_saltans;
 mod commands;
+mod communicate;
 mod connection;
 mod constants;
 mod defragmentation;
@@ -49,7 +50,6 @@ pub mod ezsp;
 mod frame;
 mod ncp;
 mod result;
-mod shared_transport;
 mod transport;
 mod types;
 #[cfg(feature = "ashv2")]

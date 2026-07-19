@@ -1,11 +1,11 @@
 use core::future::Future;
 
+use crate::Communicate;
 use crate::ember::gp::Address;
 use crate::ember::gp::proxy::TableEntry;
 use crate::ember::key::Data;
 use crate::error::Error;
 use crate::frame::parameters::green_power::proxy_table::{get_entry, lookup, process_gp_pairing};
-use crate::transport::Transport;
 
 /// The `ProxyTable` trait provides an interface for the proxy table.
 pub trait ProxyTable {
@@ -37,7 +37,7 @@ pub trait ProxyTable {
 
 impl<T> ProxyTable for T
 where
-    T: Transport,
+    T: Communicate,
 {
     async fn get_entry(&mut self, proxy_index: u8) -> Result<TableEntry, Error> {
         self.communicate(get_entry::Command::new(proxy_index))

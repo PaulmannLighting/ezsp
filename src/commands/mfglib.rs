@@ -1,11 +1,11 @@
 use core::future::Future;
 
+use crate::Communicate;
 use crate::error::Error;
 use crate::frame::parameters::mfglib::{
     end, get_channel, get_power, send_packet, set_channel, set_power, start, start_stream,
     start_tone, stop_stream, stop_tone,
 };
-use crate::transport::Transport;
 use crate::types::ByteSizedVec;
 
 /// The `Mfglib` trait provides an interface for the
@@ -81,7 +81,7 @@ pub trait Mfglib {
 
 impl<T> Mfglib for T
 where
-    T: Transport,
+    T: Communicate,
 {
     async fn end(&mut self) -> Result<(), Error> {
         self.communicate(end::Command).await?.try_into()

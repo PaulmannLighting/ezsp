@@ -1,6 +1,6 @@
 use core::future::Future;
 
-use crate::Transport;
+use crate::Communicate;
 use crate::ember::token::{Data, Info};
 use crate::frame::parameters::token_interface::{
     get_token_count, get_token_data, get_token_info, gp_security_test_vectors, reset_node,
@@ -50,7 +50,7 @@ pub trait TokenInterface {
 
 impl<T> TokenInterface for T
 where
-    T: Transport,
+    T: Communicate,
 {
     async fn get_token_count(&mut self) -> Result<u8, crate::Error> {
         self.communicate(get_token_count::Command)

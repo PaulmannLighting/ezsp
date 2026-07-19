@@ -10,15 +10,16 @@ use std::num::NonZero;
 
 use le_stream::ToLeStream;
 
-use crate::frame::{Parameter, RespondsWith};
+use crate::frame::Parameter;
 use crate::parameters::configuration::version;
 use crate::{Connection, Error, Parameters};
 
 /// A connection to an EZSP-capable Network Co-Processor.
 ///
-/// The higher-level EZSP command traits are blanket-implemented for every
-/// transport. Implementing this trait is therefore the integration point for
-/// alternate links such as SPI or a custom UART stack.
+/// Every transport receives a blanket [`Communicate`](crate::Communicate)
+/// implementation and, through it, implementations of the higher-level EZSP
+/// command traits. Implementing this trait is therefore the integration point
+/// for alternate links such as SPI or a custom UART stack.
 ///
 /// Unless you know what you are doing, you should not use the methods of this trait directly.
 pub trait Transport: Send {
@@ -49,18 +50,4 @@ pub trait Transport: Send {
     where
         T: TryFrom<Parameters> + Send,
         <T as TryFrom<Parameters>>::Error: Into<Parameters> + Send;
-
-    /// Send one command and wait for its typed response.
-    fn communicate<T>(
-        &mut self,
-        command: T,
-    ) -> impl Future<Output = Result<T::Response, Error>> + Send
-    where
-        T: Parameter + RespondsWith + ToLeStream,
-    {
-        async {
-            self.send(command).await?;
-            self.receive().await
-        }
-    }
 }

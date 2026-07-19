@@ -9,6 +9,7 @@ use macaddr::MacAddr8;
 use rand::random;
 use silizium::zigbee::security::man::Key;
 use tokio::spawn;
+use tokio::sync::Mutex;
 use tokio::sync::mpsc::{Receiver, channel};
 use tokio::time::sleep;
 
@@ -17,15 +18,15 @@ use crate::ember::security::initial;
 use crate::ember::{concentrator, network};
 use crate::ezsp::config;
 use crate::{
-    Builder, Configuration, ConfigurationExt, Displayable, Error, Messaging, Ncp, Networking,
-    PolicyExt, Security, SharedTransport, Transport, Utilities,
+    Builder, Communicate, Configuration, ConfigurationExt, Displayable, Error, Messaging, Ncp,
+    Networking, PolicyExt, Security, Utilities,
 };
 
 const TICK: Duration = Duration::from_secs(1);
 
 impl<T> Builder<T>
 where
-    T: Transport,
+    T: Communicate,
 {
     /// Connects the underlying transport before startup configuration begins.
     ///
@@ -40,7 +41,7 @@ where
     /// than [`ErrorKind::NotConnected`].
     async fn connect(&mut self) -> Result<(), Error> {
         loop {
-            let Err(error) = self.transport.connect().await else {
+            let Err(error) = self.transport.ensure_connection().await else {
                 return Ok(());
             };
 
@@ -58,12 +59,12 @@ where
 
 impl<T> Builder<T>
 where
-    T: Configuration
+    T: Communicate
+        + Configuration
         + Security
         + Messaging
         + Networking
         + Utilities
-        + Transport
         + Send
         + Sync
         + 'static,
@@ -92,8 +93,7 @@ where
         }
 
         self.connect().await?;
-
-        let transport = SharedTransport::new(self.transport);
+        let mut transport = Arc::new(Mutex::new(self.transport));
 
         let (message_tx, message_rx) = channel(self.buffers);
         spawn(bridge(self.callbacks, message_tx.clone()));
@@ -101,24 +101,16 @@ where
         spawn(EventHandler::new(events_tx, transport.clone()).run(message_rx));
 
         debug!("Setting concentrator");
-        transport
-            .lock()
-            .await
-            .set_concentrator(self.concentrator)
-            .await?;
+        transport.set_concentrator(self.concentrator).await?;
 
         for (key, value) in self.configuration {
             debug!("Setting configuration {key:?} to {value:#06X}");
-            transport
-                .lock()
-                .await
-                .set_configuration_value(key, value)
-                .await?;
+            transport.set_configuration_value(key, value).await?;
         }
 
         for (key, value) in self.policy {
             debug!("Setting policy {key:?} to {value:#04X}");
-            transport.lock().await.set_policy(key, value).await?;
+            transport.set_policy(key, value).await?;
         }
 
         for (index, endpoint) in endpoints.iter().enumerate() {
@@ -131,8 +123,6 @@ where
                 endpoint.output_clusters(),
             );
             transport
-                .lock()
-                .await
                 .add_endpoint(
                     u8::try_from(index).map_err(implementation_error)?,
                     endpoint.profile_id(),
@@ -144,22 +134,20 @@ where
                 .await?;
         }
 
-        let ieee_address = transport.lock().await.get_eui64().await?;
+        let ieee_address = transport.get_eui64().await?;
         debug!("IEEE address: {ieee_address}");
 
-        let network_state = transport.lock().await.network_state().await?;
+        let network_state = transport.network_state().await?;
         info!("Current network state: {network_state:?}");
 
         if self.reinitialize {
-            if transport.lock().await.leave_network().await.is_ok() {
+            if transport.leave_network().await.is_ok() {
                 wait_for_event(&mut events_rx, Event::NetworkDown).await?;
                 info!("Left existing network.");
             }
 
             debug!("Setting initial security state");
             transport
-                .lock()
-                .await
                 .set_initial_security_state(build_initial_security_state(
                     self.link_key,
                     self.network_key,
@@ -169,8 +157,6 @@ where
             info!("Reinitializing network");
             #[expect(clippy::cast_sign_loss)]
             transport
-                .lock()
-                .await
                 .form_network(network::Parameters::new(
                     self.ieee_address.unwrap_or_default(),
                     self.pan_id.unwrap_or_else(random),
@@ -183,46 +169,30 @@ where
                 ))
                 .await?;
         } else {
-            transport
-                .lock()
-                .await
-                .network_init(self.init_bitmask)
-                .await?;
+            transport.network_init(self.init_bitmask).await?;
         }
 
         wait_for_event(&mut events_rx, Event::NetworkUp).await?;
         info!("Network is up.");
 
         debug!("Setting radio power to {}", self.radio_power);
-        transport
-            .lock()
-            .await
-            .set_radio_power(self.radio_power)
-            .await?;
+        transport.set_radio_power(self.radio_power).await?;
 
-        let network_state = transport.lock().await.network_state().await?;
+        let network_state = transport.network_state().await?;
         info!("Final network state: {network_state:?}");
 
-        let (typ, parameters) = transport.lock().await.get_network_parameters().await?;
+        let (typ, parameters) = transport.get_network_parameters().await?;
         info!("Device type: {typ}");
         info!("Network parameters:\n{parameters}");
 
-        {
-            let mut transport = transport.lock().await;
-            log_state(&mut *transport).await?;
-            drop(transport);
-        }
+        log_state(&mut transport).await?;
 
         let radius = transport
-            .lock()
-            .await
             .get_configuration_value(config::Id::MaxHops)
             .await?;
         info!("Sending many-to-one route request: {radius} hops");
         #[expect(clippy::cast_possible_truncation)]
         transport
-            .lock()
-            .await
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
@@ -278,7 +248,7 @@ fn build_initial_security_state(link_key: Option<Key>, network_key: Option<Key>)
 
 async fn log_state<T>(transport: &mut T) -> Result<(), Error>
 where
-    T: Transport,
+    T: Configuration + Security + Send,
 {
     debug!(
         "Configuration:\n{}",

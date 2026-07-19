@@ -1,5 +1,6 @@
 use core::future::Future;
 
+use crate::Communicate;
 use crate::ember::{
     Certificate283k1Data, CertificateData, MessageDigest, PrivateKeyData, PublicKey283k1Data,
     PublicKeyData, Signature283k1Data, SignatureData,
@@ -11,7 +12,6 @@ use crate::frame::parameters::cbke::{
     generate_cbke_keys, generate_cbke_keys283k1, get_certificate, get_certificate283k1,
     save_preinstalled_cbke_data283k1, set_preinstalled_cbke_data,
 };
-use crate::transport::Transport;
 use crate::types::ByteSizedVec;
 
 /// The `Cbke` trait provides an interface for the Certificate Based Key Exchange features.
@@ -165,7 +165,7 @@ pub trait Cbke {
 
 impl<T> Cbke for T
 where
-    T: Transport,
+    T: Communicate,
 {
     async fn calculate_smacs(
         &mut self,

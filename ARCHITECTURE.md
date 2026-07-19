@@ -50,27 +50,31 @@ flowchart TD
 - core error/result types
 - protocol data modules under `ember` and `ezsp`
 
-### Transport-first design
+### Transport and communication traits
 
-Command traits are blanket-implemented for any `T: Transport`.
-
-`Transport` provides:
+`Transport` provides the low-level connection and frame operations:
 
 - `connect()`
 - `state()`
 - `negotiated_version()`
 - `send(command)`
 - `receive::<R>()`
-- default helpers:
-  - `ensure_connection()`
-  - `communicate(command)`
+
+`Communicate` provides the high-level helpers:
+
+- `ensure_connection()`
+- `communicate(command)`
+
+Every `T: Transport` receives a blanket `Communicate` implementation. Command
+traits are blanket-implemented for any `T: Communicate`, keeping typed commands
+dependent on the command/response transaction rather than the raw transport.
 
 Each typed command method builds a parameter struct and calls `communicate(...)`.
 
 ### `Ezsp` super-trait
 
 `Ezsp` in this crate is a convenience trait that combines all command traits.
-It does not add lifecycle methods beyond those provided by `Transport`.
+It does not add lifecycle methods beyond those provided by `Communicate`.
 
 ### NCP helper
 
@@ -167,7 +171,8 @@ and `start`.
 
 ### Connection lifecycle
 
-`Transport::ensure_connection()` drives initialization using `Connection` state:
+`Communicate::ensure_connection()` drives initialization using `Connection`
+state:
 
 - `Disconnected` -> `connect()`
 - `Connected` -> no-op

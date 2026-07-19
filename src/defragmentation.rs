@@ -14,11 +14,11 @@ use const_env::env_item;
 use log::{trace, warn};
 
 pub use self::defragmented_message::DefragmentedMessage;
+use crate::Messaging;
 use crate::ember::NodeId;
 use crate::ember::aps::BLOCK_MASK;
 use crate::parameters::messaging::handler::IncomingMessage;
 use crate::types::ByteSizedVec;
-use crate::{Messaging, SharedTransport, Transport};
 
 mod defragmented_message;
 
@@ -73,24 +73,18 @@ struct Packet {
 /// call [`Defragmenter::tick`] regularly. This is the Rust equivalent of
 /// `ezspFragmentInit`, `ezspFragmentIncomingMessage`, and `ezspFragmentTick`.
 #[derive(Debug)]
-pub struct Defragmenter<T>
-where
-    T: Transport,
-{
-    transport: SharedTransport<T>,
+pub struct Defragmenter<T> {
+    transport: T,
     packets: BTreeMap<PacketKey, Packet>,
     receive_buffer_length: usize,
     window_size: u8,
     timeout: Duration,
 }
 
-impl<T> Defragmenter<T>
-where
-    T: Transport,
-{
+impl<T> Defragmenter<T> {
     /// Creates a defragmenter using the default receive limits.
     #[must_use]
-    pub fn new(transport: impl Into<SharedTransport<T>>) -> Self {
+    pub const fn new(transport: T) -> Self {
         Self::with_configuration(
             transport,
             DEFAULT_RECEIVE_BUFFER_LENGTH,
@@ -104,14 +98,14 @@ where
     /// A zero or unsupported `window_size` disables fragmented-message
     /// reception, matching the EZSP host implementation's behavior.
     #[must_use]
-    pub fn with_configuration(
-        transport: impl Into<SharedTransport<T>>,
+    pub const fn with_configuration(
+        transport: T,
         receive_buffer_length: usize,
         window_size: u8,
         timeout: Duration,
     ) -> Self {
         Self {
-            transport: transport.into(),
+            transport,
             packets: BTreeMap::new(),
             receive_buffer_length,
             window_size,
@@ -280,7 +274,7 @@ where
 
 impl<T> Defragmenter<T>
 where
-    T: Messaging + Transport,
+    T: Messaging,
 {
     /// Handles one incoming APS callback.
     ///
@@ -303,8 +297,6 @@ where
 
         if let Err(error) = self
             .transport
-            .lock()
-            .await
             .send_reply(incoming_message.sender(), aps_frame, ByteSizedVec::new())
             .await
         {

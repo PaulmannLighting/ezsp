@@ -11,7 +11,7 @@ pub use crate::ncp::{Message, Scans};
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
 use crate::parameters::security::handler::Handler as Security;
 use crate::parameters::trust_center::handler::{Handler as TrustCenter, TrustCenterJoin};
-use crate::{Callback, Defragmenter, SharedTransport, Transport};
+use crate::{Callback, Communicate, Defragmenter};
 
 /// Actor translating EZSP callbacks into `apis_saltans_hw` events.
 ///
@@ -24,22 +24,16 @@ use crate::{Callback, Defragmenter, SharedTransport, Transport};
 /// - correlating `messageSent` callbacks with outgoing message tags,
 /// - stopping when a termination message is received.
 #[derive(Debug)]
-pub struct EventHandler<T>
-where
-    T: Transport,
-{
+pub struct EventHandler<T> {
     output: Sender<Event>,
     scans: Scans,
     responses: BTreeMap<u8, oneshot::Sender<Result<Status, u8>>>,
     defragmenter: Defragmenter<T>,
 }
 
-impl<T> EventHandler<T>
-where
-    T: Transport,
-{
+impl<T> EventHandler<T> {
     /// Creates an event handler that forwards translated events to `output`.
-    pub(super) fn new(output: Sender<Event>, transport: SharedTransport<T>) -> Self {
+    pub(super) fn new(output: Sender<Event>, transport: T) -> Self {
         Self {
             output,
             scans: Scans::default(),
@@ -47,7 +41,12 @@ where
             defragmenter: Defragmenter::new(transport),
         }
     }
+}
 
+impl<T> EventHandler<T>
+where
+    T: Communicate + Sync,
+{
     /// Translates EZSP callbacks into Zigbee events and sends them to the outgoing channel.
     async fn process_callback(&mut self, callback: Callback) {
         match callback {
@@ -199,7 +198,7 @@ where
 }
 impl<T> EventTranslator for EventHandler<T>
 where
-    T: Transport,
+    T: Communicate + Send + Sync,
 {
     type Message = Message;
 

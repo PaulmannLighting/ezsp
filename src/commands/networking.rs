@@ -1,5 +1,6 @@
 use core::future::Future;
 
+use crate::Communicate;
 use crate::ember::multi_phy::{nwk, radio};
 use crate::ember::{
     Eui64, MAX_END_DEVICE_CHILDREN, NodeId, PerDeviceDutyCycle, beacon, child, concentrator,
@@ -23,7 +24,6 @@ use crate::frame::parameters::networking::{
     set_radio_ieee802154_cca_mode, set_radio_power, set_routing_shortcut_threshold, start_scan,
     stop_scan,
 };
-use crate::transport::Transport;
 
 /// The `Networking` trait provides an interface for the networking features.
 pub trait Networking {
@@ -403,7 +403,7 @@ pub trait Networking {
 
 impl<T> Networking for T
 where
-    T: Transport,
+    T: Communicate,
 {
     async fn child_id(&mut self, child_index: u8) -> Result<Option<NodeId>, Error> {
         self.communicate(child_id::Command::new(child_index))

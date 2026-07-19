@@ -1,12 +1,12 @@
 use core::future::Future;
 
+use crate::Communicate;
 use crate::ember::Eui64;
 use crate::error::Error;
 use crate::frame::parameters::bootloader::{
     aes_encrypt, get_standalone_bootloader_version_plat_micro_phy, launch_standalone_bootloader,
     send_bootload_message,
 };
-use crate::transport::Transport;
 use crate::types::ByteSizedVec;
 
 /// The `Bootloader` trait provides an interface for the bootloader features.
@@ -49,7 +49,7 @@ pub trait Bootloader {
 
 impl<T> Bootloader for T
 where
-    T: Transport,
+    T: Communicate,
 {
     async fn aes_encrypt(&mut self, plaintext: [u8; 16], key: [u8; 16]) -> Result<[u8; 16], Error> {
         self.communicate(aes_encrypt::Command::new(plaintext, key))

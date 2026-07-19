@@ -91,15 +91,17 @@ EZSP-specific work in this crate:
 The crate is transport-first:
 
 - `Transport` defines the low-level async connection and request/response primitives.
+- `Communicate` defines connection checking and typed command/response transactions.
 - `SharedTransport<T>` provides cloneable, asynchronously serialized access to
   one transport.
-- EZSP command traits (`Configuration`, `Messaging`, `Networking`, `Security`, ...) are blanket-implemented for any `T: Transport`.
+- EZSP command traits (`Configuration`, `Messaging`, `Networking`, `Security`, ...) are blanket-implemented for any `T: Communicate`.
 - `Ezsp` is a convenience trait that combines all command traits.
 - `Ncp<T>` wraps a transport and adds host-side NCP helpers for scans, APS send
   confirmation, transaction/message sequence counters, and callback correlation.
 - Protocol types are exposed through `ember`, `ezsp`, and the typed frame/parameter model.
 
-Implementing `Transport` gives access to the full typed command surface.
+Every `Transport` receives a blanket `Communicate` implementation, which gives
+it access to the full typed command surface.
 
 ## `ashv2` transport
 
@@ -107,7 +109,8 @@ The crate currently ships one concrete transport implementation: `uart::Uart` (`
 
 `Uart` provides:
 
-- protocol negotiation through `Transport::connect()` / `Transport::ensure_connection()`
+- protocol negotiation through `Transport::connect()` and connection checking
+  through `Communicate::ensure_connection()`
 - typed EZSP request/response handling over ASHv2 payload framing
 - response/callback demultiplexing
 - caller-driven transport futures through `uart::Futures`
@@ -135,7 +138,7 @@ Additional types:
 
 ```rust
 use ezsp::uart::{ChannelSizes, SerialPort, Uart};
-use ezsp::{Transport, Utilities};
+use ezsp::{Communicate, Utilities};
 use tokio::task::LocalSet;
 
 // Requires feature = "ashv2"

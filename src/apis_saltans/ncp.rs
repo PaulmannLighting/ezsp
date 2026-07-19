@@ -15,9 +15,7 @@ use apis_saltans_hw::core::{Application, Destination, IeeeAddress};
 use apis_saltans_hw::{Clusters, Datagram, Driver, Error, FoundNetwork, ScannedChannel};
 
 use crate::ember::concentrator;
-use crate::{
-    Configuration, Messaging, MulticastOptions, Ncp, Networking, Security, Transport, Utilities,
-};
+use crate::{Messaging, MulticastOptions, Ncp, Networking, Utilities};
 
 mod builder;
 mod event_handler;
@@ -28,7 +26,7 @@ const DEFAULT_MULTICAST_NONMEMBER_RADIUS: u8 = 0;
 
 impl<T> Driver for Ncp<T>
 where
-    T: Configuration + Security + Messaging + Networking + Utilities + Transport,
+    T: Messaging + Networking + Utilities + Send + Sync,
 {
     async fn get_endpoints(&self) -> Result<BTreeMap<Application, Clusters>, Error> {
         Ok(self
@@ -42,11 +40,11 @@ where
     }
 
     async fn get_pan_id(&mut self) -> Result<u16, Error> {
-        Ok(self.transport.lock().await.get_node_id().await?)
+        Ok(self.transport.get_node_id().await?)
     }
 
     async fn get_ieee_address(&mut self) -> Result<IeeeAddress, Error> {
-        Ok(self.transport.lock().await.get_eui64().await?.into())
+        Ok(self.transport.get_eui64().await?.into())
     }
 
     async fn scan_networks(
@@ -73,19 +71,13 @@ where
 
     async fn allow_joins(&mut self, duration: Duration) -> Result<Duration, Error> {
         let seconds = u8::try_from(duration.as_secs()).unwrap_or(u8::MAX);
-        self.transport
-            .lock()
-            .await
-            .permit_joining(seconds.into())
-            .await?;
+        self.transport.permit_joining(seconds.into()).await?;
         Ok(Duration::from_secs(u64::from(seconds)))
     }
 
     async fn route_request(&mut self, radius: u8) -> Result<(), Error> {
         Ok(self
             .transport
-            .lock()
-            .await
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius)
             .await?)
     }
@@ -93,8 +85,6 @@ where
     async fn short_id_to_ieee_address(&mut self, short_id: u16) -> Result<IeeeAddress, Error> {
         Ok(self
             .transport
-            .lock()
-            .await
             .lookup_eui64_by_node_id(short_id)
             .await?
             .into())
@@ -103,8 +93,6 @@ where
     async fn ieee_address_to_short_id(&mut self, ieee_address: IeeeAddress) -> Result<u16, Error> {
         Ok(self
             .transport
-            .lock()
-            .await
             .lookup_node_id_by_eui64(ieee_address.into())
             .await?)
     }

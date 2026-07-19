@@ -2,6 +2,7 @@ use core::future::Future;
 
 use silizium::zigbee::security::man;
 
+use crate::Communicate;
 use crate::ember::key::{Struct, Type};
 use crate::ember::{Eui64, NodeId, security};
 use crate::error::Error;
@@ -13,7 +14,6 @@ use crate::frame::parameters::security::{
     send_trust_center_link_key, set_initial_security_state, update_tc_link_key,
 };
 use crate::parameters::security::get_key;
-use crate::transport::Transport;
 
 /// The `Security` trait provides an interface for the security features.
 pub trait Security {
@@ -174,7 +174,7 @@ pub trait Security {
 
 impl<T> Security for T
 where
-    T: Transport,
+    T: Communicate,
 {
     async fn check_key_context(&mut self, context: man::Context) -> Result<(), Error> {
         self.communicate(check_key_context::Command::new(context))

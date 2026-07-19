@@ -27,7 +27,7 @@ use crate::ezsp::network::scan;
 use crate::parameters::configuration::add_endpoint::Clusters;
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 use crate::types::ByteSizedVec;
-use crate::{Error, Messaging, Networking, SharedTransport, Transport};
+use crate::{Error, Messaging, Networking};
 
 pub mod builder;
 mod message;
@@ -76,46 +76,34 @@ impl MulticastOptions {
 /// host state, such as scans, outgoing APS message confirmation, and automatic
 /// source endpoint selection from the configured endpoint cluster lists.
 #[derive(Debug)]
-pub struct Ncp<T>
-where
-    T: Transport,
-{
-    pub(crate) transport: SharedTransport<T>,
+pub struct Ncp<T> {
+    pub(crate) transport: T,
     aps_options: aps::Options,
     message_tag: u8,
     pub(crate) event_handler_proxy: Sender<Message>,
     pub(crate) endpoints: Box<[Clusters]>,
 }
 
-impl<T> Ncp<T>
-where
-    T: Transport,
-{
+impl<T> Ncp<T> {
     /// Creates a new `Ncp` with the given transport, event handler, and endpoints.
     ///
     /// `endpoints` must contain the local endpoint cluster metadata in endpoint
     /// order. Outgoing APS helpers use this list to select the source endpoint
     /// for a cluster.
     #[must_use]
-    pub fn new(
-        transport: impl Into<SharedTransport<T>>,
+    pub const fn new(
+        transport: T,
         aps_options: aps::Options,
         event_handler_proxy: Sender<Message>,
         endpoints: Box<[Clusters]>,
     ) -> Self {
         Self {
-            transport: transport.into(),
+            transport,
             aps_options,
             message_tag: 0,
             event_handler_proxy,
             endpoints,
         }
-    }
-
-    /// Returns a clone of the shared transport handle.
-    #[must_use]
-    pub fn shared_transport(&self) -> SharedTransport<T> {
-        self.transport.clone()
     }
 
     /// Returns the next message tag and increments the internal counter.
@@ -193,7 +181,7 @@ where
 
 impl<T> Ncp<T>
 where
-    T: Messaging + Transport,
+    T: Messaging,
 {
     /// Sends a unicast APS message and waits for its `messageSent` status.
     ///
@@ -219,8 +207,7 @@ where
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
         let destination = EmberDestination::Direct(short_id);
-        let maximum_payload_length =
-            usize::from(self.transport.lock().await.maximum_payload_length().await?);
+        let maximum_payload_length = usize::from(self.transport.maximum_payload_length().await?);
 
         if payload.len() <= maximum_payload_length {
             self.send_unicast_fragment(destination, aps_frame, payload)
@@ -268,8 +255,6 @@ where
             .await?;
 
         self.transport
-            .lock()
-            .await
             .send_multicast(
                 aps_frame,
                 options.hops(),
@@ -318,8 +303,6 @@ where
             .await?;
 
         self.transport
-            .lock()
-            .await
             .send_broadcast(short_id, aps_frame, radius, tag, message)
             .await?;
 
@@ -387,8 +370,6 @@ where
 
         let sequence = self
             .transport
-            .lock()
-            .await
             .send_unicast(destination, aps_frame, tag, message)
             .await?;
 
@@ -398,9 +379,11 @@ where
         }
     }
 
-    async fn reject_oversized_payload(&self, payload: &[u8]) -> Result<ByteSizedVec<u8>, Error> {
-        let maximum_payload_length =
-            usize::from(self.transport.lock().await.maximum_payload_length().await?);
+    async fn reject_oversized_payload(
+        &mut self,
+        payload: &[u8],
+    ) -> Result<ByteSizedVec<u8>, Error> {
+        let maximum_payload_length = usize::from(self.transport.maximum_payload_length().await?);
 
         if payload.len() > maximum_payload_length {
             Err(message_too_long())
@@ -412,7 +395,7 @@ where
 
 impl<T> Ncp<T>
 where
-    T: Networking + Transport,
+    T: Networking,
 {
     /// Starts an active network scan and returns all `networkFound` callback results.
     ///
@@ -428,8 +411,6 @@ where
         let (tx, rx) = channel();
         self.event_handler_proxy.send(tx.into()).await?;
         self.transport
-            .lock()
-            .await
             .start_scan(scan::Type::ActiveScan, channel_mask, duration)
             .await?;
         Ok(rx.await?)
@@ -449,8 +430,6 @@ where
         let (tx, rx) = channel();
         self.event_handler_proxy.send(tx.into()).await?;
         self.transport
-            .lock()
-            .await
             .start_scan(scan::Type::EnergyScan, channel_mask, duration)
             .await?;
         Ok(rx.await?)

@@ -15,7 +15,6 @@ use crate::DefragmentedMessage;
 use crate::ember::message::Incoming;
 
 mod address;
-mod aps_header;
 mod clusters;
 mod envelope;
 mod error;

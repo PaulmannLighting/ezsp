@@ -20,6 +20,7 @@ use tokio::sync::oneshot::channel;
 pub use self::builder::Builder;
 pub use self::initialization_parameters::InitializationParameters;
 pub use self::message::Message;
+pub use self::multicast_options::MulticastOptions;
 pub use self::network_credentials::NetworkCredentials;
 pub use self::scans::Scans;
 pub use self::stack_response::StackResponse;
@@ -29,7 +30,6 @@ use crate::ember::message::Destination as EmberDestination;
 use crate::ember::{Status as EmberStatus, aps};
 use crate::error::Status as ErrorStatus;
 use crate::ezsp::network::scan;
-use crate::parameters::configuration::add_endpoint::Clusters;
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 use crate::types::ByteSizedVec;
 use crate::{Error, Messaging, Networking};
@@ -37,6 +37,7 @@ use crate::{Error, Messaging, Networking};
 pub mod builder;
 mod initialization_parameters;
 mod message;
+mod multicast_options;
 mod network_credentials;
 mod scans;
 mod stack_response;
@@ -47,36 +48,6 @@ const ZDP: u16 = 0x0000;
 const STACK_ASSIGNED_APS_SEQUENCE: u8 = 0;
 const FIRST_FRAGMENT_INDEX: usize = 0;
 const MAX_FRAGMENT_COUNT: usize = u8::MAX as usize;
-
-/// Multicast delivery options for [`Ncp::multicast`].
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct MulticastOptions {
-    hops: u8,
-    nonmember_radius: u8,
-}
-
-impl MulticastOptions {
-    /// Creates multicast delivery options.
-    #[must_use]
-    pub const fn new(hops: u8, nonmember_radius: u8) -> Self {
-        Self {
-            hops,
-            nonmember_radius,
-        }
-    }
-
-    /// Returns the number of hops for member-node forwarding.
-    #[must_use]
-    pub const fn hops(self) -> u8 {
-        self.hops
-    }
-
-    /// Returns the nonmember forwarding radius.
-    #[must_use]
-    pub const fn nonmember_radius(self) -> u8 {
-        self.nonmember_radius
-    }
-}
 
 /// Host-side helper for an EZSP Network Co-Processor.
 ///
@@ -91,7 +62,8 @@ pub struct Ncp<T> {
     aps_options: aps::Options,
     message_tag: u8,
     pub(crate) event_handler_proxy: Sender<Message>,
-    pub(crate) endpoints: Box<[Clusters]>,
+    #[cfg(feature = "apis-saltans")]
+    pub(crate) endpoints: Box<[apis_saltans_hw::zdp::SimpleDescriptor]>,
 }
 
 impl<T> Ncp<T> {
@@ -105,13 +77,14 @@ impl<T> Ncp<T> {
         transport: T,
         aps_options: aps::Options,
         event_handler_proxy: Sender<Message>,
-        endpoints: Box<[Clusters]>,
+        #[cfg(feature = "apis-saltans")] endpoints: Box<[apis_saltans_hw::zdp::SimpleDescriptor]>,
     ) -> Self {
         Self {
             transport,
             aps_options,
             message_tag: 0,
             event_handler_proxy,
+            #[cfg(feature = "apis-saltans")]
             endpoints,
         }
     }

@@ -81,7 +81,7 @@ where
     /// fails.
     pub async fn start(
         mut self,
-        endpoints: &[SimpleDescriptor],
+        endpoints: Box<[SimpleDescriptor]>,
     ) -> Result<(NcpHandle, Receiver<Event>), apis_saltans_hw::Error> {
         if endpoints.is_empty() {
             return Err(apis_saltans_hw::Error::NoEndpoints);
@@ -181,13 +181,8 @@ where
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
-        let (ncp, actor) = Ncp::new(
-            transport,
-            self.aps_options,
-            message_tx,
-            endpoints.iter().map(Into::into).collect(),
-        )
-        .run(32);
+        let (ncp, actor) =
+            Ncp::new(transport, self.aps_options, message_tx, endpoints).run(self.buffers);
         spawn(actor);
         Ok((ncp, events_rx))
     }

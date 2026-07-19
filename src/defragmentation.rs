@@ -11,10 +11,11 @@ use std::collections::BTreeMap;
 use std::time::{Duration, Instant};
 
 use const_env::env_item;
-use log::warn;
+use log::{trace, warn};
 
 pub use self::defragmented_message::DefragmentedMessage;
 use crate::ember::NodeId;
+use crate::ember::aps::BLOCK_MASK;
 use crate::parameters::messaging::handler::IncomingMessage;
 use crate::types::ByteSizedVec;
 use crate::{Messaging, SharedTransport, Transport};
@@ -295,14 +296,14 @@ where
             return Some(incoming_message.into());
         };
 
+        trace!("Handling fragmented message: {incoming_message:?}");
+
         let reply = {
             let mut transport = self.transport.lock().await;
+            let mut aps_frame = incoming_message.aps_frame().clone();
+            aps_frame.set_group_id(incoming_message.aps_frame().group_id() | BLOCK_MASK);
             transport
-                .send_reply(
-                    incoming_message.sender(),
-                    incoming_message.aps_frame().clone(),
-                    ByteSizedVec::new(),
-                )
+                .send_reply(incoming_message.sender(), aps_frame, ByteSizedVec::new())
                 .await
         };
 

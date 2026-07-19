@@ -1,6 +1,6 @@
 //! High-level EZSP Network Co-Processor helper.
 //!
-//! [`Ncp`] wraps an EZSP [`Transport`](crate::Transport) and adds the state
+//! [`Ncp`] wraps an EZSP [`Transport`](Transport) and adds the state
 //! needed by host-side Zigbee workflows: endpoint cluster metadata, APS
 //! EZSP message tags, scan aggregation, message-sent correlation, and callback
 //! dispatch through a background event handler.
@@ -219,10 +219,8 @@ where
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
         let destination = EmberDestination::Direct(short_id);
-        let maximum_payload_length = {
-            let mut transport = self.transport.lock().await;
-            usize::from(transport.maximum_payload_length().await?)
-        };
+        let maximum_payload_length =
+            usize::from(self.transport.lock().await.maximum_payload_length().await?);
 
         if payload.len() <= maximum_payload_length {
             self.send_unicast_fragment(destination, aps_frame, payload)
@@ -269,18 +267,17 @@ where
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
-        let _sequence = {
-            let mut transport = self.transport.lock().await;
-            transport
-                .send_multicast(
-                    aps_frame,
-                    options.hops(),
-                    options.nonmember_radius(),
-                    tag,
-                    message,
-                )
-                .await?
-        };
+        self.transport
+            .lock()
+            .await
+            .send_multicast(
+                aps_frame,
+                options.hops(),
+                options.nonmember_radius(),
+                tag,
+                message,
+            )
+            .await?;
 
         match rx.await? {
             Ok(EmberStatus::Success) => Ok(()),
@@ -320,12 +317,11 @@ where
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
-        let _sequence = {
-            let mut transport = self.transport.lock().await;
-            transport
-                .send_broadcast(short_id, aps_frame, radius, tag, message)
-                .await?
-        };
+        self.transport
+            .lock()
+            .await
+            .send_broadcast(short_id, aps_frame, radius, tag, message)
+            .await?;
 
         match rx.await? {
             Ok(EmberStatus::Success) => Ok(()),
@@ -389,12 +385,12 @@ where
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
-        let sequence = {
-            let mut transport = self.transport.lock().await;
-            transport
-                .send_unicast(destination, aps_frame, tag, message)
-                .await?
-        };
+        let sequence = self
+            .transport
+            .lock()
+            .await
+            .send_unicast(destination, aps_frame, tag, message)
+            .await?;
 
         match rx.await? {
             Ok(EmberStatus::Success) => Ok(sequence),
@@ -403,10 +399,8 @@ where
     }
 
     async fn reject_oversized_payload(&self, payload: &[u8]) -> Result<ByteSizedVec<u8>, Error> {
-        let maximum_payload_length = {
-            let mut transport = self.transport.lock().await;
-            usize::from(transport.maximum_payload_length().await?)
-        };
+        let maximum_payload_length =
+            usize::from(self.transport.lock().await.maximum_payload_length().await?);
 
         if payload.len() > maximum_payload_length {
             Err(message_too_long())
@@ -433,13 +427,11 @@ where
     ) -> Result<Vec<NetworkFound>, Error> {
         let (tx, rx) = channel();
         self.event_handler_proxy.send(tx.into()).await?;
-        {
-            let mut transport = self.transport.lock().await;
-            transport
-                .start_scan(scan::Type::ActiveScan, channel_mask, duration)
-                .await?;
-            drop(transport);
-        }
+        self.transport
+            .lock()
+            .await
+            .start_scan(scan::Type::ActiveScan, channel_mask, duration)
+            .await?;
         Ok(rx.await?)
     }
 
@@ -456,13 +448,11 @@ where
     ) -> Result<Vec<EnergyScanResult>, Error> {
         let (tx, rx) = channel();
         self.event_handler_proxy.send(tx.into()).await?;
-        {
-            let mut transport = self.transport.lock().await;
-            transport
-                .start_scan(scan::Type::EnergyScan, channel_mask, duration)
-                .await?;
-            drop(transport);
-        }
+        self.transport
+            .lock()
+            .await
+            .start_scan(scan::Type::EnergyScan, channel_mask, duration)
+            .await?;
         Ok(rx.await?)
     }
 }

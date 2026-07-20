@@ -1,3 +1,4 @@
+use macaddr::MacAddr8;
 use silizium::zigbee::security::man::Key;
 
 use crate::ember::join::Method;
@@ -68,24 +69,12 @@ impl InitializationParameters {
             Bitmask::TRUST_CENTER_GLOBAL_LINK_KEY
                 | Bitmask::HAVE_PRECONFIGURED_KEY
                 | Bitmask::REQUIRE_ENCRYPTED_KEY
-                | Bitmask::HAVE_NETWORK_KEY
-                | Bitmask::HAVE_TRUST_CENTER_EUI64,
+                | Bitmask::HAVE_NETWORK_KEY,
             self.link_key,
             self.network_credentials.network_key,
             NETWORK_KEY_SEQUENCE_NUMBER,
-            self.network_credentials.trust_center_eui64,
+            MacAddr8::default(),
         )
-    }
-
-    /// Returns a channel mask containing the configured radio channel.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the configured channel is not representable in a 32-bit
-    /// channel mask.
-    #[must_use]
-    pub const fn channels(&self) -> u32 {
-        CHANNEL_BIT << self.radio_channel
     }
 
     /// Creates the Ember network parameters used to form the network.
@@ -107,7 +96,7 @@ impl InitializationParameters {
             self.join_method,
             self.nwk_manager_id,
             self.nwk_update_id,
-            self.channels(),
+            CHANNEL_BIT << self.radio_channel,
         )
     }
 }

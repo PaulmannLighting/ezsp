@@ -18,7 +18,7 @@ The crate has three layers:
    - EZSP-over-ASHv2 encoding/decoding and frame routing
 
 3. `apis-saltans` integration layer (`feature = "apis-saltans"`)
-   - `apis_saltans_hw` driver integration for `Ncp`
+   - `apis_saltans_hw` driver newtype around `Ncp`
    - custom `Builder` startup orchestration
    - callback-to-event translation, scan aggregation, and network startup orchestration
 
@@ -32,7 +32,8 @@ flowchart TD
 
     A --> G[ezsp::Ncp]
     G --> B
-    G --> H[apis_saltans_hw::Driver]
+    I[apis_saltans::ZigbeeNcp] --> G
+    I --> H[apis_saltans_hw::Driver]
 ```
 
 ## Core layer
@@ -263,9 +264,15 @@ This layer is implemented in `src/apis_saltans`.
 
 - `Ncp<T>`
   - owns its communicator; the standard startup path supplies `Arc<Mutex<T>>`
-  - implements `apis_saltans_hw::Driver` when the feature is enabled
   - tracks message tag and APS sequence counters
   - bridges request/response APIs with callback-driven events
+- `ZigbeeNcp<T>` (`src/apis_saltans/ncp.rs`)
+  - internal newtype driver adapter around `Ncp<T>`
+  - registers the supplied endpoint descriptors during construction
+  - exists only after every endpoint registration succeeds
+  - owns the descriptors returned by `Driver::get_endpoints`, while the wrapped
+    `Ncp` owns their output-cluster metadata for source-endpoint selection
+  - implements `apis_saltans_hw::Driver`
 - `Builder<T>` (`src/ncp/builder.rs`)
   - startup/configuration DSL for network bootstrap
   - owns the required `Startup` mode for resume or explicit network formation
@@ -292,9 +299,9 @@ This layer is implemented in `src/apis_saltans`.
 
 ### Trait coupling
 
-`Ncp<T>` implements `Driver` when:
+`ZigbeeNcp<T>` implements `Driver` when:
 
-- `T: Messaging + Networking + Utilities + Send + Sync`
+- `T: Configuration + Messaging + Networking + Utilities + Send + Sync`
 
 `Builder::start` is available when:
 
@@ -313,7 +320,7 @@ accepts a `Startup` value and explicit `uart::Buffers`. Both constructors return
 1. endpoint validation
 2. callback bridge + event handler spawn
 3. concentrator/configuration/policy setup via EZSP commands
-4. endpoint registration via `add_endpoint`
+4. construct `ZigbeeNcp`, registering all endpoints via `add_endpoint`
 5. current IEEE address and network state lookup
 6. apply the selected `Startup` path:
    - `Startup::Initialize(parameters)`: leave the current network, install the
@@ -323,7 +330,7 @@ accepts a `Startup` value and explicit `uart::Buffers`. Both constructors return
      persisted network state
 7. wait for network-up event
 8. runtime radio power, state logging, and many-to-one route-request setup
-9. spawn the `Ncp` actor and return `NcpHandle` + event receiver
+9. spawn the `ZigbeeNcp` driver actor and return `NcpHandle` + event receiver
 
 Builder configuration includes policy values, configuration values,
 concentrator parameters, APS options, radio transmit power, a required `Startup`
@@ -333,20 +340,24 @@ values are kept together in `InitializationParameters`; reusable network
 identity and key material are nested in `NetworkCredentials` rather than
 configured through independent builder setters.
 
-The same `SimpleDescriptor` list used for `add_endpoint` is converted into
-`Clusters` and stored in the resulting `Ncp`. That stored metadata is not used
-for incoming event translation; it is used by the outgoing APS helpers to choose
+`ZigbeeNcp` construction assigns the supplied `SimpleDescriptor` values to
+endpoint numbers starting at one and calls `Ncp::add_endpoint` for each one.
+The newtype is returned only after all calls succeed, so any value used as a
+`Driver` has its declared endpoints configured on the device. It retains the
+descriptor list for `Driver::get_endpoints`; `Ncp::add_endpoint` stores each
+endpoint's output clusters in the wrapped `Ncp`. That cluster metadata is not
+used for incoming event translation; the outgoing APS helpers use it to choose
 the local source endpoint for each cluster ID.
 
 ### Data planes
 
 The `apis-saltans` layer keeps three planes separate:
 
-1. command plane (`NcpDriver` calls -> EZSP commands)
+1. command plane (`Driver` calls -> `ZigbeeNcp` -> EZSP commands)
 2. response-correlation plane (message tags -> `MessageSent` one-shot responses)
 3. event plane (EZSP callbacks -> translated `apis_saltans_hw::Event` stream)
 
-For outgoing `NcpDriver` APS sends, the adapter takes the profile and cluster
+For outgoing `Driver` APS sends, `ZigbeeNcp` takes the profile and cluster
 from `apis_saltans_hw::Frame` metadata. Unicast sends pass through the requested
 destination endpoint; multicast and broadcast sends use the profile's broadcast
 endpoint. Unicast sends are single-target operations; fan-out is represented as

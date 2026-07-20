@@ -1,8 +1,13 @@
-//! `apis_saltans_hw::Driver` implementation for [`Ncp`].
+//! `apis_saltans_hw::Driver` adapter for [`Ncp`].
 //!
-//! This module maps the generic hardware-driver operations expected by
+//! [`ZigbeeNcp`] wraps the plain host-side [`Ncp`] and registers every supplied
+//! endpoint as part of construction. Consequently, a value that implements
+//! `apis_saltans_hw::Driver` always has the same endpoints configured on the
+//! device and available through `Driver::get_endpoints`.
+//!
+//! The adapter maps the generic hardware-driver operations expected by
 //! `apis-saltans` to EZSP command traits. Direct NCP operations are forwarded to
-//! the wrapped transport, while APS sends use [`Ncp`] so that EZSP
+//! the wrapped transport, while APS sends use the wrapped [`Ncp`] so that EZSP
 //! `messageSent` callbacks can be correlated with the originating request. The
 //! APS profile and cluster are taken from `apis_saltans_hw::Datagram` metadata;
 //! the local source endpoint is selected by [`Ncp`] from the registered
@@ -24,20 +29,74 @@ const DEFAULT_BROADCAST_RADIUS: u8 = 0;
 const DEFAULT_MULTICAST_HOPS: u8 = 0;
 const DEFAULT_MULTICAST_NONMEMBER_RADIUS: u8 = 0;
 
-impl<T> Driver for Ncp<T>
+/// An `apis-saltans` driver backed by a fully configured [`Ncp`].
+///
+/// This newtype is created only after all supplied endpoint descriptors have
+/// been registered with the physical NCP. It retains those descriptors for
+/// [`Driver::get_endpoints`], while the wrapped [`Ncp`] retains their output
+/// clusters for APS source-endpoint selection.
+pub struct ZigbeeNcp<T> {
+    ncp: Ncp<T>,
+    endpoints: Box<[SimpleDescriptor]>,
+}
+
+impl<T> ZigbeeNcp<T>
+where
+    T: Configuration,
+{
+    /// Registers `endpoints` with `ncp` and wraps the configured NCP.
+    ///
+    /// Descriptors are assigned endpoint numbers starting at one, in slice
+    /// order. The wrapper is returned only after every endpoint registration
+    /// succeeds, ensuring that a constructed [`ZigbeeNcp`] is ready to serve as
+    /// an [`apis_saltans_hw::Driver`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if the EZSP command for any endpoint fails.
+    pub(crate) async fn new(
+        mut ncp: Ncp<T>,
+        endpoints: Box<[SimpleDescriptor]>,
+    ) -> Result<Self, Error> {
+        for (endpoint_id, descriptor) in
+            endpoints
+                .iter()
+                .enumerate()
+                .map_while(|(index, descriptor)| {
+                    u8::try_from(index.checked_add(1)?)
+                        .ok()
+                        .map(|endpoint| (endpoint, descriptor))
+                })
+        {
+            ncp.add_endpoint(
+                endpoint_id,
+                descriptor.profile_id(),
+                descriptor.device_id(),
+                descriptor.app_flags(),
+                descriptor.input_clusters().iter().copied().collect(),
+                descriptor.output_clusters().iter().copied().collect(),
+            )
+            .await?;
+        }
+
+        Ok(Self { ncp, endpoints })
+    }
+}
+
+impl<T> Driver for ZigbeeNcp<T>
 where
     T: Configuration + Messaging + Networking + Utilities + Send + Sync,
 {
     async fn get_endpoints(&self) -> Result<Box<[SimpleDescriptor]>, Error> {
-        Ok(self.simple_descriptors.clone())
+        Ok(self.endpoints.clone())
     }
 
     async fn get_pan_id(&mut self) -> Result<u16, Error> {
-        Ok(self.transport.get_node_id().await?)
+        Ok(self.ncp.transport.get_node_id().await?)
     }
 
     async fn get_ieee_address(&mut self) -> Result<IeeeAddress, Error> {
-        Ok(self.transport.get_eui64().await?.into())
+        Ok(self.ncp.transport.get_eui64().await?.into())
     }
 
     async fn scan_networks(
@@ -45,7 +104,8 @@ where
         channel_mask: u32,
         duration: u8,
     ) -> Result<Vec<FoundNetwork>, Error> {
-        self.scan_networks(channel_mask, duration)
+        self.ncp
+            .scan_networks(channel_mask, duration)
             .await
             .map(|results| results.into_iter().map(Into::into).collect())
             .map_err(Into::into)
@@ -56,7 +116,8 @@ where
         channel_mask: u32,
         duration: u8,
     ) -> Result<Vec<ScannedChannel>, Error> {
-        self.scan_channels(channel_mask, duration)
+        self.ncp
+            .scan_channels(channel_mask, duration)
             .await
             .map(|results| results.into_iter().map(Into::into).collect())
             .map_err(Into::into)
@@ -64,12 +125,13 @@ where
 
     async fn allow_joins(&mut self, duration: Duration) -> Result<Duration, Error> {
         let seconds = u8::try_from(duration.as_secs()).unwrap_or(u8::MAX);
-        self.transport.permit_joining(seconds.into()).await?;
+        self.ncp.transport.permit_joining(seconds.into()).await?;
         Ok(Duration::from_secs(u64::from(seconds)))
     }
 
     async fn route_request(&mut self, radius: u8) -> Result<(), Error> {
         Ok(self
+            .ncp
             .transport
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius)
             .await?)
@@ -77,6 +139,7 @@ where
 
     async fn short_id_to_ieee_address(&mut self, short_id: u16) -> Result<IeeeAddress, Error> {
         Ok(self
+            .ncp
             .transport
             .lookup_eui64_by_node_id(short_id)
             .await?
@@ -85,6 +148,7 @@ where
 
     async fn ieee_address_to_short_id(&mut self, ieee_address: IeeeAddress) -> Result<u16, Error> {
         Ok(self
+            .ncp
             .transport
             .lookup_node_id_by_eui64(ieee_address.into())
             .await?)
@@ -102,28 +166,31 @@ where
 
         let stack_response = match destination {
             Destination::Device(device) => {
-                self.unicast(
-                    device.device().into(),
-                    profile_id,
-                    cluster_id,
-                    device.endpoint().into(),
-                    payload,
-                )
-                .await?
+                self.ncp
+                    .unicast(
+                        device.device().into(),
+                        profile_id,
+                        cluster_id,
+                        device.endpoint().into(),
+                        payload,
+                    )
+                    .await?
             }
             Destination::Broadcast(broadcast) => {
-                self.broadcast(
-                    broadcast.address().as_u16(),
-                    DEFAULT_BROADCAST_RADIUS,
-                    profile_id,
-                    cluster_id,
-                    broadcast.endpoint().into(),
-                    payload,
-                )
-                .await?
+                self.ncp
+                    .broadcast(
+                        broadcast.address().as_u16(),
+                        DEFAULT_BROADCAST_RADIUS,
+                        profile_id,
+                        cluster_id,
+                        broadcast.endpoint().into(),
+                        payload,
+                    )
+                    .await?
             }
             Destination::Group(group_id) => {
                 let (stack_response, _seq) = self
+                    .ncp
                     .multicast(
                         group_id.as_u16(),
                         MulticastOptions::new(

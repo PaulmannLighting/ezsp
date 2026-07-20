@@ -6,9 +6,10 @@
 //! dispatch through a background event handler.
 //!
 //! The type is available without the `apis-saltans` feature. When that feature
-//! is enabled, additional implementations adapt [`Ncp`] and [`Builder`] to the
-//! `apis_saltans_hw` traits. [`Startup`] records whether a builder should
-//! restore the NCP's persisted network or explicitly form a new network.
+//! is enabled, [`Builder`] wraps the plain [`Ncp`] in an endpoint-configured
+//! driver adapter before starting the `apis_saltans_hw` actor. [`Startup`]
+//! records whether a builder should restore the NCP's persisted network or
+//! explicitly form a new network.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::num::NonZero;
@@ -62,10 +63,8 @@ pub struct Ncp<T> {
     pub(crate) transport: T,
     aps_options: aps::Options,
     message_tag: u8,
-    pub(crate) event_handler_proxy: Sender<Message>,
+    event_handler_proxy: Sender<Message>,
     endpoint_output_clusters: BTreeMap<u8, BTreeSet<u16>>,
-    #[cfg(feature = "apis-saltans")]
-    pub(crate) simple_descriptors: Box<[apis_saltans_hw::zdp::SimpleDescriptor]>,
 }
 
 impl<T> Ncp<T> {
@@ -79,9 +78,6 @@ impl<T> Ncp<T> {
         transport: T,
         aps_options: aps::Options,
         event_handler_proxy: Sender<Message>,
-        #[cfg(feature = "apis-saltans")] simple_descriptors: Box<
-            [apis_saltans_hw::zdp::SimpleDescriptor],
-        >,
     ) -> Self {
         Self {
             transport,
@@ -89,8 +85,6 @@ impl<T> Ncp<T> {
             message_tag: 0,
             event_handler_proxy,
             endpoint_output_clusters: BTreeMap::new(),
-            #[cfg(feature = "apis-saltans")]
-            simple_descriptors,
         }
     }
 
@@ -190,6 +184,9 @@ where
         input_clusters: ByteSizedVec<u16>,
         output_clusters: ByteSizedVec<u16>,
     ) -> Result<(), Error> {
+        debug!(
+            "Adding endpoint: {endpoint:#04X}, profile: {profile_id:#06X}, device_id: {device_id:#06X}, app_flags: {app_flags:#04X}, input clusters: {input_clusters:X?}, output clusters: {output_clusters:X?}",
+        );
         let output_clusters_list = output_clusters.iter().copied().collect();
         self.transport
             .add_endpoint(

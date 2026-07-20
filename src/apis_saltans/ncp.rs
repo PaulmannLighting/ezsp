@@ -4,6 +4,9 @@
 //! endpoint as part of construction. Consequently, a value that implements
 //! `apis_saltans_hw::Driver` always has the same endpoints configured on the
 //! device and available through `Driver::get_endpoints`.
+//! Endpoint registration is implemented by the private [`AddSimpleDescriptors`]
+//! extension trait, which translates the `apis-saltans` descriptors into
+//! sequential [`Ncp::add_endpoint`] calls.
 //!
 //! The adapter maps the generic hardware-driver operations expected by
 //! `apis-saltans` to EZSP command traits. Direct NCP operations are forwarded to
@@ -42,14 +45,14 @@ pub struct ZigbeeNcp<T> {
 
 impl<T> ZigbeeNcp<T>
 where
-    T: Configuration,
+    T: Configuration + Send,
 {
     /// Registers `endpoints` with `ncp` and wraps the configured NCP.
     ///
     /// Descriptors are assigned endpoint numbers starting at one, in slice
     /// order. The wrapper is returned only after every endpoint registration
     /// succeeds, ensuring that a constructed [`ZigbeeNcp`] is ready to serve as
-    /// an [`apis_saltans_hw::Driver`].
+    /// a [`Driver`].
     ///
     /// # Errors
     ///
@@ -58,28 +61,9 @@ where
         mut ncp: Ncp<T>,
         endpoints: Box<[SimpleDescriptor]>,
     ) -> Result<Self, Error> {
-        for (endpoint_id, descriptor) in
-            endpoints
-                .iter()
-                .enumerate()
-                .map_while(|(index, descriptor)| {
-                    u8::try_from(index.checked_add(1)?)
-                        .ok()
-                        .map(|endpoint| (endpoint, descriptor))
-                })
-        {
-            ncp.add_endpoint(
-                endpoint_id,
-                descriptor.profile_id(),
-                descriptor.device_id(),
-                descriptor.app_flags(),
-                descriptor.input_clusters().iter().copied().collect(),
-                descriptor.output_clusters().iter().copied().collect(),
-            )
-            .await?;
-        }
-
-        Ok(Self { ncp, endpoints })
+        ncp.add_simple_descriptors(&endpoints)
+            .await
+            .map(|()| Self { ncp, endpoints })
     }
 }
 
@@ -208,5 +192,61 @@ where
         };
 
         Ok(HwResponse::new(stack_response))
+    }
+}
+
+/// Configures an [`Ncp`] from `apis-saltans` simple descriptors.
+///
+/// This private extension keeps descriptor translation and sequential endpoint
+/// registration separate from [`ZigbeeNcp`] construction. Its returned future
+/// is [`Send`] so construction remains compatible with the driver actor's
+/// asynchronous startup path.
+trait AddSimpleDescriptors {
+    /// Registers `descriptors` with the device and the [`Ncp`] endpoint cache.
+    ///
+    /// Descriptor positions are mapped to endpoint numbers starting at one.
+    /// Registrations are performed sequentially and stop at the first error.
+    /// [`Ncp::add_endpoint`] updates its local output-cluster metadata only
+    /// after the corresponding EZSP command succeeds.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if any endpoint cannot be registered with the NCP.
+    fn add_simple_descriptors(
+        &mut self,
+        descriptors: &[SimpleDescriptor],
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+}
+
+impl<T> AddSimpleDescriptors for Ncp<T>
+where
+    T: Configuration + Send,
+{
+    async fn add_simple_descriptors(
+        &mut self,
+        descriptors: &[SimpleDescriptor],
+    ) -> Result<(), Error> {
+        for (endpoint_id, descriptor) in
+            descriptors
+                .iter()
+                .enumerate()
+                .map_while(|(index, descriptor)| {
+                    u8::try_from(index.checked_add(1)?)
+                        .ok()
+                        .map(|endpoint| (endpoint, descriptor))
+                })
+        {
+            self.add_endpoint(
+                endpoint_id,
+                descriptor.profile_id(),
+                descriptor.device_id(),
+                descriptor.app_flags(),
+                descriptor.input_clusters().iter().copied().collect(),
+                descriptor.output_clusters().iter().copied().collect(),
+            )
+            .await?;
+        }
+
+        Ok(())
     }
 }

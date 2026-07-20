@@ -268,11 +268,17 @@ This layer is implemented in `src/apis_saltans`.
   - bridges request/response APIs with callback-driven events
 - `ZigbeeNcp<T>` (`src/apis_saltans/ncp.rs`)
   - internal newtype driver adapter around `Ncp<T>`
-  - registers the supplied endpoint descriptors during construction
+  - delegates endpoint registration during construction to the private
+    `AddSimpleDescriptors` extension trait
   - exists only after every endpoint registration succeeds
   - owns the descriptors returned by `Driver::get_endpoints`, while the wrapped
     `Ncp` owns their output-cluster metadata for source-endpoint selection
   - implements `apis_saltans_hw::Driver`
+- `AddSimpleDescriptors` (`src/apis_saltans/ncp.rs`)
+  - private async extension trait implemented for `Ncp<T>`
+  - translates an `apis_saltans` descriptor slice into sequential
+    `Ncp::add_endpoint` calls
+  - returns a `Send` future and stops registration on the first error
 - `Builder<T>` (`src/ncp/builder.rs`)
   - startup/configuration DSL for network bootstrap
   - owns the required `Startup` mode for resume or explicit network formation
@@ -303,6 +309,10 @@ This layer is implemented in `src/apis_saltans`.
 
 - `T: Configuration + Messaging + Networking + Utilities + Send + Sync`
 
+`ZigbeeNcp::new` and the `AddSimpleDescriptors` implementation require:
+
+- `T: Configuration + Send`
+
 `Builder::start` is available when:
 
 - `T: Communicate + Configuration + Security + Messaging + Networking + Utilities + Send + Sync + 'static`
@@ -320,7 +330,8 @@ accepts a `Startup` value and explicit `uart::Buffers`. Both constructors return
 1. endpoint validation
 2. callback bridge + event handler spawn
 3. concentrator/configuration/policy setup via EZSP commands
-4. construct `ZigbeeNcp`, registering all endpoints via `add_endpoint`
+4. construct `ZigbeeNcp`; its `AddSimpleDescriptors` extension registers all
+   endpoints via sequential `Ncp::add_endpoint` calls
 5. current IEEE address and network state lookup
 6. apply the selected `Startup` path:
    - `Startup::Initialize(parameters)`: leave the current network, install the
@@ -340,14 +351,16 @@ values are kept together in `InitializationParameters`; reusable network
 identity and key material are nested in `NetworkCredentials` rather than
 configured through independent builder setters.
 
-`ZigbeeNcp` construction assigns the supplied `SimpleDescriptor` values to
-endpoint numbers starting at one and calls `Ncp::add_endpoint` for each one.
-The newtype is returned only after all calls succeed, so any value used as a
-`Driver` has its declared endpoints configured on the device. It retains the
-descriptor list for `Driver::get_endpoints`; `Ncp::add_endpoint` stores each
-endpoint's output clusters in the wrapped `Ncp`. That cluster metadata is not
-used for incoming event translation; the outgoing APS helpers use it to choose
-the local source endpoint for each cluster ID.
+`ZigbeeNcp` construction calls the private `AddSimpleDescriptors` extension on
+the wrapped `Ncp`. The extension assigns the supplied `SimpleDescriptor` values
+to endpoint numbers starting at one, then awaits `Ncp::add_endpoint` for each
+descriptor in order. It stops at the first error. The newtype is therefore
+returned only after all calls succeed, so any value used as a `Driver` has its
+declared endpoints configured on the device. It retains the descriptor list for
+`Driver::get_endpoints`; `Ncp::add_endpoint` stores each endpoint's output
+clusters in the wrapped `Ncp` only after the device accepts the command. That
+cluster metadata is not used for incoming event translation; the outgoing APS
+helpers use it to choose the local source endpoint for each cluster ID.
 
 ### Data planes
 

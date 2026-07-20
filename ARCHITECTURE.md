@@ -125,6 +125,29 @@ the `InitializationParameters` carried by `Startup::Initialize`. Its
 EUI-64, and network key together, while the initialization parameters add the
 preconfigured link key, channel, and join method.
 
+### Actor-based NCP (`ncp2`)
+
+The experimental `ncp2` module separates transport transmission from inbound
+frame delivery. `Ncp<T>` owns a `T: Transmit`, while cloneable `Handle` values
+send typed actor messages through a Tokio MPSC channel. A receive task using
+the `Receive` trait forwards raw `Parameters` as `Message::Received` values.
+
+The actor permits one EZSP command at a time and queues later commands until
+the current response arrives. This matches the ordered EZSP command/response
+exchange and lets each handle method resolve through its own one-shot response
+channel.
+
+```mermaid
+flowchart LR
+    callers[Handle clones] --> inbox[Message channel]
+    inbox --> actor[ncp2::Ncp actor]
+    actor --> transmit[Transmit]
+    transport[NCP receive task] --> received[Message::Received]
+    received --> inbox
+    actor --> replies[One-shot responses]
+    replies --> callers
+```
+
 ### Frame/parameter model
 
 The frame subsystem (`src/frame`) handles typed parsing and conversion:

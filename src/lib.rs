@@ -52,6 +52,7 @@ mod extensions;
 pub mod ezsp;
 mod frame;
 mod ncp;
+pub mod ncp2;
 mod result;
 mod transport;
 mod types;

@@ -99,6 +99,8 @@ The crate is transport-first:
 - `Ncp<T>` wraps a communicator and adds host-side NCP helpers for scans, APS send
   confirmation through `StackResponse`, transaction/message sequence counters,
   and callback correlation.
+- `ncp2` provides an actor-based NCP prototype with separate `Transmit` and
+  `Receive` traits and a cloneable channel-backed handle.
 - `Startup` makes network restoration versus explicit network formation an
   intentional choice when constructing an NCP builder.
 - `NetworkCredentials` groups the network identifiers, trust-center identity,

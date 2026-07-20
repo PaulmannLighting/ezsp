@@ -21,6 +21,8 @@ pub struct Scans {
 }
 
 impl Scans {
+    /// Creates an empty scan callback aggregator.
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             queue: VecDeque::new(),

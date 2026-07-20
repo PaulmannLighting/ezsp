@@ -28,6 +28,7 @@ pub struct InitializationParameters {
     link_key: Key,
     radio_channel: u8,
     join_method: Method,
+    bitmask: Bitmask,
     nwk_manager_id: u16,
     nwk_update_id: u8,
 }
@@ -48,12 +49,14 @@ impl InitializationParameters {
         link_key: Key,
         radio_channel: u8,
         join_method: Method,
+        bitmask: Bitmask,
     ) -> Self {
         Self {
             network_credentials,
             link_key,
             radio_channel,
             join_method,
+            bitmask,
             nwk_manager_id: DEFAULT_NWK_MANAGER_ID,
             nwk_update_id: DEFAULT_NWK_UPDATE_ID,
         }
@@ -66,7 +69,8 @@ impl InitializationParameters {
     #[must_use]
     pub fn initial_security_state(&self) -> State {
         State::new(
-            Bitmask::TRUST_CENTER_GLOBAL_LINK_KEY
+            self.bitmask
+                | Bitmask::TRUST_CENTER_GLOBAL_LINK_KEY
                 | Bitmask::HAVE_PRECONFIGURED_KEY
                 | Bitmask::REQUIRE_ENCRYPTED_KEY
                 | Bitmask::HAVE_NETWORK_KEY,

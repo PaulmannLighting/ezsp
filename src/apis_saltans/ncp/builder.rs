@@ -109,8 +109,6 @@ where
             transport.set_policy(key, value).await?;
         }
 
-        let mut ncp = Ncp::new(transport.clone(), self.aps_options, message_tx);
-
         for (endpoint_id, descriptor) in
             endpoints
                 .iter()
@@ -129,15 +127,16 @@ where
                 descriptor.input_clusters(),
                 descriptor.output_clusters(),
             );
-            ncp.add_endpoint(
-                endpoint_id,
-                descriptor.profile_id(),
-                descriptor.device_id(),
-                descriptor.app_flags(),
-                descriptor.input_clusters().iter().copied().collect(),
-                descriptor.output_clusters().iter().copied().collect(),
-            )
-            .await?;
+            transport
+                .add_endpoint(
+                    endpoint_id,
+                    descriptor.profile_id(),
+                    descriptor.device_id(),
+                    descriptor.app_flags(),
+                    descriptor.input_clusters().iter().copied().collect(),
+                    descriptor.output_clusters().iter().copied().collect(),
+                )
+                .await?;
         }
 
         let ieee_address = transport.get_eui64().await?;
@@ -192,7 +191,8 @@ where
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
-        let (ncp, actor) = ncp.run(self.buffers);
+        let (ncp, actor) =
+            Ncp::new(transport.clone(), self.aps_options, message_tx, endpoints).run(self.buffers);
         spawn(actor);
         Ok((ncp, events_rx))
     }

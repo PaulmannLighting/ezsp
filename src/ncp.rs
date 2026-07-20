@@ -65,7 +65,7 @@ pub struct Ncp<T> {
     pub(crate) event_handler_proxy: Sender<Message>,
     endpoint_output_clusters: BTreeMap<u8, BTreeSet<u16>>,
     #[cfg(feature = "apis-saltans")]
-    pub(crate) simple_descriptors: Vec<apis_saltans_hw::zdp::SimpleDescriptor>,
+    pub(crate) simple_descriptors: Box<[apis_saltans_hw::zdp::SimpleDescriptor]>,
 }
 
 impl<T> Ncp<T> {
@@ -79,6 +79,9 @@ impl<T> Ncp<T> {
         transport: T,
         aps_options: aps::Options,
         event_handler_proxy: Sender<Message>,
+        #[cfg(feature = "apis-saltans")] simple_descriptors: Box<
+            [apis_saltans_hw::zdp::SimpleDescriptor],
+        >,
     ) -> Self {
         Self {
             transport,
@@ -87,7 +90,7 @@ impl<T> Ncp<T> {
             event_handler_proxy,
             endpoint_output_clusters: BTreeMap::new(),
             #[cfg(feature = "apis-saltans")]
-            simple_descriptors: Vec::new(),
+            simple_descriptors,
         }
     }
 

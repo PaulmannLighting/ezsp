@@ -29,7 +29,7 @@ where
     T: Configuration + Messaging + Networking + Utilities + Send + Sync,
 {
     async fn get_endpoints(&self) -> Result<Box<[SimpleDescriptor]>, Error> {
-        Ok(self.simple_descriptors.clone().into_boxed_slice())
+        Ok(self.simple_descriptors.clone())
     }
 
     async fn get_pan_id(&mut self) -> Result<u16, Error> {

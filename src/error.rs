@@ -1,7 +1,7 @@
 //! Error handling for the NCP protocol.
 
 use core::convert::Infallible;
-use core::fmt::{self, Debug, Display, Formatter};
+use core::fmt::Debug;
 
 use tokio::sync::mpsc::error::SendError;
 use tokio::sync::oneshot::error::RecvError;
@@ -19,27 +19,37 @@ mod status;
 mod value_error;
 
 /// An error that can occur when communicating with an NCP.
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// An I/O error occurred.
-    Io(std::io::Error),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 
     /// Decoding error.
-    Decode(Decode),
+    #[error(transparent)]
+    Decode(#[from] Decode),
 
     /// A status-related error.
-    Status(Status),
+    #[error(transparent)]
+    Status(#[from] Status),
 
     /// An unexpected response was returned.
+    #[error("Unexpected response: {0:?}")]
     UnexpectedResponse(Box<Parameters>),
 
     /// An invalid value was received.
-    ValueError(ValueError),
+    #[error(transparent)]
+    ValueError(#[from] ValueError),
 
     /// The NCP responded with `invalidCommand` (0x0058).
+    #[error("Invalid command: {0}")]
     InvalidCommand(invalid_command::Response),
 
     /// The protocol negotiation failed.
+    #[error(
+        "Protocol negotiation failed: {desired:#04X} (desired) != {negotiated_version:#04X} (negotiated)",
+        negotiated_version = .negotiated.protocol_version()
+    )]
     ProtocolVersionMismatch {
         /// The version that was desired.
         desired: u8,
@@ -48,86 +58,24 @@ pub enum Error {
     },
 
     /// No configured local endpoint advertises the requested output cluster.
+    #[error("No matching source endpoint found: {0}")]
     NoMatchingSourceEndpoint(u16),
 
     /// An error occurred while receiving from a channel.
-    RecvError(RecvError),
+    #[error("Receive error: {0}")]
+    RecvError(#[from] RecvError),
 
     /// An error while sending though a channel occurred.
+    #[error("Send error")]
     SendError,
 
     /// The NCP is not configured.
+    #[error("NCP is not configured")]
     NotConfigured,
 
     /// The response channel is closed.
+    #[error("Response channel is closed")]
     ChannelClosed,
-}
-
-impl Display for Error {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Io(error) => Display::fmt(error, f),
-            Self::Decode(decode) => Display::fmt(decode, f),
-            Self::Status(status) => Display::fmt(status, f),
-            Self::UnexpectedResponse(response) => write!(f, "Unexpected response: {response:?}"),
-            Self::ValueError(status) => Display::fmt(status, f),
-            Self::InvalidCommand(response) => write!(f, "Invalid command: {response}"),
-            Self::ProtocolVersionMismatch {
-                desired,
-                negotiated,
-            } => {
-                write!(
-                    f,
-                    "Protocol negotiation failed: {desired:#04X} (desired) != {:#04X} (negotiated)",
-                    negotiated.protocol_version()
-                )
-            }
-            Self::NoMatchingSourceEndpoint(cluster_id) => {
-                write!(f, "No matching source endpoint found: {cluster_id}")
-            }
-            Self::RecvError(error) => write!(f, "Receive error: {error}"),
-            Self::SendError => write!(f, "Send error"),
-            Self::NotConfigured => write!(f, "NCP is not configured"),
-            Self::ChannelClosed => write!(f, "Response channel is closed"),
-        }
-    }
-}
-
-impl core::error::Error for Error {
-    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
-        match self {
-            Self::Io(error) => Some(error),
-            Self::Decode(decode) => Some(decode),
-            Self::Status(status) => Some(status),
-            Self::ValueError(value_error) => Some(value_error),
-            Self::RecvError(error) => Some(error),
-            Self::NoMatchingSourceEndpoint(_)
-            | Self::UnexpectedResponse(_)
-            | Self::InvalidCommand(_)
-            | Self::ProtocolVersionMismatch { .. }
-            | Self::SendError
-            | Self::NotConfigured
-            | Self::ChannelClosed => None,
-        }
-    }
-}
-
-impl From<std::io::Error> for Error {
-    fn from(error: std::io::Error) -> Self {
-        Self::Io(error)
-    }
-}
-
-impl From<Decode> for Error {
-    fn from(decode: Decode) -> Self {
-        Self::Decode(decode)
-    }
-}
-
-impl From<Status> for Error {
-    fn from(status: Status) -> Self {
-        Self::Status(status)
-    }
 }
 
 impl From<Result<ezsp::Status, u8>> for Error {
@@ -179,12 +127,6 @@ impl From<Parameters> for Error {
     }
 }
 
-impl From<ValueError> for Error {
-    fn from(status: ValueError) -> Self {
-        Self::ValueError(status)
-    }
-}
-
 impl From<invalid_command::Response> for Error {
     fn from(response: invalid_command::Response) -> Self {
         Self::InvalidCommand(response)
@@ -200,11 +142,5 @@ impl From<Infallible> for Error {
 impl<T> From<SendError<T>> for Error {
     fn from(_: SendError<T>) -> Self {
         Self::SendError
-    }
-}
-
-impl From<RecvError> for Error {
-    fn from(error: RecvError) -> Self {
-        Self::RecvError(error)
     }
 }

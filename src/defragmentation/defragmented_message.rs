@@ -20,34 +20,11 @@ pub struct DefragmentedMessage {
 }
 
 impl DefragmentedMessage {
-    /// Creates a complete message from callback metadata and payload.
-    #[must_use]
-    pub fn new(
-        typ: u8,
-        mut aps_frame: ApsFrame,
-        last_hop_lqi: u8,
-        last_hop_rssi: i8,
-        sender: NodeId,
-        binding_index: u8,
-        address_index: u8,
-        payload: Box<[u8]>,
-        source_route_overhead: Option<u8>,
-    ) -> Self {
-        aps_frame.clear_fragmentation();
-        Self {
-            typ,
-            aps_frame,
-            last_hop_lqi,
-            last_hop_rssi,
-            sender,
-            binding_index,
-            address_index,
-            payload,
-            source_route_overhead,
-        }
-    }
-
     /// Returns the incoming message type.
+    ///
+    /// # Errors
+    ///
+    /// Returns the raw message type if it is not a recognized [`Incoming`] value.
     pub fn typ(&self) -> Result<Incoming, u8> {
         Incoming::try_from(self.typ).map_err(|_| self.typ)
     }
@@ -55,6 +32,11 @@ impl DefragmentedMessage {
     #[must_use]
     pub const fn message(&self) -> &[u8] {
         &self.payload
+    }
+    /// Consumes the message and returns its complete APS payload.
+    #[must_use]
+    pub fn into_message(self) -> Box<[u8]> {
+        self.payload
     }
     /// Returns the APS frame.
     #[must_use]
@@ -98,26 +80,29 @@ impl DefragmentedMessage {
     }
 
     pub(super) fn from_incoming_message(
-        incoming_message: IncomingMessage,
+        incoming_message: &IncomingMessage,
         payload: Box<[u8]>,
     ) -> Self {
-        Self::new(
-            incoming_message.typ_value(),
-            incoming_message.aps_frame().clone(),
-            incoming_message.last_hop_lqi(),
-            incoming_message.last_hop_rssi(),
-            incoming_message.sender(),
-            incoming_message.binding_index(),
-            incoming_message.address_index(),
+        let mut aps_frame = incoming_message.aps_frame().clone();
+        aps_frame.clear_fragmentation();
+
+        Self {
+            typ: incoming_message.typ_value(),
+            aps_frame,
+            last_hop_lqi: incoming_message.last_hop_lqi(),
+            last_hop_rssi: incoming_message.last_hop_rssi(),
+            sender: incoming_message.sender(),
+            binding_index: incoming_message.binding_index(),
+            address_index: incoming_message.address_index(),
             payload,
-            incoming_message.source_route_overhead(),
-        )
+            source_route_overhead: incoming_message.source_route_overhead(),
+        }
     }
 }
 
 impl From<IncomingMessage> for DefragmentedMessage {
     fn from(incoming_message: IncomingMessage) -> Self {
         let payload = incoming_message.message().into();
-        Self::from_incoming_message(incoming_message, payload)
+        Self::from_incoming_message(&incoming_message, payload)
     }
 }

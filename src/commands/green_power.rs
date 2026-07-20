@@ -2,10 +2,10 @@ use core::future::Future;
 
 pub use self::proxy_table::ProxyTable;
 pub use self::sink_table::SinkTable;
+use crate::Communicate;
 use crate::ember::gp::Address;
 use crate::error::Error;
 use crate::frame::parameters::green_power::{send, sink_commission, translation_table_clear};
-use crate::transport::Transport;
 use crate::types::ByteSizedVec;
 
 mod proxy_table;
@@ -41,7 +41,7 @@ pub trait GreenPower: ProxyTable + SinkTable {
 
 impl<T> GreenPower for T
 where
-    T: ProxyTable + SinkTable + Transport,
+    T: Communicate + ProxyTable + SinkTable,
 {
     async fn send(
         &mut self,

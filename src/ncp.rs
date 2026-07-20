@@ -1,16 +1,17 @@
 //! High-level EZSP Network Co-Processor helper.
 //!
-//! [`Ncp`] wraps an EZSP [`Transport`](crate::Transport) and adds the state
+//! [`Ncp`] wraps an EZSP [`Transport`](Transport) and adds the state
 //! needed by host-side Zigbee workflows: endpoint cluster metadata, APS
 //! EZSP message tags, scan aggregation, message-sent correlation, and callback
 //! dispatch through a background event handler.
 //!
 //! The type is available without the `apis-saltans` feature. When that feature
 //! is enabled, additional implementations adapt [`Ncp`] and [`Builder`] to the
-//! `apis_saltans_hw` traits.
+//! `apis_saltans_hw` traits. [`Startup`] records whether a builder should
+//! restore the NCP's persisted network or explicitly form a new network.
 
+use std::collections::{BTreeMap, BTreeSet};
 use std::num::NonZero;
-use std::ops::{Deref, DerefMut};
 
 use log::debug;
 use tokio::sync::mpsc::Sender;
@@ -18,24 +19,30 @@ use tokio::sync::mpsc::error::SendError;
 use tokio::sync::oneshot::channel;
 
 pub use self::builder::Builder;
+pub use self::initialization_parameters::InitializationParameters;
 pub use self::message::Message;
+pub use self::multicast_options::MulticastOptions;
+pub use self::network_credentials::NetworkCredentials;
 pub use self::scans::Scans;
+pub use self::stack_response::StackResponse;
+pub use self::startup::Startup;
 use crate::ember::aps::Frame as ApsFrame;
 use crate::ember::message::Destination as EmberDestination;
 use crate::ember::{Status as EmberStatus, aps};
 use crate::error::Status as ErrorStatus;
 use crate::ezsp::network::scan;
-use crate::parameters::configuration::add_endpoint::Clusters;
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 use crate::types::ByteSizedVec;
-use crate::{Error, Messaging, Networking};
+use crate::{Configuration, Error, Messaging, Networking};
 
 pub mod builder;
+mod initialization_parameters;
 mod message;
-mod messages;
-mod receiver;
+mod multicast_options;
+mod network_credentials;
 mod scans;
-mod transmitter;
+mod stack_response;
+mod startup;
 
 // The ZDP profile ID.
 const ZDP: u16 = 0x0000;
@@ -43,71 +50,44 @@ const STACK_ASSIGNED_APS_SEQUENCE: u8 = 0;
 const FIRST_FRAGMENT_INDEX: usize = 0;
 const MAX_FRAGMENT_COUNT: usize = u8::MAX as usize;
 
-/// Multicast delivery options for [`Ncp::multicast`].
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct MulticastOptions {
-    hops: u8,
-    nonmember_radius: u8,
-}
-
-impl MulticastOptions {
-    /// Creates multicast delivery options.
-    #[must_use]
-    pub const fn new(hops: u8, nonmember_radius: u8) -> Self {
-        Self {
-            hops,
-            nonmember_radius,
-        }
-    }
-
-    /// Returns the number of hops for member-node forwarding.
-    #[must_use]
-    pub const fn hops(self) -> u8 {
-        self.hops
-    }
-
-    /// Returns the nonmember forwarding radius.
-    #[must_use]
-    pub const fn nonmember_radius(self) -> u8 {
-        self.nonmember_radius
-    }
-}
-
 /// Host-side helper for an EZSP Network Co-Processor.
 ///
-/// `Ncp<T>` owns the underlying transport and dereferences to it, so all normal
-/// EZSP command traits remain available. Its own methods provide higher-level
-/// operations that need callback correlation or local host state, such as
-/// scans, outgoing APS message confirmation, and automatic source endpoint
-/// selection from the configured endpoint cluster lists.
+/// `Ncp<T>` owns a communicator. Its methods provide higher-level operations
+/// that need callback correlation or local host state, such as scans, outgoing
+/// APS message confirmation, and automatic source endpoint selection from the
+/// configured endpoint cluster lists. The `apis-saltans` startup path supplies
+/// an `Arc<tokio::sync::Mutex<T>>` shared with the callback event handler.
 #[derive(Debug)]
 pub struct Ncp<T> {
     pub(crate) transport: T,
     aps_options: aps::Options,
     message_tag: u8,
     pub(crate) event_handler_proxy: Sender<Message>,
-    pub(crate) endpoints: Box<[Clusters]>,
+    endpoint_output_clusters: BTreeMap<u8, BTreeSet<u16>>,
+    #[cfg(feature = "apis-saltans")]
+    pub(crate) simple_descriptors: Vec<apis_saltans_hw::zdp::SimpleDescriptor>,
 }
 
 impl<T> Ncp<T> {
-    /// Creates a new `Ncp` with the given transport, event handler, and endpoints.
+    /// Creates an `Ncp` with the given transport and event-handler proxy.
     ///
-    /// `endpoints` must contain the local endpoint cluster metadata in endpoint
-    /// order. Outgoing APS helpers use this list to select the source endpoint
-    /// for a cluster.
+    /// The endpoint registry is initially empty. Register local endpoints with
+    /// [`Ncp::add_endpoint`] before sending non-ZDP messages so outgoing APS
+    /// helpers can select a source endpoint for each profile and cluster.
     #[must_use]
     pub const fn new(
         transport: T,
         aps_options: aps::Options,
         event_handler_proxy: Sender<Message>,
-        endpoints: Box<[Clusters]>,
     ) -> Self {
         Self {
             transport,
             aps_options,
             message_tag: 0,
             event_handler_proxy,
-            endpoints,
+            endpoint_output_clusters: BTreeMap::new(),
+            #[cfg(feature = "apis-saltans")]
+            simple_descriptors: Vec::new(),
         }
     }
 
@@ -145,11 +125,11 @@ impl<T> Ncp<T> {
         ))
     }
 
-    /// Returns the first local endpoint that lists the given cluster as an output cluster.
+    /// Returns the lowest-numbered local endpoint that advertises an output cluster.
     ///
-    /// Endpoints are stored in the same order they were supplied to the builder.
-    /// The returned endpoint number is one-based, matching the EZSP endpoint
-    /// numbering used for outgoing APS frames.
+    /// ZDP messages always use endpoint zero. For other profiles, the endpoint
+    /// registry is searched in ascending endpoint-number order and the first
+    /// endpoint containing `cluster_id` in its output-cluster set is returned.
     ///
     /// # Errors
     ///
@@ -160,12 +140,11 @@ impl<T> Ncp<T> {
             return Ok(0);
         }
 
-        self.endpoints
+        self.endpoint_output_clusters
             .iter()
-            .enumerate()
-            .find_map(|(index, endpoint)| {
-                if endpoint.output_clusters().contains(&cluster_id) {
-                    index.checked_add(1).and_then(|index| index.try_into().ok())
+            .find_map(|(index, output_clusters)| {
+                if output_clusters.contains(&cluster_id) {
+                    Some(*index)
                 } else {
                     None
                 }
@@ -186,21 +165,65 @@ impl<T> Ncp<T> {
 
 impl<T> Ncp<T>
 where
-    T: Messaging + Send + Sync,
+    T: Configuration,
 {
-    /// Sends a unicast APS message and waits for its `messageSent` status.
+    /// Registers a local endpoint with the NCP and records its output clusters.
+    ///
+    /// The cached output-cluster set is used by [`Ncp::source_endpoint`] when
+    /// constructing outgoing APS frames. It is updated only after the EZSP
+    /// `addEndpoint` command succeeds. Registering the same endpoint number
+    /// again replaces its cached output-cluster set after a successful command.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if the transport rejects the endpoint or the EZSP
+    /// command cannot be completed.
+    pub async fn add_endpoint(
+        &mut self,
+        endpoint: u8,
+        profile_id: u16,
+        device_id: u16,
+        app_flags: u8,
+        input_clusters: ByteSizedVec<u16>,
+        output_clusters: ByteSizedVec<u16>,
+    ) -> Result<(), Error> {
+        let output_clusters_list = output_clusters.iter().copied().collect();
+        self.transport
+            .add_endpoint(
+                endpoint,
+                profile_id,
+                device_id,
+                app_flags,
+                input_clusters,
+                output_clusters,
+            )
+            .await?;
+        self.endpoint_output_clusters
+            .insert(endpoint, output_clusters_list);
+        Ok(())
+    }
+}
+
+impl<T> Ncp<T>
+where
+    T: Messaging,
+{
+    /// Starts a unicast APS send and returns its deferred [`StackResponse`].
     ///
     /// Payloads larger than the EZSP maximum APS payload length are fragmented
     /// for unicast delivery. The stack-assigned APS sequence from the first
     /// fragment is reused for follow-up fragments, matching EZSP host
-    /// fragmentation behavior.
+    /// fragmentation behavior. Responses for all non-final fragments are
+    /// awaited before this method returns the response for the final fragment.
+    /// Await the returned [`StackResponse`] to confirm that final response.
     ///
     /// # Errors
     ///
     /// Returns an [`Error`] if no matching source endpoint exists, payload
-    /// fragmentation would exceed 255 fragments, registering the message tag
-    /// fails, sending an EZSP command fails, or receiving a successful
-    /// `messageSent` callback fails.
+    /// fragmentation would exceed 255 fragments, registering a message tag or
+    /// sending an EZSP command fails, or a non-final fragment's stack response
+    /// reports failure. Errors reported by the returned [`StackResponse`] occur
+    /// when that value is awaited.
     pub async fn unicast(
         &mut self,
         short_id: u16,
@@ -208,31 +231,37 @@ where
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
-    ) -> Result<(), Error> {
+    ) -> Result<StackResponse, Error> {
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
         let destination = EmberDestination::Direct(short_id);
-        let maximum_payload_length = usize::from(self.maximum_payload_length().await?);
+        let maximum_payload_length = usize::from(self.transport.maximum_payload_length().await?);
 
-        if payload.len() <= maximum_payload_length {
-            self.send_unicast_fragment(destination, aps_frame, payload)
+        let stack_response = if payload.len() <= maximum_payload_length {
+            let (stack_response, _seq) = self
+                .send_unicast_fragment(destination, aps_frame, payload)
                 .await?;
+            stack_response
         } else {
             self.send_fragmented_unicast(destination, aps_frame, payload, maximum_payload_length)
-                .await?;
-        }
+                .await?
+        };
 
-        Ok(())
+        Ok(stack_response)
     }
 
-    /// Sends a multicast APS message and waits for its `messageSent` status.
+    /// Starts a multicast APS send.
+    ///
+    /// Returns the deferred [`StackResponse`] and the APS sequence assigned by
+    /// the NCP. Await the response to confirm the matching `messageSent`
+    /// callback.
     ///
     /// # Errors
     ///
     /// Returns an [`Error`] if no matching source endpoint exists, the payload
     /// is larger than the EZSP maximum APS payload length, registering the
-    /// message tag fails, sending the EZSP command fails, or receiving a
-    /// successful `messageSent` callback fails.
+    /// message tag fails, or sending the EZSP command fails. Errors reported by
+    /// the returned [`StackResponse`] occur when that value is awaited.
     pub async fn multicast(
         &mut self,
         group_id: u16,
@@ -241,7 +270,7 @@ where
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
-    ) -> Result<(), Error> {
+    ) -> Result<(StackResponse, u8), Error> {
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, group_id)?;
         let tag = self.next_message_tag();
@@ -259,7 +288,7 @@ where
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
-        let _sequence = self
+        let sequence = self
             .transport
             .send_multicast(
                 aps_frame,
@@ -270,20 +299,20 @@ where
             )
             .await?;
 
-        match rx.await? {
-            Ok(EmberStatus::Success) => Ok(()),
-            other => Err(Error::Status(ErrorStatus::Ember(other))),
-        }
+        Ok((rx.into(), sequence))
     }
 
-    /// Sends a broadcast APS message and waits for its `messageSent` status.
+    /// Starts a broadcast APS send and returns its deferred [`StackResponse`].
+    ///
+    /// Await the returned response to confirm the matching `messageSent`
+    /// callback.
     ///
     /// # Errors
     ///
     /// Returns an [`Error`] if no matching source endpoint exists, the payload
     /// is larger than the EZSP maximum APS payload length, registering the
-    /// message tag fails, sending the EZSP command fails, or receiving a
-    /// successful `messageSent` callback fails.
+    /// message tag fails, or sending the EZSP command fails. Errors reported by
+    /// the returned [`StackResponse`] occur when that value is awaited.
     pub async fn broadcast(
         &mut self,
         short_id: u16,
@@ -292,7 +321,7 @@ where
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
-    ) -> Result<(), Error> {
+    ) -> Result<StackResponse, Error> {
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
         let tag = self.next_message_tag();
@@ -308,15 +337,11 @@ where
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
-        let _sequence = self
-            .transport
+        self.transport
             .send_broadcast(short_id, aps_frame, radius, tag, message)
             .await?;
 
-        match rx.await? {
-            Ok(EmberStatus::Success) => Ok(()),
-            other => Err(Error::Status(ErrorStatus::Ember(other))),
-        }
+        Ok(rx.into())
     }
 
     async fn send_fragmented_unicast(
@@ -325,8 +350,9 @@ where
         aps_frame: ApsFrame,
         payload: &[u8],
         maximum_payload_length: usize,
-    ) -> Result<(), Error> {
+    ) -> Result<StackResponse, Error> {
         let fragment_count = fragment_count(payload.len(), maximum_payload_length)?;
+        let mut last_stack_response = None;
         let mut sequence = None;
 
         for (index, chunk) in payload.chunks(maximum_payload_length).enumerate() {
@@ -344,16 +370,22 @@ where
                 );
             }
 
-            let fragment_sequence = self
+            let (stack_response, seq) = self
                 .send_unicast_fragment(destination, fragment, chunk)
                 .await?;
 
             if index == FIRST_FRAGMENT_INDEX {
-                sequence.replace(fragment_sequence);
+                sequence.replace(seq);
+            }
+
+            if let Some(stack_response) = last_stack_response.replace(stack_response) {
+                stack_response.await?;
             }
         }
 
-        Ok(())
+        Ok(last_stack_response
+            .take()
+            .expect("fragmented send always produces a final stack response"))
     }
 
     async fn send_unicast_fragment(
@@ -361,7 +393,7 @@ where
         destination: EmberDestination,
         aps_frame: ApsFrame,
         payload: &[u8],
-    ) -> Result<u8, Error> {
+    ) -> Result<(StackResponse, u8), Error> {
         let tag = self.next_message_tag();
         let message = byte_sized_payload(payload)?;
 
@@ -380,17 +412,16 @@ where
             .send_unicast(destination, aps_frame, tag, message)
             .await?;
 
-        match rx.await? {
-            Ok(EmberStatus::Success) => Ok(sequence),
-            other => Err(Error::Status(ErrorStatus::Ember(other))),
-        }
+        Ok((rx.into(), sequence))
     }
 
     async fn reject_oversized_payload(
         &mut self,
         payload: &[u8],
     ) -> Result<ByteSizedVec<u8>, Error> {
-        if payload.len() > usize::from(self.maximum_payload_length().await?) {
+        let maximum_payload_length = usize::from(self.transport.maximum_payload_length().await?);
+
+        if payload.len() > maximum_payload_length {
             Err(message_too_long())
         } else {
             byte_sized_payload(payload)
@@ -400,7 +431,7 @@ where
 
 impl<T> Ncp<T>
 where
-    T: Networking + Send + Sync,
+    T: Networking,
 {
     /// Starts an active network scan and returns all `networkFound` callback results.
     ///
@@ -438,20 +469,6 @@ where
             .start_scan(scan::Type::EnergyScan, channel_mask, duration)
             .await?;
         Ok(rx.await?)
-    }
-}
-
-impl<T> Deref for Ncp<T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.transport
-    }
-}
-
-impl<T> DerefMut for Ncp<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.transport
     }
 }
 

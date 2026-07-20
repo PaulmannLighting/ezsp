@@ -2,6 +2,7 @@ use core::future::Future;
 
 pub use get_value_ext::GetValueExt;
 
+use crate::Communicate;
 use crate::ember::PanId;
 use crate::error::Error;
 use crate::ezsp::config::Id;
@@ -13,7 +14,6 @@ use crate::frame::parameters::configuration::{
     set_policy, set_value, version, write_attribute,
 };
 use crate::parameters::configuration::write_attribute::Attribute;
-use crate::transport::Transport;
 use crate::types::ByteSizedVec;
 
 mod get_value_ext;
@@ -127,7 +127,7 @@ pub trait Configuration {
 
 impl<T> Configuration for T
 where
-    T: Transport,
+    T: Communicate,
 {
     async fn add_endpoint(
         &mut self,
@@ -239,11 +239,8 @@ where
     }
 
     async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
-        // Send and receive separately to avoid infinite recursion
-        // when checking the connection status in `Transport::communicate()`.
-        self.send(version::Command::new(desired_protocol_version))
-            .await?;
-        self.receive::<version::Response>().await
+        self.communicate(version::Command::new(desired_protocol_version))
+            .await
     }
 
     async fn write_attribute(

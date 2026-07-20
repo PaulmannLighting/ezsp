@@ -44,63 +44,86 @@ flowchart TD
 - command traits: `Configuration`, `Messaging`, `Networking`, `Security`, `Utilities`, ...
 - convenience super-trait: `Ezsp`
 - transport trait: `Transport`
-- NCP helper and startup state: `Ncp`, `Builder`, `Message`, `Scans`
+- NCP helper and startup state: `Ncp`, `Builder`, `Startup`,
+  `InitializationParameters`, `NetworkCredentials`, `Message`, `Scans`,
+  `StackResponse`
 - frame model: `Frame`, `Header`, `Parameters`, `Response`, `Callback`, ...
 - extension traits: `ConfigurationExt`, `PolicyExt`, `Displayable`
 - core error/result types
 - protocol data modules under `ember` and `ezsp`
 
-### Transport-first design
+### Transport and communication traits
 
-Command traits are blanket-implemented for any `T: Transport`.
-
-`Transport` provides:
+`Transport` provides the low-level connection and frame operations:
 
 - `connect()`
 - `state()`
 - `negotiated_version()`
 - `send(command)`
 - `receive::<R>()`
-- default helpers:
-  - `ensure_connection()`
-  - `communicate(command)`
+
+`Communicate` provides the high-level helpers:
+
+- `ensure_connection()`
+- `communicate(command)`
+
+Every `T: Transport` receives a blanket `Communicate` implementation. Command
+traits are blanket-implemented for any `T: Communicate`, keeping typed commands
+dependent on the command/response transaction rather than the raw transport.
 
 Each typed command method builds a parameter struct and calls `communicate(...)`.
 
 ### `Ezsp` super-trait
 
 `Ezsp` in this crate is a convenience trait that combines all command traits.
-It does not add lifecycle methods beyond those provided by `Transport`.
+It does not add lifecycle methods beyond those provided by `Communicate`.
 
 ### NCP helper
 
-`Ncp<T>` wraps an EZSP transport and provides operations that require callback
+`Ncp<T>` owns a communicator and provides operations that require callback
 correlation or local sequence state:
 
 - active network scans and energy scans, resolved from `networkFound`,
   `energyScanResult`, and `scanComplete` callbacks
 - neighbor table collection
-- unicast and multicast APS sends, resolved by awaiting the matching
-  `messageSent` callback
-- broadcast APS sends with status validation
+- unicast, multicast, and broadcast APS sends that return a `StackResponse` for
+  the matching asynchronous `messageSent` callback
 - source endpoint selection for outgoing APS frames from configured local
   endpoint output clusters
 - message tag and APS sequence counters
 - background event-handler termination through `Ncp::terminate()`
 
-`Ncp<T>` dereferences to `T`, so callers can still use all command traits on the
-underlying transport.
+`Communicate` is implemented for `Arc<tokio::sync::Mutex<T>>` whenever `T`
+implements `Communicate`. Each EZSP command holds the mutex across its complete
+command/response transaction, then releases it before the returned
+`StackResponse` is awaited. During `apis-saltans` startup, the builder connects
+the transport,
+wraps it in the shared mutex, and gives clones to `Ncp` and `EventHandler`.
+The event handler passes its clone to `Defragmenter`, allowing these components
+to serialize access without holding the lock during callback correlation.
 
-The helper stores one cluster-list record per local endpoint. Before sending an
-APS frame, it searches those records for the first endpoint whose output cluster
-list contains the requested cluster ID and uses that one-based endpoint number
-as the APS source endpoint. If no endpoint advertises the cluster, the helper
-returns `Error::NoMatchingSourceEndpoint` before issuing the EZSP send command.
+```mermaid
+flowchart LR
+    ncp[Ncp] --> shared[Arc&lt;Mutex&lt;T&gt;&gt;]
+    eventHandler[EventHandler] --> defragmenter[Defragmenter]
+    defragmenter --> shared
+    shared --> communicate[Communicate implementation]
+    communicate --> transport[Inner communicator]
+```
 
-`Builder<T>` stores startup configuration for an `Ncp`: EZSP policy and
-configuration values, concentrator parameters, APS options, link and network
-keys, join method, PAN ID, extended PAN ID, radio channel, radio power,
-reinitialization mode, and buffer sizes.
+The helper stores one output-cluster set keyed by each registered local endpoint
+number. Before sending an APS frame, it searches those records in ascending
+endpoint-number order and uses the first endpoint whose set contains the
+requested cluster ID. If no endpoint advertises the cluster, the helper returns
+`Error::NoMatchingSourceEndpoint` before issuing the EZSP send command.
+
+`Builder<T>` stores startup configuration for an `Ncp`: the required `Startup`
+mode, EZSP policy and configuration values, concentrator parameters, APS
+options, radio power, and buffer sizes. Network formation values are grouped in
+the `InitializationParameters` carried by `Startup::Initialize`. Its
+`NetworkCredentials` value keeps the extended PAN ID, PAN ID, trust-center
+EUI-64, and network key together, while the initialization parameters add the
+preconfigured link key, channel, and join method.
 
 ### Frame/parameter model
 
@@ -155,7 +178,8 @@ and `start`.
 
 ### Connection lifecycle
 
-`Transport::ensure_connection()` drives initialization using `Connection` state:
+`Communicate::ensure_connection()` drives initialization using `Connection`
+state:
 
 - `Disconnected` -> `connect()`
 - `Connected` -> no-op
@@ -178,21 +202,24 @@ encoding fails before anything is sent.
 
 ### APS fragment reassembly
 
-The optional `apis-saltans` event actor performs APS-level reassembly before
-converting an `incomingMessageHandler` callback into a `MessageReceived` event.
-It follows the EZSP host fragmentation model: packets are keyed by sender and
-APS sequence, fragments are accepted within the configured fragment window,
-and incomplete packets are removed by a periodic timeout tick.
+`Defragmenter<T>` provides APS-level reassembly for a messaging transport. It
+follows the EZSP host fragmentation model: packets are keyed by sender and APS
+sequence, fragments are accepted within the configured fragment window, every
+fragment triggers an empty `sendReply`, and incomplete packets are removed by
+a timeout tick. The optional `apis-saltans` event actor owns a defragmenter,
+ticks it before handling incoming APS callbacks, and only translates complete
+messages into events.
 
 ```mermaid
 flowchart LR
-    callback[incomingMessageHandler] --> fragment{APS fragment?}
-    fragment -- no --> convert[Convert callback to event]
-    fragment -- yes --> reassemble[Defragmenter]
-    reassemble -- incomplete --> discard[Suppress callback]
-    reassemble -- complete --> convert
-    tick[Periodic actor tick] --> reassemble
-    convert --> event[MessageReceived]
+    eventHandler[EventHandler] --> handle[Defragmenter handle]
+    handle --> fragment{APS fragment?}
+    fragment -- no --> complete[Some Defragmented]
+    fragment -- yes --> reply[Send empty sendReply]
+    reply --> reassemble[Store fragment]
+    reassemble -- incomplete --> pending[None]
+    reassemble -- complete --> complete
+    tick[EventHandler invokes tick] --> reassemble
 ```
 
 ### Runtime futures
@@ -235,15 +262,26 @@ This layer is implemented in `src/apis_saltans`.
 ### Main types
 
 - `Ncp<T>`
-  - wraps EZSP transport
+  - owns its communicator; the standard startup path supplies `Arc<Mutex<T>>`
   - implements `apis_saltans_hw::Driver` when the feature is enabled
   - tracks message tag and APS sequence counters
   - bridges request/response APIs with callback-driven events
 - `Builder<T>` (`src/ncp/builder.rs`)
   - startup/configuration DSL for network bootstrap
+  - owns the required `Startup` mode for resume or explicit network formation
   - provides custom `start` helpers for `apis-saltans` NCP startup
+- `InitializationParameters` (`src/ncp/initialization_parameters.rs`)
+  - combines network credentials with the preconfigured link key, radio
+    channel, and join method needed to form a network
+  - converts those values into the initial security state and Ember network
+    parameters
+- `NetworkCredentials` (`src/ncp/network_credentials.rs`)
+  - owns the network identifiers, trust-center identity, and network key
+  - supports explicit construction or random sampling; callers are responsible
+    for using a cryptographically secure RNG
 - `EventHandler`
   - translates EZSP callbacks to `apis_saltans_hw::Event`
+  - owns a `Defragmenter<T>` sharing the NCP transport and emits only complete incoming APS messages
   - correlates outgoing message tags with `MessageSent` callbacks
   - collects active and energy scan callback streams into one-shot scan responses
 - conversion modules (`src/apis_saltans/conversion`)
@@ -256,17 +294,17 @@ This layer is implemented in `src/apis_saltans`.
 
 `Ncp<T>` implements `Driver` when:
 
-- `T: Configuration + Security + Messaging + Networking + Utilities + Send + Sync`
+- `T: Messaging + Networking + Utilities + Send + Sync`
 
 `Builder::start` is available when:
 
-- `T: Configuration + Security + Messaging + Networking + Utilities + Transport + Send + Sync + 'static`
+- `T: Communicate + Configuration + Security + Messaging + Networking + Utilities + Send + Sync + 'static`
 
 When `ashv2` is also enabled, `Ncp<uart::Uart>` exposes an
-`ashv2(serial_port)` convenience constructor for serial ports implementing
-`uart::SerialPort`. The builder also has an ASHv2 helper that accepts explicit
-`uart::Buffers`. Both constructors return `uart::Futures` that the caller must
-run alongside the NCP.
+`ashv2(serial_port, startup)` convenience constructor for serial ports
+implementing `uart::SerialPort`. The builder also has an ASHv2 helper that
+accepts a `Startup` value and explicit `uart::Buffers`. Both constructors return
+`uart::Futures` that the caller must run alongside the NCP.
 
 ### Startup flow (`Builder::start`)
 
@@ -277,14 +315,23 @@ run alongside the NCP.
 3. concentrator/configuration/policy setup via EZSP commands
 4. endpoint registration via `add_endpoint`
 5. current IEEE address and network state lookup
-6. network init path:
-   - reinitialize path: leave network, set initial security, form network
-   - normal path: `network_init`
+6. apply the selected `Startup` path:
+   - `Startup::Initialize(parameters)`: leave the current network, install the
+     credentials' network key and trust-center identity together with the
+     parameters' preconfigured link key, then form the configured network
+   - `Startup::Resume(bitmask)`: pass the bitmask to `network_init` to restore
+     persisted network state
 7. wait for network-up event
 8. runtime radio power, state logging, and many-to-one route-request setup
 9. spawn the `Ncp` actor and return `NcpHandle` + event receiver
 
-Builder configuration includes policy values, configuration values, concentrator parameters, APS options, link/network keys, join method, PAN ID, IEEE address, radio channel, radio power, reinitialization mode, and channel buffer size.
+Builder configuration includes policy values, configuration values,
+concentrator parameters, APS options, radio transmit power, a required `Startup`
+mode, and channel buffer size. Requiring `Startup` at construction makes the
+potentially destructive network-formation path explicit. Network formation
+values are kept together in `InitializationParameters`; reusable network
+identity and key material are nested in `NetworkCredentials` rather than
+configured through independent builder setters.
 
 The same `SimpleDescriptor` list used for `add_endpoint` is converted into
 `Clusters` and stored in the resulting `Ncp`. That stored metadata is not used

@@ -1,62 +1,47 @@
 use std::collections::BTreeMap;
 
-use macaddr::MacAddr8;
-use silizium::zigbee::security::man::Key;
 use tokio::sync::mpsc::Receiver;
 
-use crate::Callback;
-use crate::ember::{aps, concentrator, join};
-use crate::ezsp::network::InitBitmask;
+use crate::ember::{aps, concentrator};
 use crate::ezsp::{config, policy};
+use crate::{Callback, Startup};
 
-const RADIO_CHANNEL: u8 = 11;
 const RADIO_POWER: i8 = 8;
 
 /// Builder for [`Ncp`](crate::Ncp) startup configuration.
 ///
-/// The builder stores EZSP policies, stack configuration values, security
-/// inputs, radio settings, and callback buffers until a feature-specific
-/// startup implementation consumes it.
+/// The builder stores the selected [`Startup`] mode, EZSP policies, stack
+/// configuration values, radio settings, and callback buffers until a
+/// feature-specific startup implementation consumes it.
 #[cfg_attr(not(feature = "apis-saltans"), expect(dead_code))]
 pub struct Builder<T> {
     pub(crate) transport: T,
     pub(crate) callbacks: Receiver<Callback>,
+    pub(crate) startup: Startup,
     pub(crate) policy: BTreeMap<policy::Id, u8>,
     pub(crate) configuration: BTreeMap<config::Id, u16>,
     pub(crate) concentrator: Option<concentrator::Parameters>,
-    pub(crate) init_bitmask: InitBitmask,
+    pub(crate) radio_tx_power: i8,
     pub(crate) aps_options: aps::Options,
-    pub(crate) link_key: Option<Key>,
-    pub(crate) network_key: Option<Key>,
-    pub(crate) join_method: join::Method,
-    pub(crate) pan_id: Option<u16>,
-    pub(crate) ieee_address: Option<MacAddr8>,
-    pub(crate) radio_channel: u8,
-    pub(crate) radio_power: i8,
-    pub(crate) reinitialize: bool,
     pub(crate) buffers: usize,
 }
 
 impl<T> Builder<T> {
-    /// Creates a new builder with the given transport and callback stream.
+    /// Creates a builder with a transport, callback stream, and startup mode.
+    ///
+    /// Select [`Startup::Resume`] to restore a persisted network or
+    /// [`Startup::Initialize`] to leave any current network and form a new one.
     #[must_use]
-    pub const fn new(transport: T, callbacks: Receiver<Callback>) -> Self {
+    pub const fn new(transport: T, callbacks: Receiver<Callback>, startup: Startup) -> Self {
         Self {
             transport,
             callbacks,
+            startup,
             policy: BTreeMap::new(),
             configuration: BTreeMap::new(),
             concentrator: None,
-            init_bitmask: InitBitmask::NO_OPTIONS,
+            radio_tx_power: RADIO_POWER,
             aps_options: aps::Options::empty(),
-            link_key: None,
-            network_key: None,
-            join_method: join::Method::MacAssociation,
-            pan_id: None,
-            ieee_address: None,
-            radio_channel: RADIO_CHANNEL,
-            radio_power: RADIO_POWER,
-            reinitialize: false,
             buffers: 1024,
         }
     }
@@ -96,66 +81,17 @@ impl<T> Builder<T> {
         self
     }
 
+    /// Sets the radio transmit power used during network formation and after startup.
+    #[must_use]
+    pub const fn with_radio_tx_power(mut self, radio_tx_power: i8) -> Self {
+        self.radio_tx_power = radio_tx_power;
+        self
+    }
+
     /// Sets the default APS options for outgoing APS messages created by [`Ncp`](crate::Ncp).
     #[must_use]
     pub const fn with_aps_options(mut self, options: aps::Options) -> Self {
         self.aps_options = options;
-        self
-    }
-
-    /// Sets the preconfigured link key used when reinitializing security state.
-    #[must_use]
-    pub const fn with_link_key(mut self, link_key: Key) -> Self {
-        self.link_key.replace(link_key);
-        self
-    }
-
-    /// Sets the network key used when reinitializing security state.
-    #[must_use]
-    pub const fn with_network_key(mut self, network_key: Key) -> Self {
-        self.network_key.replace(network_key);
-        self
-    }
-
-    /// Sets the join method used when forming a network during reinitialization.
-    #[must_use]
-    pub const fn with_join_method(mut self, join_method: join::Method) -> Self {
-        self.join_method = join_method;
-        self
-    }
-
-    /// Sets the PAN ID used when forming a network during reinitialization.
-    #[must_use]
-    pub const fn with_pan_id(mut self, pan_id: u16) -> Self {
-        self.pan_id.replace(pan_id);
-        self
-    }
-
-    /// Sets the extended PAN ID used when forming a network during reinitialization.
-    #[must_use]
-    pub const fn with_ieee_address(mut self, ieee_address: MacAddr8) -> Self {
-        self.ieee_address.replace(ieee_address);
-        self
-    }
-
-    /// Sets the radio channel used during network formation.
-    #[must_use]
-    pub const fn with_radio_channel(mut self, radio_channel: u8) -> Self {
-        self.radio_channel = radio_channel;
-        self
-    }
-
-    /// Sets the radio transmit power used after startup and during network formation.
-    #[must_use]
-    pub const fn with_radio_power(mut self, radio_power: i8) -> Self {
-        self.radio_power = radio_power;
-        self
-    }
-
-    /// Sets whether startup should leave any existing network and form a new one.
-    #[must_use]
-    pub const fn with_reinitialize(mut self, reinitialize: bool) -> Self {
-        self.reinitialize = reinitialize;
         self
     }
 
@@ -169,27 +105,30 @@ impl<T> Builder<T> {
 
 #[cfg(feature = "ashv2")]
 impl Builder<crate::uart::Uart> {
-    /// Create a new builder using an `ASHv2` UART on the given serial port.
+    /// Creates a new builder using an `ASHv2` UART on the given serial port.
     ///
     /// The serial port must implement [`crate::uart::SerialPort`]. The returned
     /// [`crate::uart::Futures`] value must be spawned or otherwise polled by the
-    /// caller for the UART transport to make progress.
-    pub fn ashv2<T>(serial_port: T) -> (Self, crate::uart::Futures<T>)
+    /// caller for the UART transport to make progress. `startup` selects
+    /// whether the NCP restores its persisted network or forms a new one.
+    pub fn ashv2<T>(serial_port: T, startup: Startup) -> (Self, crate::uart::Futures<T>)
     where
         T: crate::uart::SerialPort + Sync + 'static,
     {
-        Self::ashv2_with_buffers(serial_port, crate::uart::Buffers::default())
+        Self::ashv2_with_buffers(serial_port, startup, crate::uart::Buffers::default())
     }
 
-    /// Create a new builder using an `ASHv2` UART on the given serial port.
+    /// Creates a new builder using an `ASHv2` UART on the given serial port.
     ///
     /// The serial port must implement [`crate::uart::SerialPort`]. Use
     /// [`crate::uart::Buffers`] to size the EZSP and `ASHv2` channels used by the
     /// constructed transport. The returned [`crate::uart::Futures`] value must
     /// be spawned or otherwise polled by the caller for the UART transport to
-    /// make progress.
+    /// make progress. `startup` selects whether the NCP restores its persisted
+    /// network or forms a new one.
     pub fn ashv2_with_buffers<T>(
         serial_port: T,
+        startup: Startup,
         buffers: crate::uart::Buffers,
     ) -> (Self, crate::uart::Futures<T>)
     where
@@ -206,7 +145,7 @@ impl Builder<crate::uart::Uart> {
             buffers.ezsp_messages,
         );
         (
-            Self::new(uart, callbacks_rx),
+            Self::new(uart, callbacks_rx, startup),
             crate::uart::Futures::new(splitter, futures),
         )
     }

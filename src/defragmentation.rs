@@ -3,20 +3,24 @@
 //! This mirrors the receive-side rules of Silicon Labs' EZSP fragmentation
 //! component: a message is identified by its sender and APS sequence number,
 //! fragments may arrive out of order inside the receive window, and incomplete
-//! messages expire when [`Defragmenter::tick`] observes their timeout.
+//! messages expire when [`Defragmenter::tick`] observes their timeout. Every
+//! received fragment is acknowledged through EZSP `sendReply` before it is
+//! stored.
 
 use std::collections::BTreeMap;
 use std::time::{Duration, Instant};
 
 use const_env::env_item;
+use log::{trace, warn};
 
 pub use self::defragmented_message::DefragmentedMessage;
-pub use self::message::Message;
+use crate::Messaging;
 use crate::ember::NodeId;
+use crate::ember::aps::BLOCK_MASK;
 use crate::parameters::messaging::handler::IncomingMessage;
+use crate::types::ByteSizedVec;
 
 mod defragmented_message;
-mod message;
 
 /// The number of fragmented messages accepted concurrently by the EZSP host.
 ///
@@ -45,6 +49,9 @@ pub const DEFAULT_REASSEMBLY_TIMEOUT_MILLIS: u64 = 5_000;
 pub const DEFAULT_REASSEMBLY_TIMEOUT: Duration =
     Duration::from_millis(DEFAULT_REASSEMBLY_TIMEOUT_MILLIS);
 
+/// A complete incoming message produced by a [`Defragmenter`].
+pub type Defragmented = DefragmentedMessage;
+
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 struct PacketKey {
     sender: NodeId,
@@ -66,31 +73,39 @@ struct Packet {
 /// call [`Defragmenter::tick`] regularly. This is the Rust equivalent of
 /// `ezspFragmentInit`, `ezspFragmentIncomingMessage`, and `ezspFragmentTick`.
 #[derive(Debug)]
-pub struct Defragmenter {
+pub struct Defragmenter<T> {
+    transport: T,
     packets: BTreeMap<PacketKey, Packet>,
     receive_buffer_length: usize,
     window_size: u8,
     timeout: Duration,
 }
 
-impl Default for Defragmenter {
-    fn default() -> Self {
-        Self::new(
+impl<T> Defragmenter<T> {
+    /// Creates a defragmenter using the default receive limits.
+    #[must_use]
+    pub const fn new(transport: T) -> Self {
+        Self::with_configuration(
+            transport,
             DEFAULT_RECEIVE_BUFFER_LENGTH,
             DEFAULT_WINDOW_SIZE,
             DEFAULT_REASSEMBLY_TIMEOUT,
         )
     }
-}
 
-impl Defragmenter {
-    /// Initializes a fragment receiver with a bounded reassembly buffer.
+    /// Creates a defragmenter with explicit receive limits.
     ///
     /// A zero or unsupported `window_size` disables fragmented-message
     /// reception, matching the EZSP host implementation's behavior.
     #[must_use]
-    pub const fn new(receive_buffer_length: usize, window_size: u8, timeout: Duration) -> Self {
+    pub const fn with_configuration(
+        transport: T,
+        receive_buffer_length: usize,
+        window_size: u8,
+        timeout: Duration,
+    ) -> Self {
         Self {
+            transport,
             packets: BTreeMap::new(),
             receive_buffer_length,
             window_size,
@@ -98,25 +113,20 @@ impl Defragmenter {
         }
     }
 
-    /// Handles one incoming APS callback.
-    #[must_use]
-    pub fn handle(&mut self, incoming_message: IncomingMessage) -> Message {
-        self.handle_at(incoming_message, Instant::now())
-    }
-
     /// Drops incomplete messages whose APS retry period has elapsed.
     pub fn tick(&mut self) {
         self.tick_at(Instant::now());
     }
 
-    fn handle_at(&mut self, incoming_message: IncomingMessage, now: Instant) -> Message {
-        let Some((fragment, expected_fragments)) = incoming_message.aps_frame().fragmentation()
-        else {
-            return Message::Complete(incoming_message.into());
-        };
-
+    fn handle_fragment_at(
+        &mut self,
+        incoming_message: &IncomingMessage,
+        fragment: u8,
+        expected_fragments: Option<u8>,
+        now: Instant,
+    ) -> Option<Defragmented> {
         if self.window_size == 0 || self.window_size > MAX_WINDOW_SIZE {
-            return Message::Incomplete;
+            return None;
         }
 
         let key = PacketKey {
@@ -126,7 +136,7 @@ impl Defragmenter {
 
         if !self.packets.contains_key(&key) {
             if self.packets.len() >= MAX_INCOMING_PACKETS || fragment >= self.window_size {
-                return Message::Incomplete;
+                return None;
             }
 
             self.packets.insert(
@@ -143,15 +153,9 @@ impl Defragmenter {
         let payload = incoming_message.message();
         let completed = self.store_fragment(key, fragment, expected_fragments, payload, now);
 
-        completed.map_or_else(
-            || Message::Incomplete,
-            |payload| {
-                Message::Complete(DefragmentedMessage::from_incoming_message(
-                    incoming_message,
-                    payload.into(),
-                ))
-            },
-        )
+        completed.map(|payload| {
+            DefragmentedMessage::from_incoming_message(incoming_message, payload.into())
+        })
     }
 
     fn store_fragment(
@@ -268,12 +272,62 @@ impl Defragmenter {
     }
 }
 
+impl<T> Defragmenter<T>
+where
+    T: Messaging,
+{
+    /// Handles one incoming APS callback.
+    ///
+    /// Complete messages are returned immediately. Fragmented messages return
+    /// `None` until every fragment has arrived. A fragment is acknowledged with
+    /// an empty EZSP `sendReply`; if that command fails, the fragment is not
+    /// stored and this method returns `None` so that a retransmission can be
+    /// handled later.
+    #[must_use]
+    pub async fn handle(&mut self, incoming_message: IncomingMessage) -> Option<Defragmented> {
+        let Some((fragment, expected_fragments)) = incoming_message.aps_frame().fragmentation()
+        else {
+            return Some(incoming_message.into());
+        };
+
+        trace!("Handling fragmented message: {incoming_message:?}");
+
+        let mut aps_frame = incoming_message.aps_frame().clone();
+        aps_frame.set_group_id(incoming_message.aps_frame().group_id() | BLOCK_MASK);
+
+        if let Err(error) = self
+            .transport
+            .send_reply(incoming_message.sender(), aps_frame, ByteSizedVec::new())
+            .await
+        {
+            warn!("Failed to acknowledge incoming APS fragment: {error}");
+            return None;
+        }
+
+        let message = self.handle_fragment_at(
+            &incoming_message,
+            fragment,
+            expected_fragments,
+            Instant::now(),
+        );
+        drop(incoming_message);
+        message
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use core::future::Future;
     use std::collections::BTreeMap;
+    use std::num::NonZero;
     use std::time::Instant;
 
+    use le_stream::ToLeStream;
+
     use super::{DEFAULT_REASSEMBLY_TIMEOUT, Defragmenter, Packet, PacketKey};
+    use crate::frame::Parameter;
+    use crate::parameters::configuration::version;
+    use crate::{Connection, Error, Parameters, Transport};
 
     const SENDER: u16 = 0x1234;
     const SEQUENCE: u8 = 0x56;
@@ -285,10 +339,47 @@ mod tests {
     const FIRST_PAYLOAD: &[u8] = b"one";
     const SECOND_PAYLOAD: &[u8] = b"two";
 
+    #[derive(Debug)]
+    struct MockTransport;
+
+    #[expect(
+        clippy::manual_async_fn,
+        reason = "trait implementations must return a Send future explicitly"
+    )]
+    impl Transport for MockTransport {
+        fn connect(&mut self) -> impl Future<Output = Result<version::Response, Error>> + Send {
+            async { Err(Error::NotConfigured) }
+        }
+
+        fn state(&self) -> Connection {
+            Connection::Disconnected
+        }
+
+        fn negotiated_version(&self) -> Option<NonZero<u8>> {
+            None
+        }
+
+        fn send<T>(&mut self, _command: T) -> impl Future<Output = Result<u16, Error>> + Send
+        where
+            T: Parameter + ToLeStream,
+        {
+            async { Err(Error::NotConfigured) }
+        }
+
+        fn receive<T>(&mut self) -> impl Future<Output = Result<T, Error>> + Send
+        where
+            T: TryFrom<Parameters> + Send,
+            <T as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
+        {
+            async { Err(Error::NotConfigured) }
+        }
+    }
+
     #[test]
     fn expires_incomplete_packets() {
         let now = Instant::now();
-        let mut defragmenter = Defragmenter::new(
+        let mut defragmenter = Defragmenter::with_configuration(
+            MockTransport,
             RECEIVE_BUFFER_LENGTH,
             WINDOW_SIZE,
             DEFAULT_REASSEMBLY_TIMEOUT,
@@ -320,7 +411,7 @@ mod tests {
             deadline: Instant::now() + DEFAULT_REASSEMBLY_TIMEOUT,
         };
 
-        assert!(!Defragmenter::window_is_complete(
+        assert!(!Defragmenter::<MockTransport>::window_is_complete(
             &packet,
             EXPECTED_FRAGMENTS,
             WINDOW_SIZE
@@ -334,7 +425,8 @@ mod tests {
             sender: SENDER,
             sequence: SEQUENCE,
         };
-        let mut defragmenter = Defragmenter::new(
+        let mut defragmenter = Defragmenter::with_configuration(
+            MockTransport,
             RECEIVE_BUFFER_LENGTH,
             WINDOW_SIZE,
             DEFAULT_REASSEMBLY_TIMEOUT,

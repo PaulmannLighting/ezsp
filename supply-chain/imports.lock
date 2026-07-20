@@ -1,30 +1,41 @@
 
 # cargo-vet imports lock
 
+[[unpublished.ezsp]]
+version = "11.0.0"
+audited_as = "10.1.0"
+
 [[publisher.apis-saltans-aps]]
-version = "0.2.0"
-when = "2026-07-05"
+version = "0.6.0"
+when = "2026-07-19"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-core]]
-version = "0.3.0"
-when = "2026-07-05"
+version = "0.7.0"
+when = "2026-07-19"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-hw]]
-version = "0.7.0"
-when = "2026-07-07"
+version = "0.10.1"
+when = "2026-07-19"
+user-id = 290593
+user-login = "neumann-paulmann"
+user-name = "Richard Neumann"
+
+[[publisher.apis-saltans-nwk]]
+version = "0.4.0"
+when = "2026-07-19"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-zdp]]
-version = "0.2.0"
-when = "2026-07-05"
+version = "0.6.0"
+when = "2026-07-19"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
@@ -50,8 +61,8 @@ user-id = 55123
 user-login = "rust-lang-owner"
 
 [[publisher.ezsp]]
-version = "9.0.2"
-when = "2026-07-08"
+version = "10.1.0"
+when = "2026-07-19"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
@@ -91,8 +102,8 @@ user-id = 55123
 user-login = "rust-lang-owner"
 
 [[publisher.quote]]
-version = "1.0.46"
-when = "2026-06-22"
+version = "1.0.47"
+when = "2026-07-19"
 user-id = 3618
 user-login = "dtolnay"
 user-name = "David Tolnay"
@@ -112,29 +123,50 @@ user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.syn]]
-version = "2.0.118"
-when = "2026-06-16"
+version = "2.0.119"
+when = "2026-07-15"
+user-id = 3618
+user-login = "dtolnay"
+user-name = "David Tolnay"
+
+[[publisher.syn]]
+version = "3.0.0"
+when = "2026-07-18"
 user-id = 3618
 user-login = "dtolnay"
 user-name = "David Tolnay"
 
 [[publisher.thiserror]]
-version = "2.0.18"
-when = "2026-01-18"
+version = "1.0.69"
+when = "2024-11-10"
+user-id = 3618
+user-login = "dtolnay"
+user-name = "David Tolnay"
+
+[[publisher.thiserror]]
+version = "2.0.19"
+when = "2026-07-18"
 user-id = 3618
 user-login = "dtolnay"
 user-name = "David Tolnay"
 
 [[publisher.thiserror-impl]]
-version = "2.0.18"
-when = "2026-01-18"
+version = "1.0.69"
+when = "2024-11-10"
+user-id = 3618
+user-login = "dtolnay"
+user-name = "David Tolnay"
+
+[[publisher.thiserror-impl]]
+version = "2.0.19"
+when = "2026-07-18"
 user-id = 3618
 user-login = "dtolnay"
 user-name = "David Tolnay"
 
 [[publisher.tokio]]
-version = "1.52.3"
-when = "2026-05-08"
+version = "1.53.0"
+when = "2026-07-17"
 user-id = 6741
 user-login = "Darksonn"
 user-name = "Alice Ryhl"
@@ -330,6 +362,12 @@ who = "Pat Hickey <pat@moreproductive.org>"
 criteria = "safe-to-deploy"
 delta = "0.3.28 -> 0.3.31"
 
+[[audits.bytecode-alliance.audits.heck]]
+who = "Alex Crichton <alex@alexcrichton.com>"
+criteria = "safe-to-deploy"
+delta = "0.4.1 -> 0.5.0"
+notes = "Minor changes for a `no_std` upgrade but otherwise everything looks as expected."
+
 [[audits.bytecode-alliance.audits.iana-time-zone-haiku]]
 who = "Dan Gohman <dev@sunfishcode.online>"
 criteria = "safe-to-deploy"
@@ -347,7 +385,39 @@ criteria = "safe-to-deploy"
 version = "0.4.6"
 notes = "provides a datastructure implemented using std's Vec. all uses of unsafe are just delegating to the underlying unsafe Vec methods."
 
-[audits.embark-studios.audits]
+[[audits.embark-studios.audits.num_enum]]
+who = "Johan Andersson <opensource@embark-studios.com>"
+criteria = "safe-to-deploy"
+version = "0.5.11"
+notes = "No unsafe usage or ambient capabilities"
+
+[[audits.embark-studios.audits.num_enum]]
+who = "Johan Andersson <opensource@embark-studios.com>"
+criteria = "safe-to-deploy"
+delta = "0.5.11 -> 0.6.1"
+notes = "Minor changes"
+
+[[audits.embark-studios.audits.num_enum]]
+who = "Johan Andersson <opensource@embark-studios.com>"
+criteria = "safe-to-deploy"
+delta = "0.6.1 -> 0.7.0"
+
+[[audits.embark-studios.audits.num_enum_derive]]
+who = "Johan Andersson <opensource@embark-studios.com>"
+criteria = "safe-to-deploy"
+version = "0.5.11"
+notes = "Proc macro that generates some unsafe code for conversion but looks sound, no ambient capabilities"
+
+[[audits.embark-studios.audits.num_enum_derive]]
+who = "Johan Andersson <opensource@embark-studios.com>"
+criteria = "safe-to-deploy"
+delta = "0.5.11 -> 0.6.1"
+notes = "Minor changes"
+
+[[audits.embark-studios.audits.num_enum_derive]]
+who = "Johan Andersson <opensource@embark-studios.com>"
+criteria = "safe-to-deploy"
+delta = "0.6.1 -> 0.7.0"
 
 [audits.fermyon.audits]
 
@@ -393,6 +463,19 @@ who = "Manish Goregaokar <manishearth@google.com>"
 criteria = "safe-to-deploy"
 version = "0.8.7"
 notes = "OSX system APIs"
+aggregated-from = "https://chromium.googlesource.com/chromium/src/+/main/third_party/rust/chromium_crates_io/supply-chain/audits.toml?format=TEXT"
+
+[[audits.google.audits.heck]]
+who = "Lukasz Anforowicz <lukasza@chromium.org>"
+criteria = "safe-to-deploy"
+version = "0.4.1"
+notes = """
+Grepped for `-i cipher`, `-i crypto`, `'\bfs\b'``, `'\bnet\b'``, `'\bunsafe\b'``
+and there were no hits.
+
+`heck` (version `0.3.3`) has been added to Chromium in
+https://source.chromium.org/chromium/chromium/src/+/28841c33c77833cc30b286f9ae24c97e7a8f4057
+"""
 aggregated-from = "https://chromium.googlesource.com/chromium/src/+/main/third_party/rust/chromium_crates_io/supply-chain/audits.toml?format=TEXT"
 
 [[audits.google.audits.iana-time-zone]]
@@ -578,6 +661,28 @@ version = "1.2.0"
 notes = "Purely a trait, crates using this should be carefully vetted since self-referential stuff can be super tricky around various unsafe rust edges."
 aggregated-from = "https://chromium.googlesource.com/chromium/src/+/main/third_party/rust/chromium_crates_io/supply-chain/audits.toml?format=TEXT"
 
+[[audits.google.audits.strum]]
+who = "danakj@chromium.org"
+criteria = "safe-to-deploy"
+version = "0.25.0"
+notes = """
+Reviewed in https://crrev.com/c/5171063
+
+Previously reviewed during security review and the audit is grandparented in.
+"""
+aggregated-from = "https://chromium.googlesource.com/chromium/src/+/main/third_party/rust/chromium_crates_io/supply-chain/audits.toml?format=TEXT"
+
+[[audits.google.audits.strum_macros]]
+who = "danakj@chromium.org"
+criteria = "safe-to-deploy"
+version = "0.25.3"
+notes = """
+Reviewed in https://crrev.com/c/5171063
+
+Previously reviewed during security review and the audit is grandparented in.
+"""
+aggregated-from = "https://chromium.googlesource.com/chromium/src/+/main/third_party/rust/chromium_crates_io/supply-chain/audits.toml?format=TEXT"
+
 [[audits.isrg.audits.cfg-if]]
 who = "David Cook <dcook@divviup.org>"
 criteria = "safe-to-deploy"
@@ -761,6 +866,30 @@ criteria = "safe-to-deploy"
 delta = "0.4.7 -> 0.4.8"
 aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
 
+[[audits.mozilla.audits.strum]]
+who = "Teodor Tanasoaia <ttanasoaia@mozilla.com>"
+criteria = "safe-to-deploy"
+delta = "0.25.0 -> 0.26.3"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.strum]]
+who = "Erich Gubler <erichdongubler@gmail.com>"
+criteria = "safe-to-deploy"
+delta = "0.26.3 -> 0.27.1"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.strum_macros]]
+who = "Teodor Tanasoaia <ttanasoaia@mozilla.com>"
+criteria = "safe-to-deploy"
+delta = "0.25.3 -> 0.26.4"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.strum_macros]]
+who = "Erich Gubler <erichdongubler@gmail.com>"
+criteria = "safe-to-deploy"
+delta = "0.26.4 -> 0.27.1"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
 [[audits.mozilla.audits.wasm-bindgen]]
 who = "Lars Eggert <lars@eggert.org>"
 criteria = "safe-to-deploy"
@@ -792,6 +921,30 @@ criteria = "safe-to-deploy"
 delta = "1.4.0 -> 1.5.0"
 notes = "Filesystem change is to remove the generated LLVM IR output file after probing."
 aggregated-from = "https://raw.githubusercontent.com/zcash/zcash/master/qa/supply-chain/audits.toml"
+
+[[audits.zcash.audits.num_enum]]
+who = "Jack Grigg <jack@electriccoin.co>"
+criteria = "safe-to-deploy"
+delta = "0.7.0 -> 0.7.2"
+aggregated-from = "https://raw.githubusercontent.com/zcash/librustzcash/main/supply-chain/audits.toml"
+
+[[audits.zcash.audits.num_enum_derive]]
+who = "Jack Grigg <jack@electriccoin.co>"
+criteria = "safe-to-deploy"
+delta = "0.7.0 -> 0.7.2"
+aggregated-from = "https://raw.githubusercontent.com/zcash/librustzcash/main/supply-chain/audits.toml"
+
+[[audits.zcash.audits.strum]]
+who = "Jack Grigg <jack@electriccoin.co>"
+criteria = "safe-to-deploy"
+delta = "0.27.1 -> 0.27.2"
+aggregated-from = "https://raw.githubusercontent.com/zcash/librustzcash/main/supply-chain/audits.toml"
+
+[[audits.zcash.audits.strum_macros]]
+who = "Jack Grigg <jack@electriccoin.co>"
+criteria = "safe-to-deploy"
+delta = "0.27.1 -> 0.27.2"
+aggregated-from = "https://raw.githubusercontent.com/zcash/librustzcash/main/supply-chain/audits.toml"
 
 [[audits.zcash.audits.wasm-bindgen-macro]]
 who = "Jack Grigg <jack@electriccoin.co>"

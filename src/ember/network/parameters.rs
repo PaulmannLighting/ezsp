@@ -12,7 +12,7 @@ use crate::ember::types::PanId;
 pub struct Parameters {
     extended_pan_id: MacAddr8,
     pan_id: PanId,
-    radio_tx_power: u8,
+    radio_tx_power: i8,
     radio_channel: u8,
     join_method: u8,
     nwk_manager_id: u16,
@@ -27,7 +27,7 @@ impl Parameters {
     pub fn new(
         extended_pan_id: MacAddr8,
         pan_id: PanId,
-        radio_tx_power: u8,
+        radio_tx_power: i8,
         radio_channel: u8,
         join_method: Method,
         nwk_manager_id: u16,
@@ -70,12 +70,12 @@ impl Parameters {
 
     /// Return the power setting in dBm.
     #[must_use]
-    pub const fn radio_tx_power(&self) -> u8 {
+    pub const fn radio_tx_power(&self) -> i8 {
         self.radio_tx_power
     }
 
     /// Set the power setting in dBm.
-    pub const fn set_radio_tx_power(&mut self, radio_tx_power: u8) {
+    pub const fn set_radio_tx_power(&mut self, radio_tx_power: i8) {
         self.radio_tx_power = radio_tx_power;
     }
 

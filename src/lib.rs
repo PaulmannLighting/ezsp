@@ -21,15 +21,20 @@ pub use self::commands::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GetValueExt, GreenPower, Messaging, Mfglib,
     Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
 };
+pub use self::communicate::Communicate;
 pub use self::connection::Connection;
 pub use self::constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE, MIN_NON_LEGACY_VERSION};
+pub use self::defragmentation::{Defragmented, DefragmentedMessage, Defragmenter};
 pub use self::error::{Error, ValueError};
 pub use self::extensions::{ConfigurationExt, Displayable, PolicyExt};
 pub use self::frame::{
     Callback, CallbackType, Command, Extended, FormatVersion, Frame, Header, HighByte, Legacy,
     LowByte, Parameters, Parsable, Response, SleepMode, parameters,
 };
-pub use self::ncp::{Builder, Message, MulticastOptions, Ncp, Scans};
+pub use self::ncp::{
+    Builder, InitializationParameters, Message, MulticastOptions, Ncp, NetworkCredentials, Scans,
+    StackResponse, Startup,
+};
 pub use self::result::Result;
 pub use self::transport::Transport;
 pub use self::types::SourceRouteDiscoveryMode;
@@ -37,8 +42,10 @@ pub use self::types::SourceRouteDiscoveryMode;
 #[cfg(feature = "apis-saltans")]
 pub mod apis_saltans;
 mod commands;
+mod communicate;
 mod connection;
 mod constants;
+mod defragmentation;
 pub mod ember;
 mod error;
 mod extensions;

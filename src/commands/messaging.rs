@@ -1,6 +1,7 @@
 use core::future::Future;
 use core::time::Duration;
 
+use crate::Communicate;
 use crate::ember::aps::Frame;
 use crate::ember::beacon::ClassificationParams;
 use crate::ember::concentrator::Type;
@@ -21,7 +22,6 @@ use crate::frame::parameters::messaging::{
     set_multicast_table_entry, set_source_route_discovery_mode, unicast_current_network_key,
     write_node_data,
 };
-use crate::transport::Transport;
 use crate::types::{ByteSizedVec, SourceRouteDiscoveryMode};
 
 /// The `Messaging` trait provides an interface for the messaging features.
@@ -336,7 +336,7 @@ pub trait Messaging {
 
 impl<T> Messaging for T
 where
-    T: Transport,
+    T: Communicate,
 {
     async fn address_table_entry_is_active(
         &mut self,

@@ -13,9 +13,8 @@ use crate::frame::parameters::utilities::{
     set_mfg_token, set_timer, set_token,
 };
 use crate::parameters::utilities;
-use crate::transport::Transport;
 use crate::types::ByteSizedVec;
-use crate::{Parameters, Response};
+use crate::{Communicate, Parameters, Response};
 
 /// The `Utilities` trait provides an interface for the utilities.
 pub trait Utilities {
@@ -150,7 +149,7 @@ pub trait Utilities {
 
 impl<T> Utilities for T
 where
-    T: Transport,
+    T: Communicate,
 {
     async fn callback(&mut self) -> Result<Option<Callback>, Error> {
         match self.communicate(callback::Command).await? {

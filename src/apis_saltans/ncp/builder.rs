@@ -5,27 +5,25 @@ use std::time::Duration;
 use apis_saltans_hw::zdp::SimpleDescriptor;
 use apis_saltans_hw::{Driver, Event, EventTranslator, NcpHandle, bridge};
 use log::{debug, info};
-use macaddr::MacAddr8;
-use rand::random;
-use silizium::zigbee::security::man::Key;
 use tokio::spawn;
+use tokio::sync::Mutex;
 use tokio::sync::mpsc::{Receiver, channel};
 use tokio::time::sleep;
 
 use super::event_handler::EventHandler;
-use crate::ember::security::initial;
-use crate::ember::{concentrator, network};
+use crate::apis_saltans::ncp::Ncp;
+use crate::ember::concentrator;
 use crate::ezsp::config;
 use crate::{
-    Builder, Configuration, ConfigurationExt, Displayable, Error, Messaging, Ncp, Networking,
-    PolicyExt, Security, Transport, Utilities,
+    Builder, Communicate, Configuration, ConfigurationExt, Displayable, Error, Messaging,
+    Networking, PolicyExt, Security, Startup, Utilities,
 };
 
 const TICK: Duration = Duration::from_secs(1);
 
 impl<T> Builder<T>
 where
-    T: Transport,
+    T: Communicate,
 {
     /// Connects the underlying transport before startup configuration begins.
     ///
@@ -40,7 +38,7 @@ where
     /// than [`ErrorKind::NotConnected`].
     async fn connect(&mut self) -> Result<(), Error> {
         loop {
-            let Err(error) = self.transport.connect().await else {
+            let Err(error) = self.transport.ensure_connection().await else {
                 return Ok(());
             };
 
@@ -58,12 +56,12 @@ where
 
 impl<T> Builder<T>
 where
-    T: Configuration
+    T: Communicate
+        + Configuration
         + Security
         + Messaging
         + Networking
         + Utilities
-        + Transport
         + Send
         + Sync
         + 'static,
@@ -72,136 +70,129 @@ where
     ///
     /// The startup sequence applies configured policies and stack values,
     /// waits for the transport to connect, registers the supplied endpoints,
-    /// stores their cluster lists for later APS source endpoint selection,
-    /// initializes or reforms the Zigbee network, waits for `NetworkUp`, sends
-    /// a many-to-one route request, and returns an `apis_saltans_hw::NcpHandle`
-    /// plus the translated event stream.
+    /// stores their cluster lists for later APS source endpoint selection, and
+    /// applies the [`Startup`] mode supplied to the builder. It then waits for
+    /// `NetworkUp`, sends a many-to-one route request, and returns an
+    /// `apis_saltans_hw::NcpHandle` plus the translated event stream.
     ///
     /// # Errors
     ///
     /// Returns an `apis_saltans_hw::Error` if endpoint validation, EZSP stack
     /// setup, transport connection, network initialization, or actor startup
     /// fails.
-    #[expect(clippy::too_many_lines)]
     pub async fn start(
         mut self,
-        endpoints: &[SimpleDescriptor],
+        endpoints: Box<[SimpleDescriptor]>,
     ) -> Result<(NcpHandle, Receiver<Event>), apis_saltans_hw::Error> {
         if endpoints.is_empty() {
             return Err(apis_saltans_hw::Error::NoEndpoints);
         }
 
         self.connect().await?;
+        let mut transport = Arc::new(Mutex::new(self.transport));
 
         let (message_tx, message_rx) = channel(self.buffers);
         spawn(bridge(self.callbacks, message_tx.clone()));
         let (events_tx, mut events_rx) = channel(self.buffers);
-        spawn(EventHandler::new(events_tx).run(message_rx));
+        spawn(EventHandler::new(events_tx, transport.clone()).run(message_rx));
 
         debug!("Setting concentrator");
-        self.transport.set_concentrator(self.concentrator).await?;
+        transport.set_concentrator(self.concentrator).await?;
 
         for (key, value) in self.configuration {
             debug!("Setting configuration {key:?} to {value:#06X}");
-            self.transport.set_configuration_value(key, value).await?;
+            transport.set_configuration_value(key, value).await?;
         }
 
         for (key, value) in self.policy {
             debug!("Setting policy {key:?} to {value:#04X}");
-            self.transport.set_policy(key, value).await?;
+            transport.set_policy(key, value).await?;
         }
 
-        for (index, endpoint) in endpoints.iter().enumerate() {
+        let mut ncp = Ncp::new(transport.clone(), self.aps_options, message_tx);
+
+        for (endpoint_id, descriptor) in
+            endpoints
+                .iter()
+                .enumerate()
+                .map_while(|(index, descriptor)| {
+                    u8::try_from(index.checked_add(1)?)
+                        .ok()
+                        .map(|endpoint| (endpoint, descriptor))
+                })
+        {
             debug!(
-                "Adding endpoint: {index:#04X}, profile: {:?}, device_id: {:#04X}, app_flags: {:#04X}, input clusters: {:X?}, output clusters: {:X?}",
-                endpoint.profile_id(),
-                endpoint.device_id(),
-                endpoint.app_flags(),
-                endpoint.input_clusters(),
-                endpoint.output_clusters(),
+                "Adding endpoint: {endpoint_id:#04X}, profile: {:?}, device_id: {:#04X}, app_flags: {:#04X}, input clusters: {:X?}, output clusters: {:X?}",
+                descriptor.profile_id(),
+                descriptor.device_id(),
+                descriptor.app_flags(),
+                descriptor.input_clusters(),
+                descriptor.output_clusters(),
             );
-            self.transport
-                .add_endpoint(
-                    u8::try_from(index).map_err(implementation_error)?,
-                    endpoint.profile_id(),
-                    endpoint.device_id(),
-                    endpoint.app_flags(),
-                    endpoint.input_clusters().iter().copied().collect(),
-                    endpoint.output_clusters().iter().copied().collect(),
-                )
-                .await?;
+            ncp.add_endpoint(
+                endpoint_id,
+                descriptor.profile_id(),
+                descriptor.device_id(),
+                descriptor.app_flags(),
+                descriptor.input_clusters().iter().copied().collect(),
+                descriptor.output_clusters().iter().copied().collect(),
+            )
+            .await?;
         }
 
-        let ieee_address = self.transport.get_eui64().await?;
+        let ieee_address = transport.get_eui64().await?;
         debug!("IEEE address: {ieee_address}");
 
-        let network_state = self.transport.network_state().await?;
+        let network_state = transport.network_state().await?;
         info!("Current network state: {network_state:?}");
 
-        if self.reinitialize {
-            if self.transport.leave_network().await.is_ok() {
-                wait_for_event(&mut events_rx, Event::NetworkDown).await?;
-                info!("Left existing network.");
+        match self.startup {
+            Startup::Initialize(init) => {
+                if transport.leave_network().await.is_ok() {
+                    wait_for_event(&mut events_rx, Event::NetworkDown).await?;
+                    info!("Left existing network.");
+                }
+
+                debug!("Setting initial security state");
+                transport
+                    .set_initial_security_state(init.initial_security_state())
+                    .await?;
+
+                info!("Reinitializing network");
+                transport
+                    .form_network(init.parameters(self.radio_tx_power))
+                    .await?;
             }
-
-            debug!("Setting initial security state");
-            self.transport
-                .set_initial_security_state(build_initial_security_state(
-                    self.link_key,
-                    self.network_key,
-                ))
-                .await?;
-
-            info!("Reinitializing network");
-            #[expect(clippy::cast_sign_loss)]
-            self.transport
-                .form_network(network::Parameters::new(
-                    self.ieee_address.unwrap_or_default(),
-                    self.pan_id.unwrap_or_else(random),
-                    self.radio_power as u8,
-                    self.radio_channel,
-                    self.join_method,
-                    0,
-                    0,
-                    1 << self.radio_channel,
-                ))
-                .await?;
-        } else {
-            self.transport.network_init(self.init_bitmask).await?;
+            Startup::Resume(init_bitmask) => {
+                transport.network_init(init_bitmask).await?;
+            }
         }
 
         wait_for_event(&mut events_rx, Event::NetworkUp).await?;
         info!("Network is up.");
 
-        debug!("Setting radio power to {}", self.radio_power);
-        self.transport.set_radio_power(self.radio_power).await?;
+        debug!("Setting radio power to {}", self.radio_tx_power);
+        transport.set_radio_power(self.radio_tx_power).await?;
 
-        let network_state = self.transport.network_state().await?;
+        let network_state = transport.network_state().await?;
         info!("Final network state: {network_state:?}");
 
-        let (typ, parameters) = self.transport.get_network_parameters().await?;
+        let (typ, parameters) = transport.get_network_parameters().await?;
         info!("Device type: {typ}");
         info!("Network parameters:\n{parameters}");
 
-        log_state(&mut self.transport).await?;
+        log_state(&mut transport).await?;
 
-        let radius = self
-            .transport
+        let radius = transport
             .get_configuration_value(config::Id::MaxHops)
             .await?;
         info!("Sending many-to-one route request: {radius} hops");
         #[expect(clippy::cast_possible_truncation)]
-        self.transport
+        transport
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
-        let (ncp, actor) = Ncp::new(
-            self.transport,
-            self.aps_options,
-            message_tx,
-            endpoints.iter().map(Into::into).collect(),
-        )
-        .run(32);
+        let (ncp, actor) = ncp.run(self.buffers);
         spawn(actor);
         Ok((ncp, events_rx))
     }
@@ -219,35 +210,12 @@ async fn wait_for_event(
         debug!("Ignoring event while waiting for {expected:?}: {event:?}");
     }
 
-    Err(apis_saltans_hw::Error::DriverRecv)
-}
-
-fn build_initial_security_state(link_key: Option<Key>, network_key: Option<Key>) -> initial::State {
-    let mut initial_security_state_bitmask = initial::Bitmask::TRUST_CENTER_GLOBAL_LINK_KEY;
-
-    let link_key = link_key.map_or_else(Key::default, |link_key| {
-        initial_security_state_bitmask |=
-            initial::Bitmask::HAVE_PRECONFIGURED_KEY | initial::Bitmask::REQUIRE_ENCRYPTED_KEY;
-        link_key
-    });
-
-    let network_key = network_key.map_or_else(Key::default, |network_key| {
-        initial_security_state_bitmask |= initial::Bitmask::HAVE_NETWORK_KEY;
-        network_key
-    });
-
-    initial::State::new(
-        initial_security_state_bitmask,
-        link_key,
-        network_key,
-        0,
-        MacAddr8::default(),
-    )
+    Err(Error::ChannelClosed.into())
 }
 
 async fn log_state<T>(transport: &mut T) -> Result<(), Error>
 where
-    T: Transport,
+    T: Configuration + Security + Send,
 {
     debug!(
         "Configuration:\n{}",
@@ -265,11 +233,4 @@ where
     );
 
     Ok(())
-}
-
-fn implementation_error<T>(error: T) -> apis_saltans_hw::Error
-where
-    T: std::error::Error + Send + Sync + 'static,
-{
-    apis_saltans_hw::Error::Implementation(Arc::new(error))
 }

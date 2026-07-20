@@ -6,7 +6,12 @@ use std::num::NonZero;
 use bitflags::bitflags;
 use le_stream::{FromLeStream, ToLeStream};
 
-const BLOCK_MASK: u16 = 0xFF00;
+/// Selects the block-control byte in the high byte of an APS frame's group ID.
+///
+/// Fragmented APS frames overload the group ID: the low byte contains the
+/// fragment index, while the high byte contains fragment block information.
+/// This mask selects that high-byte field without selecting the fragment index.
+pub const BLOCK_MASK: u16 = 0xFF00;
 
 /// Ember APS options.
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Hash, FromLeStream, ToLeStream)]
@@ -141,6 +146,18 @@ impl Frame {
         self.group_id
     }
 
+    /// Sets the raw APS group ID field.
+    ///
+    /// For multicast frames this identifies the destination group. Fragmented
+    /// frames overload the field with the fragment index in the low byte and
+    /// block information in the high byte. This method does not modify
+    /// [`Options::FRAGMENT`] or validate that encoding; use
+    /// [`Frame::set_first_fragment`] or [`Frame::set_followup_fragment`] when
+    /// constructing fragmented frames.
+    pub const fn set_group_id(&mut self, group_id: u16) {
+        self.group_id = group_id;
+    }
+
     /// Return the sequence number.
     #[must_use]
     pub const fn sequence(&self) -> u8 {
@@ -189,6 +206,12 @@ impl Frame {
     pub fn set_followup_fragment(&mut self, index: NonZero<u8>) {
         self.options.insert(Options::FRAGMENT);
         self.group_id = u16::from(index.get());
+    }
+
+    /// Removes APS fragmentation metadata from this frame.
+    pub fn clear_fragmentation(&mut self) {
+        self.options.remove(Options::FRAGMENT);
+        self.group_id = 0;
     }
 }
 

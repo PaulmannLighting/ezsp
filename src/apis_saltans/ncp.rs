@@ -38,7 +38,7 @@ const DEFAULT_MULTICAST_NONMEMBER_RADIUS: u8 = 0;
 /// been registered with the physical NCP. It retains those descriptors for
 /// [`Driver::get_endpoints`], while the wrapped [`Ncp`] retains their output
 /// clusters for APS source-endpoint selection.
-pub struct ZigbeeNcp<T> {
+struct ZigbeeNcp<T> {
     ncp: Ncp<T>,
     endpoints: Box<[SimpleDescriptor]>,
 }

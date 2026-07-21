@@ -13,6 +13,15 @@ pub mod sink_commission;
 pub mod sink_table;
 pub mod translation_table_clear;
 
+crate::frame::parameters::command_enum!(
+    Command,
+    ProxyTable(proxy_table::Command),
+    Send(send::Command),
+    SinkCommission(sink_commission::Command),
+    SinkTable(sink_table::Command),
+    TranslationTableClear(translation_table_clear::Command),
+);
+
 crate::frame::parameters::parameter_enum!(
     Response,
     ProxyTable,

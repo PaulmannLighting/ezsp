@@ -8,7 +8,7 @@ pub use self::parameter::Parameter;
 pub use self::parsable::Parsable;
 pub use self::responds_with::RespondsWith;
 
-mod enums;
+pub mod enums;
 mod header;
 mod parameter;
 pub mod parameters;

@@ -16,6 +16,17 @@ pub mod reset_node;
 pub mod set_token_data;
 pub mod token_factory_reset;
 
+crate::frame::parameters::command_enum!(
+    Command,
+    GetTokenCount(get_token_count::Command),
+    GetTokenData(get_token_data::Command),
+    GetTokenInfo(get_token_info::Command),
+    GpSecurityTestVectors(gp_security_test_vectors::Command),
+    ResetNode(reset_node::Command),
+    SetTokenData(set_token_data::Command),
+    TokenFactoryReset(token_factory_reset::Command),
+);
+
 crate::frame::parameters::parameter_enum!(
     Response,
     GetTokenCount,

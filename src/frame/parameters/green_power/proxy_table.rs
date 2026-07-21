@@ -8,4 +8,11 @@ pub mod get_entry;
 pub mod lookup;
 pub mod process_gp_pairing;
 
+crate::frame::parameters::command_enum!(
+    Command,
+    GetEntry(get_entry::Command),
+    Lookup(lookup::Command),
+    ProcessGpPairing(process_gp_pairing::Command),
+);
+
 crate::frame::parameters::parameter_enum!(Response, GetEntry, Lookup, ProcessGpPairing);

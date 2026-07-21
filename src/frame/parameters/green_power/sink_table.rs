@@ -20,6 +20,19 @@ pub mod remove_entry;
 pub mod set_entry;
 pub mod set_security_frame_counter;
 
+crate::frame::parameters::command_enum!(
+    Command,
+    ClearAll(clear_all::Command),
+    FindOrAllocateEntry(find_or_allocate_entry::Command),
+    GetEntry(get_entry::Command),
+    Init(init::Command),
+    Lookup(lookup::Command),
+    NumberOfActiveEntries(number_of_active_entries::Command),
+    RemoveEntry(remove_entry::Command),
+    SetEntry(set_entry::Command),
+    SetSecurityFrameCounter(set_security_frame_counter::Command),
+);
+
 crate::frame::parameters::parameter_enum!(
     Response,
     ClearAll,

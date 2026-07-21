@@ -41,6 +41,29 @@ pub mod set_secondary_channel_mask;
 pub mod set_security_state_without_key;
 pub mod start_scan;
 
+crate::frame::parameters::command_enum!(
+    Command,
+    ClearTokens(clear_tokens::Command),
+    GetPrimaryChannelMask(get_primary_channel_mask::Command),
+    GetSecondaryChannelMask(get_secondary_channel_mask::Command),
+    GetTokens(get_tokens::Command),
+    IsZllNetwork(is_zll_network::Command),
+    NetworkOps(network_ops::Command),
+    OperationInProgress(operation_in_progress::Command),
+    RxOnWhenIdleGetActive(rx_on_when_idle_get_active::Command),
+    SetAdditionalState(set_additional_state::Command),
+    SetDataToken(set_data_token::Command),
+    SetInitialSecurityState(set_initial_security_state::Command),
+    SetNodeType(set_node_type::Command),
+    SetNonZllNetwork(set_non_zll_network::Command),
+    SetPrimaryChannelMask(set_primary_channel_mask::Command),
+    SetRadioIdleMode(set_radio_idle_mode::Command),
+    SetRxOnWhenIdle(set_rx_on_when_idle::Command),
+    SetSecondaryChannelMask(set_secondary_channel_mask::Command),
+    SetSecurityStateWithoutKey(set_security_state_without_key::Command),
+    StartScan(start_scan::Command),
+);
+
 crate::frame::parameters::parameter_enum!(
     Response,
     ClearTokens,

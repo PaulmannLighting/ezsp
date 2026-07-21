@@ -13,6 +13,15 @@ pub mod handler;
 pub mod remove_device;
 pub mod unicast_nwk_key_update;
 
+crate::frame::parameters::command_enum!(
+    Command,
+    AesMmoHash(aes_mmo_hash::Command),
+    BroadcastNetworkKeySwitch(broadcast_network_key_switch::Command),
+    BroadcastNextNetworkKey(broadcast_next_network_key::Command),
+    RemoveDevice(remove_device::Command),
+    UnicastNwkKeyUpdate(unicast_nwk_key_update::Command),
+);
+
 crate::frame::parameters::parameter_enum!(
     Response,
     AesMmoHash,

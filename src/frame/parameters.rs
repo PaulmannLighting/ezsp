@@ -60,14 +60,76 @@ macro_rules! parameter {
 }
 pub(crate) use parameter;
 
+macro_rules! command_enum {
+    ($name:ident, $($variant:ident($ty:path)),+ $(,)?) => {
+        #[derive(Clone, Debug, Eq, PartialEq)]
+        #[doc = concat!(stringify!($name), " parameters.")]
+        pub enum $name {
+            $(
+                #[doc = concat!(stringify!($variant), " command parameters.")]
+                $variant(Box<$ty>)
+            ),+
+        }
+    };
+}
+pub(crate) use command_enum;
+
 macro_rules! command {
     (
         $id:expr,
         { $($field:ident: $ty:ty),* $(,)? },
+        $response:ty =>
+            $group:ident($module:ident)::$nested:ident($nested_module:ident)::$variant:ident
+        $(, impl { $($impls:item)* })?
+        $(,)?) => {
+        crate::frame::parameters::command!(
+            @emit
+            $id,
+            { $($field: $ty),* },
+            $response
+            $(, impl { $($impls)* })?
+        );
+
+        impl From<Command> for crate::frame::enums::Command {
+            fn from(command: Command) -> Self {
+                Self::$group(Box::new(
+                    crate::frame::parameters::$module::Command::$nested(Box::new(
+                        crate::frame::parameters::$module::$nested_module::Command::$variant(
+                            Box::new(command),
+                        ),
+                    )),
+                ))
+            }
+        }
+    };
+    (
+        $id:expr,
+        { $($field:ident: $ty:ty),* $(,)? },
+        $response:ty => $group:ident($module:ident)::$variant:ident
+        $(, impl { $($impls:item)* })?
+        $(,)?) => {
+        crate::frame::parameters::command!(
+            @emit
+            $id,
+            { $($field: $ty),* },
+            $response
+            $(, impl { $($impls)* })?
+        );
+
+        impl From<Command> for crate::frame::enums::Command {
+            fn from(command: Command) -> Self {
+                Self::$group(Box::new(
+                    crate::frame::parameters::$module::Command::$variant(Box::new(command)),
+                ))
+            }
+        }
+    };
+    (@emit
+        $id:expr,
+        { $($field:ident: $ty:ty),* $(,)? },
         $response:ty
         $(, impl { $($impls:item)* })?
-        $(,)?
-    ) => {
+        $(,)?) => {
         crate::frame::parameters::parameter!(
             Command,
             $id,
@@ -203,7 +265,7 @@ macro_rules! frame {
         crate::frame::parameters::command!(
             $id,
             { $($command_field: $command_ty),* },
-            Response
+            Response => $group($module)::$nested($nested_module)::$variant
             $(, impl { $($command_impls)* })?
         );
 
@@ -224,34 +286,13 @@ macro_rules! frame {
         crate::frame::parameters::command!(
             $id,
             { $($command_field: $command_ty),* },
-            Response
+            Response => $group($module)::$variant
             $(, impl { $($command_impls)* })?
         );
 
         crate::frame::parameters::response!(
             $id,
             { $($response_field: $response_ty),* } => $group($module)::$variant
-            $(, impl { $($response_impls)* })?
-        );
-    };
-    (
-        $id:expr,
-        { $($command_field:ident: $command_ty:ty),* $(,)? }
-        $(, impl { $($command_impls:item)* })?,
-        { $($response_field:ident: $response_ty:ty),* $(,)? }
-        $(, impl { $($response_impls:item)* })?
-        $(,)?
-    ) => {
-        crate::frame::parameters::command!(
-            $id,
-            { $($command_field: $command_ty),* },
-            Response
-            $(, impl { $($command_impls)* })?
-        );
-
-        crate::frame::parameters::response!(
-            $id,
-            { $($response_field: $response_ty),* }
             $(, impl { $($response_impls)* })?
         );
     };

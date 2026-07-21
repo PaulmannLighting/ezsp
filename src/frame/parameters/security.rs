@@ -44,6 +44,31 @@ pub mod send_trust_center_link_key;
 pub mod set_initial_security_state;
 pub mod update_tc_link_key;
 
+crate::frame::parameters::command_enum!(
+    Command,
+    CheckKeyContext(check_key_context::Command),
+    ClearKeyTable(clear_key_table::Command),
+    ClearTransientLinkKeys(clear_transient_link_keys::Command),
+    EraseKeyTableEntry(erase_key_table_entry::Command),
+    ExportKey(export_key::Command),
+    ExportLinkKeyByEui(export_link_key_by_eui::Command),
+    ExportLinkKeyByIndex(export_link_key_by_index::Command),
+    ExportTransientKeyByEui(export_transient_key::by_eui::Command),
+    ExportTransientKeyByIndex(export_transient_key::by_index::Command),
+    FindKeyTableEntry(find_key_table_entry::Command),
+    GetApsKeyInfo(get_aps_key_info::Command),
+    GetCurrentSecurityState(get_current_security_state::Command),
+    GetKey(get_key::Command),
+    GetNetworkKeyInfo(get_network_key_info::Command),
+    ImportKey(import_key::Command),
+    ImportLinkKey(import_link_key::Command),
+    ImportTransientKey(import_transient_key::Command),
+    RequestLinkKey(request_link_key::Command),
+    SendTrustCenterLinkKey(send_trust_center_link_key::Command),
+    SetInitialSecurityState(set_initial_security_state::Command),
+    UpdateTcLinkKey(update_tc_link_key::Command),
+);
+
 crate::frame::parameters::parameter_enum!(
     Response,
     CheckKeyContext,

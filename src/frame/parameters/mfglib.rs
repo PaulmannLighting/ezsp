@@ -25,6 +25,21 @@ pub mod start_tone;
 pub mod stop_stream;
 pub mod stop_tone;
 
+crate::frame::parameters::command_enum!(
+    Command,
+    End(end::Command),
+    GetChannel(get_channel::Command),
+    GetPower(get_power::Command),
+    SendPacket(send_packet::Command),
+    SetChannel(set_channel::Command),
+    SetPower(set_power::Command),
+    Start(start::Command),
+    StartStream(start_stream::Command),
+    StartTone(start_tone::Command),
+    StopStream(stop_stream::Command),
+    StopTone(stop_tone::Command),
+);
+
 crate::frame::parameters::parameter_enum!(
     Response,
     End,

@@ -17,6 +17,17 @@ pub mod is_active;
 pub mod set;
 pub mod set_remote_node_id;
 
+crate::frame::parameters::command_enum!(
+    Command,
+    ClearTable(clear_table::Command),
+    Delete(delete::Command),
+    Get(get::Command),
+    GetRemoteNodeId(get_remote_node_id::Command),
+    IsActive(is_active::Command),
+    Set(set::Command),
+    SetRemoteNodeId(set_remote_node_id::Command),
+);
+
 crate::frame::parameters::parameter_enum!(
     Response,
     ClearTable,

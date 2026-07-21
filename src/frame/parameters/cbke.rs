@@ -29,6 +29,25 @@ pub mod handler;
 pub mod save_preinstalled_cbke_data283k1;
 pub mod set_preinstalled_cbke_data;
 
+crate::frame::parameters::command_enum!(
+    Command,
+    CalculateSmacs(calculate_smacs::Command),
+    CalculateSmacs283k1(calculate_smacs283k1::Command),
+    ClearTemporaryDataMaybeStoreLinkKey(clear_temporary_data_maybe_store_link_key::Command),
+    ClearTemporaryDataMaybeStoreLinkKey283k1(
+        clear_temporary_data_maybe_store_link_key283k1::Command
+    ),
+    DsaSign(dsa_sign::Command),
+    DsaVerify(dsa_verify::Command),
+    DsaVerify283k1(dsa_verify283k1::Command),
+    GenerateCbkeKeys(generate_cbke_keys::Command),
+    GenerateCbkeKeys283k1(generate_cbke_keys283k1::Command),
+    GetCertificate(get_certificate::Command),
+    GetCertificate283k1(get_certificate283k1::Command),
+    SavePreinstalledCbkeData283k1(save_preinstalled_cbke_data283k1::Command),
+    SetPreinstalledCbkeData(set_preinstalled_cbke_data::Command),
+);
+
 crate::frame::parameters::parameter_enum!(
     Response,
     CalculateSmacs,

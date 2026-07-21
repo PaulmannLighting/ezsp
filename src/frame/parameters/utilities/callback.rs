@@ -2,4 +2,8 @@
 
 use crate::Parameters;
 
-crate::frame::parameters::command!(0x0006, {}, Parameters);
+crate::frame::parameters::command!(
+    0x0006,
+    {},
+    Parameters => Utilities(utilities)::Callback
+);

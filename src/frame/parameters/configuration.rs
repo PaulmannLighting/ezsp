@@ -28,6 +28,23 @@ pub mod set_value;
 pub mod version;
 pub mod write_attribute;
 
+crate::frame::parameters::command_enum!(
+    Command,
+    AddEndpoint(add_endpoint::Command),
+    GetConfigurationValue(get_configuration_value::Command),
+    GetExtendedValue(get_extended_value::Command),
+    GetPolicy(get_policy::Command),
+    GetValue(get_value::Command),
+    ReadAttribute(read_attribute::Command),
+    SendPanIdUpdate(send_pan_id_update::Command),
+    SetConfigurationValue(set_configuration_value::Command),
+    SetPassiveAckConfig(set_passive_ack_config::Command),
+    SetPolicy(set_policy::Command),
+    SetValue(set_value::Command),
+    Version(version::Command),
+    WriteAttribute(write_attribute::Command),
+);
+
 crate::frame::parameters::parameter_enum!(
     Response,
     AddEndpoint,

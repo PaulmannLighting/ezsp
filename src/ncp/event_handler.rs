@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use log::{debug, error, trace, warn};
+use log::{debug, trace, warn};
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::oneshot;
 
@@ -120,15 +120,20 @@ where
     }
 
     async fn handle_incoming_message(&mut self, incoming_message: IncomingMessage) {
-        debug!("Incoming message: {incoming_message:?}");
+        trace!("Incoming message: {incoming_message:?}");
         self.defragmenter.tick();
 
         let Some(defragmented_message) = self.defragmenter.handle(incoming_message).await else {
+            trace!("Message is fragmented. Waiting for more data.");
             return;
         };
 
+        trace!("Message defragmented: {defragmented_message:?}");
+
         match defragmented_message.try_into() {
             Ok(event) => {
+                trace!("Successfully converted defragmented message into an event: {event:?}");
+
                 if let Err(error) = self.output.send(event).await {
                     trace!("Failed to forward EZSP event to registered handler: {error}");
                 }
@@ -143,13 +148,14 @@ where
         if let Some(response) = self.responses.remove(&message_sent.message_tag())
             && let Err(error) = response.send(message_sent.status())
         {
-            warn!("Failed to send message sent status: {error:?}");
-        }
-
-        match message_sent.ack_received() {
-            Ok(true) => trace!("ACK received for sent message: {message_sent}"),
-            Ok(false) => warn!("No ACK received for sent message: {message_sent}"),
-            Err(error) => error!("{error}: {message_sent}"),
+            match error {
+                Ok(status) => {
+                    warn!("Failed to send message with status: {status}");
+                }
+                Err(status_code) => {
+                    warn!("Failed to send message with status: {status_code:#04x}");
+                }
+            }
         }
     }
 }

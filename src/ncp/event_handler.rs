@@ -44,7 +44,20 @@ where
         while let Some(message) = inbox.recv().await {
             match message {
                 Message::Callback(callback) => {
-                    self.process_callback(*callback).await;
+                    if let Some(response) = self.process_callback(*callback).await {
+                        match response {
+                            Ok(event) => {
+                                if let Err(error) = self.output.send(event).await {
+                                    trace!(
+                                        "Failed to forward EZSP event to registered handler: {error}"
+                                    );
+                                }
+                            }
+                            Err(error) => {
+                                debug!("Failed to translate event: {error}");
+                            }
+                        }
+                    }
                 }
                 Message::NetworkScan(sender) => {
                     self.scans.push(sender.into());
@@ -68,6 +81,7 @@ where
     }
 
     /// Translates EZSP callbacks into Zigbee events and sends them to the outgoing channel.
+    #[must_use]
     async fn process_callback(
         &mut self,
         callback: Callback,
@@ -84,6 +98,7 @@ where
         }
     }
 
+    #[must_use]
     fn handle_networking_callbacks(&mut self, networking: Networking) -> Option<Networking> {
         match networking {
             Networking::NetworkFound(network_found) => {
@@ -103,6 +118,7 @@ where
         None
     }
 
+    #[must_use]
     async fn handle_messaging_callbacks(&mut self, messaging: Messaging) -> Option<Messaging> {
         match messaging {
             Messaging::IncomingMessage(incoming_message) => {

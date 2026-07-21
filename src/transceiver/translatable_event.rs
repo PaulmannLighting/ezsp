@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 use crate::{Callback, DefragmentedMessage};
 
@@ -9,7 +9,8 @@ use crate::{Callback, DefragmentedMessage};
 /// is provided when both conversions exist and their errors are displayable and
 /// sendable.
 pub trait TranslatableEvent:
-    TryFrom<Callback, Error: Display + Send>
+    Debug
+    + TryFrom<Callback, Error: Display + Send>
     + TryFrom<DefragmentedMessage, Error: Display + Send>
     + Send
 {
@@ -17,7 +18,7 @@ pub trait TranslatableEvent:
 
 impl<T> TranslatableEvent for T
 where
-    T: TryFrom<Callback> + TryFrom<DefragmentedMessage> + Send,
+    T: Debug + TryFrom<Callback> + TryFrom<DefragmentedMessage> + Send,
     <T as TryFrom<Callback>>::Error: Display + Send,
     <T as TryFrom<DefragmentedMessage>>::Error: Display + Send,
 {

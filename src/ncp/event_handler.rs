@@ -10,6 +10,12 @@ use crate::ncp::{Message, Scans};
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
 use crate::{Callback, Communicate, Defragmenter, TranslatableEvent};
 
+/// Correlates internal callbacks and translates application-facing events.
+///
+/// The builder runs this handler in a background task. It aggregates scan
+/// callbacks, resolves `messageSent` confirmations, reassembles fragmented APS
+/// messages, and converts remaining callbacks into the configured output event
+/// type.
 #[derive(Debug)]
 pub struct EventHandler<T, U> {
     defragmenter: Defragmenter<T>,

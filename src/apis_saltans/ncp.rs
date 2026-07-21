@@ -1,30 +1,41 @@
-//! `apis_saltans_hw::Driver` adapter for [`Ncp`].
+//! `apis_saltans_hw::Driver` implementation for [`Ncp`].
 //!
-//! [`ZigbeeNcp`] wraps the plain host-side [`Ncp`] and registers every supplied
-//! endpoint as part of construction. Consequently, a value that implements
-//! `apis_saltans_hw::Driver` always has the same endpoints configured on the
-//! device and available through `Driver::get_endpoints`.
-//! Endpoint registration is implemented by the private [`AddSimpleDescriptors`]
-//! extension trait, which translates the `apis-saltans` descriptors into
-//! sequential [`Ncp::add_endpoint`] calls.
+//! The implementation is attached directly to the high-level [`Ncp`]; there is
+//! no feature-specific wrapper. The `Ncp` already owns the endpoint descriptors
+//! registered by [`crate::Builder`], so `Driver::get_endpoints` converts that
+//! stored list back to `apis-saltans` simple descriptors. Unsupported profile
+//! IDs and reserved endpoint numbers are logged and omitted from the result.
 //!
-//! The adapter maps the generic hardware-driver operations expected by
-//! `apis-saltans` to EZSP command traits. Direct NCP operations are forwarded to
-//! the wrapped transport, while APS sends use the wrapped [`Ncp`] so that EZSP
-//! `messageSent` callbacks can be correlated with the originating request. The
-//! APS profile and cluster are taken from `apis_saltans_hw::Datagram` metadata;
-//! the local source endpoint is selected by [`Ncp`] from the registered
-//! endpoint output clusters.
+//! Driver operations map to EZSP as follows:
+//!
+//! - network and IEEE identity use `getNodeId` and `getEui64`, respectively;
+//! - active and energy scans use [`Ncp`] callback aggregation;
+//! - permit-joining duration is truncated to whole seconds and clamped to
+//!   `u8::MAX` seconds;
+//! - route requests use a high-RAM many-to-one concentrator request;
+//! - address translation uses the EZSP address-table lookup commands; and
+//! - datagram transmission delegates to [`Ncp::unicast`], [`Ncp::broadcast`],
+//!   or [`Ncp::multicast`].
+//!
+//! The APS profile and cluster come from `apis_saltans_hw::Datagram` metadata.
+//! Device destinations preserve their requested endpoint, broadcasts use their
+//! requested endpoint with radius zero, and groups use the profile's broadcast
+//! endpoint with zero hops and nonmember radius. [`Ncp`] selects the local
+//! source endpoint from its registered output clusters.
+//!
+//! A transmit call returns `apis_saltans_hw::HwResponse` after the EZSP send
+//! transaction is accepted. That response owns the deferred [`crate::StackResponse`]
+//! and reports the later `messageSent` status when awaited.
 
 use std::time::Duration;
 
-use apis_saltans_hw::core::{Destination, IeeeAddress, Profile};
-use apis_saltans_hw::zdp::{AppFlags, SimpleDescriptor};
+use apis_saltans_hw::core::{Destination, IeeeAddress};
+use apis_saltans_hw::zdp::SimpleDescriptor;
 use apis_saltans_hw::{Datagram, Driver, Error, FoundNetwork, HwResponse, ScannedChannel};
 use log::error;
 
 use crate::ember::concentrator;
-use crate::{Configuration, Endpoint, Messaging, MulticastOptions, Ncp, Networking, Utilities};
+use crate::{Configuration, Messaging, MulticastOptions, Ncp, Networking, Utilities};
 
 const DEFAULT_BROADCAST_RADIUS: u8 = 0;
 const DEFAULT_MULTICAST_HOPS: u8 = 0;
@@ -157,28 +168,5 @@ where
         };
 
         Ok(HwResponse::new(stack_response))
-    }
-}
-
-impl TryFrom<Endpoint> for SimpleDescriptor {
-    type Error = Endpoint;
-
-    fn try_from(value: Endpoint) -> Result<Self, Self::Error> {
-        let Ok(profile) = Profile::try_from(value.profile_id) else {
-            return Err(value);
-        };
-
-        let Ok(endpoint) = apis_saltans_hw::core::Endpoint::try_from(value.id) else {
-            return Err(value);
-        };
-
-        Ok(SimpleDescriptor::new(
-            endpoint,
-            profile,
-            value.device_id,
-            AppFlags::from_bits_retain(value.app_flags),
-            value.input_clusters,
-            value.output_clusters,
-        ))
     }
 }

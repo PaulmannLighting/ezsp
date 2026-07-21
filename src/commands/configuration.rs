@@ -11,7 +11,7 @@ use crate::ezsp::{decision, policy, value};
 use crate::frame::parameters::configuration::{
     add_endpoint, get_configuration_value, get_extended_value, get_policy, get_value,
     read_attribute, send_pan_id_update, set_configuration_value, set_passive_ack_config,
-    set_policy, set_value, version, write_attribute,
+    set_policy, set_value, write_attribute,
 };
 use crate::parameters::configuration::write_attribute::Attribute;
 use crate::types::ByteSizedVec;

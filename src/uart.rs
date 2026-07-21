@@ -6,14 +6,14 @@
 //! frames, and sliding-window retransmission.
 //!
 //! This module delegates `ASHv2` link handling to the `ashv2` crate and handles
-//! the EZSP-specific pieces: protocol-version negotiation, EZSP header
-//! selection, typed request/response exchange, and asynchronous callback
-//! demultiplexing.
+//! the EZSP-specific pieces: encoding complete command frames, decoding typed
+//! response and callback frames, and updating the header decoder after version
+//! negotiation.
 //!
-//! The `ASHv2` types used by the public constructors are re-exported from this
-//! module. Users can import [`FlowControl`], [`Handle`], [`NativeSerialPort`],
-//! [`Payload`], [`SerialPort`], [`open`], and [`start`] from
-//! `ezsp::uart` without naming the underlying transport crate directly.
+//! Use [`Builder::ashv2`](crate::Builder::ashv2) with a serial port implementing
+//! `ashv2::SerialPort`. The builder starts the underlying `ASHv2` worker tasks
+//! and combines this module's [`Transmitter`] and [`Receiver`] into the core
+//! actor-based [`Transceiver`](crate::Transceiver).
 
 pub use self::receiver::Receiver;
 pub use self::transmitter::Transmitter;

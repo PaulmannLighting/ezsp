@@ -17,6 +17,12 @@ use crate::{
 
 const RADIO_POWER: i8 = 8;
 
+/// Configures and starts an actor-backed EZSP Network Co-Processor.
+///
+/// The builder owns a [`Transceiver`] until [`Builder::start`] spawns its
+/// transmitter and receiver tasks. It also stores queue capacities, the desired
+/// EZSP version, stack policies and configuration values, concentrator
+/// settings, radio power, and default APS options.
 pub struct Builder<T, R> {
     pub(crate) transceiver: Transceiver<T, R>,
     pub(crate) callbacks_capacity: usize,
@@ -30,10 +36,12 @@ pub struct Builder<T, R> {
 }
 
 impl<T, R> Builder<T, R> {
-    /// Creates a builder with a transport, callback stream, and startup mode.
+    /// Creates a builder around separate transport transmit and receive halves.
     ///
-    /// Select [`Startup::Resume`] to restore a persisted network or
-    /// [`Startup::Initialize`] to leave any current network and form a new one.
+    /// # Panics
+    ///
+    /// Panics if [`MIN_NON_LEGACY_VERSION`] is zero. The protocol constant is
+    /// defined as a nonzero version, so this indicates an invalid crate build.
     #[must_use]
     pub const fn new(transceiver: Transceiver<T, R>) -> Self {
         Self {
@@ -50,17 +58,23 @@ impl<T, R> Builder<T, R> {
         }
     }
 
-    pub fn with_callbacks_capacity(mut self, callbacks_capacity: usize) -> Self {
+    /// Sets the capacity of the asynchronous callback channel.
+    #[must_use]
+    pub const fn with_callbacks_capacity(mut self, callbacks_capacity: usize) -> Self {
         self.callbacks_capacity = callbacks_capacity;
         self
     }
 
-    pub fn with_messages_capacity(mut self, messages_capacity: usize) -> Self {
+    /// Sets the capacity of actor command and response message channels.
+    #[must_use]
+    pub const fn with_messages_capacity(mut self, messages_capacity: usize) -> Self {
         self.messages_capacity = messages_capacity;
         self
     }
 
-    pub fn with_desired_version(mut self, desired_version: NonZero<u8>) -> Self {
+    /// Sets the EZSP protocol version requested during connection negotiation.
+    #[must_use]
+    pub const fn with_desired_version(mut self, desired_version: NonZero<u8>) -> Self {
         self.desired_version = desired_version;
         self
     }
@@ -120,22 +134,20 @@ where
     T: Transmit + Send + 'static,
     R: Receive + Send + 'static,
 {
-    /// Configures the EZSP stack and starts an `apis_saltans_hw` NCP actor.
+    /// Configures the EZSP stack and starts the high-level NCP services.
     ///
     /// The startup sequence applies configured policies and stack values,
-    /// waits for the transport to connect, and wraps the plain [`Ncp`]
-    /// in the internal `ZigbeeNcp` driver adapter. Constructing that adapter
-    /// registers every supplied endpoint with the device and stores its
-    /// descriptor and output clusters before the driver actor can start. The
-    /// builder then applies its [`Startup`] mode, waits for `NetworkUp`, sends a
-    /// many-to-one route request, and returns an `apis_saltans_hw::NcpHandle`
-    /// plus the translated event stream.
+    /// waits for protocol negotiation, applies its [`Startup`] mode, waits for
+    /// `NetworkUp`, registers every supplied endpoint, starts callback
+    /// translation and correlation, and returns an [`Ncp`] containing a
+    /// cloneable [`Connected`] actor handle. Translated events are sent to
+    /// `events`.
     ///
     /// # Errors
     ///
-    /// Returns an `apis_saltans_hw::Error` if endpoint validation, EZSP stack
-    /// setup, transport connection, network initialization, or actor startup
-    /// fails.
+    /// Returns an [`Error`] if endpoint validation, actor communication,
+    /// protocol negotiation, stack setup, network initialization, or endpoint
+    /// registration fails.
     pub async fn start<E>(
         self,
         startup: Startup,

@@ -8,13 +8,19 @@ use crate::parameters::configuration;
 use crate::transceiver::Message;
 use crate::{Callback, Error, Parameters, Response};
 
+/// Receives decoded frames from a transport-specific inbound stream.
+///
+/// Implementations also store the negotiated protocol version so transports
+/// can switch between legacy and extended EZSP header decoding.
 pub trait Receive {
+    /// Receives the next decoded frame, or `None` when the input closes.
     fn receive(&mut self) -> impl Future<Output = Option<Frame<Parameters>>> + Send;
 
+    /// Replaces the negotiated EZSP version and returns the previous value.
     fn set_negotiated_version(&mut self, version: u8) -> Option<u8>;
 }
 
-/// Decodes `ASHv2` payloads into typed EZSP frames.
+/// Routes received EZSP frames to the transmitter actor or callback stream.
 #[derive(Debug)]
 pub struct Receiver<T> {
     receive: T,
@@ -26,6 +32,7 @@ impl<T> Receiver<T>
 where
     T: Receive,
 {
+    /// Creates a receiver task around a transport-specific inbound half.
     #[must_use]
     pub const fn new(
         receive: T,
@@ -91,6 +98,7 @@ impl<T> Receiver<T>
 where
     T: Receive,
 {
+    /// Runs until the inbound stream or the transmitter actor channel closes.
     pub async fn run(mut self) {
         while let Some(frame) = self.receive.receive().await {
             if let Err(error) = self.handle_frame(frame).await {

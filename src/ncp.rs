@@ -1,17 +1,18 @@
 //! High-level EZSP Network Co-Processor helper.
 //!
-//! [`Ncp`] wraps an EZSP [`Transport`](Transport) and adds the state
-//! needed by host-side Zigbee workflows: endpoint cluster metadata, APS
-//! EZSP message tags, scan aggregation, message-sent correlation, and callback
-//! dispatch through a background event handler.
+//! [`Ncp`] wraps a connected EZSP communicator and adds the state needed by
+//! host-side Zigbee workflows: endpoint cluster metadata, APS message tags,
+//! scan aggregation, message-sent correlation, and callback dispatch through a
+//! background event handler.
 //!
-//! The type is available without the `apis-saltans` feature. When that feature
-//! is enabled, [`Builder`] wraps the plain [`Ncp`] in an endpoint-configured
-//! driver adapter before starting the `apis_saltans_hw` actor. [`Startup`]
-//! records whether a builder should restore the NCP's persisted network or
-//! explicitly form a new network.
+//! [`Builder`] creates the transport actors, negotiates the protocol version,
+//! configures the stack, registers endpoints, starts callback translation, and
+//! returns an [`Ncp`]. [`Startup`] records whether the builder should restore
+//! the NCP's persisted network or explicitly form a new network. With the
+//! `apis-saltans` feature, `Ncp<T>` also implements
+//! `apis_saltans_hw::Driver` for suitable communicators and gains conversions
+//! between EZSP and `apis-saltans` endpoint, scan, APS, and event types.
 
-use std::collections::{BTreeMap, BTreeSet};
 use std::num::NonZero;
 
 use log::debug;
@@ -58,11 +59,12 @@ const MAX_FRAGMENT_COUNT: usize = u8::MAX as usize;
 
 /// Host-side helper for an EZSP Network Co-Processor.
 ///
-/// `Ncp<T>` owns a communicator. Its methods provide higher-level operations
+/// `Ncp<T>` owns a communicator, normally a cloneable [`Connected`](crate::Connected)
+/// actor handle. Its methods provide higher-level operations
 /// that need callback correlation or local host state, such as scans, outgoing
 /// APS message confirmation, and automatic source endpoint selection from the
-/// configured endpoint cluster lists. The `apis-saltans` startup path supplies
-/// an `Arc<tokio::sync::Mutex<T>>` shared with the callback event handler.
+/// configured endpoint cluster lists. The builder gives another clone of the
+/// connected handle to the background [`EventHandler`].
 #[derive(Debug)]
 pub struct Ncp<T> {
     pub(crate) transport: T,
@@ -149,6 +151,16 @@ impl<T> Ncp<T>
 where
     T: Configuration,
 {
+    /// Registers endpoints and constructs a high-level NCP helper.
+    ///
+    /// Each endpoint is registered on the NCP before the value is returned.
+    /// The supplied event-handler sender must feed the same callback handler
+    /// that receives callbacks for `transport`, because scans and APS send
+    /// confirmations are correlated through that channel.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if any endpoint registration command fails.
     pub async fn new(
         mut transport: T,
         endpoints: Box<[Endpoint]>,
@@ -156,7 +168,7 @@ where
         aps_options: aps::Options,
     ) -> Result<Self, Error> {
         for endpoint in endpoints.iter().cloned() {
-            endpoint.add_to(&mut transport).await?
+            endpoint.add_to(&mut transport).await?;
         }
 
         Ok(Self {

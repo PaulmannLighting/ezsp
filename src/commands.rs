@@ -39,9 +39,9 @@ mod zll;
 /// Convenience trait for implementors of the full EZSP command surface.
 ///
 /// Implementing [`Communicate`](crate::Communicate) is enough to get blanket
-/// implementations of the individual command-group traits. Every
-/// [`Transport`](crate::Transport) implements `Communicate` automatically. This
-/// trait simply collects the command groups under one bound.
+/// implementations of the individual command-group traits. The actor-backed
+/// [`Connected`](crate::Connected) handle implements `Communicate`; this trait
+/// simply collects the command groups under one bound.
 pub trait Ezsp:
     Binding
     + Bootloader

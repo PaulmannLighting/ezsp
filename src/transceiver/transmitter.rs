@@ -11,37 +11,47 @@ use crate::parameters::configuration::version;
 use crate::parameters::configuration::version::Command as VersionCommand;
 use crate::transceiver::Message;
 use crate::{
-    Command, Connection, Error, Extended, Frame, Header, Legacy, MIN_NON_LEGACY_VERSION,
-    Parameters, Response, ValueError,
+    Command, Error, Extended, Frame, Header, Legacy, MIN_NON_LEGACY_VERSION, Parameters, Response,
+    ValueError,
 };
 
 type PendingNegotiation = (NonZero<u8>, Sender<Result<(), Error>>);
 
+/// Sends fully framed commands through a transport-specific outbound sink.
 pub trait Transmit {
+    /// Transmits one complete EZSP command frame.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] when the frame cannot be encoded or sent.
     fn transmit(
         &mut self,
         frame: Frame<Commands>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
+/// Actor that serializes commands and correlates sequence-numbered responses.
+///
+/// The actor owns the transport-specific transmitter, assigns EZSP sequence
+/// numbers, tracks pending one-shot responses, and performs the initial version
+/// negotiation.
 pub struct Transmitter<T> {
     transmit: T,
     inbox: Receiver<Message>,
     negotiated_version: Option<u8>,
-    connection: Connection,
     pending_responses: BTreeMap<u8, Sender<Result<Parameters, Error>>>,
     version_negotiation: Option<PendingNegotiation>,
     sequence: u8,
 }
 
 impl<T> Transmitter<T> {
+    /// Creates a transmitter actor reading from `inbox`.
     #[must_use]
     pub const fn new(transmit: T, inbox: Receiver<Message>) -> Self {
         Self {
             transmit,
             inbox,
             negotiated_version: None,
-            connection: Connection::Disconnected,
             pending_responses: BTreeMap::new(),
             version_negotiation: None,
             sequence: 0,
@@ -125,6 +135,7 @@ impl<T> Transmitter<T>
 where
     T: Transmit,
 {
+    /// Runs the actor until every sender for its inbox has been dropped.
     pub async fn run(mut self) {
         while let Some(message) = self.inbox.recv().await {
             match message {

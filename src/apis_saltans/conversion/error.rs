@@ -1,3 +1,5 @@
+//! Errors produced while translating an incoming EZSP APS message.
+
 use apis_saltans_hw::core::endpoint::Reserved;
 
 /// An error that can occur when parsing an APS frame.

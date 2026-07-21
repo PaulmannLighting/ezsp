@@ -463,6 +463,12 @@ criteria = "safe-to-deploy"
 version = "0.26.4"
 notes = "AI-assisted: inspected source 0.26.4; Unix syscall wrappers used transitively by serialport. Unsafe code is FFI/memory layout handling around OS APIs; no hidden process/network behavior beyond explicitly exposed nix APIs."
 
+[[audits.num-derive]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.4.2 -> 0.5.1"
+notes = "AI-assisted: reviewed the complete 0.4.2 -> 0.5.1 diff; runtime procedural-macro implementation is unchanged. Changes update documentation/package metadata, raise MSRV to 1.71, and upgrade syn from 2 to 3. No unsafe code, build script, filesystem, process, network, or other ambient capabilities were introduced."
+
 [[audits.num_enum]]
 who = "Richard Neumann <neumann@paulmann.de>"
 criteria = "safe-to-deploy"

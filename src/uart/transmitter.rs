@@ -16,7 +16,7 @@ pub struct Transmitter {
 }
 
 impl Transmitter {
-    /// Create a new `Encoder`.
+    /// Creates an EZSP transmitter around an `ASHv2` actor handle.
     pub const fn new(ash_v2: Handle) -> Self {
         Self { ash_v2 }
     }

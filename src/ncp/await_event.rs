@@ -19,10 +19,10 @@ pub trait AwaitEvent {
 impl AwaitEvent for Receiver<Callback> {
     async fn await_network_status(&mut self, status: Status) {
         while let Some(callback) = self.recv().await {
-            if let Callback::Networking(Networking::StackStatus(stack_status)) = callback {
-                if stack_status.result() == Ok(status) {
-                    return;
-                }
+            if let Callback::Networking(Networking::StackStatus(stack_status)) = callback
+                && stack_status.result() == Ok(status)
+            {
+                return;
             }
         }
     }

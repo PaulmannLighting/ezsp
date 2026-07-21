@@ -1,3 +1,9 @@
+//! Device-address conversion for membership callbacks.
+//!
+//! Child and trust-center callbacks carry both an EUI-64 and a network short
+//! ID. Conversion rejects short IDs reserved by the `apis-saltans` address
+//! model.
+
 use apis_saltans_hw::core::FullAddress;
 use apis_saltans_hw::core::short_id::Device;
 

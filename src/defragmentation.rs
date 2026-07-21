@@ -347,7 +347,7 @@ mod tests {
     impl Communicate for MockTransport {
         fn communicate<T>(
             &mut self,
-            command: T,
+            _command: T,
         ) -> impl Future<Output = Result<T::Response, Error>> + Send
         where
             T: Parameter + RespondsWith + ToLeStream + Into<Commands>,

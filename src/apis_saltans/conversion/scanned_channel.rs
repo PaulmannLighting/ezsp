@@ -1,3 +1,7 @@
+//! Energy-scan result conversion.
+//!
+//! The channel number and maximum observed RSSI are preserved.
+
 use apis_saltans_hw::ScannedChannel;
 
 use crate::parameters::networking::handler::EnergyScanResult;

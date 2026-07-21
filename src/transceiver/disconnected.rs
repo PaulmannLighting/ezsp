@@ -7,6 +7,10 @@ use tokio::task::JoinHandle;
 use crate::transceiver::{Connected, Message};
 use crate::{Callback, Error};
 
+/// Handle to running transport tasks before EZSP version negotiation.
+///
+/// Call [`Disconnected::connect`] to issue the initial `version` command. On a
+/// negotiation error both transport tasks are aborted.
 #[derive(Debug)]
 pub struct Disconnected {
     pub(crate) handle: Sender<Message>,
@@ -16,6 +20,16 @@ pub struct Disconnected {
 }
 
 impl Disconnected {
+    /// Negotiates `desired_version` and returns a connected handle and callback stream.
+    ///
+    /// The returned [`Connected`] value is cloneable and implements the typed
+    /// command traits through [`Communicate`](crate::Communicate).
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if the actor channel closes, transmission fails, or
+    /// the NCP negotiates a different protocol version. On error, the spawned
+    /// transmitter and receiver tasks are aborted.
     pub async fn connect(
         self,
         desired_version: NonZero<u8>,

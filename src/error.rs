@@ -77,9 +77,11 @@ pub enum Error {
     #[error("Response channel is closed")]
     ChannelClosed,
 
+    /// All 256 EZSP sequence numbers currently have pending transactions.
     #[error("Transaction queue is full.")]
     TransactionQueueFull,
 
+    /// NCP startup was requested without any application endpoints.
     #[error("No endpoints provided.")]
     NoEndpoints,
 }

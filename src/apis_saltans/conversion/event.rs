@@ -1,3 +1,9 @@
+//! Membership and network-state event conversions.
+//!
+//! Child callbacks become join or leave events. Trust-center callbacks
+//! distinguish unsecured joins, secured/unsecured rejoins, and leaves. Only
+//! network up/down/opened/closed stack statuses have hardware event variants.
+
 use apis_saltans_hw::Event;
 
 use crate::ember::Status;

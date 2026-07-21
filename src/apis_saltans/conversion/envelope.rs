@@ -1,3 +1,8 @@
+//! NWK envelope construction for complete incoming APS messages.
+//!
+//! The source contains the EZSP sender short ID and no resolved IEEE address.
+//! Reception metadata is copied before the message is consumed by APS parsing.
+
 use apis_saltans_hw::aps::Data;
 use apis_saltans_hw::nwk::{Envelope, Metadata, Source};
 use bytes::Bytes;

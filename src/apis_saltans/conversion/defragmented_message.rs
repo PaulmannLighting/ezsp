@@ -1,3 +1,10 @@
+//! Conversion of complete incoming EZSP APS messages.
+//!
+//! Broadcast and unicast messages preserve the destination endpoint;
+//! multicasts use the APS group ID. The conversion also preserves profile,
+//! cluster, source endpoint, APS sequence, and payload bytes. Reserved endpoint
+//! or group identifiers are reported as [`ParseApsFrameError`].
+
 use apis_saltans_hw::aps::data::Header;
 use apis_saltans_hw::aps::{Data, Destination};
 use apis_saltans_hw::core::{Endpoint, GroupId};

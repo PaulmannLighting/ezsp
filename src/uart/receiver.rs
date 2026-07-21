@@ -11,12 +11,14 @@ use crate::{
     Receive, ezsp,
 };
 
+/// Receives `ASHv2` DATA payloads and decodes them as typed EZSP frames.
 pub struct Receiver {
     inbox: mpsc::Receiver<Payload>,
     negotiated_version: Option<u8>,
 }
 
 impl Receiver {
+    /// Creates a receiver over the `ASHv2` DATA payload channel.
     #[must_use]
     pub const fn new(inbox: mpsc::Receiver<Payload>) -> Self {
         Self {

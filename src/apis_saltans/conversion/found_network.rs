@@ -1,3 +1,8 @@
+//! Active-scan result conversion.
+//!
+//! Channel, PAN identifiers, join permission, stack profile, update ID, link
+//! quality, and RSSI are preserved.
+
 use apis_saltans_hw::{FoundNetwork, Network};
 
 use crate::parameters::networking::handler::NetworkFound;

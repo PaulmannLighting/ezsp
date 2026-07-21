@@ -3,6 +3,11 @@ use log::debug;
 use crate::types::ByteSizedVec;
 use crate::{Configuration, Error};
 
+/// An application endpoint registered on the NCP during startup.
+///
+/// The descriptor records the endpoint and device identifiers, application
+/// flags, and input/output clusters. [`Ncp`](crate::Ncp) retains the output
+/// clusters to select a source endpoint for outgoing APS messages.
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Endpoint {
     pub(crate) id: u8,

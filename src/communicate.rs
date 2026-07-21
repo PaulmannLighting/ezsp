@@ -9,19 +9,17 @@ use crate::frame::{Commands, Parameter, RespondsWith};
 
 /// Sends typed EZSP commands and receives their responses.
 ///
-/// The command-group traits are blanket-implemented for communicators. Every
-/// [`Transport`] receives this implementation automatically, while alternate
-/// implementations may provide the same transaction interface without
-/// exposing the lower-level transport operations.
-///
-/// `Arc<tokio::sync::Mutex<T>>` also implements this trait when `T` does. That
-/// implementation holds the mutex across the complete command/response
-/// transaction so multiple owners cannot interleave responses.
+/// The command-group traits are blanket-implemented for every communicator.
+/// [`Connected`](crate::Connected) is the standard implementation: it sends a
+/// command message to the transmitter actor and awaits the response correlated
+/// with that command's EZSP sequence number. Alternative transports can expose
+/// the same typed transaction interface by implementing this trait.
 pub trait Communicate: Send {
     /// Sends one command and waits for its typed response.
     ///
-    /// This method does not establish the connection automatically. Call
-    /// [`Communicate::ensure_connection`] when connection setup is required.
+    /// Connection negotiation is a separate lifecycle step. The standard actor
+    /// API only yields a [`Connected`](crate::Connected) communicator after
+    /// [`Disconnected::connect`](crate::Disconnected::connect) succeeds.
     ///
     /// # Errors
     ///

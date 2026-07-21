@@ -16,7 +16,6 @@ pub use self::receiver::{Receive, Receiver};
 pub use self::translatable_event::TranslatableEvent;
 pub use self::transmitter::{Transmit, Transmitter};
 
-mod callbacks;
 mod connected;
 mod disconnected;
 mod message;

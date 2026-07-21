@@ -40,8 +40,8 @@ pub use self::defragmentation::{Defragmented, DefragmentedMessage, Defragmenter}
 pub use self::error::{Error, ValueError};
 pub use self::extensions::{ConfigurationExt, Displayable, PolicyExt};
 pub use self::frame::{
-    Callback, CallbackType, Command, Extended, FormatVersion, Frame, Header, HighByte, Legacy,
-    LowByte, Parameters, Parsable, Response, SleepMode, parameters,
+    Callback, CallbackType, Command, Commands, Extended, FormatVersion, Frame, Header, HighByte,
+    Legacy, LowByte, Parameters, Parsable, Response, SleepMode, parameters,
 };
 pub use self::ncp::{
     Builder, Endpoint, EventHandler, InitializationParameters, MulticastOptions, Ncp,

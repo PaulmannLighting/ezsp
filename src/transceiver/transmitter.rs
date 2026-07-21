@@ -78,11 +78,6 @@ impl<T> Transmitter<T> {
     fn handle_response(&mut self, frame: Frame<Parameters>) {
         let (header, payload) = frame.into();
 
-        let Some(response_channel) = self.pending_responses.remove(&header.sequence()) else {
-            warn!("Received response for unknown sequence");
-            return;
-        };
-
         if let Parameters::Response(Response::Configuration(configuration::Response::Version(
             version,
         ))) = payload
@@ -90,6 +85,14 @@ impl<T> Transmitter<T> {
             self.handle_negotiated_version(*version);
             return;
         }
+
+        let Some(response_channel) = self.pending_responses.remove(&header.sequence()) else {
+            warn!(
+                "Received response for unknown sequence: {}",
+                header.sequence()
+            );
+            return;
+        };
 
         response_channel
             .send(Ok(payload))
@@ -154,6 +157,8 @@ where
     }
 
     async fn connect(&mut self, desired_version: NonZero<u8>, response: Sender<Result<(), Error>>) {
+        trace!("Establishing connection with desired version: {desired_version:?}");
+
         let header = self
             .header(VersionCommand::ID)
             .expect("Version command ID fits into a u16.");

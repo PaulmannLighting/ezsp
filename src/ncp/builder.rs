@@ -186,6 +186,17 @@ where
         let network_state = connected.network_state().await?;
         info!("Current network state: {network_state:?}");
 
+        let (message_tx, message_rx) = channel(self.messages_capacity);
+
+        info!("Initializing NCP.");
+        let ncp = Ncp::new(
+            connected.clone(),
+            endpoints,
+            message_tx.clone(),
+            self.aps_options,
+        )
+        .await?;
+
         match startup {
             Startup::Initialize(init) => {
                 if connected.leave_network().await.is_ok() {
@@ -233,15 +244,6 @@ where
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius)
             .await?;
 
-        let (message_tx, message_rx) = channel(self.messages_capacity);
-        let ncp = Ncp::new(
-            connected.clone(),
-            endpoints,
-            message_tx.clone(),
-            self.aps_options,
-        )
-        .await?;
-
         info!("Starting message translation bridge.");
         spawn(async move {
             while let Some(callback) = callbacks.recv().await {
@@ -255,6 +257,7 @@ where
 
         info!("Starting event handler.");
         spawn(EventHandler::new(connected, events).run(message_rx));
+
         Ok(ncp)
     }
 }

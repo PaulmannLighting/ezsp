@@ -26,7 +26,8 @@ EmberZNet 6.x/7.x API surface where that naming is reflected in the crate.
 ## Features
 
 - `ashv2`: enables the ASHv2 serial transport (`uart::Uart`).
-- `apis-saltans`: enables `apis_saltans_hw` integration for `Ncp`/`Builder` and pulls in `apis-saltans` APS/core/hardware/ZDP crates.
+- `apis-saltans`: enables the `apis_saltans_hw` driver adapter and `Builder`
+  integration, and pulls in the `apis-saltans` APS/core/hardware/ZDP crates.
 - `semver`: enables `semver` support for EZSP version APIs.
 
 ## Protocol Model
@@ -295,16 +296,20 @@ second argument. The serial port type is constrained by the re-exported
 
 ## `apis-saltans` Integration (`apis-saltans` Feature)
 
-When `apis-saltans` is enabled, the crate adapts `Ncp` to the
-`apis_saltans_hw` driver traits and provides custom `Builder` startup helpers.
+When `apis-saltans` is enabled, the crate provides a newtype driver adapter
+around `Ncp` plus custom `Builder` startup helpers. The plain `Ncp<T>` remains
+the host-side EZSP helper; it no longer implements `apis_saltans_hw::Driver`
+directly.
 
-- `Ncp<T>: apis_saltans_hw::Driver` when
-  `T: Messaging + Networking + Utilities + Send + Sync`.
+- The internal `ZigbeeNcp<T>` adapter implements `apis_saltans_hw::Driver` when
+  `T: Configuration + Messaging + Networking + Utilities + Send + Sync`.
 - `Builder::start(endpoints)` configures the EZSP stack, resumes persisted
   network state or forms a new network according to `Startup`, starts callback
-  translation, registers each `SimpleDescriptor` as an EZSP endpoint, stores
-  the descriptor cluster lists for later source endpoint selection, spawns the
-  NCP actor, and returns
+  translation, and constructs the adapter. Adapter construction registers each
+  `SimpleDescriptor` as an EZSP endpoint and retains the same descriptor list
+  for `Driver::get_endpoints`; construction fails if endpoint registration
+  fails. The wrapped `Ncp` retains the output-cluster lists for later source
+  endpoint selection. The builder then spawns the driver actor and returns
   `(apis_saltans_hw::NcpHandle, tokio::sync::mpsc::Receiver<apis_saltans_hw::Event>)`.
 - `Ncp::terminate()` stops the event handler.
 

@@ -11,7 +11,7 @@ use tokio::sync::mpsc::{Receiver, channel};
 use tokio::time::sleep;
 
 use super::event_handler::EventHandler;
-use crate::apis_saltans::ncp::Ncp;
+use crate::apis_saltans::ncp::{Ncp, ZigbeeNcp};
 use crate::ember::concentrator;
 use crate::ezsp::config;
 use crate::{
@@ -69,11 +69,13 @@ where
     /// Configures the EZSP stack and starts an `apis_saltans_hw` NCP actor.
     ///
     /// The startup sequence applies configured policies and stack values,
-    /// waits for the transport to connect, registers the supplied endpoints,
-    /// stores their cluster lists for later APS source endpoint selection, and
-    /// applies the [`Startup`] mode supplied to the builder. It then waits for
-    /// `NetworkUp`, sends a many-to-one route request, and returns an
-    /// `apis_saltans_hw::NcpHandle` plus the translated event stream.
+    /// waits for the transport to connect, and wraps the plain [`crate::Ncp`]
+    /// in the internal `ZigbeeNcp` driver adapter. Constructing that adapter
+    /// registers every supplied endpoint with the device and stores its
+    /// descriptor and output clusters before the driver actor can start. The
+    /// builder then applies its [`Startup`] mode, waits for `NetworkUp`, sends a
+    /// many-to-one route request, and returns an `apis_saltans_hw::NcpHandle`
+    /// plus the translated event stream.
     ///
     /// # Errors
     ///
@@ -109,36 +111,11 @@ where
             transport.set_policy(key, value).await?;
         }
 
-        let mut ncp = Ncp::new(transport.clone(), self.aps_options, message_tx);
-
-        for (endpoint_id, descriptor) in
-            endpoints
-                .iter()
-                .enumerate()
-                .map_while(|(index, descriptor)| {
-                    u8::try_from(index.checked_add(1)?)
-                        .ok()
-                        .map(|endpoint| (endpoint, descriptor))
-                })
-        {
-            debug!(
-                "Adding endpoint: {endpoint_id:#04X}, profile: {:?}, device_id: {:#04X}, app_flags: {:#04X}, input clusters: {:X?}, output clusters: {:X?}",
-                descriptor.profile_id(),
-                descriptor.device_id(),
-                descriptor.app_flags(),
-                descriptor.input_clusters(),
-                descriptor.output_clusters(),
-            );
-            ncp.add_endpoint(
-                endpoint_id,
-                descriptor.profile_id(),
-                descriptor.device_id(),
-                descriptor.app_flags(),
-                descriptor.input_clusters().iter().copied().collect(),
-                descriptor.output_clusters().iter().copied().collect(),
-            )
-            .await?;
-        }
+        let zigbee_ncp = ZigbeeNcp::new(
+            Ncp::new(transport.clone(), self.aps_options, message_tx),
+            endpoints,
+        )
+        .await?;
 
         let ieee_address = transport.get_eui64().await?;
         debug!("IEEE address: {ieee_address}");
@@ -192,7 +169,7 @@ where
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius as u8)
             .await?;
 
-        let (ncp, actor) = ncp.run(self.buffers);
+        let (ncp, actor) = zigbee_ncp.run(self.buffers);
         spawn(actor);
         Ok((ncp, events_rx))
     }

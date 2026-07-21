@@ -32,11 +32,13 @@ pub use self::frame::{
     LowByte, Parameters, Parsable, Response, SleepMode, parameters,
 };
 pub use self::ncp::{
-    Builder, InitializationParameters, Message, MulticastOptions, Ncp, NetworkCredentials, Scans,
-    StackResponse, Startup,
+    Builder, Endpoint, EventHandler, InitializationParameters, MulticastOptions, Ncp,
+    NetworkCredentials, Scans, StackResponse, Startup,
 };
-pub use self::result::Result;
-pub use self::transport::Transport;
+pub use self::transceiver::{
+    Connected, Disconnected, Receive, Receiver, Transceiver, TranslatableEvent, Transmit,
+    Transmitter,
+};
 pub use self::types::SourceRouteDiscoveryMode;
 
 #[cfg(feature = "apis-saltans")]
@@ -52,9 +54,10 @@ mod extensions;
 pub mod ezsp;
 mod frame;
 mod ncp;
-pub mod ncp2;
-mod result;
-mod transport;
+mod transceiver;
 mod types;
 #[cfg(feature = "ashv2")]
 pub mod uart;
+
+/// A specialized [`std::result::Result`] type for this crate.
+pub type Result<T> = core::result::Result<T, Error>;

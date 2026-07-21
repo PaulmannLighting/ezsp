@@ -107,14 +107,6 @@ pub trait Configuration {
         value: ByteSizedVec<u8>,
     ) -> impl Future<Output = Result<(), Error>> + Send;
 
-    /// The command allows the Host to specify the desired EZSP version and must be sent
-    /// before any other command.
-    /// The response provides information about the firmware running on the NCP.
-    fn version(
-        &mut self,
-        desired_protocol_version: u8,
-    ) -> impl Future<Output = Result<version::Response, Error>> + Send;
-
     /// Write attribute data on NCP endpoints.
     fn write_attribute(
         &mut self,
@@ -236,11 +228,6 @@ where
         self.communicate(set_value::Command::new(value_id, value))
             .await?
             .try_into()
-    }
-
-    async fn version(&mut self, desired_protocol_version: u8) -> Result<version::Response, Error> {
-        self.communicate(version::Command::new(desired_protocol_version))
-            .await
     }
 
     async fn write_attribute(

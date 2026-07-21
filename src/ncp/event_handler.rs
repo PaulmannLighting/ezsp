@@ -1,51 +1,57 @@
 use std::collections::BTreeMap;
 
 use log::{debug, error, trace, warn};
-use tokio::sync::mpsc::Sender;
+use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::oneshot;
 
-use crate::Callback;
 use crate::ember::Status;
 use crate::frame::parameters::networking::handler::Handler as Networking;
-pub use crate::ncp::Scans;
-use crate::ncp::messages::{ToReceiver, ToTransmitter};
+use crate::ncp::{Message, Scans};
 use crate::parameters::messaging::handler::{Handler as Messaging, IncomingMessage, MessageSent};
+use crate::{Callback, Communicate, Defragmenter, TranslatableEvent};
 
-pub struct Receiver {
-    transmitter: Sender<ToTransmitter>,
-    output: Sender<Callback>,
+#[derive(Debug)]
+pub struct EventHandler<T, U> {
+    defragmenter: Defragmenter<T>,
+    output: Sender<U>,
     scans: Scans,
     responses: BTreeMap<u8, oneshot::Sender<Result<Status, u8>>>,
 }
 
-impl Receiver {
-    pub const fn new(transmitter: Sender<ToTransmitter>, output: Sender<Callback>) -> Self {
+impl<T, U> EventHandler<T, U> {
+    pub(crate) fn new(transport: T, output: Sender<U>) -> Self {
         Self {
-            transmitter,
+            defragmenter: Defragmenter::new(transport),
             output,
-            scans: Scans::new(),
+            scans: Scans::default(),
             responses: BTreeMap::new(),
         }
     }
+}
 
-    pub async fn run(mut self, mut inbox: tokio::sync::mpsc::Receiver<ToReceiver>) {
+impl<T, U> EventHandler<T, U>
+where
+    T: Communicate,
+    U: TranslatableEvent,
+{
+    pub(crate) async fn run(mut self, mut inbox: Receiver<Message>) {
         while let Some(message) = inbox.recv().await {
             match message {
-                ToReceiver::Callback(callback) => {
+                Message::Callback(callback) => {
                     self.process_callback(*callback).await;
                 }
-                ToReceiver::NetworkScan(sender) => {
+                Message::NetworkScan(sender) => {
                     self.scans.push(sender.into());
                 }
-                ToReceiver::ChannelScan(sender) => {
+                Message::ChannelScan(sender) => {
                     self.scans.push(sender.into());
                 }
-                ToReceiver::Sent { tag, sender } => {
+                Message::Sent { tag, sender } => {
                     if self.responses.insert(tag, sender).is_some() {
                         warn!("Overwrote response channel for message tag: {tag}");
                     }
                 }
-                ToReceiver::Terminate => {
+                Message::Terminate => {
                     trace!("Received termination message.");
                     return;
                 }
@@ -55,17 +61,24 @@ impl Receiver {
         warn!("Callback channel closed. Message handler terminating.");
     }
 
-    async fn process_callback(&mut self, callback: Callback) {
+    /// Translates EZSP callbacks into Zigbee events and sends them to the outgoing channel.
+    async fn process_callback(
+        &mut self,
+        callback: Callback,
+    ) -> Option<Result<U, <U as TryFrom<Callback>>::Error>> {
         match callback {
-            Callback::Messaging(messaging) => self.handle_messaging_callbacks(messaging).await,
-            Callback::Networking(networking) => self.handle_networking_callbacks(networking).await,
-            other => {
-                self.forward_callback(other).await;
-            }
+            Callback::Messaging(messaging) => self
+                .handle_messaging_callbacks(messaging)
+                .await
+                .map(|messaging| U::try_from(Callback::Messaging(messaging))),
+            Callback::Networking(networking) => self
+                .handle_networking_callbacks(networking)
+                .map(|networking| U::try_from(Callback::Networking(networking))),
+            other => Some(U::try_from(other)),
         }
     }
 
-    async fn handle_networking_callbacks(&mut self, networking: Networking) {
+    fn handle_networking_callbacks(&mut self, networking: Networking) -> Option<Networking> {
         match networking {
             Networking::NetworkFound(network_found) => {
                 self.scans.add_network(*network_found);
@@ -77,12 +90,14 @@ impl Receiver {
                 self.scans.pop();
             }
             other => {
-                self.forward_callback(Callback::Networking(other)).await;
+                return Some(other);
             }
         }
+
+        None
     }
 
-    async fn handle_messaging_callbacks(&mut self, messaging: Messaging) {
+    async fn handle_messaging_callbacks(&mut self, messaging: Messaging) -> Option<Messaging> {
         match messaging {
             Messaging::IncomingMessage(incoming_message) => {
                 self.handle_incoming_message(*incoming_message).await;
@@ -91,31 +106,31 @@ impl Receiver {
                 self.handle_message_sent(&message_sent);
             }
             other => {
-                self.forward_callback(Callback::Messaging(other)).await;
+                return Some(other);
             }
         }
+
+        None
     }
 
-    async fn handle_incoming_message(&self, incoming_message: IncomingMessage) {
+    async fn handle_incoming_message(&mut self, incoming_message: IncomingMessage) {
         debug!("Incoming message: {incoming_message:?}");
+        self.defragmenter.tick();
 
-        if incoming_message.aps_frame().fragmentation().is_some() {
-            self.transmitter
-                .send(ToTransmitter::SendReply {
-                    node_id: incoming_message.sender(),
-                    aps_frame: incoming_message.aps_frame().clone(),
-                    payload: Box::new(incoming_message.message().iter().copied().collect()),
-                })
-                .await
-                .unwrap_or_else(|error| {
-                    error!("Failed to send reply via transmitter handle: {error}");
-                });
+        let Some(defragmented_message) = self.defragmenter.handle(incoming_message).await else {
+            return;
+        };
+
+        match defragmented_message.try_into() {
+            Ok(event) => {
+                if let Err(error) = self.output.send(event).await {
+                    trace!("Failed to forward EZSP event to registered handler: {error}");
+                }
+            }
+            Err(error) => {
+                warn!("{error}");
+            }
         }
-
-        self.forward_callback(Callback::Messaging(Messaging::IncomingMessage(
-            incoming_message.into(),
-        )))
-        .await;
     }
 
     fn handle_message_sent(&mut self, message_sent: &MessageSent) {
@@ -130,11 +145,5 @@ impl Receiver {
             Ok(false) => warn!("No ACK received for sent message: {message_sent}"),
             Err(error) => error!("{error}: {message_sent}"),
         }
-    }
-
-    async fn forward_callback(&self, callback: Callback) {
-        self.output.send(callback).await.unwrap_or_else(|error| {
-            error!("Failed to send callback: {error}");
-        });
     }
 }

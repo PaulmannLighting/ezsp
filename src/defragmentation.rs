@@ -319,15 +319,13 @@ where
 mod tests {
     use core::future::Future;
     use std::collections::BTreeMap;
-    use std::num::NonZero;
     use std::time::Instant;
 
     use le_stream::ToLeStream;
 
     use super::{DEFAULT_REASSEMBLY_TIMEOUT, Defragmenter, Packet, PacketKey};
-    use crate::frame::Parameter;
-    use crate::parameters::configuration::version;
-    use crate::{Connection, Error, Parameters, Transport};
+    use crate::frame::{Commands, Parameter, RespondsWith};
+    use crate::{Communicate, Error};
 
     const SENDER: u16 = 0x1234;
     const SEQUENCE: u8 = 0x56;
@@ -346,30 +344,13 @@ mod tests {
         clippy::manual_async_fn,
         reason = "trait implementations must return a Send future explicitly"
     )]
-    impl Transport for MockTransport {
-        fn connect(&mut self) -> impl Future<Output = Result<version::Response, Error>> + Send {
-            async { Err(Error::NotConfigured) }
-        }
-
-        fn state(&self) -> Connection {
-            Connection::Disconnected
-        }
-
-        fn negotiated_version(&self) -> Option<NonZero<u8>> {
-            None
-        }
-
-        fn send<T>(&mut self, _command: T) -> impl Future<Output = Result<u16, Error>> + Send
+    impl Communicate for MockTransport {
+        fn communicate<T>(
+            &mut self,
+            command: T,
+        ) -> impl Future<Output = Result<T::Response, Error>> + Send
         where
-            T: Parameter + ToLeStream,
-        {
-            async { Err(Error::NotConfigured) }
-        }
-
-        fn receive<T>(&mut self) -> impl Future<Output = Result<T, Error>> + Send
-        where
-            T: TryFrom<Parameters> + Send,
-            <T as TryFrom<Parameters>>::Error: Into<Parameters> + Send,
+            T: Parameter + RespondsWith + ToLeStream + Into<Commands>,
         {
             async { Err(Error::NotConfigured) }
         }

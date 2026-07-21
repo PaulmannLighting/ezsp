@@ -76,6 +76,12 @@ pub enum Error {
     /// The response channel is closed.
     #[error("Response channel is closed")]
     ChannelClosed,
+
+    #[error("Transaction queue is full.")]
+    TransactionQueueFull,
+
+    #[error("No endpoints provided.")]
+    NoEndpoints,
 }
 
 impl From<Result<ezsp::Status, u8>> for Error {

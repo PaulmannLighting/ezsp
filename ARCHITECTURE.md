@@ -155,9 +155,10 @@ The frame subsystem (`src/frame`) handles typed parsing and conversion:
 
 - headers: legacy (3-byte) and extended (5-byte)
 - payload classification into `Parameters::Response` vs `Parameters::Callback`
+- boxed outbound command classification through `frame::enums::Command`
 - per-command typed conversions via `TryFrom<Parameters>` / `TryInto<_>`
 
-Parameter parsing is ID-driven (`Parameters::parse_from_le_stream(id, ...)`) and maps frame IDs directly to typed response/callback structures. Command and callback families live under `src/frame/parameters`, while the public command traits live under `src/commands`.
+Parameter parsing is ID-driven (`Parameters::parse_from_le_stream(id, ...)`) and maps frame IDs directly to typed response/callback structures. Each concrete command parameter struct converts into the aggregate command enum generated for its namespace; every enum variant boxes its payload to keep variant sizes uniform. Command and callback families live under `src/frame/parameters`, while the public command traits live under `src/commands`.
 
 ### Error model
 

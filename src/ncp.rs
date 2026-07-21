@@ -20,6 +20,8 @@ use tokio::sync::mpsc::error::SendError;
 use tokio::sync::oneshot::channel;
 
 pub use self::builder::Builder;
+pub use self::endpoint::Endpoint;
+pub use self::event_handler::EventHandler;
 pub use self::initialization_parameters::InitializationParameters;
 pub use self::message::Message;
 pub use self::multicast_options::MulticastOptions;
@@ -36,7 +38,10 @@ use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 use crate::types::ByteSizedVec;
 use crate::{Configuration, Error, Messaging, Networking};
 
+mod await_event;
 pub mod builder;
+mod endpoint;
+mod event_handler;
 mod initialization_parameters;
 mod message;
 mod multicast_options;
@@ -61,33 +66,13 @@ const MAX_FRAGMENT_COUNT: usize = u8::MAX as usize;
 #[derive(Debug)]
 pub struct Ncp<T> {
     pub(crate) transport: T,
+    pub(crate) endpoints: Box<[Endpoint]>,
+    event_handler_handle: Sender<Message>,
     aps_options: aps::Options,
     message_tag: u8,
-    event_handler_proxy: Sender<Message>,
-    endpoint_output_clusters: BTreeMap<u8, BTreeSet<u16>>,
 }
 
 impl<T> Ncp<T> {
-    /// Creates an `Ncp` with the given transport and event-handler proxy.
-    ///
-    /// The endpoint registry is initially empty. Register local endpoints with
-    /// [`Ncp::add_endpoint`] before sending non-ZDP messages so outgoing APS
-    /// helpers can select a source endpoint for each profile and cluster.
-    #[must_use]
-    pub const fn new(
-        transport: T,
-        aps_options: aps::Options,
-        event_handler_proxy: Sender<Message>,
-    ) -> Self {
-        Self {
-            transport,
-            aps_options,
-            message_tag: 0,
-            event_handler_proxy,
-            endpoint_output_clusters: BTreeMap::new(),
-        }
-    }
-
     /// Returns the next message tag and increments the internal counter.
     pub(crate) const fn next_message_tag(&mut self) -> u8 {
         let tag = self.message_tag;
@@ -137,11 +122,11 @@ impl<T> Ncp<T> {
             return Ok(0);
         }
 
-        self.endpoint_output_clusters
+        self.endpoints
             .iter()
-            .find_map(|(index, output_clusters)| {
-                if output_clusters.contains(&cluster_id) {
-                    Some(*index)
+            .find_map(|endpoint| {
+                if endpoint.output_clusters.contains(&cluster_id) {
+                    Some(endpoint.id)
                 } else {
                     None
                 }
@@ -156,7 +141,7 @@ impl<T> Ncp<T> {
     /// Returns [`SendError`] if the termination
     /// request cannot be sent to the message handler.
     pub async fn terminate(self) -> Result<(), SendError<Message>> {
-        self.event_handler_proxy.send(Message::Terminate).await
+        self.event_handler_handle.send(Message::Terminate).await
     }
 }
 
@@ -164,43 +149,23 @@ impl<T> Ncp<T>
 where
     T: Configuration,
 {
-    /// Registers a local endpoint with the NCP and records its output clusters.
-    ///
-    /// The cached output-cluster set is used by [`Ncp::source_endpoint`] when
-    /// constructing outgoing APS frames. It is updated only after the EZSP
-    /// `addEndpoint` command succeeds. Registering the same endpoint number
-    /// again replaces its cached output-cluster set after a successful command.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] if the transport rejects the endpoint or the EZSP
-    /// command cannot be completed.
-    pub async fn add_endpoint(
-        &mut self,
-        endpoint: u8,
-        profile_id: u16,
-        device_id: u16,
-        app_flags: u8,
-        input_clusters: ByteSizedVec<u16>,
-        output_clusters: ByteSizedVec<u16>,
-    ) -> Result<(), Error> {
-        debug!(
-            "Adding endpoint: {endpoint:#04X}, profile: {profile_id:#06X}, device_id: {device_id:#06X}, app_flags: {app_flags:#04X}, input clusters: {input_clusters:X?}, output clusters: {output_clusters:X?}",
-        );
-        let output_clusters_list = output_clusters.iter().copied().collect();
-        self.transport
-            .add_endpoint(
-                endpoint,
-                profile_id,
-                device_id,
-                app_flags,
-                input_clusters,
-                output_clusters,
-            )
-            .await?;
-        self.endpoint_output_clusters
-            .insert(endpoint, output_clusters_list);
-        Ok(())
+    pub async fn new(
+        mut transport: T,
+        endpoints: Box<[Endpoint]>,
+        event_handler_handle: Sender<Message>,
+        aps_options: aps::Options,
+    ) -> Result<Self, Error> {
+        for endpoint in endpoints.iter().cloned() {
+            endpoint.add_to(&mut transport).await?
+        }
+
+        Ok(Self {
+            transport,
+            endpoints,
+            event_handler_handle,
+            aps_options,
+            message_tag: 0,
+        })
     }
 }
 
@@ -284,7 +249,7 @@ where
         );
 
         let (tx, rx) = channel();
-        self.event_handler_proxy
+        self.event_handler_handle
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
@@ -333,7 +298,7 @@ where
         );
 
         let (tx, rx) = channel();
-        self.event_handler_proxy
+        self.event_handler_handle
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
@@ -403,7 +368,7 @@ where
         );
 
         let (tx, rx) = channel();
-        self.event_handler_proxy
+        self.event_handler_handle
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
@@ -445,7 +410,7 @@ where
         duration: u8,
     ) -> Result<Vec<NetworkFound>, Error> {
         let (tx, rx) = channel();
-        self.event_handler_proxy.send(tx.into()).await?;
+        self.event_handler_handle.send(tx.into()).await?;
         self.transport
             .start_scan(scan::Type::ActiveScan, channel_mask, duration)
             .await?;
@@ -464,7 +429,7 @@ where
         duration: u8,
     ) -> Result<Vec<EnergyScanResult>, Error> {
         let (tx, rx) = channel();
-        self.event_handler_proxy.send(tx.into()).await?;
+        self.event_handler_handle.send(tx.into()).await?;
         self.transport
             .start_scan(scan::Type::EnergyScan, channel_mask, duration)
             .await?;

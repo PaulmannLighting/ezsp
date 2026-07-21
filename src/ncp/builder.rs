@@ -1,49 +1,68 @@
 use std::collections::BTreeMap;
+use std::num::NonZero;
 
-use tokio::sync::mpsc::Receiver;
+use log::{debug, info, trace};
+use tokio::spawn;
+use tokio::sync::mpsc::{Sender, channel};
 
 use crate::ember::{aps, concentrator};
 use crate::ezsp::{config, policy};
-use crate::{Callback, Startup};
+use crate::ncp::Endpoint;
+use crate::ncp::await_event::AwaitEvent;
+use crate::{
+    Configuration, ConfigurationExt, Connected, Displayable, Error, EventHandler,
+    MIN_NON_LEGACY_VERSION, Messaging, Ncp, Networking, PolicyExt, Receive, Security, Startup,
+    Transceiver, TranslatableEvent, Transmit, Utilities,
+};
 
 const RADIO_POWER: i8 = 8;
 
-/// Builder for [`Ncp`](crate::Ncp) startup configuration.
-///
-/// The builder stores the selected [`Startup`] mode, EZSP policies, stack
-/// configuration values, radio settings, and callback buffers until a
-/// feature-specific startup implementation consumes it.
-#[cfg_attr(not(feature = "apis-saltans"), expect(dead_code))]
-pub struct Builder<T> {
-    pub(crate) transport: T,
-    pub(crate) callbacks: Receiver<Callback>,
-    pub(crate) startup: Startup,
+pub struct Builder<T, R> {
+    pub(crate) transceiver: Transceiver<T, R>,
+    pub(crate) callbacks_capacity: usize,
+    pub(crate) messages_capacity: usize,
+    pub(crate) desired_version: NonZero<u8>,
     pub(crate) policy: BTreeMap<policy::Id, u8>,
     pub(crate) configuration: BTreeMap<config::Id, u16>,
     pub(crate) concentrator: Option<concentrator::Parameters>,
     pub(crate) radio_tx_power: i8,
     pub(crate) aps_options: aps::Options,
-    pub(crate) buffers: usize,
 }
 
-impl<T> Builder<T> {
+impl<T, R> Builder<T, R> {
     /// Creates a builder with a transport, callback stream, and startup mode.
     ///
     /// Select [`Startup::Resume`] to restore a persisted network or
     /// [`Startup::Initialize`] to leave any current network and form a new one.
     #[must_use]
-    pub const fn new(transport: T, callbacks: Receiver<Callback>, startup: Startup) -> Self {
+    pub const fn new(transceiver: Transceiver<T, R>) -> Self {
         Self {
-            transport,
-            callbacks,
-            startup,
+            transceiver,
+            callbacks_capacity: 128,
+            messages_capacity: 64,
+            desired_version: NonZero::new(MIN_NON_LEGACY_VERSION)
+                .expect("Min legacy version is non-zero."),
             policy: BTreeMap::new(),
             configuration: BTreeMap::new(),
             concentrator: None,
             radio_tx_power: RADIO_POWER,
             aps_options: aps::Options::empty(),
-            buffers: 1024,
         }
+    }
+
+    pub fn with_callbacks_capacity(mut self, callbacks_capacity: usize) -> Self {
+        self.callbacks_capacity = callbacks_capacity;
+        self
+    }
+
+    pub fn with_messages_capacity(mut self, messages_capacity: usize) -> Self {
+        self.messages_capacity = messages_capacity;
+        self
+    }
+
+    pub fn with_desired_version(mut self, desired_version: NonZero<u8>) -> Self {
+        self.desired_version = desired_version;
+        self
     }
 
     /// Adds one EZSP policy decision to apply during startup.
@@ -88,65 +107,164 @@ impl<T> Builder<T> {
         self
     }
 
-    /// Sets the default APS options for outgoing APS messages created by [`Ncp`](crate::Ncp).
+    /// Sets the default APS options for outgoing APS messages created by [`Ncp`](Ncp).
     #[must_use]
     pub const fn with_aps_options(mut self, options: aps::Options) -> Self {
         self.aps_options = options;
         self
     }
+}
 
-    /// Sets the buffer size used for callback, event, and NCP actor channels.
-    #[must_use]
-    pub const fn with_buffers(mut self, buffers: usize) -> Self {
-        self.buffers = buffers;
-        self
+impl<T, R> Builder<T, R>
+where
+    T: Transmit + Send + 'static,
+    R: Receive + Send + 'static,
+{
+    /// Configures the EZSP stack and starts an `apis_saltans_hw` NCP actor.
+    ///
+    /// The startup sequence applies configured policies and stack values,
+    /// waits for the transport to connect, and wraps the plain [`Ncp`]
+    /// in the internal `ZigbeeNcp` driver adapter. Constructing that adapter
+    /// registers every supplied endpoint with the device and stores its
+    /// descriptor and output clusters before the driver actor can start. The
+    /// builder then applies its [`Startup`] mode, waits for `NetworkUp`, sends a
+    /// many-to-one route request, and returns an `apis_saltans_hw::NcpHandle`
+    /// plus the translated event stream.
+    ///
+    /// # Errors
+    ///
+    /// Returns an `apis_saltans_hw::Error` if endpoint validation, EZSP stack
+    /// setup, transport connection, network initialization, or actor startup
+    /// fails.
+    pub async fn start<E>(
+        self,
+        startup: Startup,
+        endpoints: Box<[Endpoint]>,
+        events: Sender<E>,
+    ) -> Result<Ncp<Connected>, Error>
+    where
+        E: TranslatableEvent + 'static,
+    {
+        if endpoints.is_empty() {
+            return Err(Error::NoEndpoints);
+        }
+
+        let disconnected = self
+            .transceiver
+            .spawn(self.callbacks_capacity, self.messages_capacity);
+
+        let (mut connected, mut callbacks) = disconnected.connect(self.desired_version).await?;
+
+        debug!("Setting concentrator");
+        connected.set_concentrator(self.concentrator).await?;
+
+        for (key, value) in self.configuration {
+            debug!("Setting configuration {key:?} to {value:#06X}");
+            connected.set_configuration_value(key, value).await?;
+        }
+
+        for (key, value) in self.policy {
+            debug!("Setting policy {key:?} to {value:#04X}");
+            connected.set_policy(key, value).await?;
+        }
+
+        let ieee_address = connected.get_eui64().await?;
+        debug!("IEEE address: {ieee_address}");
+
+        let network_state = connected.network_state().await?;
+        info!("Current network state: {network_state:?}");
+
+        match startup {
+            Startup::Initialize(init) => {
+                if connected.leave_network().await.is_ok() {
+                    callbacks.await_network_down().await;
+                    info!("Left existing network.");
+                }
+
+                debug!("Setting initial security state");
+                connected
+                    .set_initial_security_state(init.initial_security_state())
+                    .await?;
+
+                info!("Reinitializing network");
+                connected
+                    .form_network(init.parameters(self.radio_tx_power))
+                    .await?;
+            }
+            Startup::Resume(init_bitmask) => {
+                connected.network_init(init_bitmask).await?;
+            }
+        }
+
+        callbacks.await_network_up().await;
+        info!("Network is up.");
+
+        debug!("Setting radio power to {}", self.radio_tx_power);
+        connected.set_radio_power(self.radio_tx_power).await?;
+
+        let network_state = connected.network_state().await?;
+        info!("Final network state: {network_state:?}");
+
+        let (typ, parameters) = connected.get_network_parameters().await?;
+        info!("Device type: {typ}");
+        info!("Network parameters:\n{parameters}");
+
+        log_state(&mut connected).await?;
+
+        let radius: u8 = connected
+            .get_configuration_value(config::Id::MaxHops)
+            .await?
+            .try_into()
+            .unwrap_or_default();
+        info!("Sending many-to-one route request: {radius} hops");
+        connected
+            .send_many_to_one_route_request(concentrator::Type::HighRam, radius)
+            .await?;
+
+        let (message_tx, message_rx) = channel(self.messages_capacity);
+        let ncp = Ncp::new(
+            connected.clone(),
+            endpoints,
+            message_tx.clone(),
+            self.aps_options,
+        )
+        .await?;
+
+        info!("Starting message translation bridge.");
+        spawn(async move {
+            while let Some(callback) = callbacks.recv().await {
+                if let Err(error) = message_tx.send(callback.into()).await {
+                    info!("Message handler has closed. Terminating bridge.");
+                    trace!("{error}");
+                    break;
+                }
+            }
+        });
+
+        info!("Starting event handler.");
+        spawn(EventHandler::new(connected, events).run(message_rx));
+        Ok(ncp)
     }
 }
 
-#[cfg(feature = "ashv2")]
-impl Builder<crate::uart::Uart> {
-    /// Creates a new builder using an `ASHv2` UART on the given serial port.
-    ///
-    /// The serial port must implement [`crate::uart::SerialPort`]. The returned
-    /// [`crate::uart::Futures`] value must be spawned or otherwise polled by the
-    /// caller for the UART transport to make progress. `startup` selects
-    /// whether the NCP restores its persisted network or forms a new one.
-    pub fn ashv2<T>(serial_port: T, startup: Startup) -> (Self, crate::uart::Futures<T>)
-    where
-        T: crate::uart::SerialPort + Sync + 'static,
-    {
-        Self::ashv2_with_buffers(serial_port, startup, crate::uart::Buffers::default())
-    }
+async fn log_state<T>(transport: &mut T) -> Result<(), Error>
+where
+    T: Configuration + Security + Send,
+{
+    debug!(
+        "Configuration:\n{}",
+        transport.get_configuration().await?.displayable()
+    );
 
-    /// Creates a new builder using an `ASHv2` UART on the given serial port.
-    ///
-    /// The serial port must implement [`crate::uart::SerialPort`]. Use
-    /// [`crate::uart::Buffers`] to size the EZSP and `ASHv2` channels used by the
-    /// constructed transport. The returned [`crate::uart::Futures`] value must
-    /// be spawned or otherwise polled by the caller for the UART transport to
-    /// make progress. `startup` selects whether the NCP restores its persisted
-    /// network or forms a new one.
-    pub fn ashv2_with_buffers<T>(
-        serial_port: T,
-        startup: Startup,
-        buffers: crate::uart::Buffers,
-    ) -> (Self, crate::uart::Futures<T>)
-    where
-        T: crate::uart::SerialPort + Sync + 'static,
-    {
-        let (ash_tx, ash_rx) = tokio::sync::mpsc::channel(buffers.ash_receiver);
-        let (ash_v2, futures) = crate::uart::start(serial_port, ash_tx);
-        let (callbacks_tx, callbacks_rx) = tokio::sync::mpsc::channel(buffers.ezsp_callbacks);
-        let (uart, splitter) = crate::uart::Uart::new(
-            ash_v2,
-            ash_rx,
-            callbacks_tx,
-            crate::MIN_NON_LEGACY_VERSION,
-            buffers.ezsp_messages,
-        );
-        (
-            Self::new(uart, callbacks_rx, startup),
-            crate::uart::Futures::new(splitter, futures),
-        )
-    }
+    debug!(
+        "Policies:\n{}",
+        transport.get_policies().await?.displayable()
+    );
+
+    info!(
+        "Current security state:\n{}",
+        transport.get_current_security_state().await?
+    );
+
+    Ok(())
 }

@@ -20,10 +20,14 @@ crate::frame::parameters::command_enum!(
 
 #[cfg(test)]
 mod tests {
+    use le_stream::ToLeStream;
+
+    use crate::frame::Parameter;
     use crate::frame::enums::Command;
     use crate::frame::parameters::{configuration, green_power, utilities};
 
     const DESIRED_PROTOCOL_VERSION: u8 = 13;
+    const SINK_INDEX: u8 = 7;
 
     #[test]
     fn converts_concrete_commands() {
@@ -51,5 +55,40 @@ mod tests {
             Command::Utilities(command)
                 if matches!(*command, utilities::Command::Callback(_))
         ));
+    }
+
+    #[test]
+    fn returns_concrete_command_ids() {
+        let command = Command::from(configuration::version::Command::new(
+            DESIRED_PROTOCOL_VERSION,
+        ));
+        assert_eq!(command.id(), configuration::version::Command::ID);
+
+        let command = Command::from(green_power::sink_table::remove_entry::Command::new(
+            SINK_INDEX,
+        ));
+        assert_eq!(
+            command.id(),
+            green_power::sink_table::remove_entry::Command::ID
+        );
+
+        let command = Command::from(utilities::callback::Command);
+        assert_eq!(command.id(), utilities::callback::Command::ID);
+    }
+
+    #[test]
+    fn serializes_concrete_commands() {
+        let command = Command::from(configuration::version::Command::new(
+            DESIRED_PROTOCOL_VERSION,
+        ));
+        assert_eq!(
+            command.to_le_stream().collect::<Vec<_>>(),
+            [DESIRED_PROTOCOL_VERSION]
+        );
+
+        let command = Command::from(green_power::sink_table::remove_entry::Command::new(
+            SINK_INDEX,
+        ));
+        assert_eq!(command.to_le_stream().collect::<Vec<_>>(), [SINK_INDEX]);
     }
 }

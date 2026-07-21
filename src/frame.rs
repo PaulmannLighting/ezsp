@@ -1,6 +1,6 @@
 use core::fmt::Debug;
 
-pub use self::enums::{Callback, Parameters, Response};
+pub use self::enums::{Callback, Command as Commands, Parameters, Response};
 pub use self::header::{
     CallbackType, Command, Extended, FormatVersion, Header, HighByte, Legacy, LowByte, SleepMode,
 };
@@ -8,7 +8,7 @@ pub use self::parameter::Parameter;
 pub use self::parsable::Parsable;
 pub use self::responds_with::RespondsWith;
 
-pub mod enums;
+mod enums;
 mod header;
 mod parameter;
 pub mod parameters;
@@ -22,27 +22,27 @@ mod responds_with;
 /// fields, while [`Parameters`] stores either response parameters or callback
 /// parameters.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Frame {
+pub struct Frame<T> {
     header: Header,
-    parameters: Parameters,
+    payload: T,
 }
 
-impl Frame {
+impl<T> Frame<T> {
     /// Create a new frame.
     #[must_use]
-    pub const fn new(header: Header, parameters: Parameters) -> Self {
-        Self { header, parameters }
+    pub const fn new(header: Header, payload: T) -> Self {
+        Self { header, payload }
     }
 }
 
-impl From<(Header, Parameters)> for Frame {
-    fn from((header, parameters): (Header, Parameters)) -> Self {
-        Self { header, parameters }
+impl<T> From<(Header, T)> for Frame<T> {
+    fn from((header, payload): (Header, T)) -> Self {
+        Self { header, payload }
     }
 }
 
-impl From<Frame> for (Header, Parameters) {
-    fn from(frame: Frame) -> Self {
-        (frame.header, frame.parameters)
+impl<T> From<Frame<T>> for (Header, T) {
+    fn from(frame: Frame<T>) -> Self {
+        (frame.header, frame.payload)
     }
 }

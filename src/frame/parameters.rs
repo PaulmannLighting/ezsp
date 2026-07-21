@@ -70,6 +70,32 @@ macro_rules! command_enum {
                 $variant(Box<$ty>)
             ),+
         }
+
+        impl $name {
+            /// Returns the frame parameter ID for this command.
+            #[must_use]
+            pub const fn id(&self) -> u16 {
+                match self {
+                    $(
+                        Self::$variant(command) => command.id()
+                    ),+
+                }
+            }
+        }
+
+        impl le_stream::ToLeStream for $name {
+            type Iter = Box<dyn Iterator<Item = u8>>;
+
+            fn to_le_stream(self) -> Self::Iter {
+                match self {
+                    $(
+                        Self::$variant(command) => Box::new(
+                            le_stream::ToLeStream::to_le_stream(*command)
+                        )
+                    ),+
+                }
+            }
+        }
     };
 }
 pub(crate) use command_enum;
@@ -136,6 +162,14 @@ macro_rules! command {
             { $($field: $ty),* }
             $(, impl { $($impls)* })?
         );
+
+        impl Command {
+            /// Returns the frame parameter ID for this command.
+            #[must_use]
+            pub const fn id(&self) -> u16 {
+                <Self as crate::frame::Parameter>::ID
+            }
+        }
 
         impl crate::frame::RespondsWith for Command {
             type Response = $response;

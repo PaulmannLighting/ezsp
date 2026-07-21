@@ -15,7 +15,7 @@ exclude = [".github", ".gitignore", "ARCHITECTURE.md"]
 all-features = true
 
 [dependencies]
-apis-saltans-hw = { version = "0.10", path = "../apis-saltans/hw", optional = true, features = ["driver"] }
+apis-saltans-hw = { version = "0.11", path = "../apis-saltans/hw", optional = true, features = ["driver"] }
 ashv2 = { version = "10", optional = true }
 bitflags = "2"
 bytes = { version = "1", optional = true }
@@ -25,19 +25,19 @@ heapless = "0.9"
 le-stream = { version = "10", features = ["derive", "macaddr", "heapless"] }
 log = "0.4"
 macaddr = "1"
-num-derive = "0.4"
+num-derive = "0.5"
 num-traits = "0.2"
 rand = "0.10"
 repr-discriminant = { version = "3", features = ["derive"] }
 semver = { version = "1", optional = true }
 silizium = { version = "3", features = ["le-stream"] }
 thiserror = "1"
-tokio = { version = "1", features = ["sync"] }
+tokio = { version = "1", features = ["sync", "rt"] }
 
 [features]
 ashv2 = ["dep:ashv2"]
 semver = ["dep:semver"]
-apis-saltans = ["dep:apis-saltans-hw", "dep:bytes", "tokio/rt", "tokio/time"]
+apis-saltans = ["dep:apis-saltans-hw", "dep:bytes", "tokio/time"]
 
 [profile.release]
 opt-level = 3

@@ -44,7 +44,7 @@ pub use self::frame::{
     Legacy, LowByte, Parameters, Parsable, Response, SleepMode, parameters,
 };
 pub use self::ncp::{
-    Builder, Endpoint, EventHandler, InitializationParameters, MulticastOptions, Ncp,
+    BuildResult, Builder, Endpoint, EventHandler, InitializationParameters, MulticastOptions, Ncp,
     NetworkCredentials, Scans, StackResponse, Startup,
 };
 pub use self::transceiver::{
@@ -67,7 +67,7 @@ mod ncp;
 mod transceiver;
 mod types;
 #[cfg(feature = "ashv2")]
-mod uart;
+pub mod uart;
 
 /// A specialized [`std::result::Result`] type for this crate.
 pub type Result<T> = core::result::Result<T, Error>;

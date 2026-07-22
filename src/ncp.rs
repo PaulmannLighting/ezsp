@@ -21,7 +21,7 @@ use tokio::sync::mpsc::Sender;
 use tokio::sync::mpsc::error::SendError;
 use tokio::sync::oneshot::channel;
 
-pub use self::builder::Builder;
+pub use self::builder::{BuildResult, Builder};
 pub use self::endpoint::Endpoint;
 pub use self::event_handler::EventHandler;
 pub use self::initialization_parameters::InitializationParameters;

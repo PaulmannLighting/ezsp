@@ -17,8 +17,9 @@
 //! awaiting [`Builder::start`](crate::Builder::start). The builder connects this
 //! module's [`AshTx`] and [`AshRx`] to the generic EZSP actors.
 
-pub use self::receiver::AshRx;
-pub use self::transmitter::AshTx;
+pub use self::futures::Futures;
+use self::receiver::AshRx;
+use self::transmitter::AshTx;
 
 mod builder;
 mod futures;

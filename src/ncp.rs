@@ -5,11 +5,12 @@
 //! scan aggregation, message-sent correlation, and callback dispatch through a
 //! background event handler.
 //!
-//! [`Builder`] creates the transport actors, negotiates the protocol version,
-//! configures the stack, registers endpoints, starts callback translation, and
-//! returns an [`Ncp`]. [`Startup`] records whether the builder should restore
-//! the NCP's persisted network or explicitly form a new network. With the
-//! `apis-saltans` feature, `Ncp<T>` also implements
+//! [`Builder`] negotiates the protocol version through caller-spawned transport
+//! actors, configures the stack, registers endpoints, and returns an [`Ncp`]
+//! together with callback-processing futures for the caller to spawn.
+//! [`Startup`] records whether the builder should restore the NCP's persisted
+//! network or explicitly form a new network. With the
+//! `apis-saltans` feature, `Ncp` also implements
 //! `apis_saltans_hw::Driver` for suitable communicators and gains conversions
 //! between EZSP and `apis-saltans` endpoint, scan, APS, and event types.
 
@@ -37,7 +38,7 @@ use crate::error::Status as ErrorStatus;
 use crate::ezsp::network::scan;
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
 use crate::types::ByteSizedVec;
-use crate::{Configuration, Error, Messaging, Networking};
+use crate::{Connection, Error, Messaging, Networking};
 
 mod await_event;
 pub mod builder;
@@ -59,22 +60,22 @@ const MAX_FRAGMENT_COUNT: usize = u8::MAX as usize;
 
 /// Host-side helper for an EZSP Network Co-Processor.
 ///
-/// `Ncp<T>` owns a communicator, normally a cloneable [`Connected`](crate::Connected)
-/// actor handle. Its methods provide higher-level operations
+/// `Ncp` owns a cloneable [`Connection`] actor handle. Its methods provide
+/// higher-level operations
 /// that need callback correlation or local host state, such as scans, outgoing
 /// APS message confirmation, and automatic source endpoint selection from the
 /// configured endpoint cluster lists. The builder gives another clone of the
 /// connected handle to the background [`EventHandler`].
 #[derive(Debug)]
-pub struct Ncp<T> {
-    pub(crate) transport: T,
+pub struct Ncp {
+    pub(crate) connection: Connection,
     pub(crate) endpoints: Box<[Endpoint]>,
     event_handler_handle: Sender<Message>,
     aps_options: aps::Options,
     message_tag: u8,
 }
 
-impl<T> Ncp<T> {
+impl Ncp {
     /// Returns the next message tag and increments the internal counter.
     pub(crate) const fn next_message_tag(&mut self) -> u8 {
         let tag = self.message_tag;
@@ -145,12 +146,7 @@ impl<T> Ncp<T> {
     pub async fn terminate(self) -> Result<(), SendError<Message>> {
         self.event_handler_handle.send(Message::Terminate).await
     }
-}
 
-impl<T> Ncp<T>
-where
-    T: Configuration,
-{
     /// Registers endpoints and constructs a high-level NCP helper.
     ///
     /// Each endpoint is registered on the NCP before the value is returned.
@@ -162,29 +158,24 @@ where
     ///
     /// Returns an [`Error`] if any endpoint registration command fails.
     pub async fn new(
-        mut transport: T,
+        mut connection: Connection,
         endpoints: Box<[Endpoint]>,
         event_handler_handle: Sender<Message>,
         aps_options: aps::Options,
     ) -> Result<Self, Error> {
         for endpoint in endpoints.iter().cloned() {
-            endpoint.add_to(&mut transport).await?;
+            endpoint.add_to(&mut connection).await?;
         }
 
         Ok(Self {
-            transport,
+            connection,
             endpoints,
             event_handler_handle,
             aps_options,
             message_tag: 0,
         })
     }
-}
 
-impl<T> Ncp<T>
-where
-    T: Messaging,
-{
     /// Starts a unicast APS send and returns its deferred [`StackResponse`].
     ///
     /// Payloads larger than the EZSP maximum APS payload length are fragmented
@@ -212,7 +203,7 @@ where
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
         let destination = EmberDestination::Direct(short_id);
-        let maximum_payload_length = usize::from(self.transport.maximum_payload_length().await?);
+        let maximum_payload_length = usize::from(self.connection.maximum_payload_length().await?);
 
         let stack_response = if payload.len() <= maximum_payload_length {
             let (stack_response, _seq) = self
@@ -266,7 +257,7 @@ where
             .await?;
 
         let sequence = self
-            .transport
+            .connection
             .send_multicast(
                 aps_frame,
                 options.hops(),
@@ -314,7 +305,7 @@ where
             .send(Message::Sent { tag, sender: tx })
             .await?;
 
-        self.transport
+        self.connection
             .send_broadcast(short_id, aps_frame, radius, tag, message)
             .await?;
 
@@ -385,7 +376,7 @@ where
             .await?;
 
         let sequence = self
-            .transport
+            .connection
             .send_unicast(destination, aps_frame, tag, message)
             .await?;
 
@@ -396,7 +387,7 @@ where
         &mut self,
         payload: &[u8],
     ) -> Result<ByteSizedVec<u8>, Error> {
-        let maximum_payload_length = usize::from(self.transport.maximum_payload_length().await?);
+        let maximum_payload_length = usize::from(self.connection.maximum_payload_length().await?);
 
         if payload.len() > maximum_payload_length {
             Err(message_too_long())
@@ -404,12 +395,7 @@ where
             byte_sized_payload(payload)
         }
     }
-}
 
-impl<T> Ncp<T>
-where
-    T: Networking,
-{
     /// Starts an active network scan and returns all `networkFound` callback results.
     ///
     /// # Errors
@@ -423,7 +409,7 @@ where
     ) -> Result<Vec<NetworkFound>, Error> {
         let (tx, rx) = channel();
         self.event_handler_handle.send(tx.into()).await?;
-        self.transport
+        self.connection
             .start_scan(scan::Type::ActiveScan, channel_mask, duration)
             .await?;
         Ok(rx.await?)
@@ -442,7 +428,7 @@ where
     ) -> Result<Vec<EnergyScanResult>, Error> {
         let (tx, rx) = channel();
         self.event_handler_handle.send(tx.into()).await?;
-        self.transport
+        self.connection
             .start_scan(scan::Type::EnergyScan, channel_mask, duration)
             .await?;
         Ok(rx.await?)

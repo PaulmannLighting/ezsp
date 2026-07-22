@@ -6,15 +6,12 @@
 //!
 //! # Driver implementation
 //!
-//! `Ncp<T>` implements `apis_saltans_hw::Driver` when `T` implements
-//! [`crate::Configuration`], [`crate::Messaging`], [`crate::Networking`], and
-//! [`crate::Utilities`] and is both `Send` and `Sync`. The implementation maps
+//! [`crate::Ncp`] implements `apis_saltans_hw::Driver`. The implementation maps
 //! identity lookup, scans, permit-joining, route discovery, address lookup, and
-//! datagram transmission to typed EZSP commands and high-level [`crate::Ncp`]
-//! workflows.
+//! datagram transmission to typed EZSP commands and high-level NCP workflows.
 //!
-//! [`crate::Builder::start`] still returns `Ncp<crate::Connected>`. To access it
-//! through an `apis-saltans` actor handle, call
+//! [`crate::Builder::start`] returns an [`Ncp`](crate::Ncp) inside its build
+//! result. To access it through an `apis-saltans` actor handle, call
 //! `apis_saltans_hw::Driver::run` on that value and spawn the returned future.
 //! The `apis-saltans` driver actor serializes hardware requests; it is separate
 //! from the internal EZSP transmitter and receiver actors.

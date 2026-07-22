@@ -2,29 +2,34 @@ use std::collections::BTreeMap;
 use std::num::NonZero;
 
 use log::{debug, info, trace};
-use tokio::spawn;
 use tokio::sync::mpsc::{Sender, channel};
 
+pub use self::build_result::BuildResult;
 use crate::ember::{aps, concentrator};
 use crate::ezsp::{config, policy};
 use crate::ncp::Endpoint;
 use crate::ncp::await_event::AwaitEvent;
 use crate::{
-    Configuration, ConfigurationExt, Connected, Displayable, Error, EventHandler,
-    MIN_NON_LEGACY_VERSION, Messaging, Ncp, Networking, PolicyExt, Receive, Security, Startup,
-    Transceiver, TranslatableEvent, Transmit, Utilities,
+    Configuration, ConfigurationExt, Connectable, Displayable, Error, EventHandler,
+    MIN_NON_LEGACY_VERSION, Messaging, Ncp, Networking, PolicyExt, Security, Startup,
+    TranslatableEvent, Utilities,
 };
+
+mod build_result;
 
 const RADIO_POWER: i8 = 8;
 
-/// Configures and starts an actor-backed EZSP Network Co-Processor.
+/// Configures an actor-backed EZSP Network Co-Processor.
 ///
-/// The builder owns a [`Transceiver`] until [`Builder::start`] spawns its
-/// transmitter and receiver tasks. It also stores queue capacities, the desired
-/// EZSP version, stack policies and configuration values, concentrator
-/// settings, radio power, and default APS options.
-pub struct Builder<T, R> {
-    pub(crate) transceiver: Transceiver<T, R>,
+/// The builder owns a pre-negotiation [`Connectable`] handle. The transport
+/// futures that service this handle are returned separately by transport
+/// constructors such as [`Builder::ashv2`](crate::Builder::ashv2) and must be
+/// spawned by the caller before [`Builder::start`] is awaited. The builder also
+/// stores queue capacities, the desired EZSP version, stack policies and
+/// configuration values, concentrator settings, radio power, and default APS
+/// options.
+pub struct Builder {
+    pub(crate) connectable: Connectable,
     pub(crate) callbacks_capacity: usize,
     pub(crate) messages_capacity: usize,
     pub(crate) desired_version: NonZero<u8>,
@@ -35,7 +40,7 @@ pub struct Builder<T, R> {
     pub(crate) aps_options: aps::Options,
 }
 
-impl<T, R> Builder<T, R> {
+impl Builder {
     /// Creates a builder around separate transport transmit and receive halves.
     ///
     /// # Panics
@@ -43,9 +48,9 @@ impl<T, R> Builder<T, R> {
     /// Panics if [`MIN_NON_LEGACY_VERSION`] is zero. The protocol constant is
     /// defined as a nonzero version, so this indicates an invalid crate build.
     #[must_use]
-    pub const fn new(transceiver: Transceiver<T, R>) -> Self {
+    pub const fn new(connection: Connectable) -> Self {
         Self {
-            transceiver,
+            connectable: connection,
             callbacks_capacity: 128,
             messages_capacity: 64,
             desired_version: NonZero::new(MIN_NON_LEGACY_VERSION)
@@ -129,19 +134,22 @@ impl<T, R> Builder<T, R> {
     }
 }
 
-impl<T, R> Builder<T, R>
-where
-    T: Transmit + Send + 'static,
-    R: Receive + Send + 'static,
-{
-    /// Configures the EZSP stack and starts the high-level NCP services.
+impl Builder {
+    /// Configures the EZSP stack and creates the high-level NCP service futures.
     ///
     /// The startup sequence applies configured policies and stack values,
     /// waits for protocol negotiation, applies its [`Startup`] mode, waits for
-    /// `NetworkUp`, registers every supplied endpoint, starts callback
-    /// translation and correlation, and returns an [`Ncp`] containing a
-    /// cloneable [`Connected`] actor handle. Translated events are sent to
-    /// `events`.
+    /// `NetworkUp`, registers every supplied endpoint, and returns an [`Ncp`]
+    /// containing a cloneable [`Connection`](crate::Connection) actor handle
+    /// together with the callback bridge and event-handler futures.
+    ///
+    /// This method does not spawn tasks. Before awaiting it, the caller must
+    /// spawn the transport futures in the order required by the transport. For
+    /// [`Builder::ashv2`](crate::Builder::ashv2), that order is the `ASHv2` serial
+    /// worker, `ASHv2` transmitter, `ASHv2` receiver, EZSP transmitter, then EZSP
+    /// receiver. After this method returns, spawn `BuildResult::bridge` before
+    /// `BuildResult::event_handler`. Both must remain running while the NCP is
+    /// in use so translated events can be sent to `events`.
     ///
     /// # Errors
     ///
@@ -153,7 +161,13 @@ where
         startup: Startup,
         endpoints: Box<[Endpoint]>,
         events: Sender<E>,
-    ) -> Result<Ncp<Connected>, Error>
+    ) -> Result<
+        BuildResult<
+            impl Future<Output = ()> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
+        >,
+        Error,
+    >
     where
         E: TranslatableEvent + 'static,
     {
@@ -161,11 +175,7 @@ where
             return Err(Error::NoEndpoints);
         }
 
-        let disconnected = self
-            .transceiver
-            .spawn(self.callbacks_capacity, self.messages_capacity);
-
-        let (mut connected, mut callbacks) = disconnected.connect(self.desired_version).await?;
+        let (mut connected, mut callbacks) = self.connectable.connect(self.desired_version).await?;
 
         debug!("Setting concentrator");
         connected.set_concentrator(self.concentrator).await?;
@@ -244,8 +254,8 @@ where
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius)
             .await?;
 
-        info!("Starting message translation bridge.");
-        spawn(async move {
+        info!("Creating message translation bridge.");
+        let bridge = async move {
             while let Some(callback) = callbacks.recv().await {
                 if let Err(error) = message_tx.send(callback.into()).await {
                     info!("Message handler has closed. Terminating bridge.");
@@ -253,12 +263,16 @@ where
                     break;
                 }
             }
-        });
+        };
 
-        info!("Starting event handler.");
-        spawn(EventHandler::new(connected, events).run(message_rx));
+        info!("Creating event handler future.");
+        let event_handler = EventHandler::new(connected, events).run(message_rx);
 
-        Ok(ncp)
+        Ok(BuildResult {
+            ncp,
+            bridge,
+            event_handler,
+        })
     }
 }
 

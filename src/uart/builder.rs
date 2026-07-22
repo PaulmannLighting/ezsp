@@ -1,17 +1,22 @@
-use ashv2::{Futures, SerialPort, start};
+use ashv2::{SerialPort, start};
 use tokio::sync::mpsc::channel;
 
-use crate::uart::{Receiver, Transmitter};
-use crate::{Builder, Transceiver};
+use crate::uart::futures::Futures;
+use crate::uart::{AshRx, AshTx};
+use crate::{Builder, Connectable, Receiver, Transmitter};
 
 const DEFAULT_CHANNEL_SIZE: usize = 128;
 
-impl Builder<Transmitter, Receiver> {
-    /// Creates an actor-backed EZSP builder using the default `ASHv2` channel size.
+impl Builder {
+    /// Creates an actor-backed EZSP builder and `ASHv2` actor futures using the
+    /// default channel capacity.
     ///
-    /// The `ASHv2` serial worker, transmitter, and receiver tasks are spawned
-    /// immediately. Call [`Builder::start`](crate::Builder::start) to spawn the
-    /// EZSP actors and initialize the NCP.
+    /// The returned `Futures` contains five futures. The caller must spawn
+    /// them as tasks in this order: `ASHv2` serial worker, `ASHv2` transmitter,
+    /// `ASHv2` receiver, EZSP transmitter, and EZSP receiver. Spawn all five
+    /// before awaiting [`Builder::start`](crate::Builder::start); otherwise a
+    /// higher layer can wait indefinitely for a lower layer that is not being
+    /// driven.
     #[must_use]
     pub fn ashv2<T>(
         serial_port: T,
@@ -19,6 +24,8 @@ impl Builder<Transmitter, Receiver> {
         Self,
         Futures<
             impl Future<Output = T> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
             impl Future<Output = ()> + Send + 'static,
             impl Future<Output = ()> + Send + 'static,
         >,
@@ -29,11 +36,20 @@ impl Builder<Transmitter, Receiver> {
         Self::ashv2_with_buffers(serial_port, DEFAULT_CHANNEL_SIZE)
     }
 
-    /// Creates an actor-backed EZSP builder with an explicit `ASHv2` channel size.
+    /// Creates an actor-backed EZSP builder and `ASHv2` actor futures with an
+    /// explicit channel capacity.
     ///
-    /// `channel_size` bounds the channel carrying received `ASHv2` DATA payloads.
-    /// The `ASHv2` worker tasks are spawned immediately; EZSP actor tasks start
-    /// when [`Builder::start`](crate::Builder::start) is called.
+    /// `channel_size` bounds the channels carrying `ASHv2` DATA payloads,
+    /// `ASHv2` actor messages, EZSP actor messages, and EZSP callbacks. The
+    /// returned `Futures` contains five futures. The caller must spawn them as
+    /// tasks in this order: `ASHv2` serial worker, `ASHv2` transmitter, `ASHv2`
+    /// receiver, EZSP transmitter, and EZSP receiver. Spawn all five before awaiting
+    /// [`Builder::start`](crate::Builder::start); otherwise a higher layer can
+    /// wait indefinitely for a lower layer that is not being driven.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `channel_size` is zero.
     #[must_use]
     pub fn ashv2_with_buffers<T>(
         serial_port: T,
@@ -44,14 +60,30 @@ impl Builder<Transmitter, Receiver> {
             impl Future<Output = T> + Send + 'static,
             impl Future<Output = ()> + Send + 'static,
             impl Future<Output = ()> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
         >,
     )
     where
         T: SerialPort + Sync + 'static,
     {
         let (ash_tx, ash_rx) = channel(channel_size);
-        let (ashv2, futures) = start(serial_port, ash_tx);
-        let transceiver = Transceiver::new(Transmitter::new(ashv2), Receiver::new(ash_rx));
-        (Self::new(transceiver), futures)
+        let (ashv2, ash_futures) = start(serial_port, ash_tx);
+        let (msg_tx, msg_rx) = channel(channel_size);
+        let (cb_tx, cb_rx) = channel(channel_size);
+        let ezsp_tx = Transmitter::new(AshTx::new(ashv2), msg_rx).run();
+        let ezsp_rx = Receiver::new(AshRx::new(ash_rx), cb_tx, msg_tx.clone()).run();
+        let disconnected = Connectable {
+            handle: msg_tx,
+            callbacks: cb_rx,
+        };
+        (
+            Self::new(disconnected),
+            Futures {
+                ash_futures,
+                ezsp_tx,
+                ezsp_rx,
+            },
+        )
     }
 }

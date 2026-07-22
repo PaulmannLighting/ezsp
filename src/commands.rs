@@ -40,7 +40,7 @@ mod zll;
 ///
 /// Implementing [`Communicate`](crate::Communicate) is enough to get blanket
 /// implementations of the individual command-group traits. The actor-backed
-/// [`Connected`](crate::Connected) handle implements `Communicate`; this trait
+/// [`Connection`](crate::Connection) handle implements `Communicate`; this trait
 /// simply collects the command groups under one bound.
 pub trait Ezsp:
     Binding

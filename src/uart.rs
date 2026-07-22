@@ -11,13 +11,16 @@
 //! negotiation.
 //!
 //! Use [`Builder::ashv2`](crate::Builder::ashv2) with a serial port implementing
-//! `ashv2::SerialPort`. The builder starts the underlying `ASHv2` worker tasks
-//! and combines this module's [`Transmitter`] and [`Receiver`] into the core
-//! actor-based [`Transceiver`](crate::Transceiver).
+//! `ashv2::SerialPort`. It returns the builder together with five transport
+//! futures. The caller must spawn the `ASHv2` serial worker, `ASHv2` transmitter,
+//! `ASHv2` receiver, EZSP transmitter, and EZSP receiver, in that order, before
+//! awaiting [`Builder::start`](crate::Builder::start). The builder connects this
+//! module's [`AshTx`] and [`AshRx`] to the generic EZSP actors.
 
-pub use self::receiver::Receiver;
-pub use self::transmitter::Transmitter;
+pub use self::receiver::AshRx;
+pub use self::transmitter::AshTx;
 
 mod builder;
+mod futures;
 mod receiver;
 mod transmitter;

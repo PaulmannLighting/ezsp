@@ -35,16 +35,13 @@ use apis_saltans_hw::{Datagram, Driver, Error, FoundNetwork, HwResponse, Scanned
 use log::error;
 
 use crate::ember::concentrator;
-use crate::{Configuration, Messaging, MulticastOptions, Ncp, Networking, Utilities};
+use crate::{Messaging, MulticastOptions, Ncp, Networking, Utilities};
 
 const DEFAULT_BROADCAST_RADIUS: u8 = 0;
 const DEFAULT_MULTICAST_HOPS: u8 = 0;
 const DEFAULT_MULTICAST_NONMEMBER_RADIUS: u8 = 0;
 
-impl<T> Driver for Ncp<T>
-where
-    T: Configuration + Messaging + Networking + Utilities + Send + Sync,
-{
+impl Driver for Ncp {
     async fn get_endpoints(&self) -> Result<Box<[SimpleDescriptor]>, Error> {
         Ok(self
             .endpoints
@@ -60,11 +57,11 @@ where
     }
 
     async fn get_pan_id(&mut self) -> Result<u16, Error> {
-        Ok(self.transport.get_node_id().await?)
+        Ok(self.connection.get_node_id().await?)
     }
 
     async fn get_ieee_address(&mut self) -> Result<IeeeAddress, Error> {
-        Ok(self.transport.get_eui64().await?.into())
+        Ok(self.connection.get_eui64().await?.into())
     }
 
     async fn scan_networks(
@@ -91,20 +88,20 @@ where
 
     async fn allow_joins(&mut self, duration: Duration) -> Result<Duration, Error> {
         let seconds = u8::try_from(duration.as_secs()).unwrap_or(u8::MAX);
-        self.transport.permit_joining(seconds.into()).await?;
+        self.connection.permit_joining(seconds.into()).await?;
         Ok(Duration::from_secs(u64::from(seconds)))
     }
 
     async fn route_request(&mut self, radius: u8) -> Result<(), Error> {
         Ok(self
-            .transport
+            .connection
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius)
             .await?)
     }
 
     async fn short_id_to_ieee_address(&mut self, short_id: u16) -> Result<IeeeAddress, Error> {
         Ok(self
-            .transport
+            .connection
             .lookup_eui64_by_node_id(short_id)
             .await?
             .into())
@@ -112,7 +109,7 @@ where
 
     async fn ieee_address_to_short_id(&mut self, ieee_address: IeeeAddress) -> Result<u16, Error> {
         Ok(self
-            .transport
+            .connection
             .lookup_node_id_by_eui64(ieee_address.into())
             .await?)
     }

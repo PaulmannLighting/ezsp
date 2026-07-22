@@ -26,9 +26,9 @@ The crate has four cooperating layers:
 flowchart TD
     user[User code] --> ncp[Ncp services]
     user --> commands[Typed command traits]
-    ncp --> connected[Connected handle]
-    commands --> connected
-    connected --> txActor[Transmitter actor]
+    ncp --> connection[Connection handle]
+    commands --> connection
+    connection --> txActor[Transmitter actor]
     txActor --> tx[Transmit implementation]
     tx --> device[Network Co-Processor]
     device --> rx[Receive implementation]
@@ -70,16 +70,16 @@ The actor layer deliberately separates output from input:
 - `Receive::receive` returns the next decoded inbound EZSP frame.
 - `Receive::set_negotiated_version` updates version-sensitive decoding after
   the NCP answers the initial `version` command.
-- `Transceiver<T, R>` stores one implementation of each trait until it is
-  spawned.
+- `Transmitter<T>::run` and `Receiver<R>::run` create the futures that drive the
+  EZSP actor layer.
 
 This boundary keeps framing and transaction logic independent of UART/ASHv2 and
 allows other physical transports to provide their own halves.
 
-### Spawned tasks and channels
+### Caller-spawned tasks and channels
 
-`Transceiver::spawn(callbacks_capacity, messages_capacity)` creates two bounded
-channels and starts two Tokio tasks:
+Transport constructors create bounded channels and return futures for the
+caller to spawn as Tokio tasks:
 
 1. `Transmitter<T>::run` owns the outbound transport and the actor inbox.
 2. `Receiver<R>::run` owns the inbound transport, sends response messages back
@@ -92,7 +92,7 @@ both boundaries.
 
 ```mermaid
 flowchart LR
-    handles[Connected clones] --> inbox[Bounded message channel]
+    handles[Connection clones] --> inbox[Bounded message channel]
     inbox --> transmitter[Transmitter actor]
     transmitter --> outbound[Transport output]
     inbound[Transport input] --> receiver[Receiver task]
@@ -102,25 +102,26 @@ flowchart LR
 
 ### Lifecycle states
 
-Spawning returns `Disconnected`, which owns the actor sender, callback receiver,
-and task join handles. `Disconnected::connect` sends an internal `Connect`
-message containing the desired nonzero protocol version and a one-shot reply.
+The channel endpoints form a `Connectable` handle before negotiation.
+`Connectable::connect` sends an internal `Connect` message containing the
+desired nonzero protocol version and a one-shot reply. Its actor futures must
+already be running; `connect` does not spawn them.
 
 The transmitter sends `version` using a legacy-compatible header. The UART
 receiver observes the response, updates its negotiated decoder version, and
 forwards the response to the transmitter. A matching version completes the
 one-shot request and produces:
 
-- `Connected`, a cloneable sender-backed command handle; and
+- `Connection`, a cloneable sender-backed command handle; and
 - the receiver of asynchronous `Callback` values.
 
-A negotiation error aborts both spawned transport tasks. The type transition
-prevents normal command methods from being called through the standard API
-before negotiation succeeds.
+The type transition prevents normal command methods from being called through
+the standard API before negotiation succeeds. The caller owns the spawned task
+handles and therefore also owns shutdown and failure handling.
 
 ### Command and response correlation
 
-`Connected::communicate` converts a typed command into `Commands`, sends an
+`Connection::communicate` converts a typed command into `Commands`, sends an
 internal `Command` message, and awaits a dedicated one-shot channel. The
 transmitter actor:
 
@@ -131,7 +132,7 @@ transmitter actor:
 5. stores the response sender by sequence number; and
 6. completes it when the receiver forwards the matching response frame.
 
-The sequence map supports concurrent in-flight requests from cloned `Connected`
+The sequence map supports concurrent in-flight requests from cloned `Connection`
 handles. It also prevents a wrapped sequence number from replacing an existing
 request; collision returns `Error::TransactionQueueFull`.
 
@@ -142,7 +143,7 @@ The receiver routes payloads as follows:
 - non-asynchronous callbacks go to the transmitter actor because some EZSP
   commands return callback-shaped payloads synchronously.
 
-The actor only transports aggregate parameters. `Connected::communicate`
+The actor only transports aggregate parameters. `Connection::communicate`
 performs the final conversion into the response type declared by
 `RespondsWith`; a mismatched payload becomes `Error::UnexpectedResponse`.
 
@@ -150,7 +151,7 @@ performs the final conversion into the response type declared by
 
 ### Builder ownership and startup
 
-`Builder<T, R>` owns an unspawned `Transceiver<T, R>` and startup configuration:
+`Builder` owns a pre-negotiation `Connectable` and startup configuration:
 
 - callback and actor message capacities;
 - desired EZSP protocol version;
@@ -163,7 +164,7 @@ performs the final conversion into the response type declared by
 and an event type implementing `TranslatableEvent`. The current startup sequence
 is:
 
-1. spawn transport actors;
+1. require the caller to have spawned all transport actors;
 2. negotiate the desired protocol version;
 3. set concentrator, configuration, and policy values;
 4. query the NCP identity and network state;
@@ -171,9 +172,16 @@ is:
 6. wait for a `NetworkUp` callback;
 7. set runtime radio power and log current stack/security state;
 8. issue the many-to-one route request;
-9. register every endpoint and construct `Ncp<Connected>`;
-10. spawn the callback-to-message bridge; and
-11. spawn `EventHandler<Connected, E>`.
+9. register every endpoint and construct `Ncp`;
+10. return the callback-to-message bridge future; and
+11. return the event-handler future.
+
+`Builder::start` does not spawn tasks. For UART, the application must spawn the
+serial worker, ASHv2 transmitter, ASHv2 receiver, EZSP transmitter, and EZSP
+receiver—in that order—before awaiting `start`. Once startup returns, it must
+spawn the callback bridge before the event handler. This preserves dependency
+order across bounded channels and avoids waiting on a lower-layer future that
+is not being polled.
 
 ```mermaid
 sequenceDiagram
@@ -182,7 +190,8 @@ sequenceDiagram
     participant Tx as Transmitter actor
     participant Rx as Receiver task
     participant NCP
-    App->>Builder: start
+    App->>Tx: spawn EZSP actor futures
+    App->>Builder: await start
     Builder->>Tx: negotiate version
     Tx->>NCP: version
     NCP->>Rx: version response
@@ -191,7 +200,8 @@ sequenceDiagram
     NCP->>Rx: NetworkUp callback
     Rx->>Builder: callback stream
     Builder->>Tx: endpoint and route setup
-    Builder-->>App: Ncp and translated events
+    Builder-->>App: Ncp, bridge future, event-handler future
+    App->>App: spawn bridge, then event handler
 ```
 
 `Startup::Resume` calls `network_init` with the selected `InitBitmask`.
@@ -203,9 +213,9 @@ key, channel, join method, and initial-security bitmask.
 
 ### NCP state and endpoint selection
 
-`Ncp<T>` owns:
+`Ncp` owns:
 
-- a communicator, normally `Connected`;
+- a `Connection` communicator;
 - the registered `Endpoint` descriptors;
 - a sender to the event handler;
 - default APS options; and
@@ -288,13 +298,16 @@ flowchart LR
 
 The `ashv2` feature supplies transport-specific actor halves under `src/uart`:
 
-- `uart::Transmitter` encodes a header and command parameters into one ASHv2
+- `uart::AshTx` encodes a header and command parameters into one ASHv2
   `Payload`, then sends it through an `ashv2::Handle`.
-- `uart::Receiver` consumes ASHv2 DATA payloads, parses a legacy or extended
+- `uart::AshRx` consumes ASHv2 DATA payloads, parses a legacy or extended
   header, validates overflow/truncation status, and parses typed parameters.
-- `Builder::ashv2` starts the ASHv2 serial worker, transmitter, and receiver
-  futures and constructs a core `Transceiver` from those halves.
-- `Builder::ashv2_with_buffers` exposes the received-DATA channel capacity.
+- `Builder::ashv2` wires those halves to the generic EZSP actors and returns a
+  builder alongside five futures. The caller must spawn, in order, the ASHv2
+  serial worker, ASHv2 transmitter, ASHv2 receiver, EZSP transmitter, and EZSP
+  receiver before awaiting `Builder::start`.
+- `Builder::ashv2_with_buffers` configures the ASHv2 DATA, ASHv2 actor, EZSP
+  actor, and EZSP callback channel capacities.
 
 The UART receiver begins in legacy-header mode. When it observes a successful
 `version` response, the generic receiver task calls `set_negotiated_version`, so
@@ -309,9 +322,7 @@ must fit in one ASHv2 DATA payload. Encoding an oversized command returns
 The `apis-saltans` feature is implemented under `src/apis_saltans` and adds
 traits/conversions without introducing another transport or NCP wrapper.
 
-`Ncp<T>` implements `apis_saltans_hw::Driver` when
-`T: Configuration + Messaging + Networking + Utilities + Send + Sync`. Driver
-operations map as follows:
+`Ncp` implements `apis_saltans_hw::Driver`. Driver operations map as follows:
 
 - `get_endpoints` converts the stored `Endpoint` list to `SimpleDescriptor`,
   logging and filtering values with unknown profiles or reserved endpoint IDs;
@@ -326,16 +337,16 @@ operations map as follows:
 - datagram transmission maps destinations to `Ncp::unicast`, `broadcast`, or
   `multicast` and wraps the resulting `StackResponse` in `HwResponse`.
 
-`Builder::start` returns `Ncp<Connected>` rather than an `NcpHandle`. Calling
-`Driver::run(channel_size)` creates the separate `apis-saltans` driver actor and
-returns its `NcpHandle` plus a future. The application must spawn or otherwise
-poll that future.
+`Builder::start` returns `Ncp` inside a `BuildResult`, rather than an
+`NcpHandle`. Calling `Driver::run(channel_size)` creates the separate
+`apis-saltans` driver actor and returns its `NcpHandle` plus a future. The
+application must spawn that future.
 
 ```mermaid
 flowchart LR
     app[Application] --> hwHandle[apis-saltans NcpHandle]
     hwHandle --> hwActor[Driver actor]
-    hwActor --> ncp[Ncp with Connected handle]
+    hwActor --> ncp[Ncp with Connection handle]
     ncp --> ezspActor[EZSP transmitter actor]
     ezspActor --> device[Network Co-Processor]
     callbacks[EZSP callback stream] --> eventHandler[EZSP event handler]

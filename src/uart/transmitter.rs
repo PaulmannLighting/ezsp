@@ -11,18 +11,18 @@ use crate::{Error, Frame, Header, Transmit, ezsp};
 
 /// Encodes EZSP headers and parameters into `ASHv2` DATA payloads.
 #[derive(Debug)]
-pub struct Transmitter {
+pub struct AshTx {
     ash_v2: Handle,
 }
 
-impl Transmitter {
+impl AshTx {
     /// Creates an EZSP transmitter around an `ASHv2` actor handle.
     pub const fn new(ash_v2: Handle) -> Self {
         Self { ash_v2 }
     }
 }
 
-impl Transmit for Transmitter {
+impl Transmit for AshTx {
     async fn transmit(&mut self, frame: Frame<Commands>) -> Result<(), Error> {
         let (header, parameters) = frame.into();
         trace!("Sending EZSP frame: Header: {header:#04X?}, parameters: {parameters:?}");

@@ -13,11 +13,11 @@ use crate::{Communicate, Error};
 /// independent tasks; the actor assigns sequence numbers and correlates their
 /// responses.
 #[derive(Clone, Debug)]
-pub struct Connected {
+pub struct Connection {
     pub(crate) handle: Sender<Message>,
 }
 
-impl Communicate for Connected {
+impl Communicate for Connection {
     async fn communicate<T>(&mut self, command: T) -> Result<T::Response, Error>
     where
         T: Parameter + RespondsWith + ToLeStream + Into<Commands>,

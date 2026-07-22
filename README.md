@@ -26,8 +26,8 @@ of the crate API.
 
 - `ashv2` provides `Builder::ashv2` for EZSP over an ASHv2 serial link and
   re-exports the transport crate as `ezsp::ashv2`.
-- `apis-saltans` implements `apis_saltans_hw::Driver` for suitable `Ncp<T>`
-  values and supplies callback/event and data-model conversions.
+- `apis-saltans` implements `apis_saltans_hw::Driver` for `Ncp` and supplies
+  callback/event and data-model conversions.
 - `semver` enables `semver` support in EZSP version APIs.
 
 ## Actor model
@@ -37,15 +37,14 @@ The transport API separates outbound and inbound I/O:
 - `Transmit` sends a complete `Frame<Commands>`.
 - `Receive` yields decoded `Frame<Parameters>` values and accepts the negotiated
   EZSP version used by version-sensitive decoders.
-- `Transceiver<T, R>` joins those halves and spawns a transmitter actor plus a
-  receiver task.
-- `Disconnected` represents the running tasks before protocol negotiation.
-- `Disconnected::connect` sends the initial `version` command and returns a
-  cloneable `Connected` handle together with the asynchronous callback stream.
-- `Connected` implements `Communicate`; all EZSP command-group traits are
+- `Transmitter<T>` and `Receiver<R>` are actor futures that the caller spawns.
+- `Connectable` represents the actor channels before protocol negotiation.
+- `Connectable::connect` sends the initial `version` command and returns a
+  cloneable `Connection` handle together with the asynchronous callback stream.
+- `Connection` implements `Communicate`; all EZSP command-group traits are
   blanket-implemented for communicators.
 
-Every `Connected::communicate` call sends an actor message and waits on its own
+Every `Connection::communicate` call sends an actor message and waits on its own
 one-shot response. The transmitter actor assigns an EZSP sequence number,
 serializes outbound access, and correlates inbound responses by that number.
 Cloned handles can therefore be used by independent tasks without placing the
@@ -54,7 +53,7 @@ and are delivered through a separate bounded channel.
 
 ```mermaid
 flowchart LR
-    callers[Connected handle clones] --> commands[Actor inbox]
+    callers[Connection handle clones] --> commands[Actor inbox]
     commands --> transmitter[Transmitter actor]
     transmitter --> tx[Transmit implementation]
     tx --> ncp[NCP]
@@ -64,34 +63,10 @@ flowchart LR
     receiver --> callbacks[Callback stream]
 ```
 
-Custom transports implement `Transmit` and `Receive` independently:
-
-```rust
-use std::num::NonZero;
-
-use ezsp::{Transceiver, Utilities};
-
-async fn use_transport<T, R>(transmit: T, receive: R) -> Result<(), ezsp::Error>
-where
-    T: ezsp::Transmit + Send + 'static,
-    R: ezsp::Receive + Send + 'static,
-{
-    let disconnected = Transceiver::new(transmit, receive).spawn(128, 64);
-    let desired_version = NonZero::new(ezsp::MIN_NON_LEGACY_VERSION)
-        .expect("the minimum non-legacy version is non-zero");
-    let (mut connected, mut callbacks) = disconnected.connect(desired_version).await?;
-
-    let _callback_task = tokio::spawn(async move {
-        while let Some(callback) = callbacks.recv().await {
-            // Dispatch callbacks required by the application.
-            drop(callback);
-        }
-    });
-
-    let _eui64 = connected.get_eui64().await?;
-    Ok(())
-}
-```
+Transport implementations supply independent `Transmit` and `Receive` halves.
+Their actor futures must be spawned before version negotiation; the UART
+constructor described below performs the channel wiring and returns all of the
+futures needed to drive both transport layers.
 
 ## Typed protocol API
 
@@ -117,19 +92,23 @@ five-byte extended header. The receiver updates its decoder after a successful
 
 ## High-level NCP startup
 
-`Builder<T, R>` owns a `Transceiver` and the complete startup configuration. Its
-`start` method:
+`Builder` owns a pre-negotiation `Connectable` and the complete startup
+configuration. Transport constructors return the builder separately from the
+futures that drive it. After the caller spawns those futures, `start`:
 
 1. validates that at least one application endpoint was supplied;
-2. spawns the transport actors and negotiates the requested EZSP version;
+2. negotiates the requested EZSP version through the running transport actors;
 3. applies concentrator, configuration, and policy settings;
 4. resumes the persisted network or forms an explicitly configured network;
 5. waits for `NetworkUp`, applies runtime radio power, and sends a many-to-one
    route request;
 6. registers the supplied endpoints;
-7. starts callback translation, scan aggregation, APS defragmentation, and
-   message-confirmation correlation;
-8. returns `Ncp<Connected>`.
+7. creates the callback bridge and event-handler futures used for translation,
+   scan aggregation, APS defragmentation, and message-confirmation correlation;
+8. returns those futures with `Ncp` in a `BuildResult`.
+
+`Builder::start` does not spawn either returned future. Spawn `bridge` before
+`event_handler`, and keep both tasks running while using the `Ncp`.
 
 The event channel passed to `Builder::start` determines the application event
 type. That type must implement `TranslatableEvent`, which is automatically
@@ -184,7 +163,7 @@ one.
 
 ## High-level NCP operations
 
-`Ncp<T>` owns the connected communicator and endpoint metadata. It adds
+`Ncp` owns the connected communicator and endpoint metadata. It adds
 workflows that span commands and asynchronous callbacks:
 
 - active-network and energy scans, completed by `scanComplete`;
@@ -214,7 +193,7 @@ payloads must fit the maximum payload reported by the NCP.
 `T: Messaging`. `handle` acknowledges each fragment with the required empty
 `sendReply` and returns a `DefragmentedMessage` after the complete payload is
 available. The high-level event handler owns a defragmenter using its clone of
-the `Connected` actor handle and emits incoming-message events only for complete
+the `Connection` actor handle and emits incoming-message events only for complete
 payloads.
 
 Reassembly keys messages by sender and APS sequence, enforces the fragment
@@ -230,19 +209,37 @@ environment variables can override the defaults:
 
 With `ashv2` enabled, the internal UART transmitter encodes complete EZSP frames
 into ASHv2 DATA payloads and its receiver decodes DATA payloads into typed
-frames. `Builder::ashv2(serial_port)` constructs both halves, starts the ASHv2
-serial worker/transmitter/receiver tasks, and returns a normal actor builder.
-`Builder::ashv2_with_buffers` additionally sets the ASHv2 DATA channel capacity.
+frames. `Builder::ashv2(serial_port)` constructs both transport layers and
+returns a builder together with five futures. Spawn the futures as Tokio tasks
+in the exact order shown below. All five tasks must be running before
+`Builder::start` is awaited; changing the layer order can leave a bounded-channel
+operation waiting on a lower-layer future that is not running and deadlock
+initialization. `Builder::ashv2_with_buffers` configures the ASHv2 DATA, ASHv2
+actor, EZSP actor, and EZSP callback channel capacities.
 
 ```rust
 // Requires the `ashv2` feature and a running Tokio runtime.
-let builder = ezsp::Builder::ashv2(serial_port)
+let (builder, futures) = ezsp::Builder::ashv2(serial_port);
+
+// Spawn from the lowest transport layer to the highest.
+let _serial_worker = tokio::spawn(futures.ash_futures.serial_worker);
+let _ash_transmitter = tokio::spawn(futures.ash_futures.transmitter);
+let _ash_receiver = tokio::spawn(futures.ash_futures.receiver);
+let _ezsp_transmitter = tokio::spawn(futures.ezsp_tx);
+let _ezsp_receiver = tokio::spawn(futures.ezsp_rx);
+
+let builder = builder
     .with_callbacks_capacity(128)
     .with_messages_capacity(64);
 
-let ncp = builder
+let result = builder
     .start(startup, endpoints, event_sender)
     .await?;
+
+// Spawn the returned application services in producer-to-consumer order.
+let _bridge = tokio::spawn(result.bridge);
+let _event_handler = tokio::spawn(result.event_handler);
+let ncp = result.ncp;
 ```
 
 The serial port must implement `ezsp::ashv2::SerialPort`. ASHv2 supplies
@@ -255,9 +252,7 @@ frames: one EZSP frame is encoded into one ASHv2 DATA payload.
 The `apis-saltans` feature adds implementations and conversions around the
 normal actor-backed `Ncp`; it does not add a wrapper type or another transport.
 
-`Ncp<T>` implements `apis_saltans_hw::Driver` when `T` implements
-`Configuration + Messaging + Networking + Utilities + Send + Sync`. The
-mapping provides:
+`Ncp` implements `apis_saltans_hw::Driver`. The mapping provides:
 
 - stored endpoint descriptors through `Driver::get_endpoints`;
 - NCP identity and EZSP address-table lookup operations;
@@ -268,13 +263,12 @@ mapping provides:
 - unicast, broadcast, and multicast datagram transmission through the
   high-level NCP send helpers.
 
-`Builder::start` continues to return `Ncp<Connected>`. To run the separate
-`apis-saltans` hardware actor, call `Driver::run` and spawn its returned future:
+After extracting `Ncp` from the `BuildResult`, call `Driver::run` and spawn its
+returned future to run the separate `apis-saltans` hardware actor:
 
 ```rust
 use apis_saltans_hw::Driver;
 
-let ncp = builder.start(startup, endpoints, event_sender).await?;
 let (hardware, driver) = ncp.run(64);
 tokio::spawn(driver);
 

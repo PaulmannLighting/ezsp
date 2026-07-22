@@ -12,12 +12,12 @@ use crate::{
 };
 
 /// Receives `ASHv2` DATA payloads and decodes them as typed EZSP frames.
-pub struct Receiver {
+pub struct AshRx {
     inbox: mpsc::Receiver<Payload>,
     negotiated_version: Option<u8>,
 }
 
-impl Receiver {
+impl AshRx {
     /// Creates a receiver over the `ASHv2` DATA payload channel.
     #[must_use]
     pub const fn new(inbox: mpsc::Receiver<Payload>) -> Self {
@@ -85,7 +85,7 @@ impl Receiver {
     }
 }
 
-impl Receive for Receiver {
+impl Receive for AshRx {
     async fn receive(&mut self) -> Option<Frame<Parameters>> {
         loop {
             let frame = self.inbox.recv().await?;

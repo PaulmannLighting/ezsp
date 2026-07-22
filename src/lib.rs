@@ -25,9 +25,11 @@
 //! [Simplicity SDK EZSP Reference Guide](https://docs.silabs.com/zigbee/latest/sisdk-ezsp-reference-guide/).
 //!
 //! This library is free software and is not affiliated with Silicon Labs.
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(unsafe_code)]
 
 #[cfg(feature = "ashv2")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ashv2")))]
 pub use ashv2;
 
 pub use self::commands::{
@@ -53,6 +55,7 @@ pub use self::transceiver::{
 pub use self::types::SourceRouteDiscoveryMode;
 
 #[cfg(feature = "apis-saltans")]
+#[cfg_attr(docsrs, doc(cfg(feature = "apis-saltans")))]
 pub mod apis_saltans;
 mod commands;
 mod communicate;
@@ -67,6 +70,7 @@ mod ncp;
 mod transceiver;
 mod types;
 #[cfg(feature = "ashv2")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ashv2")))]
 pub mod uart;
 
 /// A specialized [`std::result::Result`] type for this crate.

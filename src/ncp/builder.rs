@@ -12,12 +12,13 @@ use crate::ncp::await_event::AwaitEvent;
 use crate::{
     Configuration, ConfigurationExt, Connectable, Displayable, Error, EventHandler,
     MIN_NON_LEGACY_VERSION, Messaging, Ncp, Networking, PolicyExt, Security, Startup,
-    TranslatableEvent, Utilities,
+    TranslatableEvent, Utilities, ValueError,
 };
 
 mod build_result;
 
 const RADIO_POWER: i8 = 8;
+const EVENT_MESSAGES_CAPACITY: usize = 64;
 
 /// Configures an actor-backed EZSP Network Co-Processor.
 ///
@@ -25,13 +26,12 @@ const RADIO_POWER: i8 = 8;
 /// futures that service this handle are returned separately by transport
 /// constructors such as [`Builder::ashv2`](crate::Builder::ashv2) and must be
 /// spawned by the caller before [`Builder::start`] is awaited. The builder also
-/// stores queue capacities, the desired EZSP version, stack policies and
-/// configuration values, concentrator settings, radio power, and default APS
-/// options.
+/// stores the event-message queue capacity, desired EZSP version, stack
+/// policies and configuration values, concentrator settings, radio power, and
+/// default APS options.
 pub struct Builder {
     pub(crate) connectable: Connectable,
-    pub(crate) callbacks_capacity: usize,
-    pub(crate) messages_capacity: usize,
+    pub(crate) event_messages_capacity: usize,
     pub(crate) desired_version: NonZero<u8>,
     pub(crate) policy: BTreeMap<policy::Id, u8>,
     pub(crate) configuration: BTreeMap<config::Id, u16>,
@@ -51,8 +51,7 @@ impl Builder {
     pub const fn new(connection: Connectable) -> Self {
         Self {
             connectable: connection,
-            callbacks_capacity: 128,
-            messages_capacity: 64,
+            event_messages_capacity: EVENT_MESSAGES_CAPACITY,
             desired_version: NonZero::new(MIN_NON_LEGACY_VERSION)
                 .expect("Min legacy version is non-zero."),
             policy: BTreeMap::new(),
@@ -63,17 +62,14 @@ impl Builder {
         }
     }
 
-    /// Sets the capacity of the asynchronous callback channel.
+    /// Sets the capacity of the channel between the callback bridge and event handler.
+    ///
+    /// Transport actor and callback channel capacities are selected when the
+    /// transport is constructed, for example with
+    /// [`Builder::ashv2_with_buffers`](crate::Builder::ashv2_with_buffers).
     #[must_use]
-    pub const fn with_callbacks_capacity(mut self, callbacks_capacity: usize) -> Self {
-        self.callbacks_capacity = callbacks_capacity;
-        self
-    }
-
-    /// Sets the capacity of actor command and response message channels.
-    #[must_use]
-    pub const fn with_messages_capacity(mut self, messages_capacity: usize) -> Self {
-        self.messages_capacity = messages_capacity;
+    pub const fn with_event_messages_capacity(mut self, event_messages_capacity: usize) -> Self {
+        self.event_messages_capacity = event_messages_capacity;
         self
     }
 
@@ -138,10 +134,11 @@ impl Builder {
     /// Configures the EZSP stack and creates the high-level NCP service futures.
     ///
     /// The startup sequence applies configured policies and stack values,
-    /// waits for protocol negotiation, applies its [`Startup`] mode, waits for
-    /// `NetworkUp`, registers every supplied endpoint, and returns an [`Ncp`]
-    /// containing a cloneable [`Connection`](crate::Connection) actor handle
-    /// together with the callback bridge and event-handler futures.
+    /// waits for protocol negotiation, registers every supplied endpoint while
+    /// the network is down, applies its [`Startup`] mode, waits for `NetworkUp`,
+    /// and returns an [`Ncp`] containing a cloneable
+    /// [`Connection`](crate::Connection) actor handle together with the
+    /// callback bridge and event-handler futures.
     ///
     /// This method does not spawn tasks. Before awaiting it, the caller must
     /// spawn the transport futures in the order required by the transport. For
@@ -196,7 +193,7 @@ impl Builder {
         let network_state = connected.network_state().await?;
         info!("Current network state: {network_state:?}");
 
-        let (message_tx, message_rx) = channel(self.messages_capacity);
+        let (message_tx, message_rx) = channel(self.event_messages_capacity);
 
         info!("Initializing NCP.");
         let ncp = Ncp::new(
@@ -244,11 +241,12 @@ impl Builder {
 
         log_state(&mut connected).await?;
 
-        let radius: u8 = connected
+        let configured_radius = connected
             .get_configuration_value(config::Id::MaxHops)
-            .await?
+            .await?;
+        let radius = configured_radius
             .try_into()
-            .unwrap_or_default();
+            .map_err(|_| ValueError::InvalidRouteRadius(configured_radius))?;
         info!("Sending many-to-one route request: {radius} hops");
         connected
             .send_many_to_one_route_request(concentrator::Type::HighRam, radius)

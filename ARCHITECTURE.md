@@ -153,7 +153,7 @@ performs the final conversion into the response type declared by
 
 `Builder` owns a pre-negotiation `Connectable` and startup configuration:
 
-- callback and actor message capacities;
+- the callback-to-event-handler message capacity;
 - desired EZSP protocol version;
 - configuration and policy maps;
 - optional concentrator parameters;
@@ -168,11 +168,11 @@ is:
 2. negotiate the desired protocol version;
 3. set concentrator, configuration, and policy values;
 4. query the NCP identity and network state;
-5. execute `Startup::Initialize` or `Startup::Resume`;
-6. wait for a `NetworkUp` callback;
-7. set runtime radio power and log current stack/security state;
-8. issue the many-to-one route request;
-9. register every endpoint and construct `Ncp`;
+5. register every endpoint and construct `Ncp` while the network is down;
+6. execute `Startup::Initialize` or `Startup::Resume`;
+7. wait for a `NetworkUp` callback;
+8. set runtime radio power and log current stack/security state;
+9. issue the many-to-one route request;
 10. return the callback-to-message bridge future; and
 11. return the event-handler future.
 
@@ -298,9 +298,9 @@ flowchart LR
 
 The `ashv2` feature supplies transport-specific actor halves under `src/uart`:
 
-- `uart::AshTx` encodes a header and command parameters into one ASHv2
+- the internal UART transmitter encodes a header and command parameters into one ASHv2
   `Payload`, then sends it through an `ashv2::Handle`.
-- `uart::AshRx` consumes ASHv2 DATA payloads, parses a legacy or extended
+- the internal UART receiver consumes ASHv2 DATA payloads, parses a legacy or extended
   header, validates overflow/truncation status, and parses typed parameters.
 - `Builder::ashv2` wires those halves to the generic EZSP actors and returns a
   builder alongside five futures. The caller must spawn, in order, the ASHv2

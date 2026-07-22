@@ -631,6 +631,12 @@ criteria = "safe-to-deploy"
 version = "0.1.18"
 notes = "AI-assisted: inspected source 0.1.18 and diff 0.1.17 -> 0.1.18; async Stream adapters/wrappers. Unsafe is limited to marker impls for empty streams; no ambient filesystem/process/network capabilities."
 
+[[audits.tokio-stream]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.1.18 -> 0.1.19"
+notes = "AI-assisted: reviewed the complete 0.1.18 -> 0.1.19 source diff. Changes add standard-collection support, fused adaptors, JoinSetStream, cooperative scheduling, and stream correctness fixes. No unsafe code changes or new ambient filesystem, process, or network capabilities; existing caller-provided I/O wrappers are unchanged."
+
 [[audits.tokio-task-pool]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -642,6 +648,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 version = "0.7.18"
 notes = "AI-assisted: inspected source 0.7.18 and diff 0.7.16 -> 0.7.18; codecs, cancellation utilities, sync helpers, and UDP framing. Unsafe code is internal pin/projection/buffer management; ambient I/O only through caller-provided tokio I/O types."
+
+[[audits.tokio-util]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.7.18 -> 0.7.19"
+notes = "AI-assisted: reviewed the complete 0.7.18 -> 0.7.19 source diff. Changes add vectored-write, task, cancellation-token, codec, and delay-queue APIs/fixes. Reviewed new unsafe lifetime-preserving IoSlice advancement, ManuallyDrop extraction, and libc memchr pointer arithmetic; invariants are upheld. No new ambient filesystem, process, or network capabilities."
 
 [[audits.unescaper]]
 who = "Codex"

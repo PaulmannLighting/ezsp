@@ -14,8 +14,8 @@
 //! `ashv2::SerialPort`. It returns the builder together with five transport
 //! futures. The caller must spawn the `ASHv2` serial worker, `ASHv2` transmitter,
 //! `ASHv2` receiver, EZSP transmitter, and EZSP receiver, in that order, before
-//! awaiting [`Builder::start`](crate::Builder::start). The builder connects this
-//! module's [`AshTx`] and [`AshRx`] to the generic EZSP actors.
+//! awaiting [`Builder::start`](crate::Builder::start). The builder connects the
+//! internal UART transmit and receive halves to the generic EZSP actors.
 
 pub use self::futures::Futures;
 use self::receiver::AshRx;

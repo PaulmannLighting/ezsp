@@ -7,6 +7,10 @@ pub enum ValueError {
     #[error("Invalid frame ID for legacy frame format: {0}")]
     InvalidFrameId(#[from] TryFromIntError),
 
+    /// A configured route radius does not fit into an EZSP route request.
+    #[error("Invalid route radius: {0}")]
+    InvalidRouteRadius(u16),
+
     /// An invalid [`State`](crate::ember::duty_cycle::State) was received.
     #[error("Invalid Ember duty cycle state: {0:#04X}")]
     EmberDutyCycleState(u8),

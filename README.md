@@ -228,10 +228,6 @@ let _ash_receiver = tokio::spawn(futures.ash_futures.receiver);
 let _ezsp_transmitter = tokio::spawn(futures.ezsp_tx);
 let _ezsp_receiver = tokio::spawn(futures.ezsp_rx);
 
-let builder = builder
-    .with_callbacks_capacity(128)
-    .with_messages_capacity(64);
-
 let result = builder
     .start(startup, endpoints, event_sender)
     .await?;
@@ -242,7 +238,9 @@ let _event_handler = tokio::spawn(result.event_handler);
 let ncp = result.ncp;
 ```
 
-The serial port must implement `ezsp::ashv2::SerialPort`. ASHv2 supplies
+Use `Builder::with_event_messages_capacity` to configure the separate channel
+between the returned callback bridge and event-handler futures. The serial port
+must implement `ezsp::ashv2::SerialPort`. ASHv2 supplies
 reliability, CRC validation, byte stuffing, randomization, acknowledgements,
 reset handling, and retransmission. Neither EZSP nor ASHv2 fragments protocol
 frames: one EZSP frame is encoded into one ASHv2 DATA payload.

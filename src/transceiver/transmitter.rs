@@ -78,9 +78,10 @@ impl<T> Transmitter<T> {
     fn handle_response(&mut self, frame: Frame<Parameters>) {
         let (header, payload) = frame.into();
 
-        if let Parameters::Response(Response::Configuration(configuration::Response::Version(
-            version,
-        ))) = payload
+        if self.version_negotiation.is_some()
+            && let Parameters::Response(Response::Configuration(configuration::Response::Version(
+                version,
+            ))) = payload
         {
             self.handle_negotiated_version(*version);
             return;
@@ -116,7 +117,7 @@ impl<T> Transmitter<T> {
                     desired: desired_version.get(),
                     negotiated,
                 }))
-                .unwrap();
+                .unwrap_or_else(drop);
             return;
         }
 
@@ -207,5 +208,46 @@ where
 
         self.pending_responses.insert(header.sequence(), response);
         self.sequence = self.sequence.wrapping_add(1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use le_stream::FromLeStream;
+    use tokio::sync::{mpsc, oneshot};
+
+    use super::*;
+
+    const DESIRED_VERSION: u8 = 13;
+    const NEGOTIATED_VERSION: u8 = 14;
+    const STACK_TYPE: u8 = 2;
+    const STACK_VERSION_LOW: u8 = 0x34;
+    const STACK_VERSION_HIGH: u8 = 0x12;
+
+    #[test]
+    fn canceled_version_negotiation_does_not_panic_on_mismatch() {
+        let (_inbox_sender, inbox) = mpsc::channel(1);
+        let mut transmitter = Transmitter::new((), inbox);
+        let (response, receiver) = oneshot::channel();
+        drop(receiver);
+        transmitter.version_negotiation = Some((
+            NonZero::new(DESIRED_VERSION).expect("test version is non-zero"),
+            response,
+        ));
+        let negotiated = version::Response::from_le_stream(
+            [
+                NEGOTIATED_VERSION,
+                STACK_TYPE,
+                STACK_VERSION_LOW,
+                STACK_VERSION_HIGH,
+            ]
+            .into_iter(),
+        )
+        .expect("test response is complete");
+
+        transmitter.handle_negotiated_version(negotiated);
+
+        assert!(transmitter.version_negotiation.is_none());
+        assert!(transmitter.negotiated_version.is_none());
     }
 }

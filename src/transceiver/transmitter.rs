@@ -61,7 +61,7 @@ impl<T> Transmitter<T> {
     fn header(&self, id: u16) -> Result<Header, TryFromIntError> {
         let header = if self
             .negotiated_version
-            .is_some_and(|version| version >= MIN_NON_LEGACY_VERSION)
+            .is_some_and(|version| version >= MIN_NON_LEGACY_VERSION.get())
         {
             Header::Extended(Extended::new(self.sequence, Command::default().into(), id))
         } else {

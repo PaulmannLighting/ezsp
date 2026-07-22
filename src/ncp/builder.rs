@@ -43,17 +43,13 @@ pub struct Builder {
 impl Builder {
     /// Creates a builder around separate transport transmit and receive halves.
     ///
-    /// # Panics
-    ///
-    /// Panics if [`MIN_NON_LEGACY_VERSION`] is zero. The protocol constant is
-    /// defined as a nonzero version, so this indicates an invalid crate build.
+    /// The requested protocol version defaults to [`MIN_NON_LEGACY_VERSION`].
     #[must_use]
     pub const fn new(connection: Connectable) -> Self {
         Self {
             connectable: connection,
             event_messages_capacity: EVENT_MESSAGES_CAPACITY,
-            desired_version: NonZero::new(MIN_NON_LEGACY_VERSION)
-                .expect("Min legacy version is non-zero."),
+            desired_version: MIN_NON_LEGACY_VERSION,
             policy: BTreeMap::new(),
             configuration: BTreeMap::new(),
             concentrator: None,

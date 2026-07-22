@@ -33,7 +33,7 @@ impl AshRx {
     {
         if self
             .negotiated_version
-            .is_some_and(|version| version >= MIN_NON_LEGACY_VERSION)
+            .is_some_and(|version| version >= MIN_NON_LEGACY_VERSION.get())
         {
             Extended::from_le_stream(stream).map(Header::Extended)
         } else {

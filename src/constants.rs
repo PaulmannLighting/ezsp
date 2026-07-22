@@ -1,3 +1,5 @@
+use std::num::NonZero;
+
 /// Maximum encoded EZSP header size in bytes.
 ///
 /// Legacy headers are three bytes: sequence, frame control, and frame ID. EZSP
@@ -26,4 +28,7 @@ pub const MAX_HEADER_SIZE: usize = 5;
 pub const MAX_PARAMETER_SIZE: usize = 1028;
 
 /// Minimum EZSP protocol version that uses the extended header format.
-pub const MIN_NON_LEGACY_VERSION: u8 = 8;
+///
+/// Protocol versions are nonzero, so this constant can also be used directly
+/// as the default version requested during connection negotiation.
+pub const MIN_NON_LEGACY_VERSION: NonZero<u8> = NonZero::new(8).expect("Non-zero.");

@@ -14,10 +14,6 @@
 /// deadlock initialization.
 pub struct Futures<SerialWorker, AshTx, AshRx, EzspTx, EzspRx> {
     /// Futures that drive the `ASHv2` serial worker, transmitter, and receiver.
-    #[expect(
-        clippy::struct_field_names,
-        reason = "the field distinguishes the nested ASHv2 future bundle"
-    )]
     pub ash_futures: ashv2::Futures<SerialWorker, AshTx, AshRx>,
     /// Future that drives the EZSP transmitter actor.
     pub ezsp_tx: EzspTx,

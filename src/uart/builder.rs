@@ -1,5 +1,4 @@
 use ashv2::{Futures, SerialPort, start};
-use tokio::spawn;
 use tokio::sync::mpsc::channel;
 
 use crate::uart::{Receiver, Transmitter};
@@ -14,7 +13,16 @@ impl Builder<Transmitter, Receiver> {
     /// immediately. Call [`Builder::start`](crate::Builder::start) to spawn the
     /// EZSP actors and initialize the NCP.
     #[must_use]
-    pub fn ashv2<T>(serial_port: T) -> Self
+    pub fn ashv2<T>(
+        serial_port: T,
+    ) -> (
+        Self,
+        Futures<
+            impl Future<Output = T> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
+        >,
+    )
     where
         T: SerialPort + Sync + 'static,
     {
@@ -27,25 +35,23 @@ impl Builder<Transmitter, Receiver> {
     /// The `ASHv2` worker tasks are spawned immediately; EZSP actor tasks start
     /// when [`Builder::start`](crate::Builder::start) is called.
     #[must_use]
-    pub fn ashv2_with_buffers<T>(serial_port: T, channel_size: usize) -> Self
+    pub fn ashv2_with_buffers<T>(
+        serial_port: T,
+        channel_size: usize,
+    ) -> (
+        Self,
+        Futures<
+            impl Future<Output = T> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
+        >,
+    )
     where
         T: SerialPort + Sync + 'static,
     {
         let (ash_tx, ash_rx) = channel(channel_size);
-        let (
-            ashv2,
-            Futures {
-                serial_worker,
-                transmitter,
-                receiver,
-            },
-        ) = start(serial_port, ash_tx);
-        spawn(serial_worker);
-        spawn(transmitter);
-        spawn(receiver);
-        let transmitter = Transmitter::new(ashv2);
-        let receiver = Receiver::new(ash_rx);
-        let transceiver = Transceiver::new(transmitter, receiver);
-        Self::new(transceiver)
+        let (ashv2, futures) = start(serial_port, ash_tx);
+        let transceiver = Transceiver::new(Transmitter::new(ashv2), Receiver::new(ash_rx));
+        (Self::new(transceiver), futures)
     }
 }

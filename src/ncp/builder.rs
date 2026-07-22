@@ -38,6 +38,7 @@ pub struct Builder {
     pub(crate) concentrator: Option<concentrator::Parameters>,
     pub(crate) radio_tx_power: i8,
     pub(crate) aps_options: aps::Options,
+    pub(crate) manufacturer_code: Option<u16>,
 }
 
 impl Builder {
@@ -55,6 +56,7 @@ impl Builder {
             concentrator: None,
             radio_tx_power: RADIO_POWER,
             aps_options: aps::Options::empty(),
+            manufacturer_code: None,
         }
     }
 
@@ -124,6 +126,16 @@ impl Builder {
         self.aps_options = options;
         self
     }
+
+    /// Sets the manufacturer code in the NCP's node descriptor during startup.
+    ///
+    /// If this method is not called, the NCP's existing manufacturer code is
+    /// left unchanged.
+    #[must_use]
+    pub const fn with_manufacturer_code(mut self, manufacturer_code: u16) -> Self {
+        self.manufacturer_code = Some(manufacturer_code);
+        self
+    }
 }
 
 impl Builder {
@@ -181,6 +193,11 @@ impl Builder {
         for (key, value) in self.policy {
             debug!("Setting policy {key:?} to {value:#04X}");
             connected.set_policy(key, value).await?;
+        }
+
+        if let Some(manufacturer_code) = self.manufacturer_code {
+            debug!("Setting manufacturer code to {manufacturer_code:#06X}");
+            connected.set_manufacturer_code(manufacturer_code).await?;
         }
 
         let ieee_address = connected.get_eui64().await?;

@@ -40,8 +40,10 @@ The transport API separates outbound and inbound I/O:
 - `Transmit` sends a complete `Frame<Commands>`.
 - `Receive` yields decoded `Frame<Parameters>` values and accepts the negotiated
   EZSP version used by version-sensitive decoders.
-- `Client::run` wraps those transport halves and returns a newly wired `Client`
-  plus the transmitter and receiver actor futures for the caller to spawn.
+- `Client::run` is an associated constructor that wraps those transport halves
+  and returns a newly wired `Client` plus `Futures` for the caller to spawn.
+- `Futures` is exported from the crate root and contains the transmitter and
+  receiver actor futures.
 - The returned `Client` represents the actor channels before protocol
   negotiation.
 - `Client::connect` sends the initial `version` command and returns a
@@ -101,8 +103,9 @@ receive calls.
 ## High-level NCP startup
 
 `Builder` owns a pre-negotiation `Client` and the complete startup
-configuration. `Client::run` returns the newly wired client together with the
-futures that drive it. After the caller spawns those futures, `start`:
+configuration. The associated function `Client::run` creates that client and
+returns it together with the `Futures` that drive it. After the caller spawns
+those futures, `start`:
 
 1. validates that at least one application endpoint was supplied;
 2. negotiates the requested EZSP version through the running transport actors;
@@ -260,14 +263,14 @@ implementing `Transmit` and an inbound type implementing `Receive`:
 Once the ASHv2-specific halves exist, the generic EZSP wiring is:
 
 ```rust
-use ezsp::Builder;
+use ezsp::{Builder, Client};
 
 const EZSP_CHANNEL_SIZE: usize = 128;
 
 // `ash_transmit` and `ash_receive` are supplied by an external ASHv2 adapter
 // and implement `ezsp::Transmit` and `ezsp::Receive`, respectively.
 let (client, futures) =
-    client.run(ash_transmit, ash_receive, EZSP_CHANNEL_SIZE);
+    Client::run(ash_transmit, ash_receive, EZSP_CHANNEL_SIZE);
 
 let _ezsp_transmitter = tokio::spawn(futures.transmitter);
 let _ezsp_receiver = tokio::spawn(futures.receiver);
@@ -281,10 +284,6 @@ let _bridge = tokio::spawn(result.bridge);
 let _event_handler = tokio::spawn(result.event_handler);
 let ncp = result.ncp;
 ```
-
-The `client` input in this example must be supplied by another crate API. The
-current `ezsp` API does not expose a public constructor for that initial value,
-so an external adapter cannot yet initiate this sequence using `ezsp` alone.
 
 Start any lower-level ASHv2 serial worker and ASHv2 protocol tasks before the
 two EZSP actor futures. Both EZSP actors must be running before

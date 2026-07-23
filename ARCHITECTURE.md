@@ -69,8 +69,9 @@ The actor layer deliberately separates output from input:
   encoding or I/O errors.
 - `Receive::receive` accepts the actor's current negotiated-version state and
   returns the next decoded inbound EZSP frame.
-- `Client::run` creates the internal transmitter and receiver futures that
-  drive the EZSP actor layer and returns a newly wired pre-negotiation `Client`.
+- `Client::run` is an associated constructor that creates a pre-negotiation
+  `Client` and the internal transmitter and receiver futures that drive the
+  EZSP actor layer.
 
 This crate supplies no ASHv2 or other physical-transport implementation. The
 boundary keeps EZSP transaction logic independent of the link layer and allows
@@ -79,7 +80,8 @@ an external transport crate to provide both halves.
 ### Caller-spawned tasks and channels
 
 `Client::run(transmit, receive, channel_size)` creates the bounded channels and
-returns futures for the caller to spawn as Tokio tasks:
+returns the client together with `Futures`, exported from the crate root. The
+caller spawns its fields as Tokio tasks:
 
 1. `Futures::transmitter` owns the `Transmit` implementation and the actor inbox.
 2. `Futures::receiver` owns the `Receive` implementation, sends responses back
@@ -348,11 +350,6 @@ The generic actor owns the negotiated-version state. It passes `None` to
 passes `Some(version)` on subsequent calls. External ASHv2 tasks must be running
 before the two futures returned by `Client::run`; both EZSP futures must be
 running before `Builder::start` initiates negotiation.
-
-`Client::run` currently consumes an existing `Client`, but `Client` has no
-public constructor and its fields are crate-private. Consequently, an external
-transport cannot create the initial value needed to enter this lifecycle
-without another API supplying it.
 
 EZSP and ASHv2 have no frame fragmentation boundary: each complete EZSP frame
 must fit in one ASHv2 DATA payload. The external adapter defines how an

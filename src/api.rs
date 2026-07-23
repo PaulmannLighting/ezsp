@@ -1,9 +1,9 @@
 //! Transport-independent actor wiring for EZSP frame I/O.
 //!
 //! External transports implement [`Transmit`] and [`Receive`]. [`Client::run`]
-//! consumes those halves, creates the bounded actor channels, and returns a
-//! pre-negotiation [`Client`] plus the [`Futures`] that drive both actors. Spawn
-//! both futures before calling [`Client::connect`].
+//! takes ownership of those halves, creates the bounded actor channels, and
+//! returns a pre-negotiation [`Client`] plus the [`Futures`] that drive both
+//! actors. Spawn both futures before calling [`Client::connect`].
 
 use std::num::NonZero;
 
@@ -33,11 +33,6 @@ mod transmitter;
 /// the EZSP actors. After both returned actor futures have been spawned,
 /// [`Client::connect`] issues the initial `version` command and transitions to
 /// a cloneable [`Connection`].
-///
-/// The current API does not expose a public constructor for the initial
-/// `Client`; its fields are crate-private. External transport integrations
-/// therefore require another API to supply the value consumed by
-/// [`Client::run`].
 #[derive(Debug)]
 pub struct Client {
     pub(crate) handle: Sender<Message>,
@@ -45,14 +40,13 @@ pub struct Client {
 }
 
 impl Client {
-    /// Replaces this client's channels and creates the transport actor futures.
+    /// Creates a client and the futures that drive its transport actors.
     ///
-    /// This method consumes the existing client, creates new command/response
-    /// and callback channels around `transmit` and `receive`, and returns the
-    /// newly wired client. Spawn `futures.transmitter` and `futures.receiver`
-    /// before calling [`Client::connect`] or [`crate::Builder::start`]. Any
-    /// lower-level tasks used by the transport implementations must also be
-    /// running.
+    /// This associated function creates command/response and callback channels
+    /// around `transmit` and `receive`, then returns a pre-negotiation client
+    /// and [`Futures`]. Spawn `futures.transmitter` and `futures.receiver`
+    /// before calling [`Client::connect`] or [`crate::Builder::start`]. Start
+    /// any lower-level tasks used by the transport implementations first.
     ///
     /// `channel_size` is used for both the command/response actor channel and
     /// the asynchronous callback channel.
@@ -62,7 +56,6 @@ impl Client {
     /// Panics if `channel_size` is zero.
     #[must_use]
     pub fn run<T, R>(
-        self,
         transmit: T,
         receive: R,
         channel_size: usize,

@@ -43,7 +43,7 @@ pub struct Builder {
 }
 
 impl Builder {
-    /// Creates a builder around separate transport transmit and receive halves.
+    /// Creates a builder from a pre-negotiation client.
     ///
     /// The requested protocol version defaults to [`MIN_NON_LEGACY_VERSION`].
     #[must_use]

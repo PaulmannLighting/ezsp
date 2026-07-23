@@ -20,7 +20,7 @@
 //!
 //! This crate does not supply an `ASHv2` implementation. An external `ASHv2`
 //! adapter implements [`Transmit`] and [`Receive`], passes both halves to
-//! [`Client::run`], and spawns the returned futures before constructing
+//! [`Client::run`], and spawns the returned [`Futures`] before constructing
 //! [`Builder`] from the newly wired [`Client`].
 //!
 //! Protocol details are documented by Silicon Labs in the
@@ -30,7 +30,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(unsafe_code)]
 
-pub use self::api::{Client, Connection, Receive, TranslatableEvent, Transmit};
+pub use self::api::{Client, Connection, Futures, Receive, TranslatableEvent, Transmit};
 pub use self::commands::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GetValueExt, GreenPower, Messaging, Mfglib,
     Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,

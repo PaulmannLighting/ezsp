@@ -13,7 +13,9 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-aps"
-version = "0.7.0"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5166ae9c8d6d0256ede595cf3f217c9270fcf4ace1a824bb5c2d8caaac9d1dac"
 dependencies = [
  "apis-saltans-core",
  "apis-saltans-nwk",
@@ -27,6 +29,8 @@ dependencies = [
 [[package]]
 name = "apis-saltans-core"
 version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6cee66d35a405d878ff424bb9d67414c90c63bea150dd5577c377b23bb3ef4a7"
 dependencies = [
  "bitflags",
  "chrono",
@@ -43,7 +47,9 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-hw"
-version = "0.11.4"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f43b49f61c14b380a169ffb2bf704f779b28be2e3c24f939192ea6dffdcbae03"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -57,6 +63,8 @@ dependencies = [
 [[package]]
 name = "apis-saltans-nwk"
 version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a75b16bb1945b16567e0fec9cd7a20219e91936ce9096d9e34cb768efd485b06"
 dependencies = [
  "apis-saltans-core",
 ]
@@ -64,6 +72,8 @@ dependencies = [
 [[package]]
 name = "apis-saltans-zdp"
 version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28ea58bed480cce0a66b4a8ba0320d9f5676265ba596fe539d625b97a7c580d6"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",

@@ -2,12 +2,12 @@
 # cargo-vet imports lock
 
 [[unpublished.ezsp]]
-version = "12.1.0"
-audited_as = "12.0.1"
+version = "13.0.0"
+audited_as = "12.1.0"
 
 [[publisher.apis-saltans-aps]]
-version = "0.7.0"
-when = "2026-07-22"
+version = "0.7.1"
+when = "2026-07-23"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
@@ -20,8 +20,8 @@ user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-hw]]
-version = "0.11.0"
-when = "2026-07-22"
+version = "0.12.0"
+when = "2026-07-23"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
@@ -40,13 +40,6 @@ user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
-[[publisher.ashv2]]
-version = "10.0.2"
-when = "2026-07-08"
-user-id = 290593
-user-login = "neumann-paulmann"
-user-name = "Richard Neumann"
-
 [[publisher.bumpalo]]
 version = "3.20.3"
 when = "2026-05-22"
@@ -61,7 +54,7 @@ user-id = 55123
 user-login = "rust-lang-owner"
 
 [[publisher.ezsp]]
-version = "12.0.1"
+version = "12.1.0"
 when = "2026-07-22"
 user-id = 290593
 user-login = "neumann-paulmann"
@@ -223,41 +216,6 @@ user-name = "Kenny Kerr"
 [[publisher.windows-strings]]
 version = "0.5.1"
 when = "2025-10-06"
-user-id = 64539
-user-login = "kennykerr"
-user-name = "Kenny Kerr"
-
-[[publisher.windows-sys]]
-version = "0.52.0"
-when = "2023-11-15"
-user-id = 64539
-user-login = "kennykerr"
-user-name = "Kenny Kerr"
-
-[[publisher.windows-targets]]
-version = "0.52.6"
-when = "2024-07-03"
-user-id = 64539
-user-login = "kennykerr"
-user-name = "Kenny Kerr"
-
-[[publisher.windows_aarch64_gnullvm]]
-version = "0.52.6"
-when = "2024-07-03"
-user-id = 64539
-user-login = "kennykerr"
-user-name = "Kenny Kerr"
-
-[[publisher.windows_i686_gnullvm]]
-version = "0.52.6"
-when = "2024-07-03"
-user-id = 64539
-user-login = "kennykerr"
-user-name = "Kenny Kerr"
-
-[[publisher.windows_x86_64_gnullvm]]
-version = "0.52.6"
-when = "2024-07-03"
 user-id = 64539
 user-login = "kennykerr"
 user-name = "Kenny Kerr"

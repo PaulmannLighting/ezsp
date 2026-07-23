@@ -17,6 +17,7 @@ pub const BLOCK_MASK: u16 = 0xFF00;
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Hash, FromLeStream, ToLeStream)]
 #[repr(transparent)]
 pub struct Options(u16);
+
 bitflags! {
     impl Options: u16 {
         /// No options.

@@ -117,7 +117,11 @@ implemented for types that can be constructed from both `Callback` and
 
 Builder methods configure callback and actor channel capacities, the desired
 protocol version, EZSP policies and configuration values, concentrator
-parameters, radio transmit power, and default APS options.
+parameters, radio transmit power, and baseline APS options. The named APS
+option methods enable route discovery, forced route discovery, source or
+destination EUI-64 inclusion, and address discovery for every outgoing frame.
+Per-message options supplied to the send methods are combined with this
+baseline.
 
 `Startup::Resume` restores state persisted by the NCP through `networkInit` and
 is the normal choice for restarts:
@@ -184,8 +188,32 @@ the assigned APS sequence). Await `StackResponse` separately to validate the
 matching asynchronous `messageSent` callback. Dropping it discards only the
 notification and does not cancel a message already accepted by the NCP.
 
+Each send method takes a final `aps_options: ember::aps::Options` argument.
+These per-message options are combined with the options configured on
+`Builder`; pass `Options::NONE` when a message needs no additional flags. For
+example, a caller can request APS encryption and retry for one unicast without
+changing the baseline used by later sends:
+
+```rust
+use ezsp::ember::aps::Options;
+
+let options = Options::ENCRYPTION.union(Options::RETRY);
+let response = ncp
+    .unicast(
+        short_id,
+        profile_id,
+        cluster_id,
+        destination_endpoint,
+        payload,
+        options,
+    )
+    .await?;
+response.await?;
+```
+
 Oversized unicasts are split into APS fragments. Multicast and broadcast
-payloads must fit the maximum payload reported by the NCP.
+payloads must fit the maximum payload reported by the NCP. Fragmented unicasts
+enable APS retry in addition to the combined baseline and per-message options.
 
 ## APS defragmentation
 
@@ -294,6 +322,12 @@ endpoint. A broadcast uses its target endpoint with radius zero. A group uses
 the profile's broadcast endpoint with zero multicast hops and nonmember radius.
 The local source endpoint is still selected from the registered EZSP output
 clusters.
+
+The integration also maps per-datagram transmission options into EZSP APS
+options: `ACKNOWLEDGED_TRANSMISSION` controls `Options::RETRY`, and
+`SECURITY_ENABLED` controls `Options::ENCRYPTION`. Those values are then
+combined with the NCP's baseline options. Other `TxOptions` flags do not add an
+EZSP APS option.
 
 `Driver::transmit` returns `HwResponse` after the EZSP send transaction has been
 accepted. The response contains the deferred `StackResponse`; awaiting it

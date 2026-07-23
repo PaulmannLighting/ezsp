@@ -18,6 +18,9 @@
 //!   or [`Ncp::multicast`].
 //!
 //! The APS profile and cluster come from `apis_saltans_hw::Datagram` metadata.
+//! Acknowledged transmission and APS security metadata control EZSP APS retry
+//! and encryption, respectively; the mapped options are combined with the
+//! baseline options stored by [`Ncp`].
 //! Device destinations preserve their requested endpoint, broadcasts use their
 //! requested endpoint with radius zero, and groups use the profile's broadcast
 //! endpoint with zero hops and nonmember radius. [`Ncp`] selects the local
@@ -123,6 +126,7 @@ impl Driver for Ncp {
         let profile = metadata.profile();
         let profile_id = profile.into();
         let cluster_id = metadata.cluster_id();
+        let aps_options = metadata.tx_options().into();
 
         let stack_response = match destination {
             Destination::Device(device) => {
@@ -132,6 +136,7 @@ impl Driver for Ncp {
                     cluster_id,
                     device.endpoint().into(),
                     payload,
+                    aps_options,
                 )
                 .await?
             }
@@ -143,6 +148,7 @@ impl Driver for Ncp {
                     cluster_id,
                     broadcast.endpoint().into(),
                     payload,
+                    aps_options,
                 )
                 .await?
             }
@@ -158,6 +164,7 @@ impl Driver for Ncp {
                         cluster_id,
                         profile.broadcast_endpoint().into(),
                         payload,
+                        aps_options,
                     )
                     .await?;
                 stack_response

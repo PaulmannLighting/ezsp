@@ -158,7 +158,11 @@ performs the final conversion into the response type declared by
 - configuration and policy maps;
 - optional concentrator parameters;
 - radio transmit power; and
-- APS options used for outgoing frames.
+- baseline APS route-discovery and address options used for outgoing frames.
+
+The builder exposes named methods for each supported baseline option. It moves
+the resulting bit set into `Ncp` during construction; individual send calls
+then supply any message-specific APS options.
 
 `Builder::start(startup, endpoints, events)` requires a nonempty endpoint list
 and an event type implementing `TranslatableEvent`. The current startup sequence
@@ -218,7 +222,7 @@ key, channel, join method, and initial-security bitmask.
 - a `Connection` communicator;
 - the registered `Endpoint` descriptors;
 - a sender to the event handler;
-- default APS options; and
+- baseline APS options configured by `Builder`; and
 - the next wrapping message tag.
 
 For ordinary APS profiles, source-endpoint selection scans registered endpoints
@@ -250,6 +254,18 @@ one-shot status sender with the event handler before issuing the send command.
 The EZSP command response indicates acceptance and, where applicable, supplies
 the APS sequence. The later `messageSent` callback resolves the one-shot by tag.
 
+Each helper accepts per-message `ember::aps::Options`. `Ncp::aps_frame` unions
+them with the baseline options inherited from `Builder`, so a caller can add
+encryption or retry behavior without removing routing or address behavior
+selected at startup.
+
+```mermaid
+flowchart LR
+    builderOptions[Builder baseline options] --> merge[Union APS options]
+    messageOptions[Per-message options] --> merge
+    merge --> apsFrame[Outgoing APS frame]
+```
+
 `StackResponse` wraps the one-shot receiver as a future. It succeeds only for
 `ember::Status::Success`; stack failures, unknown status bytes, or a dropped
 event-handler sender become crate errors. Dropping the future does not cancel an
@@ -258,7 +274,8 @@ already accepted APS message.
 Unicast payloads larger than `maximumPayloadLength` are split into APS
 fragments. The first stack-assigned APS sequence is reused by later fragments,
 and all non-final `StackResponse` values are awaited before the final deferred
-response is returned. Multicast and broadcast reject oversized payloads.
+response is returned. Fragmentation also enables `Options::RETRY` on every
+fragment. Multicast and broadcast reject oversized payloads.
 
 ### Callback and event handling
 
@@ -373,7 +390,11 @@ logs failures, and returns only valid descriptors. Values originating from a
 ### Destination mapping and send completion
 
 The driver splits each `Datagram` into metadata and payload. Its profile and
-cluster ID become the outgoing APS frame metadata. Destinations map as follows:
+cluster ID become the outgoing APS frame metadata. Its
+`Metadata::tx_options()` maps acknowledged transmission to
+`ember::aps::Options::RETRY` and APS security to
+`ember::aps::Options::ENCRYPTION`; other `TxOptions` flags do not change the
+EZSP APS options. Destinations map as follows:
 
 | `apis-saltans` destination | EZSP helper | Destination endpoint | Routing values |
 | --- | --- | --- | --- |
@@ -382,8 +403,9 @@ cluster ID become the outgoing APS frame metadata. Destinations map as follows:
 | Group | `Ncp::multicast` | Profile broadcast endpoint | Zero hops and nonmember radius |
 
 In every case, `Ncp` chooses the local source endpoint from registered output
-clusters. The immediate driver result means the EZSP send command was accepted;
-the `HwResponse` future reports final stack status.
+clusters and combines the mapped datagram options with its baseline options.
+The immediate driver result means the EZSP send command was accepted; the
+`HwResponse` future reports final stack status.
 
 ### Callback and incoming-message conversion
 

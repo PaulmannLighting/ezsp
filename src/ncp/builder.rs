@@ -5,7 +5,8 @@ use log::{debug, info, trace};
 use tokio::sync::mpsc::{Sender, channel};
 
 pub use self::build_result::BuildResult;
-use crate::ember::{aps, concentrator};
+use crate::ember::aps::Options;
+use crate::ember::concentrator;
 use crate::ezsp::{config, policy};
 use crate::ncp::Endpoint;
 use crate::ncp::await_event::AwaitEvent;
@@ -28,7 +29,8 @@ const EVENT_MESSAGES_CAPACITY: usize = 64;
 /// spawned by the caller before [`Builder::start`] is awaited. The builder also
 /// stores the event-message queue capacity, desired EZSP version, stack
 /// policies and configuration values, concentrator settings, radio power, and
-/// default APS options.
+/// baseline APS route-discovery and address options. [`Ncp`] combines those
+/// baseline options with the options supplied to each outgoing send.
 pub struct Builder {
     pub(crate) connectable: Connectable,
     pub(crate) event_messages_capacity: usize,
@@ -37,8 +39,8 @@ pub struct Builder {
     pub(crate) configuration: BTreeMap<config::Id, u16>,
     pub(crate) concentrator: Option<concentrator::Parameters>,
     pub(crate) radio_tx_power: i8,
-    pub(crate) aps_options: aps::Options,
     pub(crate) manufacturer_code: Option<u16>,
+    pub(crate) options: Options,
 }
 
 impl Builder {
@@ -55,8 +57,8 @@ impl Builder {
             configuration: BTreeMap::new(),
             concentrator: None,
             radio_tx_power: RADIO_POWER,
-            aps_options: aps::Options::empty(),
             manufacturer_code: None,
+            options: Options::NONE,
         }
     }
 
@@ -120,13 +122,6 @@ impl Builder {
         self
     }
 
-    /// Sets the default APS options for outgoing APS messages created by [`Ncp`](Ncp).
-    #[must_use]
-    pub const fn with_aps_options(mut self, options: aps::Options) -> Self {
-        self.aps_options = options;
-        self
-    }
-
     /// Sets the manufacturer code in the NCP's node descriptor during startup.
     ///
     /// If this method is not called, the NCP's existing manufacturer code is
@@ -134,6 +129,36 @@ impl Builder {
     #[must_use]
     pub const fn with_manufacturer_code(mut self, manufacturer_code: u16) -> Self {
         self.manufacturer_code = Some(manufacturer_code);
+        self
+    }
+
+    /// Enables route discovery when an outgoing frame has no known route.
+    pub fn enable_route_discovery(mut self) -> Self {
+        self.options.insert(Options::ENABLE_ROUTE_DISCOVERY);
+        self
+    }
+
+    /// Forces route discovery for every outgoing frame, even when a route is known.
+    pub fn force_route_discovery(mut self) -> Self {
+        self.options.insert(Options::FORCE_ROUTE_DISCOVERY);
+        self
+    }
+
+    /// Includes the source EUI-64 in every outgoing network frame.
+    pub fn source_eui64(mut self) -> Self {
+        self.options.insert(Options::SOURCE_EUI64);
+        self
+    }
+
+    /// Includes the destination EUI-64 in every outgoing network frame.
+    pub fn destination_eui64(mut self) -> Self {
+        self.options.insert(Options::DESTINATION_EUI64);
+        self
+    }
+
+    /// Enables ZDO address discovery when a destination node ID is unknown.
+    pub fn enable_address_discovery(mut self) -> Self {
+        self.options.insert(Options::ENABLE_ADDRESS_DISCOVERY);
         self
     }
 }
@@ -213,7 +238,7 @@ impl Builder {
             connected.clone(),
             endpoints,
             message_tx.clone(),
-            self.aps_options,
+            self.options,
         )
         .await?;
 

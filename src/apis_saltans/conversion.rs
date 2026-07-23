@@ -1,8 +1,9 @@
 //! Conversion implementations between EZSP and `apis-saltans` data models.
 //!
-//! The driver uses these conversions for endpoints and scan results. The event
-//! path uses them for device addresses, membership/network callbacks, complete
-//! incoming APS messages, NWK envelopes, and reception metadata.
+//! The driver uses these conversions for endpoints, scan results, and outgoing
+//! APS transmission options. The event path uses them for device addresses,
+//! membership/network callbacks, complete incoming APS messages, NWK
+//! envelopes, and reception metadata.
 //!
 //! `TryFrom<Callback> for apis_saltans_hw::Event` recognizes only child-join,
 //! successful stack-status, and trust-center-join callbacks. Unsupported
@@ -25,6 +26,7 @@ use crate::parameters::trust_center::handler::Handler as TrustCenter;
 use crate::{Callback, DefragmentedMessage};
 
 mod address;
+mod aps_options;
 mod defragmented_message;
 mod endpoint;
 mod envelope;

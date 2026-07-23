@@ -2,8 +2,8 @@
 //!
 //! [`Ncp`] wraps a connected EZSP communicator and adds the state needed by
 //! host-side Zigbee workflows: endpoint cluster metadata, APS message tags,
-//! scan aggregation, message-sent correlation, and callback dispatch through a
-//! background event handler.
+//! baseline and per-message APS options, scan aggregation, message-sent
+//! correlation, and callback dispatch through a background event handler.
 //!
 //! [`Builder`] negotiates the protocol version through caller-spawned transport
 //! actors, configures the stack, registers endpoints, and returns an [`Ncp`]
@@ -31,7 +31,7 @@ pub use self::network_credentials::NetworkCredentials;
 pub use self::scans::Scans;
 pub use self::stack_response::StackResponse;
 pub use self::startup::Startup;
-use crate::ember::aps::Frame as ApsFrame;
+use crate::ember::aps::{Frame as ApsFrame, Options};
 use crate::ember::message::Destination as EmberDestination;
 use crate::ember::{Status as EmberStatus, aps};
 use crate::error::Status as ErrorStatus;
@@ -64,14 +64,16 @@ const MAX_FRAGMENT_COUNT: usize = u8::MAX as usize;
 /// higher-level operations
 /// that need callback correlation or local host state, such as scans, outgoing
 /// APS message confirmation, and automatic source endpoint selection from the
-/// configured endpoint cluster lists. The builder gives another clone of the
-/// connected handle to the background [`EventHandler`].
+/// configured endpoint cluster lists. Outgoing frames combine the baseline APS
+/// options stored by [`Builder`] with options supplied to each send method. The
+/// builder gives another clone of the connected handle to the background
+/// [`EventHandler`].
 #[derive(Debug)]
 pub struct Ncp {
     pub(crate) connection: Connection,
     pub(crate) endpoints: Box<[Endpoint]>,
     event_handler_handle: Sender<Message>,
-    aps_options: aps::Options,
+    options: Options,
     message_tag: u8,
 }
 
@@ -83,11 +85,12 @@ impl Ncp {
         tag
     }
 
-    /// Build an outgoing EZSP APS frame using the configured APS options.
+    /// Builds an outgoing EZSP APS frame from baseline and per-message options.
     ///
-    /// EZSP assigns the APS sequence when a send command is accepted. The
-    /// sequence field in the command payload is therefore initialized with a
-    /// placeholder value.
+    /// The supplied `options` are unioned with the baseline options stored by
+    /// [`Builder`]. EZSP assigns the APS sequence when a send command is
+    /// accepted, so the sequence field in the command payload is initialized
+    /// with a placeholder value.
     ///
     /// # Errors
     ///
@@ -98,13 +101,14 @@ impl Ncp {
         cluster_id: u16,
         destination_endpoint: u8,
         group_id: u16,
+        options: Options,
     ) -> Result<aps::Frame, Error> {
         Ok(aps::Frame::new(
             profile_id,
             cluster_id,
             self.source_endpoint(profile_id, cluster_id)?,
             destination_endpoint,
-            self.aps_options,
+            self.options.union(options),
             group_id,
             STACK_ASSIGNED_APS_SEQUENCE,
         ))
@@ -152,7 +156,8 @@ impl Ncp {
     /// Each endpoint is registered on the NCP before the value is returned.
     /// The supplied event-handler sender must feed the same callback handler
     /// that receives callbacks for `transport`, because scans and APS send
-    /// confirmations are correlated through that channel.
+    /// confirmations are correlated through that channel. `options` provides
+    /// the baseline APS flags that are combined with each send's options.
     ///
     /// # Errors
     ///
@@ -161,7 +166,7 @@ impl Ncp {
         mut connection: Connection,
         endpoints: Box<[Endpoint]>,
         event_handler_handle: Sender<Message>,
-        aps_options: aps::Options,
+        options: Options,
     ) -> Result<Self, Error> {
         for endpoint in endpoints.iter().cloned() {
             endpoint.add_to(&mut connection).await?;
@@ -171,7 +176,7 @@ impl Ncp {
             connection,
             endpoints,
             event_handler_handle,
-            aps_options,
+            options,
             message_tag: 0,
         })
     }
@@ -183,7 +188,10 @@ impl Ncp {
     /// fragment is reused for follow-up fragments, matching EZSP host
     /// fragmentation behavior. Responses for all non-final fragments are
     /// awaited before this method returns the response for the final fragment.
-    /// Await the returned [`StackResponse`] to confirm that final response.
+    /// Await the returned [`StackResponse`] to confirm that final response. The
+    /// `aps_options` apply only to this message and are combined with the NCP's
+    /// baseline APS options; fragmentation additionally enables
+    /// [`Options::RETRY`].
     ///
     /// # Errors
     ///
@@ -199,9 +207,11 @@ impl Ncp {
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
+        aps_options: Options,
     ) -> Result<StackResponse, Error> {
         let payload = payload.as_ref();
-        let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
+        let aps_frame =
+            self.aps_frame(profile_id, cluster_id, destination_endpoint, 0, aps_options)?;
         let destination = EmberDestination::Direct(short_id);
         let maximum_payload_length = usize::from(self.connection.maximum_payload_length().await?);
 
@@ -222,7 +232,8 @@ impl Ncp {
     ///
     /// Returns the deferred [`StackResponse`] and the APS sequence assigned by
     /// the NCP. Await the response to confirm the matching `messageSent`
-    /// callback.
+    /// callback. The `aps_options` apply only to this message and are combined
+    /// with the NCP's baseline APS options.
     ///
     /// # Errors
     ///
@@ -238,9 +249,16 @@ impl Ncp {
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
+        aps_options: Options,
     ) -> Result<(StackResponse, u8), Error> {
         let payload = payload.as_ref();
-        let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, group_id)?;
+        let aps_frame = self.aps_frame(
+            profile_id,
+            cluster_id,
+            destination_endpoint,
+            group_id,
+            aps_options,
+        )?;
         let tag = self.next_message_tag();
         let message = self.reject_oversized_payload(payload).await?;
 
@@ -273,7 +291,8 @@ impl Ncp {
     /// Starts a broadcast APS send and returns its deferred [`StackResponse`].
     ///
     /// Await the returned response to confirm the matching `messageSent`
-    /// callback.
+    /// callback. The `aps_options` apply only to this message and are combined
+    /// with the NCP's baseline APS options.
     ///
     /// # Errors
     ///
@@ -289,9 +308,11 @@ impl Ncp {
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
+        aps_options: Options,
     ) -> Result<StackResponse, Error> {
         let payload = payload.as_ref();
-        let aps_frame = self.aps_frame(profile_id, cluster_id, destination_endpoint, 0)?;
+        let aps_frame =
+            self.aps_frame(profile_id, cluster_id, destination_endpoint, 0, aps_options)?;
         let tag = self.next_message_tag();
         let message = self.reject_oversized_payload(payload).await?;
 

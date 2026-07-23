@@ -7,7 +7,8 @@ use crate::{Callback, DefragmentedMessage};
 /// Implementors must translate both ordinary EZSP callbacks and complete
 /// incoming APS messages produced by defragmentation. A blanket implementation
 /// is provided when both conversions exist and their errors are displayable and
-/// sendable.
+/// sendable. The high-level event handler logs failed conversions and continues
+/// processing later events.
 pub trait TranslatableEvent:
     Debug
     + TryFrom<Callback, Error: Display + Send>

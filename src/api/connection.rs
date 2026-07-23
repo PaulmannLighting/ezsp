@@ -2,11 +2,14 @@ use le_stream::ToLeStream;
 use tokio::sync::mpsc::Sender;
 use tokio::sync::oneshot;
 
+use crate::api::Message;
 use crate::frame::{Commands, Parameter, RespondsWith};
-use crate::transceiver::Message;
 use crate::{Communicate, Error};
 
 /// Cloneable handle to a connected EZSP transmitter actor.
+///
+/// [`Client::connect`](crate::Client::connect) creates this handle after a
+/// successful version negotiation.
 ///
 /// Each typed transaction is sent to the actor through a bounded channel and
 /// completed through a one-shot response channel. Clones can be used by

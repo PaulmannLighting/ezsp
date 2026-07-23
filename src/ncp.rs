@@ -241,6 +241,7 @@ impl Ncp {
     /// is larger than the EZSP maximum APS payload length, registering the
     /// message tag fails, or sending the EZSP command fails. Errors reported by
     /// the returned [`StackResponse`] occur when that value is awaited.
+    #[expect(clippy::too_many_arguments)]
     pub async fn multicast(
         &mut self,
         group_id: u16,
@@ -300,6 +301,7 @@ impl Ncp {
     /// is larger than the EZSP maximum APS payload length, registering the
     /// message tag fails, or sending the EZSP command fails. Errors reported by
     /// the returned [`StackResponse`] occur when that value is awaited.
+    #[expect(clippy::too_many_arguments)]
     pub async fn broadcast(
         &mut self,
         short_id: u16,

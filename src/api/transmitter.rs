@@ -5,11 +5,11 @@ use log::{debug, error, info, trace, warn};
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::oneshot::Sender;
 
+use crate::api::Message;
 use crate::frame::{Commands, Parameter};
 use crate::parameters::configuration;
 use crate::parameters::configuration::version;
 use crate::parameters::configuration::version::Command as VersionCommand;
-use crate::transceiver::Message;
 use crate::{
     Command, Error, Extended, Frame, Header, Legacy, MIN_NON_LEGACY_VERSION, Parameters, Response,
     ValueError,
@@ -18,8 +18,18 @@ use crate::{
 type PendingNegotiation = (NonZero<u8>, Sender<Result<(), Error>>);
 
 /// Sends fully framed commands through a transport-specific outbound sink.
+///
+/// The generic transmitter actor assigns the sequence number, selects the
+/// legacy or extended header, and constructs the complete
+/// [`Frame<Commands>`]. Implementations must preserve that frame when encoding
+/// it for the underlying link.
+///
+/// An `ASHv2` implementation serializes the frame header followed by its command
+/// parameters in little-endian order and sends the bytes as one `ASHv2` DATA
+/// payload. Link framing, reliability, capacity checks, and I/O remain the
+/// transport implementation's responsibility.
 pub trait Transmit {
-    /// Transmits one complete EZSP command frame.
+    /// Encodes and transmits one complete EZSP command frame.
     ///
     /// # Errors
     ///

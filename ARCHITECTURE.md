@@ -19,7 +19,7 @@ The crate has four cooperating layers:
    - startup builder and network lifecycle
    - endpoint metadata, scans, APS messaging, defragmentation, and event handling
 4. Optional integrations
-   - ASHv2 UART transmit/receive implementations
+   - external transports, such as ASHv2, through `Transmit` and `Receive`
    - `apis-saltans` driver and event conversions
 
 ```mermaid
@@ -70,19 +70,20 @@ The actor layer deliberately separates output from input:
 - `Receive::receive` returns the next decoded inbound EZSP frame.
 - `Receive::set_negotiated_version` updates version-sensitive decoding after
   the NCP answers the initial `version` command.
-- `Transmitter<T>::run` and `Receiver<R>::run` create the futures that drive the
-  EZSP actor layer.
+- `Client::run` creates the internal transmitter and receiver futures that
+  drive the EZSP actor layer and returns a newly wired pre-negotiation `Client`.
 
-This boundary keeps framing and transaction logic independent of UART/ASHv2 and
-allows other physical transports to provide their own halves.
+This crate supplies no ASHv2 or other physical-transport implementation. The
+boundary keeps EZSP transaction logic independent of the link layer and allows
+an external transport crate to provide both halves.
 
 ### Caller-spawned tasks and channels
 
-Transport constructors create bounded channels and return futures for the
-caller to spawn as Tokio tasks:
+`Client::run(transmit, receive, channel_size)` creates the bounded channels and
+returns futures for the caller to spawn as Tokio tasks:
 
-1. `Transmitter<T>::run` owns the outbound transport and the actor inbox.
-2. `Receiver<R>::run` owns the inbound transport, sends response messages back
+1. `Futures::transmitter` owns the `Transmit` implementation and the actor inbox.
+2. `Futures::receiver` owns the `Receive` implementation, sends responses back
    to the actor inbox, and sends asynchronous callbacks to the callback channel.
 
 The message-channel capacity bounds both commands from connected handles and
@@ -102,15 +103,15 @@ flowchart LR
 
 ### Lifecycle states
 
-The channel endpoints form a `Connectable` handle before negotiation.
-`Connectable::connect` sends an internal `Connect` message containing the
+The channel endpoints form a `Client` handle before negotiation.
+`Client::connect` sends an internal `Connect` message containing the
 desired nonzero protocol version and a one-shot reply. Its actor futures must
 already be running; `connect` does not spawn them.
 
-The transmitter sends `version` using a legacy-compatible header. The UART
-receiver observes the response, updates its negotiated decoder version, and
-forwards the response to the transmitter. A matching version completes the
-one-shot request and produces:
+The transmitter sends `version` using a legacy-compatible header. The generic
+receiver actor observes the decoded response, calls
+`Receive::set_negotiated_version`, and forwards the response to the transmitter.
+A matching version completes the one-shot request and produces:
 
 - `Connection`, a cloneable sender-backed command handle; and
 - the receiver of asynchronous `Callback` values.
@@ -151,7 +152,7 @@ performs the final conversion into the response type declared by
 
 ### Builder ownership and startup
 
-`Builder` owns a pre-negotiation `Connectable` and startup configuration:
+`Builder` owns a pre-negotiation `Client` and startup configuration:
 
 - the callback-to-event-handler message capacity;
 - desired EZSP protocol version;
@@ -180,12 +181,12 @@ is:
 10. return the callback-to-message bridge future; and
 11. return the event-handler future.
 
-`Builder::start` does not spawn tasks. For UART, the application must spawn the
-serial worker, ASHv2 transmitter, ASHv2 receiver, EZSP transmitter, and EZSP
-receiver—in that order—before awaiting `start`. Once startup returns, it must
+`Builder::start` does not spawn tasks. The application must first start any
+lower-level transport tasks, then spawn both actor futures returned by
+`Client::run`, and only then await `start`. Once startup returns, it must
 spawn the callback bridge before the event handler. This preserves dependency
-order across bounded channels and avoids waiting on a lower-layer future that
-is not being polled.
+order across bounded channels and avoids waiting on a lower layer that is not
+being polled.
 
 ```mermaid
 sequenceDiagram
@@ -311,28 +312,50 @@ flowchart LR
     complete -- yes --> event
 ```
 
-## ASHv2 integration
+## External ASHv2 integration
 
-The `ashv2` feature supplies transport-specific actor halves under `src/uart`:
+ASHv2 is an external adapter at the transport boundary; this crate has no
+`ashv2` dependency, feature, re-export, UART module, or ASHv2-specific builder
+constructor.
 
-- the internal UART transmitter encodes a header and command parameters into one ASHv2
-  `Payload`, then sends it through an `ashv2::Handle`.
-- the internal UART receiver consumes ASHv2 DATA payloads, parses a legacy or extended
-  header, validates overflow/truncation status, and parses typed parameters.
-- `Builder::ashv2` wires those halves to the generic EZSP actors and returns a
-  builder alongside five futures. The caller must spawn, in order, the ASHv2
-  serial worker, ASHv2 transmitter, ASHv2 receiver, EZSP transmitter, and EZSP
-  receiver before awaiting `Builder::start`.
-- `Builder::ashv2_with_buffers` configures the ASHv2 DATA, ASHv2 actor, EZSP
-  actor, and EZSP callback channel capacities.
+The outbound adapter implements `Transmit`. It consumes `Frame<Commands>`,
+serializes its `Header` and command payload in little-endian order, and submits
+the bytes as one ASHv2 DATA payload. The adapter maps encoding, capacity, and
+I/O failures into `crate::Error`.
 
-The UART receiver begins in legacy-header mode. When it observes a successful
-`version` response, the generic receiver task calls `set_negotiated_version`, so
-subsequent frames use the negotiated header format.
+The inbound adapter implements `Receive`. It obtains a complete ASHv2 DATA
+payload, parses `Legacy` headers before negotiation and `Extended` headers
+after a sufficiently new negotiated version, then calls
+`Parameters::parse_from_le_stream` with the decoded frame ID and remaining
+bytes. It should also reject truncated or overflowed response headers and
+handle `invalidCommand` responses consistently with the public error model.
+Because `Receive::receive` returns `Option<Frame<Parameters>>`, malformed-frame
+logging, skipping, and stream-termination policy belong to the adapter.
+
+```mermaid
+flowchart LR
+    ashIo[External ASHv2 I/O] --> ashReceive[Receive implementation]
+    ashReceive --> transceiver[EZSP receiver actor]
+    transceiver --> client[Client and Connection]
+    client --> transmitter[EZSP transmitter actor]
+    transmitter --> ashTransmit[Transmit implementation]
+    ashTransmit --> ashIo
+```
+
+`Receive::set_negotiated_version` is called after the generic actor recognizes
+the decoded `version` response. The adapter stores that version for subsequent
+header decoding and returns any previous value. External ASHv2 tasks must be
+running before the two futures returned by `Client::run`; both EZSP
+futures must be running before `Builder::start` initiates negotiation.
+
+`Client::run` currently consumes an existing `Client`, but `Client` has no
+public constructor and its fields are crate-private. Consequently, an external
+transport cannot create the initial value needed to enter this lifecycle
+without another API supplying it.
 
 EZSP and ASHv2 have no frame fragmentation boundary: each complete EZSP frame
-must fit in one ASHv2 DATA payload. Encoding an oversized command returns
-`ezsp::Error::CommandTooLong` before transmission.
+must fit in one ASHv2 DATA payload. The external adapter defines how an
+oversized encoded frame is reported as `crate::Error`.
 
 ## `apis-saltans` integration
 

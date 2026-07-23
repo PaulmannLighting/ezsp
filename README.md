@@ -6,7 +6,8 @@ EZSP is the command protocol used by a host application processor to control
 the EmberZNet PRO stack running on a Silicon Labs Network Co-Processor (NCP).
 This crate models typed command, response, and callback payloads; legacy and
 extended frame headers; transport-independent actors; high-level Zigbee
-workflows; and an optional ASHv2 UART transport.
+workflows; and a transport API that external link implementations, including
+ASHv2, can use.
 
 ## Documentation basis
 
@@ -24,11 +25,13 @@ of the crate API.
 
 ## Features
 
-- `ashv2` provides `Builder::ashv2` for EZSP over an ASHv2 serial link and
-  re-exports the transport crate as `ezsp::ashv2`.
 - `apis-saltans` implements `apis_saltans_hw::Driver` for `Ncp` and supplies
   callback/event and data-model conversions.
 - `semver` enables `semver` support in EZSP version APIs.
+
+This crate does not depend on, re-export, or provide an implementation of
+ASHv2. An ASHv2 crate can integrate by implementing the public `Transmit` and
+`Receive` traits.
 
 ## Actor model
 
@@ -37,9 +40,11 @@ The transport API separates outbound and inbound I/O:
 - `Transmit` sends a complete `Frame<Commands>`.
 - `Receive` yields decoded `Frame<Parameters>` values and accepts the negotiated
   EZSP version used by version-sensitive decoders.
-- `Transmitter<T>` and `Receiver<R>` are actor futures that the caller spawns.
-- `Connectable` represents the actor channels before protocol negotiation.
-- `Connectable::connect` sends the initial `version` command and returns a
+- `Client::run` wraps those transport halves and returns a newly wired `Client`
+  plus the transmitter and receiver actor futures for the caller to spawn.
+- The returned `Client` represents the actor channels before protocol
+  negotiation.
+- `Client::connect` sends the initial `version` command and returns a
   cloneable `Connection` handle together with the asynchronous callback stream.
 - `Connection` implements `Communicate`; all EZSP command-group traits are
   blanket-implemented for communicators.
@@ -64,9 +69,9 @@ flowchart LR
 ```
 
 Transport implementations supply independent `Transmit` and `Receive` halves.
-Their actor futures must be spawned before version negotiation; the UART
-constructor described below performs the channel wiring and returns all of the
-futures needed to drive both transport layers.
+Pass both halves to `Client::run` and spawn both returned actor futures before
+version negotiation. The transport implementation remains responsible for
+running any lower-level I/O tasks that feed those halves.
 
 ## Typed protocol API
 
@@ -80,8 +85,10 @@ The lower-level frame model remains public for transport implementations and
 protocol tooling:
 
 - `Frame`, `Header`, `Legacy`, and `Extended` model the EZSP envelope.
-- `Commands` is the internal aggregate used by `Transmit` implementations.
+- `Commands` is the outbound aggregate consumed by `Transmit` implementations.
 - `Parameters`, `Response`, and `Callback` classify decoded inbound payloads.
+- `Parsable` performs frame-ID-directed parameter decoding, while the public
+  `Decode`, `Status`, and `Error` types let adapters report compatible failures.
 - Protocol data types are exposed through `ember`, `ezsp`, and the typed
   parameter modules.
 
@@ -92,8 +99,8 @@ five-byte extended header. The receiver updates its decoder after a successful
 
 ## High-level NCP startup
 
-`Builder` owns a pre-negotiation `Connectable` and the complete startup
-configuration. Transport constructors return the builder separately from the
+`Builder` owns a pre-negotiation `Client` and the complete startup
+configuration. `Client::run` returns the newly wired client together with the
 futures that drive it. After the caller spawns those futures, `start`:
 
 1. validates that at least one application endpoint was supplied;
@@ -233,30 +240,38 @@ environment variables can override the defaults:
 - `EZSP_DEFRAGMENTATION_RECEIVE_BUFFER_LENGTH`
 - `EZSP_DEFRAGMENTATION_REASSEMBLY_TIMEOUT_MILLIS`
 
-## ASHv2 UART transport
+## External ASHv2 integration
 
-With `ashv2` enabled, the internal UART transmitter encodes complete EZSP frames
-into ASHv2 DATA payloads and its receiver decodes DATA payloads into typed
-frames. `Builder::ashv2(serial_port)` constructs both transport layers and
-returns a builder together with five futures. Spawn the futures as Tokio tasks
-in the exact order shown below. All five tasks must be running before
-`Builder::start` is awaited; changing the layer order can leave a bounded-channel
-operation waiting on a lower-layer future that is not running and deadlock
-initialization. `Builder::ashv2_with_buffers` configures the ASHv2 DATA, ASHv2
-actor, EZSP actor, and EZSP callback channel capacities.
+ASHv2 support lives outside this crate. An adapter supplies an outbound type
+implementing `Transmit` and an inbound type implementing `Receive`:
+
+- `Transmit::transmit` receives a complete typed `Frame<Commands>`. An ASHv2
+  adapter serializes the header followed by the command parameters in
+  little-endian order and sends the result as one ASHv2 DATA payload.
+- `Receive::receive` obtains one complete ASHv2 DATA payload, decodes its EZSP
+  header and parameters, and returns `Frame<Parameters>`. Because this method
+  returns `Option` rather than `Result`, the adapter owns its malformed-frame
+  policy, such as logging and skipping a bad payload.
+- `Receive::set_negotiated_version` stores the version selected by the initial
+  EZSP `version` exchange. Before that handoff, the adapter must decode legacy
+  headers; versions at least `MIN_NON_LEGACY_VERSION` use extended headers.
+
+Once the ASHv2-specific halves exist, the generic EZSP wiring is:
 
 ```rust
-// Requires the `ashv2` feature and a running Tokio runtime.
-let (builder, futures) = ezsp::Builder::ashv2(serial_port);
+use ezsp::Builder;
 
-// Spawn from the lowest transport layer to the highest.
-let _serial_worker = tokio::spawn(futures.ash_futures.serial_worker);
-let _ash_transmitter = tokio::spawn(futures.ash_futures.transmitter);
-let _ash_receiver = tokio::spawn(futures.ash_futures.receiver);
-let _ezsp_transmitter = tokio::spawn(futures.ezsp_tx);
-let _ezsp_receiver = tokio::spawn(futures.ezsp_rx);
+const EZSP_CHANNEL_SIZE: usize = 128;
 
-let result = builder
+// `ash_transmit` and `ash_receive` are supplied by an external ASHv2 adapter
+// and implement `ezsp::Transmit` and `ezsp::Receive`, respectively.
+let (client, futures) =
+    client.run(ash_transmit, ash_receive, EZSP_CHANNEL_SIZE);
+
+let _ezsp_transmitter = tokio::spawn(futures.transmitter);
+let _ezsp_receiver = tokio::spawn(futures.receiver);
+
+let result = Builder::new(client)
     .start(startup, endpoints, event_sender)
     .await?;
 
@@ -266,12 +281,21 @@ let _event_handler = tokio::spawn(result.event_handler);
 let ncp = result.ncp;
 ```
 
-Use `Builder::with_event_messages_capacity` to configure the separate channel
-between the returned callback bridge and event-handler futures. The serial port
-must implement `ezsp::ashv2::SerialPort`. ASHv2 supplies
-reliability, CRC validation, byte stuffing, randomization, acknowledgements,
-reset handling, and retransmission. Neither EZSP nor ASHv2 fragments protocol
-frames: one EZSP frame is encoded into one ASHv2 DATA payload.
+The `client` input in this example must be supplied by another crate API. The
+current `ezsp` API does not expose a public constructor for that initial value,
+so an external adapter cannot yet initiate this sequence using `ezsp` alone.
+
+Start any lower-level ASHv2 serial worker and ASHv2 protocol tasks before the
+two EZSP actor futures. Both EZSP actors must be running before
+`Builder::start`, because startup begins with `Client::connect`. The
+`channel_size` passed to `Client::run` bounds the EZSP command/response and
+callback channels. `Builder::with_event_messages_capacity` configures the
+separate channel between the callback bridge and event handler.
+
+ASHv2 remains responsible for reliability, CRC validation, byte stuffing,
+randomization, acknowledgements, reset handling, and retransmission. Neither
+EZSP nor ASHv2 fragments protocol frames: one complete EZSP frame must fit in
+one ASHv2 DATA payload.
 
 ## `apis-saltans` integration
 

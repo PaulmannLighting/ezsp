@@ -11,7 +11,7 @@ use crate::ezsp::{config, policy};
 use crate::ncp::Endpoint;
 use crate::ncp::await_event::AwaitEvent;
 use crate::{
-    Configuration, ConfigurationExt, Connectable, Displayable, Error, EventHandler,
+    Client, Configuration, ConfigurationExt, Displayable, Error, EventHandler,
     MIN_NON_LEGACY_VERSION, Messaging, Ncp, Networking, PolicyExt, Security, Startup,
     TranslatableEvent, Utilities, ValueError,
 };
@@ -23,16 +23,15 @@ const EVENT_MESSAGES_CAPACITY: usize = 64;
 
 /// Configures an actor-backed EZSP Network Co-Processor.
 ///
-/// The builder owns a pre-negotiation [`Connectable`] handle. The transport
-/// futures that service this handle are returned separately by transport
-/// constructors such as [`Builder::ashv2`](crate::Builder::ashv2) and must be
-/// spawned by the caller before [`Builder::start`] is awaited. The builder also
-/// stores the event-message queue capacity, desired EZSP version, stack
-/// policies and configuration values, concentrator settings, radio power, and
-/// baseline APS route-discovery and address options. [`Ncp`] combines those
-/// baseline options with the options supplied to each outgoing send.
+/// The builder owns a pre-negotiation [`Client`] handle. Create that handle
+/// with [`Client::run`] and spawn both returned transport-actor futures before
+/// [`Builder::start`] is awaited. The builder also stores the
+/// event-message queue capacity, desired EZSP version, stack policies and
+/// configuration values, concentrator settings, radio power, and baseline APS
+/// route-discovery and address options. [`Ncp`] combines those baseline options
+/// with the options supplied to each outgoing send.
 pub struct Builder {
-    pub(crate) connectable: Connectable,
+    pub(crate) connectable: Client,
     pub(crate) event_messages_capacity: usize,
     pub(crate) desired_version: NonZero<u8>,
     pub(crate) policy: BTreeMap<policy::Id, u8>,
@@ -48,7 +47,7 @@ impl Builder {
     ///
     /// The requested protocol version defaults to [`MIN_NON_LEGACY_VERSION`].
     #[must_use]
-    pub const fn new(connection: Connectable) -> Self {
+    pub const fn new(connection: Client) -> Self {
         Self {
             connectable: connection,
             event_messages_capacity: EVENT_MESSAGES_CAPACITY,
@@ -64,9 +63,8 @@ impl Builder {
 
     /// Sets the capacity of the channel between the callback bridge and event handler.
     ///
-    /// Transport actor and callback channel capacities are selected when the
-    /// transport is constructed, for example with
-    /// [`Builder::ashv2_with_buffers`](crate::Builder::ashv2_with_buffers).
+    /// Transport actor and callback channel capacities are selected through
+    /// [`Client::run`].
     #[must_use]
     pub const fn with_event_messages_capacity(mut self, event_messages_capacity: usize) -> Self {
         self.event_messages_capacity = event_messages_capacity;
@@ -133,30 +131,35 @@ impl Builder {
     }
 
     /// Enables route discovery when an outgoing frame has no known route.
+    #[must_use]
     pub fn enable_route_discovery(mut self) -> Self {
         self.options.insert(Options::ENABLE_ROUTE_DISCOVERY);
         self
     }
 
     /// Forces route discovery for every outgoing frame, even when a route is known.
+    #[must_use]
     pub fn force_route_discovery(mut self) -> Self {
         self.options.insert(Options::FORCE_ROUTE_DISCOVERY);
         self
     }
 
     /// Includes the source EUI-64 in every outgoing network frame.
+    #[must_use]
     pub fn source_eui64(mut self) -> Self {
         self.options.insert(Options::SOURCE_EUI64);
         self
     }
 
     /// Includes the destination EUI-64 in every outgoing network frame.
+    #[must_use]
     pub fn destination_eui64(mut self) -> Self {
         self.options.insert(Options::DESTINATION_EUI64);
         self
     }
 
     /// Enables ZDO address discovery when a destination node ID is unknown.
+    #[must_use]
     pub fn enable_address_discovery(mut self) -> Self {
         self.options.insert(Options::ENABLE_ADDRESS_DISCOVERY);
         self
@@ -174,12 +177,11 @@ impl Builder {
     /// callback bridge and event-handler futures.
     ///
     /// This method does not spawn tasks. Before awaiting it, the caller must
-    /// spawn the transport futures in the order required by the transport. For
-    /// [`Builder::ashv2`](crate::Builder::ashv2), that order is the `ASHv2` serial
-    /// worker, `ASHv2` transmitter, `ASHv2` receiver, EZSP transmitter, then EZSP
-    /// receiver. After this method returns, spawn `BuildResult::bridge` before
-    /// `BuildResult::event_handler`. Both must remain running while the NCP is
-    /// in use so translated events can be sent to `events`.
+    /// start any lower-level transport tasks and spawn both futures returned by
+    /// [`Client::run`]. After this method returns, spawn
+    /// `BuildResult::bridge` before `BuildResult::event_handler`. Both must
+    /// remain running while the NCP is in use so translated events can be sent
+    /// to `events`.
     ///
     /// # Errors
     ///

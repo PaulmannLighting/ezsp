@@ -19,7 +19,7 @@ pub trait Communicate: Send {
     ///
     /// Connection negotiation is a separate lifecycle step. The standard actor
     /// API only yields a [`Connection`](crate::Connection) communicator after
-    /// [`Connectable::connect`](crate::Connectable::connect) succeeds.
+    /// [`Client::connect`](crate::Client::connect) succeeds.
     ///
     /// # Errors
     ///

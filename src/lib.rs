@@ -16,10 +16,12 @@
 //! [`Builder`] orchestrates actor startup, protocol negotiation, stack
 //! configuration, network restoration or formation, endpoint registration,
 //! and callback translation. The resulting [`Ncp`] adds higher-level scan and
-//! APS messaging workflows. With the `ashv2` feature enabled,
-//! `Builder::ashv2` supplies concrete transport halves and their actor futures
-//! for EZSP over `ASHv2`, and the `ashv2` crate is re-exported for its
-//! serial-port API.
+//! APS messaging workflows.
+//!
+//! This crate does not supply an `ASHv2` implementation. An external `ASHv2`
+//! adapter implements [`Transmit`] and [`Receive`], passes both halves to
+//! [`Client::run`], and spawns the returned futures before constructing
+//! [`Builder`] from the newly wired [`Client`].
 //!
 //! Protocol details are documented by Silicon Labs in the
 //! [Simplicity SDK EZSP Reference Guide](https://docs.silabs.com/zigbee/latest/sisdk-ezsp-reference-guide/).
@@ -28,18 +30,15 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(unsafe_code)]
 
-#[cfg(feature = "ashv2")]
-#[cfg_attr(docsrs, doc(cfg(feature = "ashv2")))]
-pub use ashv2;
-
+pub use self::api::{Client, Connection, Receive, TranslatableEvent, Transmit};
 pub use self::commands::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GetValueExt, GreenPower, Messaging, Mfglib,
     Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
 };
 pub use self::communicate::Communicate;
-pub use self::constants::{MAX_HEADER_SIZE, MAX_PARAMETER_SIZE, MIN_NON_LEGACY_VERSION};
+pub use self::constants::{MAX_HEADER_SIZE, MIN_NON_LEGACY_VERSION};
 pub use self::defragmentation::{Defragmented, DefragmentedMessage, Defragmenter};
-pub use self::error::{Error, ValueError};
+pub use self::error::{Decode, Error, Status, ValueError};
 pub use self::extensions::{ConfigurationExt, Displayable, PolicyExt};
 pub use self::frame::{
     Callback, CallbackType, Command, Commands, Extended, FormatVersion, Frame, Header, HighByte,
@@ -49,11 +48,9 @@ pub use self::ncp::{
     BuildResult, Builder, Endpoint, EventHandler, InitializationParameters, MulticastOptions, Ncp,
     NetworkCredentials, Scans, StackResponse, Startup,
 };
-pub use self::transceiver::{
-    Connectable, Connection, Receive, Receiver, TranslatableEvent, Transmit, Transmitter,
-};
 pub use self::types::SourceRouteDiscoveryMode;
 
+mod api;
 #[cfg(feature = "apis-saltans")]
 #[cfg_attr(docsrs, doc(cfg(feature = "apis-saltans")))]
 pub mod apis_saltans;
@@ -67,11 +64,7 @@ mod extensions;
 pub mod ezsp;
 mod frame;
 mod ncp;
-mod transceiver;
 mod types;
-#[cfg(feature = "ashv2")]
-#[cfg_attr(docsrs, doc(cfg(feature = "ashv2")))]
-pub mod uart;
 
 /// A specialized [`std::result::Result`] type for this crate.
 pub type Result<T> = core::result::Result<T, Error>;

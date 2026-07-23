@@ -3,20 +3,36 @@ use std::future::Future;
 use log::{error, trace, warn};
 use tokio::sync::mpsc;
 
+use crate::api::Message;
 use crate::frame::Frame;
 use crate::parameters::configuration;
-use crate::transceiver::Message;
 use crate::{Callback, Error, Parameters, Response};
 
 /// Receives decoded frames from a transport-specific inbound stream.
 ///
+/// The transport performs link-layer I/O and EZSP byte decoding before yielding
+/// a complete [`Frame<Parameters>`](Frame). The generic receiver actor then
+/// routes responses, synchronous callback-shaped responses, and asynchronous
+/// callbacks to their respective consumers.
+///
 /// Implementations also store the negotiated protocol version so transports
-/// can switch between legacy and extended EZSP header decoding.
+/// can switch between legacy and extended EZSP header decoding. An `ASHv2`
+/// implementation decodes one complete `ASHv2` DATA payload into one
+/// [`Frame<Parameters>`](Frame), using legacy headers before negotiation.
 pub trait Receive {
     /// Receives the next decoded frame, or `None` when the input closes.
+    ///
+    /// This method has no error result. The transport implementation therefore
+    /// owns its malformed-frame policy, for example logging and skipping an
+    /// invalid frame or closing the input.
     fn receive(&mut self) -> impl Future<Output = Option<Frame<Parameters>>> + Send;
 
-    /// Replaces the negotiated EZSP version and returns the previous value.
+    /// Stores the negotiated EZSP version and returns the previous value.
+    ///
+    /// The receiver actor calls this after decoding the initial `version`
+    /// response. Implementations use the stored value to select legacy or
+    /// extended header decoding for subsequent frames. Returning `Some`
+    /// indicates that a previously negotiated version was replaced.
     fn set_negotiated_version(&mut self, version: u8) -> Option<u8>;
 }
 
@@ -96,7 +112,7 @@ where
 
 impl<T> Receiver<T>
 where
-    T: Receive,
+    T: Receive + Send,
 {
     /// Runs until the inbound stream or the transmitter actor channel closes.
     pub async fn run(mut self) {

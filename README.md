@@ -94,8 +94,9 @@ protocol tooling:
 
 EZSP fields wider than one byte are encoded little-endian. Protocol versions
 before 8 use the three-byte legacy header; versions 8 and newer use the
-five-byte extended header. The receiver updates its decoder after a successful
-`version` response.
+five-byte extended header. The generic receiver actor records a successful
+`version` response and passes the negotiated version to subsequent transport
+receive calls.
 
 ## High-level NCP startup
 
@@ -248,13 +249,13 @@ implementing `Transmit` and an inbound type implementing `Receive`:
 - `Transmit::transmit` receives a complete typed `Frame<Commands>`. An ASHv2
   adapter serializes the header followed by the command parameters in
   little-endian order and sends the result as one ASHv2 DATA payload.
-- `Receive::receive` obtains one complete ASHv2 DATA payload, decodes its EZSP
-  header and parameters, and returns `Frame<Parameters>`. Because this method
-  returns `Option` rather than `Result`, the adapter owns its malformed-frame
-  policy, such as logging and skipping a bad payload.
-- `Receive::set_negotiated_version` stores the version selected by the initial
-  EZSP `version` exchange. Before that handoff, the adapter must decode legacy
-  headers; versions at least `MIN_NON_LEGACY_VERSION` use extended headers.
+- `Receive::receive` accepts the currently negotiated version and obtains one
+  complete ASHv2 DATA payload, decodes its EZSP header and parameters, and
+  returns `Frame<Parameters>`. It receives `None` before the initial EZSP
+  `version` response and `Some(version)` on subsequent calls; versions at least
+  `MIN_NON_LEGACY_VERSION` use extended headers. Because this method returns
+  `Option` rather than `Result`, the adapter owns its malformed-frame policy,
+  such as logging and skipping a bad payload.
 
 Once the ASHv2-specific halves exist, the generic EZSP wiring is:
 

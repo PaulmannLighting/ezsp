@@ -67,9 +67,8 @@ The actor layer deliberately separates output from input:
 
 - `Transmit::transmit` accepts one complete outbound EZSP frame and reports
   encoding or I/O errors.
-- `Receive::receive` returns the next decoded inbound EZSP frame.
-- `Receive::set_negotiated_version` updates version-sensitive decoding after
-  the NCP answers the initial `version` command.
+- `Receive::receive` accepts the actor's current negotiated-version state and
+  returns the next decoded inbound EZSP frame.
 - `Client::run` creates the internal transmitter and receiver futures that
   drive the EZSP actor layer and returns a newly wired pre-negotiation `Client`.
 
@@ -109,9 +108,10 @@ desired nonzero protocol version and a one-shot reply. Its actor futures must
 already be running; `connect` does not spawn them.
 
 The transmitter sends `version` using a legacy-compatible header. The generic
-receiver actor observes the decoded response, calls
-`Receive::set_negotiated_version`, and forwards the response to the transmitter.
-A matching version completes the one-shot request and produces:
+receiver actor initially calls `Receive::receive(None)`, records the protocol
+version when it observes the decoded response, passes `Some(version)` to
+subsequent receive calls, and forwards the response to the transmitter. A
+matching version completes the one-shot request and produces:
 
 - `Connection`, a cloneable sender-backed command handle; and
 - the receiver of asynchronous `Callback` values.
@@ -323,9 +323,10 @@ serializes its `Header` and command payload in little-endian order, and submits
 the bytes as one ASHv2 DATA payload. The adapter maps encoding, capacity, and
 I/O failures into `crate::Error`.
 
-The inbound adapter implements `Receive`. It obtains a complete ASHv2 DATA
-payload, parses `Legacy` headers before negotiation and `Extended` headers
-after a sufficiently new negotiated version, then calls
+The inbound adapter implements `Receive`. On each call it obtains a complete
+ASHv2 DATA payload and uses the supplied negotiated version to parse `Legacy`
+headers before negotiation or `Extended` headers after a sufficiently new
+version, then calls
 `Parameters::parse_from_le_stream` with the decoded frame ID and remaining
 bytes. It should also reject truncated or overflowed response headers and
 handle `invalidCommand` responses consistently with the public error model.
@@ -342,11 +343,11 @@ flowchart LR
     ashTransmit --> ashIo
 ```
 
-`Receive::set_negotiated_version` is called after the generic actor recognizes
-the decoded `version` response. The adapter stores that version for subsequent
-header decoding and returns any previous value. External ASHv2 tasks must be
-running before the two futures returned by `Client::run`; both EZSP
-futures must be running before `Builder::start` initiates negotiation.
+The generic actor owns the negotiated-version state. It passes `None` to
+`Receive::receive` until it recognizes the decoded `version` response, then
+passes `Some(version)` on subsequent calls. External ASHv2 tasks must be running
+before the two futures returned by `Client::run`; both EZSP futures must be
+running before `Builder::start` initiates negotiation.
 
 `Client::run` currently consumes an existing `Client`, but `Client` has no
 public constructor and its fields are crate-private. Consequently, an external

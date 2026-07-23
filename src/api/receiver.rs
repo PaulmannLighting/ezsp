@@ -15,25 +15,26 @@ use crate::{Callback, Error, Parameters, Response};
 /// routes responses, synchronous callback-shaped responses, and asynchronous
 /// callbacks to their respective consumers.
 ///
-/// Implementations also store the negotiated protocol version so transports
-/// can switch between legacy and extended EZSP header decoding. An `ASHv2`
-/// implementation decodes one complete `ASHv2` DATA payload into one
-/// [`Frame<Parameters>`](Frame), using legacy headers before negotiation.
+/// The receiver actor passes the currently negotiated protocol version to each
+/// call so transports can switch between legacy and extended EZSP header
+/// decoding. An `ASHv2` implementation decodes one complete `ASHv2` DATA
+/// payload into one [`Frame<Parameters>`](Frame), using legacy headers while
+/// the supplied version is `None`.
 pub trait Receive {
-    /// Receives the next decoded frame, or `None` when the input closes.
+    /// Receives the next decoded frame using `negotiated_version`, or returns
+    /// `None` when the input closes.
+    ///
+    /// The receiver actor passes `None` until it observes the initial `version`
+    /// response. Subsequent calls receive `Some(version)` so the transport can
+    /// select version-sensitive decoding without storing negotiation state.
     ///
     /// This method has no error result. The transport implementation therefore
     /// owns its malformed-frame policy, for example logging and skipping an
     /// invalid frame or closing the input.
-    fn receive(&mut self) -> impl Future<Output = Option<Frame<Parameters>>> + Send;
-
-    /// Stores the negotiated EZSP version and returns the previous value.
-    ///
-    /// The receiver actor calls this after decoding the initial `version`
-    /// response. Implementations use the stored value to select legacy or
-    /// extended header decoding for subsequent frames. Returning `Some`
-    /// indicates that a previously negotiated version was replaced.
-    fn set_negotiated_version(&mut self, version: u8) -> Option<u8>;
+    fn receive(
+        &mut self,
+        negotiated_version: Option<u8>,
+    ) -> impl Future<Output = Option<Frame<Parameters>>> + Send;
 }
 
 /// Routes received EZSP frames to the transmitter actor or callback stream.
@@ -42,6 +43,7 @@ pub struct Receiver<T> {
     receive: T,
     callbacks: mpsc::Sender<Callback>,
     transmitter: mpsc::Sender<Message>,
+    negotiated_version: Option<u8>,
 }
 
 impl<T> Receiver<T>
@@ -59,6 +61,7 @@ where
             receive,
             callbacks,
             transmitter,
+            negotiated_version: None,
         }
     }
 
@@ -68,9 +71,8 @@ where
         if let Parameters::Response(Response::Configuration(configuration::Response::Version(
             version,
         ))) = &payload
-            && let Some(previous_version) = self
-                .receive
-                .set_negotiated_version(version.protocol_version())
+            && let Some(previous_version) =
+                self.negotiated_version.replace(version.protocol_version())
         {
             error!(
                 "Replaced previous version {previous_version} with version {}.",
@@ -116,7 +118,7 @@ where
 {
     /// Runs until the inbound stream or the transmitter actor channel closes.
     pub async fn run(mut self) {
-        while let Some(frame) = self.receive.receive().await {
+        while let Some(frame) = self.receive.receive(self.negotiated_version).await {
             if let Err(error) = self.handle_frame(frame).await {
                 warn!("{error}");
                 return;

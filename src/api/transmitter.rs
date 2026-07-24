@@ -172,7 +172,7 @@ where
 
         let header = self
             .header(VersionCommand::ID)
-            .expect("Version command ID fits into a u16.");
+            .expect("Version command ID fits into a u8.");
         let command = VersionCommand::new(desired_version.get());
 
         if let Err(error) = self

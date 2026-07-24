@@ -1,5 +1,7 @@
 use core::error::Error;
 use core::fmt::Display;
+use std::io;
+use std::io::ErrorKind;
 
 use crate::{ember, ezsp};
 
@@ -36,6 +38,19 @@ impl Display for Status {
 }
 
 impl Error for Status {}
+
+impl From<Status> for io::Error {
+    fn from(status: Status) -> Self {
+        let kind = match status {
+            Status::Ezsp(Err(_)) | Status::Ember(Err(_)) | Status::Sl(Err(_)) => {
+                ErrorKind::InvalidData
+            }
+            Status::Ezsp(Ok(_)) | Status::Ember(Ok(_)) | Status::Sl(Ok(_)) => ErrorKind::Other,
+        };
+
+        Self::new(kind, status)
+    }
+}
 
 impl From<Result<ezsp::Status, u8>> for Status {
     fn from(result: Result<ezsp::Status, u8>) -> Self {

@@ -1,6 +1,7 @@
 //! Indicates that the NCP received an invalid command.
 
 use core::fmt::Display;
+use std::io::{Error, ErrorKind};
 
 use num_traits::FromPrimitive;
 
@@ -30,6 +31,15 @@ crate::frame::parameters::response!(
                     Ok(status) => write!(f, "{status} ({status:#04X})"),
                     Err(reason) => write!(f, "Unknown reason: {reason:#04X}"),
                 }
+            }
+        }
+
+        impl From<Response> for Error {
+            fn from(response: Response) -> Self {
+                Self::new(
+                    ErrorKind::Unsupported,
+                    format!("Invalid command: {response}"),
+                )
             }
         }
     }

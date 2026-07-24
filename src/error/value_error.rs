@@ -1,4 +1,6 @@
 use core::num::TryFromIntError;
+use std::io;
+use std::io::ErrorKind;
 
 /// Invalid values.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, thiserror::Error)]
@@ -34,4 +36,21 @@ pub enum ValueError {
     /// Indicates that some expected payload was missing.
     #[error("Missing payload")]
     MissingPayload,
+}
+
+impl From<ValueError> for io::Error {
+    fn from(error: ValueError) -> Self {
+        let kind = match error {
+            ValueError::InvalidRouteRadius(_) => ErrorKind::InvalidInput,
+            ValueError::InvalidFrameId(_)
+            | ValueError::EmberDutyCycleState(_)
+            | ValueError::EmberNetworkStatus(_)
+            | ValueError::EmberNodeType(_)
+            | ValueError::DecisionId(_)
+            | ValueError::EntropySource(_)
+            | ValueError::MissingPayload => ErrorKind::InvalidData,
+        };
+
+        Self::new(kind, error)
+    }
 }

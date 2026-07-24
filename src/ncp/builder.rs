@@ -31,7 +31,7 @@ const EVENT_MESSAGES_CAPACITY: usize = 64;
 /// route-discovery and address options. [`Ncp`] combines those baseline options
 /// with the options supplied to each outgoing send.
 pub struct Builder {
-    pub(crate) connectable: Client,
+    pub(crate) client: Client,
     pub(crate) event_messages_capacity: usize,
     pub(crate) desired_version: NonZero<u8>,
     pub(crate) policy: BTreeMap<policy::Id, u8>,
@@ -47,9 +47,9 @@ impl Builder {
     ///
     /// The requested protocol version defaults to [`MIN_NON_LEGACY_VERSION`].
     #[must_use]
-    pub const fn new(connection: Client) -> Self {
+    pub const fn new(client: Client) -> Self {
         Self {
-            connectable: connection,
+            client,
             event_messages_capacity: EVENT_MESSAGES_CAPACITY,
             desired_version: MIN_NON_LEGACY_VERSION,
             policy: BTreeMap::new(),
@@ -207,7 +207,7 @@ impl Builder {
             return Err(Error::NoEndpoints);
         }
 
-        let (mut connected, mut callbacks) = self.connectable.connect(self.desired_version).await?;
+        let (mut connected, mut callbacks) = self.client.connect(self.desired_version).await?;
 
         debug!("Setting concentrator");
         connected.set_concentrator(self.concentrator).await?;

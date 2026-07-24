@@ -8,7 +8,6 @@
 use std::num::NonZero;
 
 use tokio::sync::mpsc::{self, Sender, channel};
-use tokio::sync::oneshot;
 
 pub use self::connection::Connection;
 pub use self::futures::Futures;
@@ -18,11 +17,13 @@ use self::receiver::Receiver;
 pub use self::translatable_event::TranslatableEvent;
 pub use self::transmitter::Transmit;
 use self::transmitter::Transmitter;
+use crate::api::negotiate_version::NegotiateVersion;
 use crate::{Callback, Error};
 
 mod connection;
 mod futures;
 mod message;
+mod negotiate_version;
 mod receiver;
 mod translatable_event;
 mod transmitter;
@@ -98,19 +99,11 @@ impl Client {
         self,
         desired_version: NonZero<u8>,
     ) -> Result<(Connection, mpsc::Receiver<Callback>), Error> {
-        let (response, rx) = oneshot::channel();
-
-        self.handle
-            .send(Message::Connect {
-                desired_version,
-                response,
-            })
-            .await?;
-
-        rx.await??;
+        self.handle.negotiate_version(desired_version).await?;
 
         Ok((
             Connection {
+                desired_version,
                 handle: self.handle,
             },
             self.callbacks,

@@ -74,17 +74,9 @@ pub struct Ncp {
     pub(crate) endpoints: Box<[Endpoint]>,
     event_handler_handle: Sender<Message>,
     options: Options,
-    message_tag: u8,
 }
 
 impl Ncp {
-    /// Returns the next message tag and increments the internal counter.
-    pub(crate) const fn next_message_tag(&mut self) -> u8 {
-        let tag = self.message_tag;
-        self.message_tag = self.message_tag.wrapping_add(1);
-        tag
-    }
-
     /// Builds an outgoing EZSP APS frame from baseline and per-message options.
     ///
     /// The supplied `options` are unioned with the baseline options stored by
@@ -177,7 +169,6 @@ impl Ncp {
             endpoints,
             event_handler_handle,
             options,
-            message_tag: 0,
         })
     }
 
@@ -208,6 +199,7 @@ impl Ncp {
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
         aps_options: Options,
+        tag: u8,
     ) -> Result<StackResponse, Error> {
         let payload = payload.as_ref();
         let aps_frame =
@@ -217,12 +209,18 @@ impl Ncp {
 
         let stack_response = if payload.len() <= maximum_payload_length {
             let (stack_response, _seq) = self
-                .send_unicast_fragment(destination, aps_frame, payload)
+                .send_unicast_fragment(destination, aps_frame, payload, tag)
                 .await?;
             stack_response
         } else {
-            self.send_fragmented_unicast(destination, aps_frame, payload, maximum_payload_length)
-                .await?
+            self.send_fragmented_unicast(
+                destination,
+                aps_frame,
+                payload,
+                maximum_payload_length,
+                tag,
+            )
+            .await?
         };
 
         Ok(stack_response)
@@ -245,12 +243,13 @@ impl Ncp {
     pub async fn multicast(
         &mut self,
         group_id: u16,
-        options: MulticastOptions,
         profile_id: u16,
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
+        options: MulticastOptions,
         aps_options: Options,
+        tag: u8,
     ) -> Result<(StackResponse, u8), Error> {
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(
@@ -260,7 +259,6 @@ impl Ncp {
             group_id,
             aps_options,
         )?;
-        let tag = self.next_message_tag();
         let message = self.reject_oversized_payload(payload).await?;
 
         debug!(
@@ -305,17 +303,17 @@ impl Ncp {
     pub async fn broadcast(
         &mut self,
         short_id: u16,
-        radius: u8,
         profile_id: u16,
         cluster_id: u16,
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
+        radius: u8,
         aps_options: Options,
+        tag: u8,
     ) -> Result<StackResponse, Error> {
         let payload = payload.as_ref();
         let aps_frame =
             self.aps_frame(profile_id, cluster_id, destination_endpoint, 0, aps_options)?;
-        let tag = self.next_message_tag();
         let message = self.reject_oversized_payload(payload).await?;
 
         debug!(
@@ -341,6 +339,7 @@ impl Ncp {
         aps_frame: ApsFrame,
         payload: &[u8],
         maximum_payload_length: usize,
+        tag: u8,
     ) -> Result<StackResponse, Error> {
         let fragment_count = fragment_count(payload.len(), maximum_payload_length)?;
         let mut last_stack_response = None;
@@ -362,7 +361,7 @@ impl Ncp {
             }
 
             let (stack_response, seq) = self
-                .send_unicast_fragment(destination, fragment, chunk)
+                .send_unicast_fragment(destination, fragment, chunk, tag)
                 .await?;
 
             if index == FIRST_FRAGMENT_INDEX {
@@ -384,8 +383,8 @@ impl Ncp {
         destination: EmberDestination,
         aps_frame: ApsFrame,
         payload: &[u8],
+        tag: u8,
     ) -> Result<(StackResponse, u8), Error> {
-        let tag = self.next_message_tag();
         let message = byte_sized_payload(payload)?;
 
         debug!(

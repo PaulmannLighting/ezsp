@@ -4,6 +4,9 @@
 //! host-side Zigbee workflows: endpoint cluster metadata, APS message tags,
 //! baseline and per-message APS options, scan aggregation, message-sent
 //! correlation, and callback dispatch through a background event handler.
+//! Public send methods accept an application APS sequence and carry it in
+//! EZSP's message-tag field; the NCP assigns the APS sequence stored in the
+//! outgoing EZSP APS frame itself.
 //!
 //! [`Builder`] negotiates the protocol version through caller-spawned transport
 //! actors, configures the stack, registers endpoints, and returns an [`Ncp`]
@@ -180,7 +183,10 @@ impl Ncp {
     /// fragment's callback is emitted through the application event channel.
     /// The `aps_options` apply only to this message and are combined with the
     /// NCP's baseline APS options; fragmentation additionally enables
-    /// [`Options::RETRY`].
+    /// [`Options::RETRY`]. The application-provided `sequence` is sent as the
+    /// EZSP message tag and is returned by the corresponding application
+    /// acknowledgement event. EZSP independently assigns the APS sequence in
+    /// the transmitted frame.
     ///
     /// # Errors
     ///
@@ -197,7 +203,7 @@ impl Ncp {
         destination_endpoint: u8,
         payload: impl AsRef<[u8]>,
         aps_options: Options,
-        tag: u8,
+        sequence: u8,
     ) -> Result<(), Error> {
         let payload = payload.as_ref();
         let aps_frame =
@@ -206,20 +212,28 @@ impl Ncp {
         let maximum_payload_length = usize::from(self.connection.maximum_payload_length().await?);
 
         if payload.len() <= maximum_payload_length {
-            self.send_unicast_fragment(destination, aps_frame, payload, tag)
+            self.send_unicast_fragment(destination, aps_frame, payload, sequence)
                 .await?;
             return Ok(());
         }
 
-        self.send_fragmented_unicast(destination, aps_frame, payload, maximum_payload_length, tag)
-            .await
+        self.send_fragmented_unicast(
+            destination,
+            aps_frame,
+            payload,
+            maximum_payload_length,
+            sequence,
+        )
+        .await
     }
 
     /// Starts a multicast APS send.
     ///
     /// The matching `messageSent` callback is emitted through the application
     /// event channel. The `aps_options` apply only to this message and are
-    /// combined with the NCP's baseline APS options.
+    /// combined with the NCP's baseline APS options. The
+    /// application-provided `sequence` is translated into the EZSP message tag;
+    /// EZSP independently manages the APS sequence in the transmitted frame.
     ///
     /// # Errors
     ///
@@ -236,7 +250,7 @@ impl Ncp {
         payload: impl AsRef<[u8]>,
         options: MulticastOptions,
         aps_options: Options,
-        tag: u8,
+        sequence: u8,
     ) -> Result<(), Error> {
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(
@@ -249,7 +263,7 @@ impl Ncp {
         let message = self.reject_oversized_payload(payload).await?;
 
         debug!(
-            "Sending multicast: Hops: {}, Radius: {:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
+            "Sending multicast: Hops: {}, Radius: {:#04X}, APS Frame: {aps_frame}, Tag: {sequence:#04X}, Message: {:#04X?}",
             options.hops(),
             options.nonmember_radius(),
             message.as_slice()
@@ -260,7 +274,7 @@ impl Ncp {
                 aps_frame,
                 options.hops(),
                 options.nonmember_radius(),
-                tag,
+                sequence,
                 message,
             )
             .await?;
@@ -272,7 +286,9 @@ impl Ncp {
     ///
     /// The matching `messageSent` callback is emitted through the application
     /// event channel. The `aps_options` apply only to this message and are
-    /// combined with the NCP's baseline APS options.
+    /// combined with the NCP's baseline APS options. The
+    /// application-provided `sequence` is translated into the EZSP message tag;
+    /// EZSP independently manages the APS sequence in the transmitted frame.
     ///
     /// # Errors
     ///
@@ -289,7 +305,7 @@ impl Ncp {
         payload: impl AsRef<[u8]>,
         radius: u8,
         aps_options: Options,
-        tag: u8,
+        sequence: u8,
     ) -> Result<(), Error> {
         let payload = payload.as_ref();
         let aps_frame =
@@ -297,12 +313,12 @@ impl Ncp {
         let message = self.reject_oversized_payload(payload).await?;
 
         debug!(
-            "Sending broadcast to: {short_id:#06X}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {tag:#04X}, Message: {:#04X?}",
+            "Sending broadcast to: {short_id:#06X}, Radius: {radius:#04X}, APS Frame: {aps_frame}, Tag: {sequence:#04X}, Message: {:#04X?}",
             message.as_slice()
         );
 
         self.connection
-            .send_broadcast(short_id, aps_frame, radius, tag, message)
+            .send_broadcast(short_id, aps_frame, radius, sequence, message)
             .await?;
 
         Ok(())

@@ -225,8 +225,7 @@ key, channel, join method, and initial-security bitmask.
 - a `Connection` communicator;
 - the registered `Endpoint` descriptors;
 - a sender to the event handler;
-- baseline APS options configured by `Builder`; and
-- the next wrapping message tag.
+- baseline APS options configured by `Builder`.
 
 For ordinary APS profiles, source-endpoint selection scans registered endpoints
 in stored order and picks the first whose output clusters contain the requested
@@ -252,10 +251,13 @@ flowchart LR
 
 ### APS sends and confirmation events
 
-Callers supply the message tag used by unicast, multicast, and broadcast
-helpers. The EZSP command response indicates acceptance and, where applicable,
-supplies the APS sequence. A later `messageSent` callback is normally forwarded
-through the application event channel.
+Callers supply the application APS `sequence` used by unicast, multicast, and
+broadcast helpers. Each helper translates that sequence into the EZSP message
+tag used for `messageSent` correlation. EZSP separately assigns the APS sequence
+stored in the transmitted APS frame. The EZSP command response indicates
+acceptance and, where applicable, supplies that internal APS sequence. A later
+`messageSent` callback is normally forwarded through the application event
+channel with the application sequence recovered from its message tag.
 
 Each helper accepts per-message `ember::aps::Options`. `Ncp::aps_frame` unions
 them with the baseline options inherited from `Builder`, so a caller can add
@@ -410,10 +412,11 @@ logs failures, and returns only valid descriptors. Values originating from a
 
 The driver splits each APS data frame into its header and payload. Its profile
 and cluster ID become the outgoing APS metadata, while its application APS
-counter becomes the EZSP message tag. Header flags map acknowledged transmission to
-`ember::aps::Options::RETRY` and APS security to
-`ember::aps::Options::ENCRYPTION`; other `TxOptions` flags do not change the
-EZSP APS options. Destinations map as follows:
+sequence, represented by the header counter, becomes the EZSP message tag. EZSP
+manages the APS sequence placed in the transmitted frame independently. Header
+flags map acknowledged transmission to `ember::aps::Options::RETRY` and APS
+security to `ember::aps::Options::ENCRYPTION`; other `TxOptions` flags do not
+change the EZSP APS options. Destinations map as follows:
 
 | `apis-saltans` destination | EZSP helper | Destination endpoint | Routing values |
 | --- | --- | --- | --- |
@@ -424,7 +427,8 @@ EZSP APS options. Destinations map as follows:
 In every case, `Ncp` chooses the local source endpoint from registered output
 clusters and combines the mapped frame options with its baseline options.
 Successful and failed final stack statuses are reported asynchronously as
-`Ack(sequence)` and `Nak { sequence, error }`.
+`Ack(sequence)` and `Nak { sequence, error }`, using the application-provided
+sequence recovered from the EZSP message tag.
 
 ### Callback and incoming-message conversion
 

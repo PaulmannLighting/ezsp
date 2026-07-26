@@ -17,10 +17,12 @@
 //! - APS frame transmission delegates to [`Ncp::unicast`], [`Ncp::broadcast`],
 //!   or [`Ncp::multicast`].
 //!
-//! The APS profile, cluster, counter, and transmission options come from the
-//! supplied APS frame. Acknowledged transmission and APS security flags control
-//! EZSP APS retry and encryption, respectively; the mapped options are combined
-//! with the baseline options stored by [`Ncp`].
+//! The APS profile, cluster, application sequence, and transmission options
+//! come from the supplied APS frame. The application sequence is represented
+//! by the frame header's counter and becomes the EZSP message tag; EZSP assigns
+//! its own APS sequence internally. Acknowledged transmission and APS security
+//! flags control EZSP APS retry and encryption, respectively; the mapped
+//! options are combined with the baseline options stored by [`Ncp`].
 //! Device destinations preserve their requested endpoint, broadcasts use their
 //! requested endpoint with radius zero, and groups use the profile's broadcast
 //! endpoint with zero hops and nonmember radius. [`Ncp`] selects the local

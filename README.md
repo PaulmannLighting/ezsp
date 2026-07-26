@@ -183,7 +183,8 @@ workflows that span commands and asynchronous callbacks:
 
 - active-network and energy scans, completed by `scanComplete`;
 - unicast, multicast, and broadcast APS sends;
-- outgoing message-tag correlation with `messageSent` callbacks;
+- application APS sequence correlation with `messageSent` callbacks through
+  EZSP message tags;
 - incoming APS fragment reassembly;
 - source-endpoint selection from registered output clusters; and
 - event-handler shutdown through `Ncp::terminate`.
@@ -194,15 +195,17 @@ missing match returns `Error::NoMatchingSourceEndpoint` before a send command is
 issued.
 
 Awaiting `Ncp::unicast`, `Ncp::multicast`, or `Ncp::broadcast` performs the EZSP
-send transaction. The caller supplies the message tag used to correlate the
-later asynchronous `messageSent` callback. Completed sends are reported through
-the application event channel.
+send transaction. The caller supplies an application APS `sequence`, which the
+helper translates into the EZSP message tag used to correlate the later
+asynchronous `messageSent` callback. EZSP manages the APS sequence in its frame
+independently. Completed sends are reported through the application event
+channel using the application-provided sequence.
 
-Each send method takes a final `aps_options: ember::aps::Options` argument.
-These per-message options are combined with the options configured on
-`Builder`; pass `Options::NONE` when a message needs no additional flags. For
-example, a caller can request APS encryption and retry for one unicast without
-changing the baseline used by later sends:
+Each send method takes an `aps_options: ember::aps::Options` argument followed
+by the application APS `sequence: u8`. The per-message options are combined
+with the options configured on `Builder`; pass `Options::NONE` when a message
+needs no additional flags. For example, a caller can request APS encryption and
+retry for one unicast without changing the baseline used by later sends:
 
 ```rust
 use ezsp::ember::aps::Options;
@@ -215,7 +218,7 @@ ncp.unicast(
     destination_endpoint,
     payload,
     options,
-    tag,
+    sequence,
 )
 .await?;
 ```
@@ -342,12 +345,13 @@ an unsupported `apis-saltans` profile are logged and omitted; descriptors
 originally converted from `SimpleDescriptor` round trip without that loss.
 
 Outgoing APS frames take their profile and cluster from the APS header. The
-header's application APS counter is used as the EZSP message tag so ACK/NAK
-events can return the same counter. A device destination preserves its target
-endpoint. A broadcast uses its target endpoint with radius zero. A group uses
-the profile's broadcast endpoint with zero multicast hops and nonmember radius.
-The local source endpoint is still selected from the registered EZSP output
-clusters.
+header's application APS sequence, represented by its counter field, is used as
+the EZSP message tag so ACK/NAK events can return the same sequence. EZSP
+assigns and manages its own APS sequence in the transmitted frame. A device
+destination preserves its target endpoint. A broadcast uses its target endpoint
+with radius zero. A group uses the profile's broadcast endpoint with zero
+multicast hops and nonmember radius. The local source endpoint is still selected
+from the registered EZSP output clusters.
 
 The integration also maps APS header transmission flags into EZSP APS options:
 `ACKNOWLEDGED_TRANSMISSION` controls `Options::RETRY`, and
@@ -356,8 +360,8 @@ combined with the NCP's baseline options. Other `TxOptions` flags do not add an
 EZSP APS option.
 
 `Driver::transmit` returns after handing the frame to EZSP. The later
-`messageSent` callback produces `Event::Ack` with the application APS counter
-on success or `Event::Nak` with that counter and the stack error on failure.
+`messageSent` callback produces `Event::Ack` with the application APS sequence
+on success or `Event::Nak` with that sequence and the stack error on failure.
 
 ### Event and message conversion
 

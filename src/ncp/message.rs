@@ -21,6 +21,9 @@ pub enum Message {
     ChannelScan(Sender<Vec<EnergyScanResult>>),
 
     /// Registers a receiver for a non-final fragment's `messageSent` callback.
+    ///
+    /// The tag is the internal EZSP representation of the application-provided
+    /// APS sequence.
     Sent {
         /// The message tag.
         tag: u8,

@@ -8,6 +8,7 @@
 
 use apis_saltans_hw::Event;
 
+use crate::Error;
 use crate::ember::Status;
 use crate::ember::device::Update;
 use crate::parameters::messaging::handler::MessageSent;
@@ -22,7 +23,7 @@ impl From<MessageSent> for Event {
             Ok(Status::Success) => Self::Ack(sequence),
             status => Self::Nak {
                 sequence,
-                error: crate::Error::from(status).into(),
+                error: Error::from(status).into(),
             },
         }
     }

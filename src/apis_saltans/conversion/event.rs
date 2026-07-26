@@ -8,8 +8,23 @@ use apis_saltans_hw::Event;
 
 use crate::ember::Status;
 use crate::ember::device::Update;
+use crate::parameters::messaging::handler::MessageSent;
 use crate::parameters::networking::handler::ChildJoin;
 use crate::parameters::trust_center::handler::TrustCenterJoin;
+
+impl From<MessageSent> for Event {
+    fn from(message_sent: MessageSent) -> Self {
+        let sequence = message_sent.message_tag();
+
+        match message_sent.status() {
+            Ok(Status::Success) => Self::Ack(sequence),
+            status => Self::Nak {
+                sequence,
+                error: crate::Error::from(status).into(),
+            },
+        }
+    }
+}
 
 impl TryFrom<ChildJoin> for Event {
     type Error = ChildJoin;
@@ -59,5 +74,64 @@ impl TryFrom<TrustCenterJoin> for Event {
             },
             Update::DeviceLeft => Self::DeviceLeft(trust_center_join.try_into()?),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use apis_saltans_hw::Event;
+    use le_stream::FromLeStream;
+
+    use crate::parameters::messaging::handler::MessageSent;
+
+    const MESSAGE_TAG: u8 = 0x34;
+    const APS_SEQUENCE: u8 = 0x56;
+    const STATUS_INDEX: usize = 15;
+    const STATUS_SUCCESS: u8 = 0x00;
+    const STATUS_DELIVERY_FAILED: u8 = 0x66;
+    const MESSAGE_SENT_BYTES: [u8; 17] = [
+        0x00,
+        0x78,
+        0x56,
+        0x04,
+        0x01,
+        0x06,
+        0x03,
+        0x01,
+        0x02,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        APS_SEQUENCE,
+        MESSAGE_TAG,
+        STATUS_SUCCESS,
+        0x00,
+    ];
+
+    fn message_sent(status: u8) -> MessageSent {
+        let mut bytes = MESSAGE_SENT_BYTES;
+        bytes[STATUS_INDEX] = status;
+        MessageSent::from_le_stream(bytes.into_iter())
+            .expect("messageSent test callback is complete")
+    }
+
+    #[test]
+    fn converts_successful_message_sent_to_ack() {
+        assert!(matches!(
+            Event::from(message_sent(STATUS_SUCCESS)),
+            Event::Ack(MESSAGE_TAG)
+        ));
+    }
+
+    #[test]
+    fn converts_failed_message_sent_to_nak() {
+        assert!(matches!(
+            Event::from(message_sent(STATUS_DELIVERY_FAILED)),
+            Event::Nak {
+                sequence: MESSAGE_TAG,
+                ..
+            }
+        ));
     }
 }

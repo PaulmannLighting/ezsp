@@ -29,11 +29,10 @@ pub use self::message::Message;
 pub use self::multicast_options::MulticastOptions;
 pub use self::network_credentials::NetworkCredentials;
 pub use self::scans::Scans;
-pub use self::stack_response::StackResponse;
 pub use self::startup::Startup;
 use crate::ember::aps::{Frame as ApsFrame, Options};
 use crate::ember::message::Destination as EmberDestination;
-use crate::ember::{Status as EmberStatus, aps};
+use crate::ember::{Status as EmberStatus, Status, aps};
 use crate::error::Status as ErrorStatus;
 use crate::ezsp::network::scan;
 use crate::parameters::networking::handler::{EnergyScanResult, NetworkFound};
@@ -49,7 +48,6 @@ mod message;
 mod multicast_options;
 mod network_credentials;
 mod scans;
-mod stack_response;
 mod startup;
 
 // The ZDP profile ID.
@@ -172,25 +170,25 @@ impl Ncp {
         })
     }
 
-    /// Starts a unicast APS send and returns its deferred [`StackResponse`].
+    /// Starts a unicast APS send.
     ///
     /// Payloads larger than the EZSP maximum APS payload length are fragmented
     /// for unicast delivery. The stack-assigned APS sequence from the first
     /// fragment is reused for follow-up fragments, matching EZSP host
-    /// fragmentation behavior. Responses for all non-final fragments are
-    /// awaited before this method returns the response for the final fragment.
-    /// Await the returned [`StackResponse`] to confirm that final response. The
-    /// `aps_options` apply only to this message and are combined with the NCP's
-    /// baseline APS options; fragmentation additionally enables
+    /// fragmentation behavior. Every non-final fragment waits for its
+    /// `messageSent` callback before the next fragment is sent. The final
+    /// fragment's callback is emitted through the application event channel.
+    /// The `aps_options` apply only to this message and are combined with the
+    /// NCP's baseline APS options; fragmentation additionally enables
     /// [`Options::RETRY`].
     ///
     /// # Errors
     ///
     /// Returns an [`Error`] if no matching source endpoint exists, payload
-    /// fragmentation would exceed 255 fragments, registering a message tag or
-    /// sending an EZSP command fails, or a non-final fragment's stack response
-    /// reports failure. Errors reported by the returned [`StackResponse`] occur
-    /// when that value is awaited.
+    /// fragmentation would exceed 255 fragments, registering a fragment
+    /// response channel or sending an EZSP command fails, or a non-final
+    /// fragment's `messageSent` callback reports failure.
+    #[expect(clippy::too_many_arguments)]
     pub async fn unicast(
         &mut self,
         short_id: u16,
@@ -200,45 +198,34 @@ impl Ncp {
         payload: impl AsRef<[u8]>,
         aps_options: Options,
         tag: u8,
-    ) -> Result<StackResponse, Error> {
+    ) -> Result<(), Error> {
         let payload = payload.as_ref();
         let aps_frame =
             self.aps_frame(profile_id, cluster_id, destination_endpoint, 0, aps_options)?;
         let destination = EmberDestination::Direct(short_id);
         let maximum_payload_length = usize::from(self.connection.maximum_payload_length().await?);
 
-        let stack_response = if payload.len() <= maximum_payload_length {
-            let (stack_response, _seq) = self
-                .send_unicast_fragment(destination, aps_frame, payload, tag)
+        if payload.len() <= maximum_payload_length {
+            self.send_unicast_fragment(destination, aps_frame, payload, tag)
                 .await?;
-            stack_response
-        } else {
-            self.send_fragmented_unicast(
-                destination,
-                aps_frame,
-                payload,
-                maximum_payload_length,
-                tag,
-            )
-            .await?
-        };
+            return Ok(());
+        }
 
-        Ok(stack_response)
+        self.send_fragmented_unicast(destination, aps_frame, payload, maximum_payload_length, tag)
+            .await
     }
 
     /// Starts a multicast APS send.
     ///
-    /// Returns the deferred [`StackResponse`] and the APS sequence assigned by
-    /// the NCP. Await the response to confirm the matching `messageSent`
-    /// callback. The `aps_options` apply only to this message and are combined
-    /// with the NCP's baseline APS options.
+    /// The matching `messageSent` callback is emitted through the application
+    /// event channel. The `aps_options` apply only to this message and are
+    /// combined with the NCP's baseline APS options.
     ///
     /// # Errors
     ///
     /// Returns an [`Error`] if no matching source endpoint exists, the payload
-    /// is larger than the EZSP maximum APS payload length, registering the
-    /// message tag fails, or sending the EZSP command fails. Errors reported by
-    /// the returned [`StackResponse`] occur when that value is awaited.
+    /// is larger than the EZSP maximum APS payload length or sending the EZSP
+    /// command fails.
     #[expect(clippy::too_many_arguments)]
     pub async fn multicast(
         &mut self,
@@ -250,7 +237,7 @@ impl Ncp {
         options: MulticastOptions,
         aps_options: Options,
         tag: u8,
-    ) -> Result<(StackResponse, u8), Error> {
+    ) -> Result<(), Error> {
         let payload = payload.as_ref();
         let aps_frame = self.aps_frame(
             profile_id,
@@ -268,13 +255,7 @@ impl Ncp {
             message.as_slice()
         );
 
-        let (tx, rx) = channel();
-        self.event_handler_handle
-            .send(Message::Sent { tag, sender: tx })
-            .await?;
-
-        let sequence = self
-            .connection
+        self.connection
             .send_multicast(
                 aps_frame,
                 options.hops(),
@@ -284,21 +265,20 @@ impl Ncp {
             )
             .await?;
 
-        Ok((rx.into(), sequence))
+        Ok(())
     }
 
-    /// Starts a broadcast APS send and returns its deferred [`StackResponse`].
+    /// Starts a broadcast APS send.
     ///
-    /// Await the returned response to confirm the matching `messageSent`
-    /// callback. The `aps_options` apply only to this message and are combined
-    /// with the NCP's baseline APS options.
+    /// The matching `messageSent` callback is emitted through the application
+    /// event channel. The `aps_options` apply only to this message and are
+    /// combined with the NCP's baseline APS options.
     ///
     /// # Errors
     ///
     /// Returns an [`Error`] if no matching source endpoint exists, the payload
-    /// is larger than the EZSP maximum APS payload length, registering the
-    /// message tag fails, or sending the EZSP command fails. Errors reported by
-    /// the returned [`StackResponse`] occur when that value is awaited.
+    /// is larger than the EZSP maximum APS payload length or sending the EZSP
+    /// command fails.
     #[expect(clippy::too_many_arguments)]
     pub async fn broadcast(
         &mut self,
@@ -310,7 +290,7 @@ impl Ncp {
         radius: u8,
         aps_options: Options,
         tag: u8,
-    ) -> Result<StackResponse, Error> {
+    ) -> Result<(), Error> {
         let payload = payload.as_ref();
         let aps_frame =
             self.aps_frame(profile_id, cluster_id, destination_endpoint, 0, aps_options)?;
@@ -321,16 +301,11 @@ impl Ncp {
             message.as_slice()
         );
 
-        let (tx, rx) = channel();
-        self.event_handler_handle
-            .send(Message::Sent { tag, sender: tx })
-            .await?;
-
         self.connection
             .send_broadcast(short_id, aps_frame, radius, tag, message)
             .await?;
 
-        Ok(rx.into())
+        Ok(())
     }
 
     async fn send_fragmented_unicast(
@@ -340,12 +315,16 @@ impl Ncp {
         payload: &[u8],
         maximum_payload_length: usize,
         tag: u8,
-    ) -> Result<StackResponse, Error> {
+    ) -> Result<(), Error> {
         let fragment_count = fragment_count(payload.len(), maximum_payload_length)?;
-        let mut last_stack_response = None;
         let mut sequence = None;
 
-        for (index, chunk) in payload.chunks(maximum_payload_length).enumerate() {
+        let mut fragments = payload
+            .chunks(maximum_payload_length)
+            .enumerate()
+            .peekable();
+
+        while let Some((index, chunk)) = fragments.next() {
             let mut fragment = aps_frame.clone();
             fragment.enable_retry();
 
@@ -360,7 +339,17 @@ impl Ncp {
                 );
             }
 
-            let (stack_response, seq) = self
+            let response = if fragments.peek().is_some() {
+                let (tx, rx) = channel();
+                self.event_handler_handle
+                    .send(Message::Sent { tag, sender: tx })
+                    .await?;
+                Some(rx)
+            } else {
+                None
+            };
+
+            let seq = self
                 .send_unicast_fragment(destination, fragment, chunk, tag)
                 .await?;
 
@@ -368,14 +357,15 @@ impl Ncp {
                 sequence.replace(seq);
             }
 
-            if let Some(stack_response) = last_stack_response.replace(stack_response) {
-                stack_response.await?;
+            if let Some(response) = response {
+                match response.await? {
+                    Ok(Status::Success) => (),
+                    other => return Err(other.into()),
+                }
             }
         }
 
-        Ok(last_stack_response
-            .take()
-            .expect("fragmented send always produces a final stack response"))
+        Ok(())
     }
 
     async fn send_unicast_fragment(
@@ -384,7 +374,7 @@ impl Ncp {
         aps_frame: ApsFrame,
         payload: &[u8],
         tag: u8,
-    ) -> Result<(StackResponse, u8), Error> {
+    ) -> Result<u8, Error> {
         let message = byte_sized_payload(payload)?;
 
         debug!(
@@ -392,17 +382,9 @@ impl Ncp {
             message.as_slice()
         );
 
-        let (tx, rx) = channel();
-        self.event_handler_handle
-            .send(Message::Sent { tag, sender: tx })
-            .await?;
-
-        let sequence = self
-            .connection
+        self.connection
             .send_unicast(destination, aps_frame, tag, message)
-            .await?;
-
-        Ok((rx.into(), sequence))
+            .await
     }
 
     async fn reject_oversized_payload(

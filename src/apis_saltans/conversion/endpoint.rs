@@ -3,7 +3,7 @@
 //! Converting a `SimpleDescriptor` to [`crate::Endpoint`] copies its endpoint,
 //! profile, device, application flags, and cluster lists. Conversion back is
 //! fallible because the raw EZSP endpoint representation can contain a profile
-//! unknown to `apis-saltans` or a reserved endpoint number.
+//! unknown to `apis-saltans`.
 
 use apis_saltans_hw::core::Profile;
 use apis_saltans_hw::zdp::{AppFlags, SimpleDescriptor};
@@ -31,9 +31,7 @@ impl TryFrom<Endpoint> for SimpleDescriptor {
             return Err(value);
         };
 
-        let Ok(endpoint) = apis_saltans_hw::core::Endpoint::try_from(value.id) else {
-            return Err(value);
-        };
+        let endpoint = apis_saltans_hw::core::Endpoint::from(value.id);
 
         Ok(Self::new(
             endpoint,

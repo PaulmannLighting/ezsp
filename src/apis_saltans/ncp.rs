@@ -4,7 +4,7 @@
 //! no feature-specific wrapper. The `Ncp` already owns the endpoint descriptors
 //! registered by [`crate::Builder`], so `Driver::get_endpoints` converts that
 //! stored list back to `apis-saltans` simple descriptors. Unsupported profile
-//! IDs and reserved endpoint numbers are logged and omitted from the result.
+//! IDs are logged and omitted from the result.
 //!
 //! Driver operations map to EZSP as follows:
 //!
@@ -14,28 +14,29 @@
 //!   `u8::MAX` seconds;
 //! - route requests use a high-RAM many-to-one concentrator request;
 //! - address translation uses the EZSP address-table lookup commands; and
-//! - datagram transmission delegates to [`Ncp::unicast`], [`Ncp::broadcast`],
+//! - APS frame transmission delegates to [`Ncp::unicast`], [`Ncp::broadcast`],
 //!   or [`Ncp::multicast`].
 //!
-//! The APS profile and cluster come from `apis_saltans_hw::Datagram` metadata.
-//! Acknowledged transmission and APS security metadata control EZSP APS retry
-//! and encryption, respectively; the mapped options are combined with the
-//! baseline options stored by [`Ncp`].
+//! The APS profile, cluster, counter, and transmission options come from the
+//! supplied APS frame. Acknowledged transmission and APS security flags control
+//! EZSP APS retry and encryption, respectively; the mapped options are combined
+//! with the baseline options stored by [`Ncp`].
 //! Device destinations preserve their requested endpoint, broadcasts use their
 //! requested endpoint with radius zero, and groups use the profile's broadcast
 //! endpoint with zero hops and nonmember radius. [`Ncp`] selects the local
 //! source endpoint from its registered output clusters.
 //!
-//! A transmit call returns `apis_saltans_hw::HwResponse` after the EZSP send
-//! transaction is accepted. That response owns the deferred [`crate::StackResponse`]
-//! and reports the later `messageSent` status when awaited.
+//! A transmit call returns after handing the frame to EZSP. Its later
+//! `messageSent` callback is translated into an `Ack` or `Nak` event.
 
 use std::time::Duration;
 
+use apis_saltans_hw::aps::{Control, Data};
 use apis_saltans_hw::core::{Destination, IeeeAddress};
 use apis_saltans_hw::zdp::SimpleDescriptor;
-use apis_saltans_hw::{Datagram, Driver, Error, FoundNetwork, HwResponse, ScannedChannel};
-use log::error;
+use apis_saltans_hw::{Driver, Error, FoundNetwork, ScannedChannel, TxOptions};
+use bytes::Bytes;
+use log::{error, warn};
 
 use crate::ember::concentrator;
 use crate::{Messaging, MulticastOptions, Ncp, Networking, Utilities};
@@ -117,18 +118,24 @@ impl Driver for Ncp {
             .await?)
     }
 
-    async fn transmit(
-        &mut self,
-        destination: Destination,
-        datagram: Datagram,
-    ) -> Result<HwResponse, Error> {
-        let (metadata, payload) = datagram.into_parts();
-        let profile = metadata.profile();
-        let profile_id = profile.into();
-        let cluster_id = metadata.cluster_id();
-        let aps_options = metadata.tx_options().into();
+    async fn transmit(&mut self, destination: Destination, frame: Data<Bytes>) {
+        let header = frame.header();
+        let profile_id = header.profile_id();
+        let cluster_id = header.cluster_id();
+        let tag = header.counter();
+        let mut tx_options = TxOptions::empty();
+        tx_options.set(
+            TxOptions::ACKNOWLEDGED_TRANSMISSION,
+            header.control().contains(Control::ACK_REQUEST),
+        );
+        tx_options.set(
+            TxOptions::SECURITY_ENABLED,
+            header.control().contains(Control::SECURITY),
+        );
+        let aps_options = tx_options.into();
+        let payload = frame.into_parts().1;
 
-        let stack_response = match destination {
+        let result = match destination {
             Destination::Device(device) => {
                 self.unicast(
                     device.device().into(),
@@ -137,40 +144,50 @@ impl Driver for Ncp {
                     device.endpoint().into(),
                     payload,
                     aps_options,
+                    tag,
                 )
-                .await?
+                .await
             }
             Destination::Broadcast(broadcast) => {
                 self.broadcast(
                     broadcast.address().as_u16(),
-                    DEFAULT_BROADCAST_RADIUS,
                     profile_id,
                     cluster_id,
                     broadcast.endpoint().into(),
                     payload,
+                    DEFAULT_BROADCAST_RADIUS,
                     aps_options,
+                    tag,
                 )
-                .await?
+                .await
             }
             Destination::Group(group_id) => {
-                let (stack_response, _seq) = self
-                    .multicast(
-                        group_id.as_u16(),
-                        MulticastOptions::new(
-                            DEFAULT_MULTICAST_HOPS,
-                            DEFAULT_MULTICAST_NONMEMBER_RADIUS,
-                        ),
-                        profile_id,
-                        cluster_id,
-                        profile.broadcast_endpoint().into(),
-                        payload,
-                        aps_options,
-                    )
-                    .await?;
-                stack_response
+                let Ok(profile) = header.profile() else {
+                    warn!(
+                        "Cannot transmit APS group frame with unknown profile: {profile_id:#06X}"
+                    );
+                    return;
+                };
+
+                self.multicast(
+                    group_id.as_u16(),
+                    profile_id,
+                    cluster_id,
+                    profile.broadcast_endpoint().into(),
+                    payload,
+                    MulticastOptions::new(
+                        DEFAULT_MULTICAST_HOPS,
+                        DEFAULT_MULTICAST_NONMEMBER_RADIUS,
+                    ),
+                    aps_options,
+                    tag,
+                )
+                .await
             }
         };
 
-        Ok(HwResponse::new(stack_response))
+        if let Err(error) = result {
+            error!("Failed to transmit APS frame: {error}");
+        }
     }
 }

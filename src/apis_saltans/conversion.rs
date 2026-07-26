@@ -5,11 +5,12 @@
 //! membership/network callbacks, complete incoming APS messages, NWK
 //! envelopes, and reception metadata.
 //!
-//! `TryFrom<Callback> for apis_saltans_hw::Event` recognizes only child-join,
-//! successful stack-status, and trust-center-join callbacks. Unsupported
-//! callback families, unrecognized Ember statuses, and raw status errors return
-//! `Err(())`. Scan callbacks and `messageSent` callbacks are consumed by the
-//! high-level NCP event handler before this conversion is attempted.
+//! `TryFrom<Callback> for apis_saltans_hw::Event` recognizes `messageSent`,
+//! child-join, successful stack-status, and trust-center-join callbacks.
+//! Unsupported callback families, unrecognized Ember statuses, and raw status
+//! errors return `Err(())`. Fragment-internal `messageSent` callbacks are
+//! consumed by the high-level NCP event handler before this conversion is
+//! attempted.
 //!
 //! Incoming-message conversion is deliberately separate: a
 //! [`DefragmentedMessage`] converts into `apis_saltans_hw::aps::Data` or
@@ -22,6 +23,7 @@ use bytes::Bytes;
 
 pub use self::error::ParseApsFrameError;
 use crate::frame::parameters::networking::handler::Handler as Networking;
+use crate::parameters::messaging::handler::Handler as Messaging;
 use crate::parameters::trust_center::handler::Handler as TrustCenter;
 use crate::{Callback, DefragmentedMessage};
 
@@ -43,6 +45,9 @@ impl TryFrom<Callback> for Event {
 
     fn try_from(callback: Callback) -> Result<Self, Self::Error> {
         match callback {
+            Callback::Messaging(Messaging::MessageSent(message_sent)) => {
+                return Ok((*message_sent).into());
+            }
             Callback::Networking(Networking::ChildJoin(child_join)) => {
                 return Self::try_from(*child_join).map_err(|_| UNHANDLED_EVENT);
             }

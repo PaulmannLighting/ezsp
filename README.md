@@ -194,10 +194,9 @@ missing match returns `Error::NoMatchingSourceEndpoint` before a send command is
 issued.
 
 Awaiting `Ncp::unicast`, `Ncp::multicast`, or `Ncp::broadcast` performs the EZSP
-send transaction and returns a deferred `StackResponse` (multicast also returns
-the assigned APS sequence). Await `StackResponse` separately to validate the
-matching asynchronous `messageSent` callback. Dropping it discards only the
-notification and does not cancel a message already accepted by the NCP.
+send transaction. The caller supplies the message tag used to correlate the
+later asynchronous `messageSent` callback. Completed sends are reported through
+the application event channel.
 
 Each send method takes a final `aps_options: ember::aps::Options` argument.
 These per-message options are combined with the options configured on
@@ -209,22 +208,25 @@ changing the baseline used by later sends:
 use ezsp::ember::aps::Options;
 
 let options = Options::ENCRYPTION.union(Options::RETRY);
-let response = ncp
-    .unicast(
-        short_id,
-        profile_id,
-        cluster_id,
-        destination_endpoint,
-        payload,
-        options,
-    )
-    .await?;
-response.await?;
+ncp.unicast(
+    short_id,
+    profile_id,
+    cluster_id,
+    destination_endpoint,
+    payload,
+    options,
+    tag,
+)
+.await?;
 ```
 
 Oversized unicasts are split into APS fragments. Multicast and broadcast
 payloads must fit the maximum payload reported by the NCP. Fragmented unicasts
 enable APS retry in addition to the combined baseline and per-message options.
+The event handler privately acknowledges every non-final fragment back to the
+sender, so each callback drives transmission of the next fragment. The final
+fragment has no private response channel and produces the normal application
+ACK or NAK event.
 
 ## APS defragmentation
 
@@ -310,7 +312,7 @@ normal actor-backed `Ncp`; it does not add a wrapper type or another transport.
 - permit joining, with the requested duration truncated to whole seconds and
   clamped to 255 seconds;
 - high-RAM many-to-one route requests; and
-- unicast, broadcast, and multicast datagram transmission through the
+- unicast, broadcast, and multicast APS frame transmission through the
   high-level NCP send helpers.
 
 After extracting `Ncp` from the `BuildResult`, call `Driver::run` and spawn its
@@ -336,26 +338,26 @@ let endpoints: Box<[ezsp::Endpoint]> = simple_descriptors
 ```
 
 `Driver::get_endpoints` performs the reverse conversion. Endpoints containing
-an unsupported `apis-saltans` profile or a reserved endpoint number are logged
-and omitted; descriptors originally converted from `SimpleDescriptor` round
-trip without that loss.
+an unsupported `apis-saltans` profile are logged and omitted; descriptors
+originally converted from `SimpleDescriptor` round trip without that loss.
 
-Outgoing datagrams take their APS profile and cluster from
-`apis_saltans_hw::Datagram` metadata. A device destination preserves its target
+Outgoing APS frames take their profile and cluster from the APS header. The
+header's application APS counter is used as the EZSP message tag so ACK/NAK
+events can return the same counter. A device destination preserves its target
 endpoint. A broadcast uses its target endpoint with radius zero. A group uses
 the profile's broadcast endpoint with zero multicast hops and nonmember radius.
 The local source endpoint is still selected from the registered EZSP output
 clusters.
 
-The integration also maps per-datagram transmission options into EZSP APS
-options: `ACKNOWLEDGED_TRANSMISSION` controls `Options::RETRY`, and
+The integration also maps APS header transmission flags into EZSP APS options:
+`ACKNOWLEDGED_TRANSMISSION` controls `Options::RETRY`, and
 `SECURITY_ENABLED` controls `Options::ENCRYPTION`. Those values are then
 combined with the NCP's baseline options. Other `TxOptions` flags do not add an
 EZSP APS option.
 
-`Driver::transmit` returns `HwResponse` after the EZSP send transaction has been
-accepted. The response contains the deferred `StackResponse`; awaiting it
-reports the later `messageSent` callback status.
+`Driver::transmit` returns after handing the frame to EZSP. The later
+`messageSent` callback produces `Event::Ack` with the application APS counter
+on success or `Event::Nak` with that counter and the stack error on failure.
 
 ### Event and message conversion
 

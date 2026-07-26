@@ -250,12 +250,12 @@ flowchart LR
     resolve --> request
 ```
 
-### APS sends and deferred confirmation
+### APS sends and confirmation events
 
-Unicast, multicast, and broadcast helpers allocate a message tag and register a
-one-shot status sender with the event handler before issuing the send command.
-The EZSP command response indicates acceptance and, where applicable, supplies
-the APS sequence. The later `messageSent` callback resolves the one-shot by tag.
+Callers supply the message tag used by unicast, multicast, and broadcast
+helpers. The EZSP command response indicates acceptance and, where applicable,
+supplies the APS sequence. A later `messageSent` callback is normally forwarded
+through the application event channel.
 
 Each helper accepts per-message `ember::aps::Options`. `Ncp::aps_frame` unions
 them with the baseline options inherited from `Builder`, so a caller can add
@@ -269,16 +269,14 @@ flowchart LR
     merge --> apsFrame[Outgoing APS frame]
 ```
 
-`StackResponse` wraps the one-shot receiver as a future. It succeeds only for
-`ember::Status::Success`; stack failures, unknown status bytes, or a dropped
-event-handler sender become crate errors. Dropping the future does not cancel an
-already accepted APS message.
-
 Unicast payloads larger than `maximumPayloadLength` are split into APS
 fragments. The first stack-assigned APS sequence is reused by later fragments,
-and all non-final `StackResponse` values are awaited before the final deferred
-response is returned. Fragmentation also enables `Options::RETRY` on every
-fragment. Multicast and broadcast reject oversized payloads.
+and every non-final fragment registers a one-shot response channel before it is
+sent. Its `messageSent` callback resolves that channel, and only a successful
+response permits the next fragment to be sent. The final fragment does not
+register a private channel, so its callback follows the normal application
+event path. Fragmentation also enables `Options::RETRY` on every fragment.
+Multicast and broadcast reject oversized payloads.
 
 ### Callback and event handling
 
@@ -286,7 +284,8 @@ The callback bridge converts received `Callback` values into internal NCP
 messages. `EventHandler<T, E>` has four responsibilities:
 
 - aggregate scan callbacks;
-- correlate `messageSent` callbacks by message tag;
+- route `messageSent` callbacks either to a registered fragment response or the
+  application event channel;
 - reassemble incoming APS fragments; and
 - convert callbacks and complete incoming messages into `E`.
 
@@ -363,7 +362,7 @@ traits/conversions without introducing another transport or NCP wrapper.
 `Ncp` implements `apis_saltans_hw::Driver`. Driver operations map as follows:
 
 - `get_endpoints` converts the stored `Endpoint` list to `SimpleDescriptor`,
-  logging and filtering values with unknown profiles or reserved endpoint IDs;
+  logging and filtering values with unknown profiles;
 - `get_pan_id` currently delegates to EZSP `getNodeId`;
 - `get_ieee_address` delegates to `getEui64`;
 - active and energy scans reuse `Ncp` scan registration and callback
@@ -372,8 +371,8 @@ traits/conversions without introducing another transport or NCP wrapper.
   issues `permitJoining`, and returns the effective duration;
 - `route_request` issues a high-RAM many-to-one route request;
 - short/IEEE address translation uses EZSP lookup commands; and
-- datagram transmission maps destinations to `Ncp::unicast`, `broadcast`, or
-  `multicast` and wraps the resulting `StackResponse` in `HwResponse`.
+- APS frame transmission maps destinations to `Ncp::unicast`, `broadcast`, or
+  `multicast`.
 
 `Builder::start` returns `Ncp` inside a `BuildResult`, rather than an
 `NcpHandle`. Calling `Driver::run(channel_size)` creates the separate
@@ -393,9 +392,8 @@ flowchart LR
 
 The driver actor serializes hardware API calls. The EZSP transmitter actor below
 it serializes wire transmission and correlates sequence-numbered responses. APS
-completion is a third asynchronous boundary: `Driver::transmit` returns an
-`HwResponse` containing a `StackResponse`, which resolves only after the event
-handler receives the matching `messageSent` callback.
+completion is a third asynchronous boundary: the event handler translates the
+final `messageSent` callback into an application `Ack` or `Nak` event.
 
 ### Endpoint conversion
 
@@ -403,16 +401,16 @@ handler receives the matching `messageSent` callback.
 `Endpoint` representation for `Builder::start`. It copies the endpoint ID,
 profile ID, device ID, application flags, and both cluster lists.
 
-The reverse `TryFrom<Endpoint>` validates the raw profile and endpoint number.
+The reverse `TryFrom<Endpoint>` validates the raw profile.
 `Driver::get_endpoints` clones every stored endpoint, attempts this conversion,
 logs failures, and returns only valid descriptors. Values originating from a
 `SimpleDescriptor` are expected to round trip.
 
 ### Destination mapping and send completion
 
-The driver splits each `Datagram` into metadata and payload. Its profile and
-cluster ID become the outgoing APS frame metadata. Its
-`Metadata::tx_options()` maps acknowledged transmission to
+The driver splits each APS data frame into its header and payload. Its profile
+and cluster ID become the outgoing APS metadata, while its application APS
+counter becomes the EZSP message tag. Header flags map acknowledged transmission to
 `ember::aps::Options::RETRY` and APS security to
 `ember::aps::Options::ENCRYPTION`; other `TxOptions` flags do not change the
 EZSP APS options. Destinations map as follows:
@@ -424,15 +422,16 @@ EZSP APS options. Destinations map as follows:
 | Group | `Ncp::multicast` | Profile broadcast endpoint | Zero hops and nonmember radius |
 
 In every case, `Ncp` chooses the local source endpoint from registered output
-clusters and combines the mapped datagram options with its baseline options.
-The immediate driver result means the EZSP send command was accepted; the
-`HwResponse` future reports final stack status.
+clusters and combines the mapped frame options with its baseline options.
+Successful and failed final stack statuses are reported asynchronously as
+`Ack(sequence)` and `Nak { sequence, error }`.
 
 ### Callback and incoming-message conversion
 
-`TryFrom<Callback> for apis_saltans_hw::Event` recognizes three callback
+`TryFrom<Callback> for apis_saltans_hw::Event` recognizes four callback
 families:
 
+- final `MessageSent` becomes `Ack` or `Nak`;
 - `ChildJoin` becomes `DeviceJoined` or `DeviceLeft` after validating its short
   address;
 - successful `StackStatus` becomes `NetworkUp`, `NetworkDown`, `NetworkOpened`,
@@ -440,8 +439,9 @@ families:
 - `TrustCenterJoin` becomes join, secured/unsecured rejoin, or leave events.
 
 Other callbacks, raw stack-status errors, unsupported stack statuses, and
-invalid membership addresses fail conversion. Scan and `messageSent` callbacks
-are consumed earlier by `EventHandler` for request correlation.
+invalid membership addresses fail conversion. Scan callbacks and non-final
+fragment `messageSent` callbacks are consumed earlier by `EventHandler` for
+request correlation.
 
 Incoming APS messages follow a separate conversion path after defragmentation:
 
@@ -461,19 +461,16 @@ endpoint, sequence, and payload. Envelope conversion adds the sender short ID
 with no resolved IEEE address and copies LQI, RSSI, binding index, and
 source-route overhead.
 
-The feature currently has no direct
-`TryFrom<DefragmentedMessage> for apis_saltans_hw::Event` implementation.
-Therefore the hardware `Event` enum alone does not satisfy `TranslatableEvent`;
-applications using it with `Builder::start` need a wrapper that implements both
-the callback and complete-message conversions.
+`TryFrom<DefragmentedMessage> for apis_saltans_hw::Event` wraps the completed
+NWK envelope in `Event::MessageReceived`, so the hardware event type satisfies
+both conversion bounds required by `TranslatableEvent`.
 
 ### Error conversion
 
 `crate::Error` converts into `apis_saltans_hw::Error::Implementation` containing
 an `Arc` of the original error. Driver methods therefore preserve EZSP error
 identity and text while satisfying the cloneable hardware error model. Incoming
-APS parsing uses the internal `ParseApsFrameError` for invalid message types,
-reserved endpoints, invalid groups, and invalid source endpoints.
+APS parsing uses the internal `ParseApsFrameError` for invalid message types.
 
 ## Error boundaries
 

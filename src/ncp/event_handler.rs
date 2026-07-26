@@ -33,6 +33,25 @@ impl<T, U> EventHandler<T, U> {
             responses: BTreeMap::new(),
         }
     }
+
+    fn handle_message_sent(&mut self, message_sent: &MessageSent) -> bool {
+        let Some(response) = self.responses.remove(&message_sent.message_tag()) else {
+            return false;
+        };
+
+        if let Err(error) = response.send(message_sent.status()) {
+            match error {
+                Ok(status) => {
+                    warn!("Failed to send message with status: {status}");
+                }
+                Err(status_code) => {
+                    warn!("Failed to send message with status: {status_code:#04x}");
+                }
+            }
+        }
+
+        true
+    }
 }
 
 impl<T, U> EventHandler<T, U>
@@ -125,7 +144,9 @@ where
                 self.handle_incoming_message(*incoming_message).await;
             }
             Messaging::MessageSent(message_sent) => {
-                self.handle_message_sent(&message_sent);
+                if !self.handle_message_sent(&message_sent) {
+                    return Some(Messaging::MessageSent(message_sent));
+                }
             }
             other => {
                 return Some(other);
@@ -159,19 +180,67 @@ where
             }
         }
     }
+}
 
-    fn handle_message_sent(&mut self, message_sent: &MessageSent) {
-        if let Some(response) = self.responses.remove(&message_sent.message_tag())
-            && let Err(error) = response.send(message_sent.status())
-        {
-            match error {
-                Ok(status) => {
-                    warn!("Failed to send message with status: {status}");
-                }
-                Err(status_code) => {
-                    warn!("Failed to send message with status: {status_code:#04x}");
-                }
-            }
-        }
+#[cfg(test)]
+mod tests {
+    use le_stream::FromLeStream;
+    use tokio::sync::{mpsc, oneshot};
+
+    use super::EventHandler;
+    use crate::ember::Status;
+    use crate::parameters::messaging::handler::MessageSent;
+
+    const MESSAGE_TAG: u8 = 0x34;
+    const APS_SEQUENCE: u8 = 0x56;
+    const STATUS_SUCCESS: u8 = 0x00;
+    const MESSAGE_SENT_BYTES: [u8; 17] = [
+        0x00,
+        0x78,
+        0x56,
+        0x04,
+        0x01,
+        0x06,
+        0x03,
+        0x01,
+        0x02,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        APS_SEQUENCE,
+        MESSAGE_TAG,
+        STATUS_SUCCESS,
+        0x00,
+    ];
+
+    fn message_sent() -> MessageSent {
+        MessageSent::from_le_stream(MESSAGE_SENT_BYTES.into_iter())
+            .expect("messageSent test callback is complete")
+    }
+
+    #[test]
+    fn routes_registered_message_sent_to_back_channel() {
+        let (output, _events) = mpsc::channel(1);
+        let mut handler = EventHandler::<(), ()>::new((), output);
+        let (response, result) = oneshot::channel();
+        handler.responses.insert(MESSAGE_TAG, response);
+
+        assert!(handler.handle_message_sent(&message_sent()));
+        assert_eq!(
+            result
+                .blocking_recv()
+                .expect("response sender is available"),
+            Ok(Status::Success)
+        );
+        assert!(handler.responses.is_empty());
+    }
+
+    #[test]
+    fn leaves_unregistered_message_sent_for_event_translation() {
+        let (output, _events) = mpsc::channel(1);
+        let mut handler = EventHandler::<(), ()>::new((), output);
+
+        assert!(!handler.handle_message_sent(&message_sent()));
     }
 }

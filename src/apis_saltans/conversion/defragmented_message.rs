@@ -2,12 +2,12 @@
 //!
 //! Broadcast and unicast messages preserve the destination endpoint;
 //! multicasts use the APS group ID. The conversion also preserves profile,
-//! cluster, source endpoint, APS sequence, and payload bytes. Reserved endpoint
-//! or group identifiers are reported as [`ParseApsFrameError`].
+//! cluster, source endpoint, APS sequence, and payload bytes. Invalid EZSP
+//! message types are reported as [`ParseApsFrameError`].
 
 use apis_saltans_hw::aps::data::Header;
 use apis_saltans_hw::aps::{Data, Destination};
-use apis_saltans_hw::core::{Endpoint, GroupId};
+use apis_saltans_hw::core::Endpoint;
 use bytes::Bytes;
 
 use crate::DefragmentedMessage;
@@ -23,22 +23,19 @@ impl TryFrom<DefragmentedMessage> for Data<Bytes> {
 
         let destination_endpoint = aps_frame.destination_endpoint();
         let destination = match typ {
-            Incoming::Broadcast | Incoming::BroadcastLoopback => Destination::Broadcast(
-                Endpoint::try_from(destination_endpoint)
-                    .map_err(ParseApsFrameError::InvalidEndpoint)?,
-            ),
-            Incoming::Unicast | Incoming::UnicastReply => Destination::Unicast(
-                Endpoint::try_from(destination_endpoint)
-                    .map_err(ParseApsFrameError::InvalidEndpoint)?,
-            ),
-            Incoming::Multicast | Incoming::MulticastLoopback => Destination::Group(
-                GroupId::try_from(aps_frame.group_id()).map_err(ParseApsFrameError::GroupId)?,
-            ),
+            Incoming::Broadcast | Incoming::BroadcastLoopback => {
+                Destination::Broadcast(Endpoint::from(destination_endpoint))
+            }
+            Incoming::Unicast | Incoming::UnicastReply => {
+                Destination::Unicast(Endpoint::from(destination_endpoint))
+            }
+            Incoming::Multicast | Incoming::MulticastLoopback => {
+                Destination::Group(aps_frame.group_id())
+            }
             Incoming::ManyToOneRouteRequest => unreachable!("EZSP does not allow this."),
         };
 
-        let source_endpoint = Endpoint::try_from(aps_frame.source_endpoint())
-            .map_err(|endpoint| ParseApsFrameError::SourceEndpoint(endpoint.into()))?;
+        let source_endpoint = Endpoint::from(aps_frame.source_endpoint());
 
         let header = Header::new(
             destination,

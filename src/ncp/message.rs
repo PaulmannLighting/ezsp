@@ -20,7 +20,7 @@ pub enum Message {
     /// Registers a receiver for the next energy scan.
     ChannelScan(Sender<Vec<EnergyScanResult>>),
 
-    /// Registers a receiver for a `messageSent` callback with the given tag.
+    /// Registers a receiver for a non-final fragment's `messageSent` callback.
     Sent {
         /// The message tag.
         tag: u8,

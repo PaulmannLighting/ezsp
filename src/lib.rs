@@ -46,7 +46,7 @@ pub use self::frame::{
 };
 pub use self::ncp::{
     BuildResult, Builder, Endpoint, EventHandler, InitializationParameters, MulticastOptions, Ncp,
-    NetworkCredentials, Scans, StackResponse, Startup,
+    NetworkCredentials, Scans, Startup,
 };
 pub use self::types::SourceRouteDiscoveryMode;
 

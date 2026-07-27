@@ -360,8 +360,9 @@ combined with the NCP's baseline options. Other `TxOptions` flags do not add an
 EZSP APS option.
 
 `Driver::transmit` returns after handing the frame to EZSP. The later
-`messageSent` callback produces `Event::Ack` with the application APS sequence
-on success or `Event::Nak` with that sequence and the stack error on failure.
+`messageSent` callback produces `Event::Aps(ApsEvent::Ack)` with the application
+APS sequence on success or `Event::Aps(ApsEvent::Nak)` with that sequence and
+the stack error on failure.
 
 ### Event and message conversion
 
@@ -375,13 +376,10 @@ Complete incoming APS messages convert separately into
 `apis_saltans_hw::aps::Data<bytes::Bytes>` and NWK envelopes. The conversion
 preserves APS destination, profile, cluster, endpoints, sequence, and payload,
 plus the sender short ID, link quality, RSSI, binding index, and source-route
-overhead. The source IEEE address remains unknown.
-
-The feature does not currently implement
-`TryFrom<DefragmentedMessage>` directly for `apis_saltans_hw::Event`. Therefore
-that event enum alone does not implement `TranslatableEvent` and cannot be used
-as `Builder::start`'s event type without an application wrapper that supplies
-both required conversions.
+overhead. The source IEEE address remains unknown. Direct conversion to
+`apis_saltans_hw::Event` wraps the NWK envelope in
+`Event::Aps(ApsEvent::MessageReceived)`, allowing the hardware event type to be
+used as `Builder::start`'s event type.
 
 EZSP errors cross the driver boundary as
 `apis_saltans_hw::Error::Implementation`, retaining the original error in an

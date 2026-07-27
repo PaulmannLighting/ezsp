@@ -27,8 +27,9 @@
 //! # Events and incoming messages
 //!
 //! EZSP child, trust-center, stack-status, and final `messageSent` callbacks
-//! convert into `apis_saltans_hw::Event` membership, network-state, `Ack`, and
-//! `Nak` events. Incoming APS messages convert into
+//! convert into the corresponding `apis_saltans_hw::Event::Device`,
+//! `apis_saltans_hw::Event::Network`, and `apis_saltans_hw::Event::Aps`
+//! categories. Incoming APS messages convert into
 //! `apis_saltans_hw::aps::Data`, a NWK `Envelope`, or directly into the event
 //! type, preserving APS addressing, payload, link quality, RSSI, binding index,
 //! and source-route overhead.
@@ -37,8 +38,8 @@
 //!
 //! Crate [`crate::Error`] values convert to
 //! `apis_saltans_hw::Error::Implementation` behind an [`std::sync::Arc`].
-//! Errors reported by final `messageSent` callbacks are carried by `Nak`
-//! events.
+//! Errors reported by final `messageSent` callbacks are carried by
+//! `apis_saltans_hw::ApsEvent::Nak` events.
 
 mod conversion;
 mod error;

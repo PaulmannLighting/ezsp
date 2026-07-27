@@ -6,7 +6,7 @@
 //! secured/unsecured rejoins, and leaves. Only network
 //! up/down/opened/closed stack statuses have hardware event variants.
 
-use apis_saltans_hw::Event;
+use apis_saltans_hw::{ApsEvent, DeviceEvent, Event, NetworkEvent};
 
 use crate::Error;
 use crate::ember::Status;
@@ -19,13 +19,13 @@ impl From<MessageSent> for Event {
     fn from(message_sent: MessageSent) -> Self {
         let sequence = message_sent.message_tag();
 
-        match message_sent.status() {
-            Ok(Status::Success) => Self::Ack(sequence),
-            status => Self::Nak {
+        Self::Aps(match message_sent.status() {
+            Ok(Status::Success) => ApsEvent::Ack(sequence),
+            status => ApsEvent::Nak {
                 sequence,
                 error: Error::from(status).into(),
             },
-        }
+        })
     }
 }
 
@@ -33,11 +33,13 @@ impl TryFrom<ChildJoin> for Event {
     type Error = ChildJoin;
 
     fn try_from(child_join: ChildJoin) -> Result<Self, Self::Error> {
-        if child_join.joining() {
-            Ok(Self::DeviceJoined(child_join.try_into()?))
+        let event = if child_join.joining() {
+            DeviceEvent::Joined(child_join.try_into()?)
         } else {
-            Ok(Self::DeviceLeft(child_join.try_into()?))
-        }
+            DeviceEvent::Left(child_join.try_into()?)
+        };
+
+        Ok(Self::Device(event))
     }
 }
 
@@ -45,13 +47,15 @@ impl TryFrom<Status> for Event {
     type Error = Status;
 
     fn try_from(status: Status) -> Result<Self, Self::Error> {
-        match status {
-            Status::NetworkUp => Ok(Self::NetworkUp),
-            Status::NetworkDown => Ok(Self::NetworkDown),
-            Status::NetworkOpened => Ok(Self::NetworkOpened),
-            Status::NetworkClosed => Ok(Self::NetworkClosed),
-            other => Err(other),
-        }
+        let event = match status {
+            Status::NetworkUp => NetworkEvent::Up,
+            Status::NetworkDown => NetworkEvent::Down,
+            Status::NetworkOpened => NetworkEvent::Opened,
+            Status::NetworkClosed => NetworkEvent::Closed,
+            other => return Err(other),
+        };
+
+        Ok(Self::Network(event))
     }
 }
 
@@ -63,26 +67,28 @@ impl TryFrom<TrustCenterJoin> for Event {
             return Err(trust_center_join);
         };
 
-        Ok(match status {
+        let event = match status {
             Update::StandardSecurityUnsecuredJoin => {
-                Self::DeviceJoined(trust_center_join.try_into()?)
+                DeviceEvent::Joined(trust_center_join.try_into()?)
             }
-            Update::StandardSecurityUnsecuredRejoin => Self::DeviceRejoined {
+            Update::StandardSecurityUnsecuredRejoin => DeviceEvent::Rejoined {
                 address: trust_center_join.try_into()?,
                 secured: false,
             },
-            Update::StandardSecuritySecuredRejoin => Self::DeviceRejoined {
+            Update::StandardSecuritySecuredRejoin => DeviceEvent::Rejoined {
                 address: trust_center_join.try_into()?,
                 secured: true,
             },
-            Update::DeviceLeft => Self::DeviceLeft(trust_center_join.try_into()?),
-        })
+            Update::DeviceLeft => DeviceEvent::Left(trust_center_join.try_into()?),
+        };
+
+        Ok(Self::Device(event))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use apis_saltans_hw::Event;
+    use apis_saltans_hw::{ApsEvent, Event};
     use le_stream::FromLeStream;
 
     use crate::parameters::messaging::handler::MessageSent;
@@ -123,7 +129,7 @@ mod tests {
     fn converts_successful_message_sent_to_ack() {
         assert!(matches!(
             Event::from(message_sent(STATUS_SUCCESS)),
-            Event::Ack(MESSAGE_TAG)
+            Event::Aps(ApsEvent::Ack(MESSAGE_TAG))
         ));
     }
 
@@ -131,10 +137,10 @@ mod tests {
     fn converts_failed_message_sent_to_nak() {
         assert!(matches!(
             Event::from(message_sent(STATUS_DELIVERY_FAILED)),
-            Event::Nak {
+            Event::Aps(ApsEvent::Nak {
                 sequence: MESSAGE_TAG,
                 ..
-            }
+            })
         ));
     }
 }

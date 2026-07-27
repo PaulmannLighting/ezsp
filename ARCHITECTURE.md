@@ -466,8 +466,8 @@ with no resolved IEEE address and copies LQI, RSSI, binding index, and
 source-route overhead.
 
 `TryFrom<DefragmentedMessage> for apis_saltans_hw::Event` wraps the completed
-NWK envelope in `Event::MessageReceived`, so the hardware event type satisfies
-both conversion bounds required by `TranslatableEvent`.
+NWK envelope in `Event::Aps(ApsEvent::MessageReceived)`, so the hardware event
+type satisfies both conversion bounds required by `TranslatableEvent`.
 
 ### Error conversion
 

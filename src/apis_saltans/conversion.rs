@@ -13,12 +13,12 @@
 //! attempted.
 //!
 //! Incoming-message conversion is deliberately separate: a
-//! [`DefragmentedMessage`] converts into `apis_saltans_hw::aps::Data` or
-//! a NWK envelope, but not directly into `apis_saltans_hw::Event`.
+//! [`DefragmentedMessage`] converts into `apis_saltans_hw::aps::Data`, a NWK
+//! envelope, or an `apis_saltans_hw::Event::Aps` receive event.
 
-use apis_saltans_hw::Event;
 use apis_saltans_hw::aps::Data;
 use apis_saltans_hw::nwk::Envelope;
+use apis_saltans_hw::{ApsEvent, Event};
 use bytes::Bytes;
 
 pub use self::error::ParseApsFrameError;
@@ -70,6 +70,8 @@ impl TryFrom<DefragmentedMessage> for Event {
     type Error = <Envelope<Data<Bytes>> as TryFrom<DefragmentedMessage>>::Error;
 
     fn try_from(defragmented_message: DefragmentedMessage) -> Result<Self, Self::Error> {
-        Envelope::<Data<Bytes>>::try_from(defragmented_message).map(Self::MessageReceived)
+        Envelope::<Data<Bytes>>::try_from(defragmented_message)
+            .map(ApsEvent::MessageReceived)
+            .map(Self::Aps)
     }
 }

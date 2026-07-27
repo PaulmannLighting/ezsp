@@ -34,6 +34,26 @@ impl<T, U> EventHandler<T, U> {
         }
     }
 
+    #[must_use]
+    fn handle_networking_callbacks(&mut self, networking: Networking) -> Option<Networking> {
+        match networking {
+            Networking::NetworkFound(network_found) => {
+                self.scans.add_network(*network_found);
+            }
+            Networking::EnergyScanResult(energy_scan_result) => {
+                self.scans.add_channel(*energy_scan_result);
+            }
+            Networking::ScanComplete(_) => {
+                self.scans.pop();
+            }
+            other => {
+                return Some(other);
+            }
+        }
+
+        None
+    }
+
     fn handle_message_sent(&mut self, message_sent: &MessageSent) -> bool {
         let Some(response) = self.responses.remove(&message_sent.message_tag()) else {
             return false;
@@ -115,26 +135,6 @@ where
                 .map(|networking| U::try_from(Callback::Networking(networking))),
             other => Some(U::try_from(other)),
         }
-    }
-
-    #[must_use]
-    fn handle_networking_callbacks(&mut self, networking: Networking) -> Option<Networking> {
-        match networking {
-            Networking::NetworkFound(network_found) => {
-                self.scans.add_network(*network_found);
-            }
-            Networking::EnergyScanResult(energy_scan_result) => {
-                self.scans.add_channel(*energy_scan_result);
-            }
-            Networking::ScanComplete(_) => {
-                self.scans.pop();
-            }
-            other => {
-                return Some(other);
-            }
-        }
-
-        None
     }
 
     #[must_use]

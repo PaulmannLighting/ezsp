@@ -8,13 +8,14 @@
 //!
 //! [`crate::Ncp`] implements `apis_saltans_hw::Driver`. The implementation maps
 //! identity lookup, scans, permit-joining, route discovery, address lookup, and
-//! APS frame transmission to typed EZSP commands and high-level NCP workflows.
+//! APSDE data requests to typed EZSP commands and high-level NCP workflows.
 //!
 //! [`crate::Builder::start`] returns an [`Ncp`](crate::Ncp) inside its build
 //! result. To access it through an `apis-saltans` actor handle, call
-//! `apis_saltans_hw::Driver::run` on that value and spawn the returned future.
-//! The `apis-saltans` driver actor serializes hardware requests; it is separate
-//! from the internal EZSP transmitter and receiver actors.
+//! `apis_saltans_hw::Driver::into_actor` on that value with a nonzero channel
+//! capacity, then spawn the returned future. The `apis-saltans` driver actor
+//! serializes hardware requests; it is separate from the internal EZSP
+//! transmitter and receiver actors.
 //!
 //! # Endpoints
 //!
@@ -28,18 +29,19 @@
 //!
 //! EZSP child, trust-center, stack-status, and final `messageSent` callbacks
 //! convert into the corresponding `apis_saltans_hw::Event::Device`,
-//! `apis_saltans_hw::Event::Network`, and `apis_saltans_hw::Event::Aps`
+//! `apis_saltans_hw::Event::Network`, and `apis_saltans_hw::Event::Apsde`
 //! categories. Incoming APS messages convert into
-//! `apis_saltans_hw::aps::Data`, a NWK `Envelope`, or directly into the event
-//! type, preserving APS addressing, payload, link quality, RSSI, binding index,
-//! and source-route overhead.
+//! `apis_saltans_hw::aps::apsde::DataIndication` values, preserving APSDE
+//! addressing, profile, cluster, payload, and link quality. EZSP provides
+//! neither a reception timestamp nor a device-key-pair handle, so both
+//! backend-defined context values are `()`.
 //!
 //! # Errors
 //!
 //! Crate [`crate::Error`] values convert to
-//! `apis_saltans_hw::Error::Implementation` behind an [`std::sync::Arc`].
-//! Errors reported by final `messageSent` callbacks are carried by
-//! `apis_saltans_hw::ApsEvent::Nak` events.
+//! `apis_saltans_hw::Error::Backend`, preserving the concrete error as its
+//! source. Final acknowledged-unicast `messageSent` statuses are preserved in
+//! `apis_saltans_hw::aps::apsde::DataConfirm` values.
 
 mod conversion;
 mod error;

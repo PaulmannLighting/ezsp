@@ -1,31 +1,59 @@
-//! Membership and network-state event conversions.
+//! APS data confirmations, membership, and network-state event conversions.
 //!
-//! `messageSent` callbacks recover the application APS sequence from the EZSP
-//! message tag and become acknowledgement events. Child callbacks become join
-//! or leave events. Trust-center callbacks distinguish unsecured joins,
-//! secured/unsecured rejoins, and leaves. Only network
-//! up/down/opened/closed stack statuses have hardware event variants.
+//! Acknowledged direct-unicast `messageSent` callbacks recover the coordinator
+//! correlation counter from the EZSP message tag and become APSDE data
+//! confirmations. Child callbacks become join or leave events. Trust-center
+//! callbacks distinguish unsecured joins, secured/unsecured rejoins, and
+//! leaves. Only network up/down/opened/closed stack statuses have hardware
+//! event variants.
 
-use apis_saltans_hw::{ApsEvent, DeviceEvent, Event, NetworkEvent};
+use apis_saltans_hw::aps::apsde::{
+    ConfirmStatus, DataConfirm, Destination, IndividualEndpoint, NetworkAddress,
+};
+use apis_saltans_hw::core::Endpoint;
+use apis_saltans_hw::{ApsdeEvent, DeviceEvent, Event, NetworkEvent};
 
-use crate::Error;
 use crate::ember::Status;
+use crate::ember::aps::Options;
 use crate::ember::device::Update;
+use crate::ember::message::Outgoing;
 use crate::parameters::messaging::handler::MessageSent;
 use crate::parameters::networking::handler::ChildJoin;
 use crate::parameters::trust_center::handler::TrustCenterJoin;
 
-impl From<MessageSent> for Event {
-    fn from(message_sent: MessageSent) -> Self {
-        let sequence = message_sent.message_tag();
+impl TryFrom<MessageSent> for Event {
+    type Error = MessageSent;
 
-        Self::Aps(match message_sent.status() {
-            Ok(Status::Success) => ApsEvent::Ack(sequence),
-            status => ApsEvent::Nak {
-                sequence,
-                error: Error::from(status).into(),
+    fn try_from(message_sent: MessageSent) -> Result<Self, Self::Error> {
+        if !message_sent.aps_frame().options().contains(Options::RETRY) {
+            return Err(message_sent);
+        }
+        let source_endpoint =
+            IndividualEndpoint::new(Endpoint::from(message_sent.aps_frame().source_endpoint()))
+                .ok_or_else(|| message_sent.clone())?;
+        let destination_endpoint = Endpoint::from(message_sent.aps_frame().destination_endpoint());
+        let destination = match message_sent.typ().map_err(|_| message_sent.clone())? {
+            Outgoing::Direct => Destination::Network {
+                address: NetworkAddress::new(message_sent.index_or_destination())
+                    .ok_or_else(|| message_sent.clone())?,
+                endpoint: destination_endpoint,
             },
-        })
+            Outgoing::ViaAddressTable
+            | Outgoing::ViaBinding
+            | Outgoing::Multicast
+            | Outgoing::Broadcast => return Err(message_sent),
+        };
+        let status = match message_sent.status() {
+            Ok(Status::Success) => ConfirmStatus::success(),
+            Ok(status) => ConfirmStatus::Network(status.into()),
+            Err(status) => ConfirmStatus::Network(status),
+        };
+        let confirmation = DataConfirm::new(destination, source_endpoint, status, ());
+
+        Ok(Self::Apsde(ApsdeEvent::DataConfirm {
+            counter: message_sent.message_tag(),
+            confirmation,
+        }))
     }
 }
 
@@ -88,13 +116,15 @@ impl TryFrom<TrustCenterJoin> for Event {
 
 #[cfg(test)]
 mod tests {
-    use apis_saltans_hw::{ApsEvent, Event};
+    use apis_saltans_hw::aps::apsde::{ConfirmStatus, Destination};
+    use apis_saltans_hw::{ApsdeEvent, Event};
     use le_stream::FromLeStream;
 
     use crate::parameters::messaging::handler::MessageSent;
 
     const MESSAGE_TAG: u8 = 0x34;
     const APS_SEQUENCE: u8 = 0x56;
+    const OPTIONS_INDEX: usize = 9;
     const STATUS_INDEX: usize = 15;
     const STATUS_SUCCESS: u8 = 0x00;
     const STATUS_DELIVERY_FAILED: u8 = 0x66;
@@ -108,7 +138,7 @@ mod tests {
         0x03,
         0x01,
         0x02,
-        0x00,
+        0x40,
         0x00,
         0x00,
         0x00,
@@ -126,21 +156,46 @@ mod tests {
     }
 
     #[test]
-    fn converts_successful_message_sent_to_ack() {
+    fn converts_successful_message_sent_to_data_confirmation() {
+        let event = Event::try_from(message_sent(STATUS_SUCCESS))
+            .expect("direct messageSent callback is representable");
+        let Event::Apsde(ApsdeEvent::DataConfirm {
+            counter,
+            confirmation,
+        }) = event
+        else {
+            panic!("messageSent must become a data confirmation");
+        };
+
+        assert_eq!(counter, MESSAGE_TAG);
+        assert_eq!(confirmation.status(), ConfirmStatus::success());
         assert!(matches!(
-            Event::from(message_sent(STATUS_SUCCESS)),
-            Event::Aps(ApsEvent::Ack(MESSAGE_TAG))
+            confirmation.destination(),
+            Destination::Network { .. }
         ));
     }
 
     #[test]
-    fn converts_failed_message_sent_to_nak() {
-        assert!(matches!(
-            Event::from(message_sent(STATUS_DELIVERY_FAILED)),
-            Event::Aps(ApsEvent::Nak {
-                sequence: MESSAGE_TAG,
-                ..
-            })
-        ));
+    fn preserves_failed_message_sent_status() {
+        let event = Event::try_from(message_sent(STATUS_DELIVERY_FAILED))
+            .expect("direct messageSent callback is representable");
+        let Event::Apsde(ApsdeEvent::DataConfirm { confirmation, .. }) = event else {
+            panic!("messageSent must become a data confirmation");
+        };
+
+        assert_eq!(
+            confirmation.status(),
+            ConfirmStatus::Network(STATUS_DELIVERY_FAILED)
+        );
+    }
+
+    #[test]
+    fn rejects_unacknowledged_message_sent() {
+        let mut message = MESSAGE_SENT_BYTES;
+        message[OPTIONS_INDEX] = 0;
+        let message = MessageSent::from_le_stream(message.into_iter())
+            .expect("messageSent test callback is complete");
+
+        assert!(Event::try_from(message).is_err());
     }
 }

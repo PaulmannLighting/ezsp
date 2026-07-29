@@ -78,33 +78,28 @@ pub struct Ncp {
 }
 
 impl Ncp {
-    /// Builds an outgoing EZSP APS frame from baseline and per-message options.
+    /// Builds an outgoing EZSP APS frame with an explicit local source endpoint.
     ///
-    /// The supplied `options` are unioned with the baseline options stored by
-    /// [`Builder`]. EZSP assigns the APS sequence when a send command is
-    /// accepted, so the sequence field in the command payload is initialized
-    /// with a placeholder value.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`Error::NoMatchingSourceEndpoint`] when no local endpoint advertises `cluster_id`.
-    pub(crate) fn aps_frame(
-        &self,
+    /// EZSP assigns the APS sequence when a send command is accepted, so the
+    /// sequence field in the command payload is initialized with a placeholder.
+    #[must_use]
+    pub(crate) const fn aps_frame_from(
+        source_endpoint: u8,
         profile_id: u16,
         cluster_id: u16,
         destination_endpoint: u8,
         group_id: u16,
         options: Options,
-    ) -> Result<aps::Frame, Error> {
-        Ok(aps::Frame::new(
+    ) -> aps::Frame {
+        aps::Frame::new(
             profile_id,
             cluster_id,
-            self.source_endpoint(profile_id, cluster_id)?,
+            source_endpoint,
             destination_endpoint,
-            self.options.union(options),
+            options,
             group_id,
             STACK_ASSIGNED_APS_SEQUENCE,
-        ))
+        )
     }
 
     /// Returns the lowest-numbered local endpoint that advertises an output cluster.
@@ -205,9 +200,47 @@ impl Ncp {
         aps_options: Options,
         sequence: u8,
     ) -> Result<(), Error> {
+        let source_endpoint = self.source_endpoint(profile_id, cluster_id)?;
+        self.unicast_from(
+            source_endpoint,
+            short_id,
+            profile_id,
+            cluster_id,
+            destination_endpoint,
+            payload,
+            aps_options,
+            sequence,
+            true,
+        )
+        .await
+    }
+
+    /// Starts a unicast APS send from an explicit local endpoint.
+    ///
+    /// Oversized payloads are fragmented only when `fragmentation_permitted`
+    /// is true.
+    #[expect(clippy::too_many_arguments)]
+    pub(crate) async fn unicast_from(
+        &mut self,
+        source_endpoint: u8,
+        short_id: u16,
+        profile_id: u16,
+        cluster_id: u16,
+        destination_endpoint: u8,
+        payload: impl AsRef<[u8]>,
+        aps_options: Options,
+        sequence: u8,
+        fragmentation_permitted: bool,
+    ) -> Result<(), Error> {
         let payload = payload.as_ref();
-        let aps_frame =
-            self.aps_frame(profile_id, cluster_id, destination_endpoint, 0, aps_options)?;
+        let aps_frame = Self::aps_frame_from(
+            source_endpoint,
+            profile_id,
+            cluster_id,
+            destination_endpoint,
+            0,
+            self.options.union(aps_options),
+        );
         let destination = EmberDestination::Direct(short_id);
         let maximum_payload_length = usize::from(self.connection.maximum_payload_length().await?);
 
@@ -215,6 +248,9 @@ impl Ncp {
             self.send_unicast_fragment(destination, aps_frame, payload, sequence)
                 .await?;
             return Ok(());
+        }
+        if !fragmentation_permitted {
+            return Err(message_too_long());
         }
 
         self.send_fragmented_unicast(
@@ -252,14 +288,44 @@ impl Ncp {
         aps_options: Options,
         sequence: u8,
     ) -> Result<(), Error> {
+        let source_endpoint = self.source_endpoint(profile_id, cluster_id)?;
+        self.multicast_from(
+            source_endpoint,
+            group_id,
+            profile_id,
+            cluster_id,
+            destination_endpoint,
+            payload,
+            options,
+            aps_options,
+            sequence,
+        )
+        .await
+    }
+
+    /// Starts a multicast APS send from an explicit local endpoint.
+    #[expect(clippy::too_many_arguments)]
+    pub(crate) async fn multicast_from(
+        &mut self,
+        source_endpoint: u8,
+        group_id: u16,
+        profile_id: u16,
+        cluster_id: u16,
+        destination_endpoint: u8,
+        payload: impl AsRef<[u8]>,
+        options: MulticastOptions,
+        aps_options: Options,
+        sequence: u8,
+    ) -> Result<(), Error> {
         let payload = payload.as_ref();
-        let aps_frame = self.aps_frame(
+        let aps_frame = Self::aps_frame_from(
+            source_endpoint,
             profile_id,
             cluster_id,
             destination_endpoint,
             group_id,
-            aps_options,
-        )?;
+            self.options.union(aps_options),
+        );
         let message = self.reject_oversized_payload(payload).await?;
 
         debug!(
@@ -307,9 +373,44 @@ impl Ncp {
         aps_options: Options,
         sequence: u8,
     ) -> Result<(), Error> {
+        let source_endpoint = self.source_endpoint(profile_id, cluster_id)?;
+        self.broadcast_from(
+            source_endpoint,
+            short_id,
+            profile_id,
+            cluster_id,
+            destination_endpoint,
+            payload,
+            radius,
+            aps_options,
+            sequence,
+        )
+        .await
+    }
+
+    /// Starts a broadcast APS send from an explicit local endpoint.
+    #[expect(clippy::too_many_arguments)]
+    pub(crate) async fn broadcast_from(
+        &mut self,
+        source_endpoint: u8,
+        short_id: u16,
+        profile_id: u16,
+        cluster_id: u16,
+        destination_endpoint: u8,
+        payload: impl AsRef<[u8]>,
+        radius: u8,
+        aps_options: Options,
+        sequence: u8,
+    ) -> Result<(), Error> {
         let payload = payload.as_ref();
-        let aps_frame =
-            self.aps_frame(profile_id, cluster_id, destination_endpoint, 0, aps_options)?;
+        let aps_frame = Self::aps_frame_from(
+            source_endpoint,
+            profile_id,
+            cluster_id,
+            destination_endpoint,
+            0,
+            self.options.union(aps_options),
+        );
         let message = self.reject_oversized_payload(payload).await?;
 
         debug!(

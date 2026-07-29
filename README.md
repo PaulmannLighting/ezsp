@@ -310,21 +310,28 @@ normal actor-backed `Ncp`; it does not add a wrapper type or another transport.
 `Ncp` implements `apis_saltans_hw::Driver`. The mapping provides:
 
 - stored endpoint descriptors through `Driver::get_endpoints`;
-- NCP identity and EZSP address-table lookup operations;
-- active-network and energy scans through the existing callback aggregator;
+- PAN and IEEE identity plus typed device-address lookup operations;
+- typed channel masks and scan durations through the existing callback
+  aggregator;
 - permit joining, with the requested duration truncated to whole seconds and
   clamped to 255 seconds;
 - high-RAM many-to-one route requests; and
-- unicast, broadcast, and multicast APS frame transmission through the
+- network, extended, broadcast, and group APSDE transmission through the
   high-level NCP send helpers.
 
-After extracting `Ncp` from the `BuildResult`, call `Driver::run` and spawn its
-returned future to run the separate `apis-saltans` hardware actor:
+After extracting `Ncp` from the `BuildResult`, call `Driver::into_actor` with a
+nonzero channel capacity and spawn its returned future to run the separate
+`apis-saltans` hardware actor:
 
 ```rust
+use std::num::NonZeroUsize;
+
 use apis_saltans_hw::Driver;
 
-let (hardware, driver) = ncp.run(64);
+const DRIVER_CHANNEL_CAPACITY: NonZeroUsize =
+    NonZeroUsize::new(64).expect("driver channel capacity is nonzero");
+
+let (hardware, driver) = ncp.into_actor(DRIVER_CHANNEL_CAPACITY);
 tokio::spawn(driver);
 
 // `hardware` is an apis_saltans_hw::NcpHandle.
@@ -344,25 +351,33 @@ let endpoints: Box<[ezsp::Endpoint]> = simple_descriptors
 an unsupported `apis-saltans` profile are logged and omitted; descriptors
 originally converted from `SimpleDescriptor` round trip without that loss.
 
-Outgoing APS frames take their profile and cluster from the APS header. The
-header's application APS sequence, represented by its counter field, is used as
-the EZSP message tag so ACK/NAK events can return the same sequence. EZSP
-assigns and manages its own APS sequence in the transmitted frame. A device
-destination preserves its target endpoint. A broadcast uses its target endpoint
-with radius zero. A group uses the profile's broadcast endpoint with zero
-multicast hops and nonmember radius. The local source endpoint is still selected
-from the registered EZSP output clusters.
+Outgoing `DataRequest<Bytes>` values preserve the profile, cluster, explicit
+source endpoint, payload, correlation counter, and supported routing fields.
+The separate counter becomes the EZSP message tag; EZSP assigns and manages its
+own APS sequence in the transmitted frame. Network destinations are sent
+directly. Extended destinations are resolved through `lookupNodeIdByEui64`.
+Broadcasts preserve their endpoint and radius. Groups use the profile's
+broadcast endpoint, the request radius as the multicast hop count, and zero
+nonmember radius.
 
-The integration also maps APS header transmission flags into EZSP APS options:
+The integration maps APSDE transmission flags into EZSP APS options:
 `ACKNOWLEDGED_TRANSMISSION` controls `Options::RETRY`, and
 `SECURITY_ENABLED` controls `Options::ENCRYPTION`. Those values are then
-combined with the NCP's baseline options. Other `TxOptions` flags do not add an
-EZSP APS option.
+combined with the NCP's baseline options. `FRAGMENTATION_PERMITTED` authorizes
+the existing host-side unicast fragmentation workflow; an oversized request
+without it is rejected. `USE_NWK_KEY` and `INCLUDE_EXTENDED_NONCE` are rejected
+because the EZSP send commands cannot preserve those APSDE options.
 
-`Driver::transmit` returns after handing the frame to EZSP. The later
-`messageSent` callback produces `Event::Aps(ApsEvent::Ack)` with the application
-APS sequence on success or `Event::Aps(ApsEvent::Nak)` with that sequence and
-the stack error on failure.
+EZSP cannot faithfully implement every APSDE request form. Binding-table
+resolution, NWK source aliases, non-default group broadcast selectors, and
+nonzero unicast radii are rejected as backend errors instead of being ignored.
+
+`Driver::transmit` returns success after EZSP accepts the request and propagates
+immediate rejection as `apis_saltans_hw::Error::Backend`. The later
+`messageSent` callback produces
+`Event::Apsde(ApsdeEvent::DataConfirm { counter, confirmation })`. The
+confirmation preserves the destination, source endpoint, and raw EZSP
+completion status; EZSP supplies no transmission timestamp, so it is `()`.
 
 ### Event and message conversion
 
@@ -370,20 +385,24 @@ The feature converts these EZSP callbacks into `apis_saltans_hw::Event` values:
 
 - `stackStatus` for network up, down, opened, and closed;
 - `childJoin` for child joins and leaves; and
-- `trustCenterJoin` for unsecured joins, secured/unsecured rejoins, and leaves.
+- `trustCenterJoin` for unsecured joins, secured/unsecured rejoins, and leaves;
+  and
+- final acknowledged direct-unicast `messageSent` callbacks as APSDE data
+  confirmations.
 
 Complete incoming APS messages convert separately into
-`apis_saltans_hw::aps::Data<bytes::Bytes>` and NWK envelopes. The conversion
-preserves APS destination, profile, cluster, endpoints, sequence, and payload,
-plus the sender short ID, link quality, RSSI, binding index, and source-route
-overhead. The source IEEE address remains unknown. Direct conversion to
-`apis_saltans_hw::Event` wraps the NWK envelope in
-`Event::Aps(ApsEvent::MessageReceived)`, allowing the hardware event type to be
-used as `Builder::start`'s event type.
+`apis_saltans_hw::aps::apsde::DataIndication<bytes::Bytes, ()>`. The conversion
+preserves the received destination, source short address and endpoint, profile,
+cluster, payload, and link quality. The coordinator address is used as the
+local destination for received unicasts and broadcasts. EZSP does not expose an
+APSDE reception timestamp or key-pair handle, and the removed NWK envelope
+fields for RSSI, binding index, and source-route overhead have no corresponding
+field in the new API. Direct conversion to `apis_saltans_hw::Event` wraps the
+indication in `Event::Apsde(ApsdeEvent::DataIndication(...))`, allowing the
+hardware event type to be used as `Builder::start`'s event type.
 
 EZSP errors cross the driver boundary as
-`apis_saltans_hw::Error::Implementation`, retaining the original error in an
-`Arc`.
+`apis_saltans_hw::Error::Backend`, retaining the original error as its source.
 
 ## Legal
 

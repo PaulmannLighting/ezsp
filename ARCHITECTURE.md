@@ -259,9 +259,9 @@ acceptance and, where applicable, supplies that internal APS sequence. A later
 `messageSent` callback is normally forwarded through the application event
 channel with the application sequence recovered from its message tag.
 
-Each helper accepts per-message `ember::aps::Options`. `Ncp::aps_frame` unions
-them with the baseline options inherited from `Builder`, so a caller can add
-encryption or retry behavior without removing routing or address behavior
+Each helper accepts per-message `ember::aps::Options`. Frame construction
+unions them with the baseline options inherited from `Builder`, so a caller can
+add encryption or retry behavior without removing routing or address behavior
 selected at startup.
 
 ```mermaid
@@ -365,21 +365,24 @@ traits/conversions without introducing another transport or NCP wrapper.
 
 - `get_endpoints` converts the stored `Endpoint` list to `SimpleDescriptor`,
   logging and filtering values with unknown profiles;
-- `get_pan_id` currently delegates to EZSP `getNodeId`;
+- `get_pan_id` reads the PAN ID from EZSP `getNetworkParameters`;
 - `get_ieee_address` delegates to `getEui64`;
-- active and energy scans reuse `Ncp` scan registration and callback
+- active and energy scans convert validated `ChannelMask` and `ScanDuration`
+  values to EZSP primitives, then reuse `Ncp` scan registration and callback
   aggregation;
 - `allow_joins` converts the duration to whole seconds, clamps it to `u8::MAX`,
   issues `permitJoining`, and returns the effective duration;
 - `route_request` issues a high-RAM many-to-one route request;
-- short/IEEE address translation uses EZSP lookup commands; and
-- APS frame transmission maps destinations to `Ncp::unicast`, `broadcast`, or
-  `multicast`.
+- short/IEEE address translation uses the validated `Device` short-ID type and
+  EZSP lookup commands; and
+- APSDE transmission maps supported request destinations to explicit-source
+  `Ncp` unicast, broadcast, or multicast paths and propagates immediate
+  acceptance failures.
 
 `Builder::start` returns `Ncp` inside a `BuildResult`, rather than an
-`NcpHandle`. Calling `Driver::run(channel_size)` creates the separate
-`apis-saltans` driver actor and returns its `NcpHandle` plus a future. The
-application must spawn that future.
+`NcpHandle`. Calling `Driver::into_actor(channel_capacity)` with a
+`NonZeroUsize` creates the separate `apis-saltans` driver actor and returns its
+`NcpHandle` plus a future. The application must spawn that future.
 
 ```mermaid
 flowchart LR
@@ -395,7 +398,7 @@ flowchart LR
 The driver actor serializes hardware API calls. The EZSP transmitter actor below
 it serializes wire transmission and correlates sequence-numbered responses. APS
 completion is a third asynchronous boundary: the event handler translates the
-final `messageSent` callback into an application `Ack` or `Nak` event.
+final `messageSent` callback into an APSDE `DataConfirm` event.
 
 ### Endpoint conversion
 
@@ -410,32 +413,36 @@ logs failures, and returns only valid descriptors. Values originating from a
 
 ### Destination mapping and send completion
 
-The driver splits each APS data frame into its header and payload. Its profile
-and cluster ID become the outgoing APS metadata, while its application APS
-sequence, represented by the header counter, becomes the EZSP message tag. EZSP
-manages the APS sequence placed in the transmitted frame independently. Header
-flags map acknowledged transmission to `ember::aps::Options::RETRY` and APS
-security to `ember::aps::Options::ENCRYPTION`; other `TxOptions` flags do not
-change the EZSP APS options. Destinations map as follows:
+The driver reads the destination, profile, cluster, explicit source endpoint,
+ASDU, options, alias, and radius from each APSDE `DataRequest`. The separate
+coordinator counter becomes the EZSP message tag. EZSP manages the APS sequence
+placed in the transmitted frame independently. `TxOptions` map acknowledged
+transmission to `ember::aps::Options::RETRY` and APS security to
+`ember::aps::Options::ENCRYPTION`. `FRAGMENTATION_PERMITTED` authorizes
+host-side unicast fragmentation. `USE_NWK_KEY` and `INCLUDE_EXTENDED_NONCE` are
+rejected because EZSP cannot preserve them. Supported destinations map as
+follows:
 
-| `apis-saltans` destination | EZSP helper | Destination endpoint | Routing values |
+| APSDE destination | EZSP path | Destination endpoint | Routing values |
 | --- | --- | --- | --- |
-| Device | `Ncp::unicast` | Requested device endpoint | Direct short ID |
-| Broadcast | `Ncp::broadcast` | Requested broadcast endpoint | Radius zero |
-| Group | `Ncp::multicast` | Profile broadcast endpoint | Zero hops and nonmember radius |
+| Network | Explicit-source unicast | Requested endpoint | Direct short ID; radius must be zero |
+| Extended | Address lookup, then explicit-source unicast | Requested endpoint | Resolved short ID; radius must be zero |
+| Broadcast | Explicit-source broadcast | Requested endpoint | Requested radius |
+| Group | Explicit-source multicast | Profile broadcast endpoint | Requested radius as hops; zero nonmember radius |
 
-In every case, `Ncp` chooses the local source endpoint from registered output
-clusters and combines the mapped frame options with its baseline options.
-Successful and failed final stack statuses are reported asynchronously as
-`Ack(sequence)` and `Nak { sequence, error }`, using the application-provided
-sequence recovered from the EZSP message tag.
+The request source endpoint is preserved and the mapped frame options are
+combined with the NCP's baseline options. Bound destinations, aliases,
+non-default group broadcast selectors, and nonzero unicast radii are rejected
+because the corresponding EZSP send paths cannot preserve those semantics.
+Final stack statuses are reported asynchronously as APSDE `DataConfirm` values,
+using the coordinator counter recovered from the EZSP message tag.
 
 ### Callback and incoming-message conversion
 
 `TryFrom<Callback> for apis_saltans_hw::Event` recognizes four callback
 families:
 
-- final `MessageSent` becomes `Ack` or `Nak`;
+- an acknowledged direct-unicast `MessageSent` becomes an APSDE `DataConfirm`;
 - `ChildJoin` becomes `DeviceJoined` or `DeviceLeft` after validating its short
   address;
 - successful `StackStatus` becomes `NetworkUp`, `NetworkDown`, `NetworkOpened`,
@@ -453,28 +460,30 @@ Incoming APS messages follow a separate conversion path after defragmentation:
 flowchart LR
     incoming[IncomingMessage callback] --> defrag[Defragmenter]
     defrag --> complete[DefragmentedMessage]
-    complete --> aps[APS Data with Bytes]
-    complete --> metadata[NWK Metadata]
-    aps --> envelope[NWK Envelope]
-    metadata --> envelope
+    complete --> indication[APSDE DataIndication with Bytes]
+    indication --> event[Event Apsde DataIndication]
 ```
 
-APS conversion maps unicast/broadcast message types to application endpoints
-and multicast types to group IDs. It preserves the profile, cluster, source
-endpoint, sequence, and payload. Envelope conversion adds the sender short ID
-with no resolved IEEE address and copies LQI, RSSI, binding index, and
-source-route overhead.
+APSDE conversion maps unicast and broadcast message types to the coordinator
+network address plus the received endpoint, and multicast types to group IDs.
+It preserves the sender short address and endpoint, profile, cluster, payload,
+and link quality. EZSP exposes neither a reception timestamp nor a key-pair
+handle, so those implementation-defined types are `()`. RSSI, binding index,
+and source-route overhead have no fields in the new APSDE indication model.
 
 `TryFrom<DefragmentedMessage> for apis_saltans_hw::Event` wraps the completed
-NWK envelope in `Event::Aps(ApsEvent::MessageReceived)`, so the hardware event
+indication in `Event::Apsde(ApsdeEvent::DataIndication)`, so the hardware event
 type satisfies both conversion bounds required by `TranslatableEvent`.
 
 ### Error conversion
 
-`crate::Error` converts into `apis_saltans_hw::Error::Implementation` containing
-an `Arc` of the original error. Driver methods therefore preserve EZSP error
-identity and text while satisfying the cloneable hardware error model. Incoming
-APS parsing uses the internal `ParseApsFrameError` for invalid message types.
+`crate::Error` converts into `apis_saltans_hw::Error::Backend`, which retains the
+original error as its source. Driver methods therefore preserve EZSP error
+identity and text while satisfying the cloneable hardware error model.
+Unsuccessful final `messageSent` statuses remain lossless as
+`ConfirmStatus::Network`. Incoming APS parsing uses the internal
+`ParseApsFrameError` for invalid message types, addresses, endpoints, and group
+IDs.
 
 ## Error boundaries
 

@@ -2,8 +2,7 @@
 //!
 //! The driver uses these conversions for endpoints, scan results, and outgoing
 //! APS transmission options. The event path uses them for device addresses,
-//! membership/network callbacks, complete incoming APS messages, NWK
-//! envelopes, and reception metadata.
+//! membership/network callbacks, APSDE indications, and data confirmations.
 //!
 //! `TryFrom<Callback> for apis_saltans_hw::Event` recognizes `messageSent`,
 //! child-join, successful stack-status, and trust-center-join callbacks.
@@ -13,12 +12,12 @@
 //! attempted.
 //!
 //! Incoming-message conversion is deliberately separate: a
-//! [`DefragmentedMessage`] converts into `apis_saltans_hw::aps::Data`, a NWK
-//! envelope, or an `apis_saltans_hw::Event::Aps` receive event.
+//! [`DefragmentedMessage`] converts into an
+//! `apis_saltans_hw::aps::apsde::DataIndication` or an
+//! `apis_saltans_hw::Event::Apsde` receive event.
 
-use apis_saltans_hw::aps::Data;
-use apis_saltans_hw::nwk::Envelope;
-use apis_saltans_hw::{ApsEvent, Event};
+use apis_saltans_hw::aps::apsde::DataIndication;
+use apis_saltans_hw::{ApsdeEvent, Event};
 use bytes::Bytes;
 
 pub use self::error::ParseApsFrameError;
@@ -31,11 +30,9 @@ mod address;
 mod aps_options;
 mod defragmented_message;
 mod endpoint;
-mod envelope;
 mod error;
 mod event;
 mod found_network;
-mod metadata;
 mod scanned_channel;
 
 const UNHANDLED_EVENT: &str = "Unhandled event.";
@@ -46,7 +43,7 @@ impl TryFrom<Callback> for Event {
     fn try_from(callback: Callback) -> Result<Self, Self::Error> {
         match callback {
             Callback::Messaging(Messaging::MessageSent(message_sent)) => {
-                return Ok((*message_sent).into());
+                return Self::try_from(*message_sent).map_err(|_| UNHANDLED_EVENT);
             }
             Callback::Networking(Networking::ChildJoin(child_join)) => {
                 return Self::try_from(*child_join).map_err(|_| UNHANDLED_EVENT);
@@ -67,11 +64,11 @@ impl TryFrom<Callback> for Event {
 }
 
 impl TryFrom<DefragmentedMessage> for Event {
-    type Error = <Envelope<Data<Bytes>> as TryFrom<DefragmentedMessage>>::Error;
+    type Error = <DataIndication<Bytes, ()> as TryFrom<DefragmentedMessage>>::Error;
 
     fn try_from(defragmented_message: DefragmentedMessage) -> Result<Self, Self::Error> {
-        Envelope::<Data<Bytes>>::try_from(defragmented_message)
-            .map(ApsEvent::MessageReceived)
-            .map(Self::Aps)
+        DataIndication::<Bytes, ()>::try_from(defragmented_message)
+            .map(ApsdeEvent::DataIndication)
+            .map(Self::Apsde)
     }
 }

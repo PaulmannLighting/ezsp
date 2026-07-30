@@ -17,7 +17,7 @@
 //! - route requests use a high-RAM many-to-one concentrator request;
 //! - address translation uses typed device short IDs with the EZSP
 //!   address-table lookup commands; and
-//! - APSDE request transmission delegates to explicit-source variants of
+//! - APSDE request transmission delegates to explicit-source
 //!   [`Ncp::unicast`], [`Ncp::broadcast`], or [`Ncp::multicast`].
 //!
 //! The APS profile, cluster, source endpoint, correlation counter, radius, and
@@ -197,7 +197,7 @@ impl Driver for Ncp {
             }
             RequestDestination::Network { address, endpoint } => {
                 reject_unicast_radius(radius)?;
-                self.unicast_from(
+                self.unicast(
                     source_endpoint,
                     address.as_u16(),
                     profile_id,
@@ -220,7 +220,7 @@ impl Driver for Ncp {
                 let short_id = NetworkAddress::new(short_id).ok_or_else(|| {
                     Error::backend(BoundaryError::InvalidNetworkAddress(short_id))
                 })?;
-                self.unicast_from(
+                self.unicast(
                     source_endpoint,
                     short_id.as_u16(),
                     profile_id,
@@ -234,7 +234,7 @@ impl Driver for Ncp {
                 .await
             }
             RequestDestination::Broadcast { address, endpoint } => {
-                self.broadcast_from(
+                self.broadcast(
                     source_endpoint,
                     address.as_u16(),
                     profile_id,
@@ -260,7 +260,7 @@ impl Driver for Ncp {
                     return Err(Error::backend(BoundaryError::UnknownProfile(profile_id)));
                 };
 
-                self.multicast_from(
+                self.multicast(
                     source_endpoint,
                     address.as_u16(),
                     profile_id,

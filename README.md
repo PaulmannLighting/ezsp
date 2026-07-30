@@ -186,32 +186,30 @@ workflows that span commands and asynchronous callbacks:
 - application APS sequence correlation with `messageSent` callbacks through
   EZSP message tags;
 - incoming APS fragment reassembly;
-- source-endpoint selection from registered output clusters; and
+- source-endpoint lookup from registered output clusters; and
 - event-handler shutdown through `Ncp::terminate`.
 
-Outgoing APS sends select the lowest-numbered registered local endpoint whose
-output clusters contain the requested cluster ID. ZDP uses endpoint zero. A
-missing match returns `Error::NoMatchingSourceEndpoint` before a send command is
-issued.
-
 Awaiting `Ncp::unicast`, `Ncp::multicast`, or `Ncp::broadcast` performs the EZSP
-send transaction. The caller supplies an application APS `sequence`, which the
-helper translates into the EZSP message tag used to correlate the later
-asynchronous `messageSent` callback. EZSP manages the APS sequence in its frame
-independently. Completed sends are reported through the application event
-channel using the application-provided sequence.
+send transaction. Each method requires the local source endpoint explicitly.
+The caller also supplies an application APS `sequence`, which the helper
+translates into the EZSP message tag used to correlate the later asynchronous
+`messageSent` callback. EZSP manages the APS sequence in its frame independently.
+Completed sends are reported through the application event channel using the
+application-provided sequence.
 
-Each send method takes an `aps_options: ember::aps::Options` argument followed
-by the application APS `sequence: u8`. The per-message options are combined
-with the options configured on `Builder`; pass `Options::NONE` when a message
-needs no additional flags. For example, a caller can request APS encryption and
-retry for one unicast without changing the baseline used by later sends:
+Each send method takes an `aps_options: ember::aps::Options` argument and the
+application APS `sequence: u8`. Unicast also takes a
+`fragmentation_permitted: bool`. The per-message options are combined with the
+options configured on `Builder`; pass `Options::NONE` when a message needs no
+additional flags. For example, a caller can request APS encryption and retry
+for one unicast without changing the baseline used by later sends:
 
 ```rust
 use ezsp::ember::aps::Options;
 
 let options = Options::ENCRYPTION.union(Options::RETRY);
 ncp.unicast(
+    source_endpoint,
     short_id,
     profile_id,
     cluster_id,
@@ -219,6 +217,7 @@ ncp.unicast(
     payload,
     options,
     sequence,
+    true,
 )
 .await?;
 ```

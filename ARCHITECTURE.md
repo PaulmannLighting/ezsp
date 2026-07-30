@@ -218,7 +218,7 @@ initial security state, and forms a network using `InitializationParameters`.
 and network key together; the initialization value adds a preconfigured link
 key, channel, join method, and initial-security bitmask.
 
-### NCP state and endpoint selection
+### NCP state and endpoints
 
 `Ncp` owns:
 
@@ -227,10 +227,11 @@ key, channel, join method, and initial-security bitmask.
 - a sender to the event handler;
 - baseline APS options configured by `Builder`.
 
-For ordinary APS profiles, source-endpoint selection scans registered endpoints
-in stored order and picks the first whose output clusters contain the requested
-cluster. ZDP always uses endpoint zero. No match returns
-`Error::NoMatchingSourceEndpoint` before transport I/O.
+APS send methods require an explicit local source endpoint. Callers that want to
+derive one from the registered descriptors can use `Ncp::source_endpoint`,
+which scans endpoints in stored order and picks the first whose output clusters
+contain the requested cluster. ZDP always resolves to endpoint zero. No match
+returns `Error::NoMatchingSourceEndpoint`.
 
 ### Scan correlation
 
@@ -251,13 +252,14 @@ flowchart LR
 
 ### APS sends and confirmation events
 
-Callers supply the application APS `sequence` used by unicast, multicast, and
-broadcast helpers. Each helper translates that sequence into the EZSP message
-tag used for `messageSent` correlation. EZSP separately assigns the APS sequence
-stored in the transmitted APS frame. The EZSP command response indicates
-acceptance and, where applicable, supplies that internal APS sequence. A later
-`messageSent` callback is normally forwarded through the application event
-channel with the application sequence recovered from its message tag.
+Callers supply an explicit source endpoint and the application APS `sequence`
+used by unicast, multicast, and broadcast helpers. Each helper translates that
+sequence into the EZSP message tag used for `messageSent` correlation. EZSP
+separately assigns the APS sequence stored in the transmitted APS frame. The
+EZSP command response indicates acceptance and, where applicable, supplies that
+internal APS sequence. A later `messageSent` callback is normally forwarded
+through the application event channel with the application sequence recovered
+from its message tag.
 
 Each helper accepts per-message `ember::aps::Options`. Frame construction
 unions them with the baseline options inherited from `Builder`, so a caller can

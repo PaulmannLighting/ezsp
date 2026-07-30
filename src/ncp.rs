@@ -64,11 +64,10 @@ const MAX_FRAGMENT_COUNT: usize = u8::MAX as usize;
 /// `Ncp` owns a cloneable [`Connection`] actor handle. Its methods provide
 /// higher-level operations
 /// that need callback correlation or local host state, such as scans, outgoing
-/// APS message confirmation, and automatic source endpoint selection from the
-/// configured endpoint cluster lists. Outgoing frames combine the baseline APS
-/// options stored by [`Builder`] with options supplied to each send method. The
-/// builder gives another clone of the connected handle to the background
-/// [`EventHandler`].
+/// APS message confirmation, and source endpoint lookup from the configured
+/// endpoint cluster lists. Outgoing frames combine the baseline APS options
+/// stored by [`Builder`] with options supplied to each send method. The builder
+/// gives another clone of the connected handle to the background [`EventHandler`].
 #[derive(Debug)]
 pub struct Ncp {
     pub(crate) connection: Connection,
@@ -168,59 +167,29 @@ impl Ncp {
         })
     }
 
-    /// Starts a unicast APS send.
+    /// Starts a unicast APS send from an explicit local endpoint.
     ///
     /// Payloads larger than the EZSP maximum APS payload length are fragmented
-    /// for unicast delivery. The stack-assigned APS sequence from the first
-    /// fragment is reused for follow-up fragments, matching EZSP host
-    /// fragmentation behavior. Every non-final fragment waits for its
-    /// `messageSent` callback before the next fragment is sent. The final
-    /// fragment's callback is emitted through the application event channel.
-    /// The `aps_options` apply only to this message and are combined with the
-    /// NCP's baseline APS options; fragmentation additionally enables
-    /// [`Options::RETRY`]. The application-provided `sequence` is sent as the
-    /// EZSP message tag and is returned by the corresponding application
-    /// acknowledgement event. EZSP independently assigns the APS sequence in
-    /// the transmitted frame.
+    /// for unicast delivery when `fragmentation_permitted` is true. The
+    /// stack-assigned APS sequence from the first fragment is reused for
+    /// follow-up fragments, matching EZSP host fragmentation behavior. Every
+    /// non-final fragment waits for its `messageSent` callback before the next
+    /// fragment is sent. The final fragment's callback is emitted through the
+    /// application event channel. The `aps_options` apply only to this message
+    /// and are combined with the NCP's baseline APS options; fragmentation
+    /// additionally enables [`Options::RETRY`]. The application-provided
+    /// `sequence` is sent as the EZSP message tag and is returned by the
+    /// corresponding application acknowledgement event. EZSP independently
+    /// assigns the APS sequence in the transmitted frame.
     ///
     /// # Errors
     ///
-    /// Returns an [`Error`] if no matching source endpoint exists, payload
+    /// Returns an [`Error`] if an oversized payload may not be fragmented,
     /// fragmentation would exceed 255 fragments, registering a fragment
     /// response channel or sending an EZSP command fails, or a non-final
     /// fragment's `messageSent` callback reports failure.
     #[expect(clippy::too_many_arguments)]
     pub async fn unicast(
-        &mut self,
-        short_id: u16,
-        profile_id: u16,
-        cluster_id: u16,
-        destination_endpoint: u8,
-        payload: impl AsRef<[u8]>,
-        aps_options: Options,
-        sequence: u8,
-    ) -> Result<(), Error> {
-        let source_endpoint = self.source_endpoint(profile_id, cluster_id)?;
-        self.unicast_from(
-            source_endpoint,
-            short_id,
-            profile_id,
-            cluster_id,
-            destination_endpoint,
-            payload,
-            aps_options,
-            sequence,
-            true,
-        )
-        .await
-    }
-
-    /// Starts a unicast APS send from an explicit local endpoint.
-    ///
-    /// Oversized payloads are fragmented only when `fragmentation_permitted`
-    /// is true.
-    #[expect(clippy::too_many_arguments)]
-    pub(crate) async fn unicast_from(
         &mut self,
         source_endpoint: u8,
         short_id: u16,
@@ -263,7 +232,7 @@ impl Ncp {
         .await
     }
 
-    /// Starts a multicast APS send.
+    /// Starts a multicast APS send from an explicit local endpoint.
     ///
     /// The matching `messageSent` callback is emitted through the application
     /// event channel. The `aps_options` apply only to this message and are
@@ -273,39 +242,10 @@ impl Ncp {
     ///
     /// # Errors
     ///
-    /// Returns an [`Error`] if no matching source endpoint exists, the payload
-    /// is larger than the EZSP maximum APS payload length or sending the EZSP
-    /// command fails.
+    /// Returns an [`Error`] if the payload is larger than the EZSP maximum APS
+    /// payload length or sending the EZSP command fails.
     #[expect(clippy::too_many_arguments)]
     pub async fn multicast(
-        &mut self,
-        group_id: u16,
-        profile_id: u16,
-        cluster_id: u16,
-        destination_endpoint: u8,
-        payload: impl AsRef<[u8]>,
-        options: MulticastOptions,
-        aps_options: Options,
-        sequence: u8,
-    ) -> Result<(), Error> {
-        let source_endpoint = self.source_endpoint(profile_id, cluster_id)?;
-        self.multicast_from(
-            source_endpoint,
-            group_id,
-            profile_id,
-            cluster_id,
-            destination_endpoint,
-            payload,
-            options,
-            aps_options,
-            sequence,
-        )
-        .await
-    }
-
-    /// Starts a multicast APS send from an explicit local endpoint.
-    #[expect(clippy::too_many_arguments)]
-    pub(crate) async fn multicast_from(
         &mut self,
         source_endpoint: u8,
         group_id: u16,
@@ -348,7 +288,7 @@ impl Ncp {
         Ok(())
     }
 
-    /// Starts a broadcast APS send.
+    /// Starts a broadcast APS send from an explicit local endpoint.
     ///
     /// The matching `messageSent` callback is emitted through the application
     /// event channel. The `aps_options` apply only to this message and are
@@ -358,39 +298,10 @@ impl Ncp {
     ///
     /// # Errors
     ///
-    /// Returns an [`Error`] if no matching source endpoint exists, the payload
-    /// is larger than the EZSP maximum APS payload length or sending the EZSP
-    /// command fails.
+    /// Returns an [`Error`] if the payload is larger than the EZSP maximum APS
+    /// payload length or sending the EZSP command fails.
     #[expect(clippy::too_many_arguments)]
     pub async fn broadcast(
-        &mut self,
-        short_id: u16,
-        profile_id: u16,
-        cluster_id: u16,
-        destination_endpoint: u8,
-        payload: impl AsRef<[u8]>,
-        radius: u8,
-        aps_options: Options,
-        sequence: u8,
-    ) -> Result<(), Error> {
-        let source_endpoint = self.source_endpoint(profile_id, cluster_id)?;
-        self.broadcast_from(
-            source_endpoint,
-            short_id,
-            profile_id,
-            cluster_id,
-            destination_endpoint,
-            payload,
-            radius,
-            aps_options,
-            sequence,
-        )
-        .await
-    }
-
-    /// Starts a broadcast APS send from an explicit local endpoint.
-    #[expect(clippy::too_many_arguments)]
-    pub(crate) async fn broadcast_from(
         &mut self,
         source_endpoint: u8,
         short_id: u16,

@@ -1,46 +1,30 @@
 
 # cargo-vet imports lock
 
-[[unpublished.apis-saltans-aps]]
-version = "0.8.0"
-audited_as = "0.7.1"
-
-[[unpublished.apis-saltans-core]]
-version = "0.9.0"
-audited_as = "0.8.0"
-
-[[unpublished.apis-saltans-hw]]
-version = "0.13.0"
-audited_as = "0.12.0"
-
-[[unpublished.apis-saltans-zdp]]
-version = "0.8.0"
-audited_as = "0.7.0"
-
 [[publisher.apis-saltans-aps]]
-version = "0.7.1"
-when = "2026-07-23"
+version = "0.8.0"
+when = "2026-08-03"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-core]]
-version = "0.8.0"
-when = "2026-07-22"
+version = "0.9.0"
+when = "2026-08-03"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-hw]]
-version = "0.12.0"
-when = "2026-07-23"
+version = "0.13.0"
+when = "2026-08-03"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.apis-saltans-zdp]]
-version = "0.7.0"
-when = "2026-07-22"
+version = "0.8.0"
+when = "2026-08-03"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
@@ -59,8 +43,8 @@ user-id = 55123
 user-login = "rust-lang-owner"
 
 [[publisher.ezsp]]
-version = "14.1.0"
-when = "2026-07-23"
+version = "15.0.0"
+when = "2026-08-03"
 user-id = 290593
 user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
@@ -135,15 +119,15 @@ user-login = "dtolnay"
 user-name = "David Tolnay"
 
 [[publisher.thiserror]]
-version = "2.0.19"
-when = "2026-07-18"
+version = "2.0.20"
+when = "2026-08-08"
 user-id = 3618
 user-login = "dtolnay"
 user-name = "David Tolnay"
 
 [[publisher.thiserror-impl]]
-version = "2.0.19"
-when = "2026-07-18"
+version = "2.0.20"
+when = "2026-08-08"
 user-id = 3618
 user-login = "dtolnay"
 user-name = "David Tolnay"

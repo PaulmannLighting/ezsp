@@ -61,7 +61,10 @@ impl Distribution<NetworkCredentials> for StandardUniform {
     /// Both generated EUI-64 values are locally administered unicast
     /// addresses and exclude the all-zero and all-one sentinel values. The PAN
     /// ID excludes the reserved broadcast value `0xFFFF`.
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> NetworkCredentials {
+    fn sample<R>(&self, rng: &mut R) -> NetworkCredentials
+    where
+        R: Rng + ?Sized,
+    {
         NetworkCredentials {
             extended_pan_id: random_mac_addr8(rng),
             pan_id: rng.random_range(VALID_PAN_IDS),

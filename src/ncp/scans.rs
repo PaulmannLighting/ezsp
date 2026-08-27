@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::mem;
 
 use log::error;
 
@@ -50,15 +51,17 @@ impl Scans {
     pub fn pop(&mut self) {
         if let Some(scan) = self.queue.pop_front() {
             match scan {
-                Scan::Channel(sender) => sender
-                    .send(self.channels.drain(..).collect())
-                    .unwrap_or_else(|error| {
-                        error!("Failed to send channel scan results: {error:?}");
-                    }),
+                Scan::Channel(sender) => {
+                    sender
+                        .send(mem::take(&mut self.channels))
+                        .unwrap_or_else(|error| {
+                            error!("Failed to send channel scan results: {error:?}");
+                        });
+                }
 
                 Scan::Network(sender) => {
                     sender
-                        .send(self.networks.drain(..).collect())
+                        .send(mem::take(&mut self.networks))
                         .unwrap_or_else(|error| {
                             error!("Failed to send network scan results: {error:?}");
                         });

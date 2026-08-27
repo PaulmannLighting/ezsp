@@ -6,6 +6,9 @@ use num_traits::FromPrimitive;
 
 use crate::ember::{DeviceDutyCycles, MAX_END_DEVICE_CHILDREN, PerDeviceDutyCycle, Status};
 use crate::error::Error;
+
+const PER_DEVICE_DUTY_CYCLE_SIZE: usize = 4;
+
 crate::frame::parameters::frame!(
     0x004C,
     { max_devices: u8 },
@@ -30,7 +33,9 @@ crate::frame::parameters::frame!(
                 let [max_devices, per_device_duty_cycles @ ..] = self.device_duty_cycles;
 
                 per_device_duty_cycles
-                    .chunks_exact(4)
+                    .as_chunks::<PER_DEVICE_DUTY_CYCLE_SIZE>()
+                    .0
+                    .iter()
                     .take(max_devices as usize)
                     .filter_map(|bytes| {
                         PerDeviceDutyCycle::from_le_slice(bytes)

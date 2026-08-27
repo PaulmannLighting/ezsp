@@ -95,6 +95,10 @@ enum BoundaryError {
 }
 
 impl Driver for Ncp {
+    #[allow(
+        clippy::unused_async_trait_impl,
+        reason = "trait implementations use async fn syntax consistently"
+    )]
     async fn get_endpoints(&self) -> Result<Box<[SimpleDescriptor]>, Error> {
         Ok(self
             .endpoints

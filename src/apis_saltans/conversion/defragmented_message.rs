@@ -76,5 +76,6 @@ fn individual_endpoint(
     endpoint: u8,
     error: fn(u8) -> ParseApsFrameError,
 ) -> Result<IndividualEndpoint, ParseApsFrameError> {
-    IndividualEndpoint::new(Endpoint::from(endpoint)).ok_or_else(|| error(endpoint))
+    let parsed_endpoint = Endpoint::try_from(endpoint).map_err(|_| error(endpoint))?;
+    IndividualEndpoint::new(parsed_endpoint).ok_or_else(|| error(endpoint))
 }

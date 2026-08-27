@@ -28,10 +28,13 @@ impl TryFrom<MessageSent> for Event {
         if !message_sent.aps_frame().options().contains(Options::RETRY) {
             return Err(message_sent);
         }
-        let source_endpoint =
-            IndividualEndpoint::new(Endpoint::from(message_sent.aps_frame().source_endpoint()))
-                .ok_or_else(|| message_sent.clone())?;
-        let destination_endpoint = Endpoint::from(message_sent.aps_frame().destination_endpoint());
+        let source_endpoint = Endpoint::try_from(message_sent.aps_frame().source_endpoint())
+            .ok()
+            .and_then(IndividualEndpoint::new)
+            .ok_or_else(|| message_sent.clone())?;
+        let destination_endpoint =
+            Endpoint::try_from(message_sent.aps_frame().destination_endpoint())
+                .map_err(|_| message_sent.clone())?;
         let destination = match message_sent.typ().map_err(|_| message_sent.clone())? {
             Outgoing::Direct => Destination::Network {
                 address: NetworkAddress::new(message_sent.index_or_destination())

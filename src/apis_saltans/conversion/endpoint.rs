@@ -31,7 +31,9 @@ impl TryFrom<Endpoint> for SimpleDescriptor {
             return Err(value);
         };
 
-        let endpoint = apis_saltans_hw::core::Endpoint::from(value.id);
+        let Ok(endpoint) = apis_saltans_hw::core::Endpoint::try_from(value.id) else {
+            return Err(value);
+        };
 
         Ok(Self::new(
             endpoint,

@@ -469,9 +469,12 @@ flowchart LR
 APSDE conversion maps unicast and broadcast message types to the coordinator
 network address plus the received endpoint, and multicast types to group IDs.
 It preserves the sender short address and endpoint, profile, cluster, payload,
-and link quality. EZSP exposes neither a reception timestamp nor a key-pair
-handle, so those implementation-defined types are `()`. RSSI, binding index,
-and source-route overhead have no fields in the new APSDE indication model.
+and link quality. The event wrapper also maps the incoming APS frame's
+`ZDO_RESPONSE_REQUIRED` option to `ApsdeEvent::DataIndication`'s
+`zdo_response_required` field. EZSP exposes neither a reception timestamp nor a
+key-pair handle, so those implementation-defined types are `()`. RSSI, binding
+index, and source-route overhead have no fields in the new APSDE indication
+model.
 
 `TryFrom<DefragmentedMessage> for apis_saltans_hw::Event` wraps the completed
 indication in `Event::Apsde(ApsdeEvent::DataIndication)`, so the hardware event

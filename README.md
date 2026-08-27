@@ -397,8 +397,10 @@ local destination for received unicasts and broadcasts. EZSP does not expose an
 APSDE reception timestamp or key-pair handle, and the removed NWK envelope
 fields for RSSI, binding index, and source-route overhead have no corresponding
 field in the new API. Direct conversion to `apis_saltans_hw::Event` wraps the
-indication in `Event::Apsde(ApsdeEvent::DataIndication(...))`, allowing the
-hardware event type to be used as `Builder::start`'s event type.
+indication in `Event::Apsde(ApsdeEvent::DataIndication { .. })` and carries the
+incoming APS frame's `ZDO_RESPONSE_REQUIRED` option into the event's
+`zdo_response_required` field, allowing the hardware event type to be used as
+`Builder::start`'s event type.
 
 EZSP errors cross the driver boundary as
 `apis_saltans_hw::Error::Backend`, retaining the original error as its source.

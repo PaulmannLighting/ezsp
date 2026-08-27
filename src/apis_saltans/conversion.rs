@@ -21,6 +21,7 @@ use apis_saltans_hw::{ApsdeEvent, Event};
 use bytes::Bytes;
 
 pub use self::error::ParseApsFrameError;
+use crate::ember::aps::Options;
 use crate::frame::parameters::networking::handler::Handler as Networking;
 use crate::parameters::messaging::handler::Handler as Messaging;
 use crate::parameters::trust_center::handler::Handler as TrustCenter;
@@ -67,8 +68,59 @@ impl TryFrom<DefragmentedMessage> for Event {
     type Error = <DataIndication<Bytes, ()> as TryFrom<DefragmentedMessage>>::Error;
 
     fn try_from(defragmented_message: DefragmentedMessage) -> Result<Self, Self::Error> {
+        let zdo_response_required = defragmented_message
+            .aps_frame()
+            .options()
+            .contains(Options::ZDO_RESPONSE_REQUIRED);
+
         DataIndication::<Bytes, ()>::try_from(defragmented_message)
-            .map(ApsdeEvent::DataIndication)
+            .map(|indication| ApsdeEvent::DataIndication {
+                indication,
+                zdo_response_required,
+            })
             .map(Self::Apsde)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use apis_saltans_hw::{ApsdeEvent, Event};
+    use le_stream::FromLeStream;
+
+    use crate::DefragmentedMessage;
+    use crate::parameters::messaging::handler::IncomingMessage;
+
+    const ZDO_RESPONSE_REQUIRED_INDEX: usize = 8;
+    const ZDO_RESPONSE_REQUIRED: u8 = 0x40;
+    const INCOMING_MESSAGE_BYTES: [u8; 20] = [
+        0x00, 0x04, 0x01, 0x06, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x56, 0x80, 0xd8, 0x34,
+        0x12, 0xff, 0xff, 0x01, 0xaa,
+    ];
+
+    fn incoming_event(zdo_response_required: bool) -> Event {
+        let mut bytes = INCOMING_MESSAGE_BYTES;
+        if zdo_response_required {
+            bytes[ZDO_RESPONSE_REQUIRED_INDEX] = ZDO_RESPONSE_REQUIRED;
+        }
+        let incoming_message = IncomingMessage::from_le_stream(bytes.into_iter())
+            .expect("incomingMessage test callback is complete");
+
+        Event::try_from(DefragmentedMessage::from(incoming_message))
+            .expect("incomingMessage test callback is representable")
+    }
+
+    #[test]
+    fn preserves_zdo_response_required_flag() {
+        for expected in [false, true] {
+            let Event::Apsde(ApsdeEvent::DataIndication {
+                zdo_response_required,
+                ..
+            }) = incoming_event(expected)
+            else {
+                panic!("incomingMessage must become a data indication");
+            };
+
+            assert_eq!(zdo_response_required, expected);
+        }
     }
 }

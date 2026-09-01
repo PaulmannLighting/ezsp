@@ -175,6 +175,12 @@ criteria = "safe-to-deploy"
 delta = "0.10.0 -> 0.10.1"
 notes = "AI-assisted: reviewed diff 0.10.0 -> 0.10.1"
 
+[[audits.chacha20]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "0.10.1 -> 0.10.2"
+notes = "AI-assisted: reviewed the complete 0.10.1 -> 0.10.2 crate diff. The code change replaces an SSE4.1-only counter extraction in the SSE2 backend with shared Backend::new/save_ctr helpers and an unaligned 128-bit store of state words 12-15. Loads and stores remain within the 16-word state, preserve counter and nonce state, and use matching unaligned intrinsics. No new dependencies, build scripts, I/O, or ambient capabilities were introduced; remaining changes are version, lockfile, and changelog metadata."
+
 [[audits.chrono]]
 who = "Codex"
 criteria = "safe-to-deploy"

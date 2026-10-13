@@ -51,19 +51,19 @@ impl TryFrom<DefragmentedMessage> for DataIndication<Bytes, ()> {
         )?;
         let source_address = NetworkAddress::new(message.sender())
             .ok_or_else(|| ParseApsFrameError::SourceAddress(message.sender()))?;
-        let metadata = IndicationMetadata::new(
+        let metadata = IndicationMetadata {
             destination,
-            Source::Network {
+            source: Source::Network {
                 address: source_address,
                 endpoint: source_endpoint,
             },
-            aps_frame.profile_id(),
-            aps_frame.cluster_id(),
-            IndicationStatus::success(),
-            Security::NetworkKey,
-            message.last_hop_lqi(),
-            (),
-        );
+            profile_id: aps_frame.profile_id(),
+            cluster_id: aps_frame.cluster_id(),
+            status: IndicationStatus::success(),
+            security: Security::NetworkKey,
+            link_quality: message.last_hop_lqi(),
+            rx_time: (),
+        };
 
         Ok(Self::new(
             metadata,

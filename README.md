@@ -431,3 +431,14 @@ this crate.
   `cargo +nightly fmt --check`.
 - Lint with `cargo clippy --all-features`.
 - Verify documentation with `cargo +nightly doc --all-features --no-deps`.
+
+### Portable networking failures
+
+With `apis-saltans`, known Ember networking errors are classified as the hardware API's
+`NetworkError`. Command errors preserve the original EZSP error as their source. Acknowledged
+transmission callbacks use `ConfirmStatus::Failure`: recognized failures carry a portable
+classification, while unclassified bytes are retained in `NetworkError::BackendStatus`. This includes delivery failure, missing MAC acknowledgements,
+source-route and many-to-one route failures, network congestion, local capacity exhaustion,
+channel access failure, network state errors, oversized messages, security failures, indirect
+expiry, and full tables. Unknown statuses remain backend-specific; they are never guessed from
+an unrelated status namespace.

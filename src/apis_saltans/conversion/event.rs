@@ -11,7 +11,7 @@ use apis_saltans_hw::aps::apsde::{
     ConfirmStatus, DataConfirm, Destination, IndividualEndpoint, NetworkAddress,
 };
 use apis_saltans_hw::core::Endpoint;
-use apis_saltans_hw::{ApsdeEvent, DeviceEvent, Event, NetworkEvent};
+use apis_saltans_hw::{ApsdeEvent, DeviceEvent, Event, NetworkError, NetworkEvent};
 
 use crate::ember::Status;
 use crate::ember::aps::Options;
@@ -48,8 +48,11 @@ impl TryFrom<MessageSent> for Event {
         };
         let status = match message_sent.status() {
             Ok(Status::Success) => ConfirmStatus::success(),
-            Ok(status) => ConfirmStatus::Network(status.into()),
-            Err(status) => ConfirmStatus::Network(status),
+            Ok(status) => ConfirmStatus::Failure(
+                NetworkError::try_from(status)
+                    .unwrap_or_else(|()| NetworkError::BackendStatus(status.into())),
+            ),
+            Err(status) => ConfirmStatus::Failure(NetworkError::BackendStatus(status)),
         };
         let confirmation = DataConfirm::new(destination, source_endpoint, status, ());
 
@@ -120,7 +123,7 @@ impl TryFrom<TrustCenterJoin> for Event {
 #[cfg(test)]
 mod tests {
     use apis_saltans_hw::aps::apsde::{ConfirmStatus, Destination};
-    use apis_saltans_hw::{ApsdeEvent, Event};
+    use apis_saltans_hw::{ApsdeEvent, Event, NetworkError};
     use le_stream::FromLeStream;
 
     use crate::parameters::messaging::handler::MessageSent;
@@ -131,6 +134,8 @@ mod tests {
     const STATUS_INDEX: usize = 15;
     const STATUS_SUCCESS: u8 = 0x00;
     const STATUS_DELIVERY_FAILED: u8 = 0x66;
+    const STATUS_FATAL: u8 = 0x01;
+    const STATUS_UNKNOWN: u8 = 0x03;
     const MESSAGE_SENT_BYTES: [u8; 17] = [
         0x00,
         0x78,
@@ -188,8 +193,23 @@ mod tests {
 
         assert_eq!(
             confirmation.status(),
-            ConfirmStatus::Network(STATUS_DELIVERY_FAILED)
+            ConfirmStatus::Failure(NetworkError::DeliveryFailed)
         );
+    }
+
+    #[test]
+    fn preserves_known_unclassified_and_unknown_failure_bytes() {
+        for raw in [STATUS_FATAL, STATUS_UNKNOWN] {
+            let event = Event::try_from(message_sent(raw)).expect("representable callback");
+            let Event::Apsde(ApsdeEvent::DataConfirm { confirmation, .. }) = event else {
+                panic!("expected confirmation");
+            };
+            assert_eq!(
+                confirmation.status(),
+                ConfirmStatus::Failure(NetworkError::BackendStatus(raw))
+            );
+            assert!(!confirmation.status().is_success());
+        }
     }
 
     #[test]

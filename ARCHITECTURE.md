@@ -517,11 +517,10 @@ type satisfies both conversion bounds required by `TranslatableEvent`.
 
 ### Error conversion
 
-`crate::Error` converts into `apis_saltans_hw::Error::Backend`, which retains the
-original error as its source. Driver methods therefore preserve EZSP error
-identity and text while satisfying the cloneable hardware error model.
-Unsuccessful final `messageSent` statuses remain lossless as
-`ConfirmStatus::Network`. Incoming APS parsing uses the internal
+`crate::Error` converts into `apis_saltans_hw::Error::Network` for recognized networking
+failures and `Error::Backend` otherwise. Both retain the original error as their source.
+Unsuccessful final `messageSent` statuses become `ConfirmStatus::Failure`, carrying
+a portable failure or an unclassified byte in `NetworkError::BackendStatus`. Incoming APS parsing uses the internal
 `ParseApsFrameError` for invalid message types, addresses, endpoints, and group
 IDs.
 
@@ -540,3 +539,12 @@ The most actor-specific failures are:
 - `SendError` or `RecvError` when actor/one-shot channels close; and
 - `UnexpectedResponse` when a correlated aggregate response cannot convert to
   the command's declared response type.
+
+## Portable networking error mapping
+
+`TryFrom<ember::Status> for NetworkError` maps known Ember statuses into common networking
+failures and returns `Err(())` for statuses without a portable classification.
+Both command error conversion and `messageSent` confirmation conversion use this mapping.
+Command errors retain their concrete source. Confirmations carry portable failure semantics
+when recognized, or the original byte in `NetworkError::BackendStatus` otherwise. Other status
+namespaces keep their existing opaque representation.

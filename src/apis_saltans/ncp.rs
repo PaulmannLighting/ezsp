@@ -279,7 +279,7 @@ impl Driver for Ncp {
             }
         };
 
-        result.map_err(Error::backend)
+        result.map_err(Error::from)
     }
 }
 

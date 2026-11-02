@@ -183,103 +183,151 @@ impl Driver for Ncp {
     }
 
     async fn transmit(&mut self, request: DataRequest<Bytes>, counter: u8) -> Result<(), Error> {
-        let destination = request.destination();
-        let profile_id = request.profile_id();
-        let cluster_id = request.cluster_id();
-        let source_endpoint = request.source_endpoint().get().into();
-        let radius = request.radius_counter();
-        let tx_options = request.tx_options();
-        let alias = request.alias();
-        let fragmentation_permitted = validate_tx_options(tx_options)?;
-        reject_alias(alias)?;
-        let aps_options = tx_options.into();
-        let payload = request.into_asdu();
+        let fragmentation_permitted = validate_tx_options(request.tx_options())?;
+        reject_alias(request.alias())?;
 
-        let result = match destination {
-            RequestDestination::Bound => {
-                return Err(Error::backend(BoundaryError::BoundDestination));
-            }
+        match request.destination() {
+            RequestDestination::Bound => Err(Error::backend(BoundaryError::BoundDestination)),
             RequestDestination::Network { address, endpoint } => {
-                reject_unicast_radius(radius)?;
-                self.unicast(
-                    source_endpoint,
-                    address.as_u16(),
-                    profile_id,
-                    cluster_id,
-                    endpoint.into(),
-                    payload,
-                    aps_options,
+                reject_unicast_radius(request.radius_counter())?;
+                self.transmit_unicast(
+                    request,
                     counter,
+                    address,
+                    endpoint.into(),
                     fragmentation_permitted,
                 )
                 .await
             }
             RequestDestination::Extended { address, endpoint } => {
-                reject_unicast_radius(radius)?;
-                let short_id = self
-                    .connection
-                    .lookup_node_id_by_eui64(address.into())
-                    .await
-                    .map_err(Error::backend)?;
-                let short_id = NetworkAddress::new(short_id).ok_or_else(|| {
-                    Error::backend(BoundaryError::InvalidNetworkAddress(short_id))
-                })?;
-                self.unicast(
-                    source_endpoint,
-                    short_id.as_u16(),
-                    profile_id,
-                    cluster_id,
-                    endpoint.into(),
-                    payload,
-                    aps_options,
+                reject_unicast_radius(request.radius_counter())?;
+                let address = self.resolve_transmission_address(address).await?;
+                self.transmit_unicast(
+                    request,
                     counter,
+                    address,
+                    endpoint.into(),
                     fragmentation_permitted,
                 )
                 .await
             }
             RequestDestination::Broadcast { address, endpoint } => {
-                self.broadcast(
-                    source_endpoint,
-                    address.as_u16(),
-                    profile_id,
-                    cluster_id,
-                    endpoint.into(),
-                    payload,
-                    radius,
-                    aps_options,
-                    counter,
-                )
-                .await
+                self.transmit_broadcast(request, counter, address.as_u16(), endpoint.into())
+                    .await
             }
             RequestDestination::Group {
                 address,
                 broadcast_address,
             } => {
-                if broadcast_address.as_u16() != GROUP_BROADCAST_ADDRESS {
-                    return Err(Error::backend(BoundaryError::GroupBroadcastAddress(
-                        broadcast_address.as_u16(),
-                    )));
-                }
-                let Ok(profile) = Profile::try_from(profile_id) else {
-                    return Err(Error::backend(BoundaryError::UnknownProfile(profile_id)));
-                };
-
-                self.multicast(
-                    source_endpoint,
-                    address.as_u16(),
-                    profile_id,
-                    cluster_id,
-                    profile.broadcast_endpoint().into(),
-                    payload,
-                    MulticastOptions::new(radius, DEFAULT_MULTICAST_NONMEMBER_RADIUS),
-                    aps_options,
+                self.transmit_group(
+                    request,
                     counter,
+                    address.as_u16(),
+                    broadcast_address.as_u16(),
                 )
                 .await
             }
-        };
+        }
+    }
+}
 
-        Ok(result?)
+impl Ncp {
+    /// Resolves an extended destination, retaining lookup failures as backend errors.
+    async fn resolve_transmission_address(
+        &mut self,
+        address: IeeeAddress,
+    ) -> Result<NetworkAddress, Error> {
+        let short_id = self
+            .connection
+            .lookup_node_id_by_eui64(address.into())
+            .await
+            .map_err(Error::backend)?;
+        NetworkAddress::new(short_id)
+            .ok_or_else(|| Error::backend(BoundaryError::InvalidNetworkAddress(short_id)))
+    }
+
+    /// Sends a validated unicast request to a direct or resolved network address.
+    async fn transmit_unicast(
+        &mut self,
+        request: DataRequest<Bytes>,
+        counter: u8,
+        address: NetworkAddress,
+        endpoint: u8,
+        fragmentation_permitted: bool,
+    ) -> Result<(), Error> {
+        let aps_options = request.tx_options().into();
+        Ok(self
+            .unicast(
+                request.source_endpoint().get().into(),
+                address.as_u16(),
+                request.profile_id(),
+                request.cluster_id(),
+                endpoint,
+                request.into_asdu(),
+                aps_options,
+                counter,
+                fragmentation_permitted,
+            )
+            .await?)
+    }
+
+    /// Sends a broadcast request with its requested endpoint and radius.
+    async fn transmit_broadcast(
+        &mut self,
+        request: DataRequest<Bytes>,
+        counter: u8,
+        address: u16,
+        endpoint: u8,
+    ) -> Result<(), Error> {
+        let aps_options = request.tx_options().into();
+        let radius = request.radius_counter();
+        Ok(self
+            .broadcast(
+                request.source_endpoint().get().into(),
+                address,
+                request.profile_id(),
+                request.cluster_id(),
+                endpoint,
+                request.into_asdu(),
+                radius,
+                aps_options,
+                counter,
+            )
+            .await?)
+    }
+
+    /// Validates and sends a group request using the profile's broadcast endpoint.
+    async fn transmit_group(
+        &mut self,
+        request: DataRequest<Bytes>,
+        counter: u8,
+        address: u16,
+        broadcast_address: u16,
+    ) -> Result<(), Error> {
+        if broadcast_address != GROUP_BROADCAST_ADDRESS {
+            return Err(Error::backend(BoundaryError::GroupBroadcastAddress(
+                broadcast_address,
+            )));
+        }
+        let profile_id = request.profile_id();
+        let profile = Profile::try_from(profile_id)
+            .map_err(|_| Error::backend(BoundaryError::UnknownProfile(profile_id)))?;
+
+        let aps_options = request.tx_options().into();
+        let radius = request.radius_counter();
+        Ok(self
+            .multicast(
+                request.source_endpoint().get().into(),
+                address,
+                profile_id,
+                request.cluster_id(),
+                profile.broadcast_endpoint().into(),
+                request.into_asdu(),
+                MulticastOptions::new(radius, DEFAULT_MULTICAST_NONMEMBER_RADIUS),
+                aps_options,
+                counter,
+            )
+            .await?)
     }
 }
 

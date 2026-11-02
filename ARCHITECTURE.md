@@ -517,6 +517,12 @@ type satisfies both conversion bounds required by `TranslatableEvent`.
 
 ### Error conversion
 
+The driver transmission entry point validates shared options and aliases before
+dispatching by destination. Private helpers handle address resolution and each
+send kind; direct and extended unicast destinations share the same send helper.
+Unicast radius validation precedes address lookup. Lookup failures remain backend
+errors, while send failures use the typed error conversion described below.
+
 `crate::Error` converts into `apis_saltans_hw::Error::Network` for recognized networking
 failures and `Error::Backend` otherwise. Both retain the original error as their source.
 Unsuccessful final `messageSent` statuses become `ConfirmStatus::Failure`, carrying

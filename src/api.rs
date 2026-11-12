@@ -10,7 +10,7 @@ use std::num::NonZero;
 use tokio::sync::mpsc::{self, Sender, channel};
 
 pub use self::backup_inspection::{BACKUP_INSPECTION_PROTOCOL_VERSION, BackupInspection};
-pub use self::connection::Connection;
+pub use self::connection::{Connection, MaintenanceConnection};
 pub use self::futures::Futures;
 pub use self::message::Message;
 pub use self::receiver::Receive;
@@ -107,6 +107,7 @@ impl Client {
             Connection {
                 desired_version,
                 handle: self.handle,
+                gate: std::sync::Arc::new(tokio::sync::RwLock::new(())),
             },
             self.callbacks,
         ))

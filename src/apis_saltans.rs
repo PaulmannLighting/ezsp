@@ -21,10 +21,10 @@
 //!
 //! [`Ncp`](crate::Ncp) implements `NetworkDump` and `NetworkRestore`. Explicit
 //! hardware actor registration enables dispatch; default registration stays
-//! disabled. No complete firmware profile is qualified yet, so these operations
-//! return compatibility/qualification errors before any persistent write or
-//! partial export. See [`backup`] for the validated restore planner and required
-//! Ember security extension. Registration is not proof of firmware support.
+//! disabled. An explicitly configured offline token profile enables capture and
+//! verified storage restoration. No hardware-qualified profile is bundled; without
+//! one, operations retain their qualification errors. See [`backup`] for the
+//! firmware contract, layouts, and restore planner. Registration does not qualify firmware.
 //!
 //! # Endpoints
 //!

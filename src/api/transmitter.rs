@@ -6,6 +6,7 @@ use tokio::sync::mpsc::Receiver;
 use tokio::sync::oneshot::Sender;
 
 use crate::api::Message;
+use crate::api::message::CommandGuard;
 use crate::frame::{Commands, Parameter};
 use crate::parameters::configuration;
 use crate::parameters::configuration::version;
@@ -14,6 +15,8 @@ use crate::{
     Command, Error, Extended, Frame, Header, Legacy, MIN_NON_LEGACY_VERSION, Parameters, Response,
     ValueError,
 };
+
+type PendingResponse = (Sender<Result<Parameters, Error>>, CommandGuard);
 
 type PendingNegotiation = (NonZero<u8>, Sender<Result<(), Error>>);
 
@@ -49,7 +52,7 @@ pub struct Transmitter<T> {
     transmit: T,
     inbox: Receiver<Message>,
     negotiated_version: Option<u8>,
-    pending_responses: BTreeMap<u8, Sender<Result<Parameters, Error>>>,
+    pending_responses: BTreeMap<u8, PendingResponse>,
     version_negotiation: Option<PendingNegotiation>,
     sequence: u8,
 }
@@ -97,7 +100,8 @@ impl<T> Transmitter<T> {
             return;
         }
 
-        let Some(response_channel) = self.pending_responses.remove(&header.sequence()) else {
+        let Some((response_channel, _guard)) = self.pending_responses.remove(&header.sequence())
+        else {
             warn!(
                 "Received response for unknown sequence: {}",
                 header.sequence()
@@ -157,8 +161,12 @@ where
                     desired_version,
                     response,
                 } => self.connect(desired_version, response).await,
-                Message::Command { command, response } => {
-                    self.handle_command(command, response).await;
+                Message::Command {
+                    command,
+                    response,
+                    guard,
+                } => {
+                    self.handle_command(command, response, guard).await;
                 }
                 Message::Response(frame) => {
                     self.handle_response(frame);
@@ -193,6 +201,7 @@ where
         &mut self,
         command: Commands,
         response: Sender<Result<Parameters, Error>>,
+        guard: CommandGuard,
     ) {
         let header = match self.header(command.id()) {
             Ok(header) => header,
@@ -216,23 +225,80 @@ where
             return;
         }
 
-        self.pending_responses.insert(header.sequence(), response);
+        self.pending_responses
+            .insert(header.sequence(), (response, guard));
         self.sequence = self.sequence.wrapping_add(1);
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::pin::pin;
+    use std::sync::Arc;
+    use std::task::{Context, Waker};
+
     use le_stream::FromLeStream;
-    use tokio::sync::{mpsc, oneshot};
+    use tokio::sync::{RwLock, mpsc, oneshot};
 
     use super::*;
+    use crate::Parsable;
+    use crate::parameters::utilities::get_eui64;
+    use crate::test_support::ready;
 
     const DESIRED_VERSION: u8 = 13;
     const NEGOTIATED_VERSION: u8 = 14;
     const STACK_TYPE: u8 = 2;
     const STACK_VERSION_LOW: u8 = 0x34;
     const STACK_VERSION_HIGH: u8 = 0x12;
+
+    struct AcceptTransmit;
+
+    #[expect(
+        clippy::unused_async_trait_impl,
+        reason = "Trait implementations use async fn consistently"
+    )]
+    impl Transmit for AcceptTransmit {
+        async fn transmit(&mut self, _frame: Frame<Commands>) -> Result<(), Error> {
+            Ok(())
+        }
+    }
+
+    #[test]
+    #[expect(
+        clippy::significant_drop_tightening,
+        reason = "The permit is moved into the transmitter until the response arrives"
+    )]
+    fn canceled_command_retains_maintenance_permit_until_firmware_response() {
+        for exclusive in [false, true] {
+            let gate = Arc::new(RwLock::new(()));
+            let guard = if exclusive {
+                CommandGuard::Write {
+                    _guard: Arc::new(ready(gate.clone().write_owned())),
+                }
+            } else {
+                CommandGuard::Read {
+                    _guard: Arc::new(ready(gate.clone().read_owned())),
+                }
+            };
+            let (_sender, inbox) = mpsc::channel(1);
+            let mut transmitter = Transmitter::new(AcceptTransmit, inbox);
+            let header = transmitter.header(get_eui64::Command::ID).unwrap();
+            let (response, receiver) = oneshot::channel();
+            drop(receiver);
+            ready(transmitter.handle_command(get_eui64::Command {}.into(), response, guard));
+            let mut maintenance = pin!(gate.write_owned());
+            let mut context = Context::from_waker(Waker::noop());
+            assert!(maintenance.as_mut().poll(&mut context).is_pending());
+            let payload = Parameters::parse_from_le_stream(
+                get_eui64::Command::ID,
+                [1, 2, 3, 4, 5, 6, 7, 8].into_iter(),
+            )
+            .unwrap();
+            transmitter.handle_response(Frame::new(header, payload));
+            assert!(maintenance.as_mut().poll(&mut context).is_ready());
+            drop(transmitter);
+        }
+    }
 
     #[test]
     fn canceled_version_negotiation_does_not_panic_on_mismatch() {
@@ -259,5 +325,6 @@ mod tests {
 
         assert!(transmitter.version_negotiation.is_none());
         assert!(transmitter.negotiated_version.is_none());
+        drop(transmitter);
     }
 }

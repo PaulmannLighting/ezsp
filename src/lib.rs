@@ -31,8 +31,8 @@
 #![deny(unsafe_code)]
 
 pub use self::api::{
-    BACKUP_INSPECTION_PROTOCOL_VERSION, BackupInspection, Client, Connection, Futures, Receive,
-    TranslatableEvent, Transmit,
+    BACKUP_INSPECTION_PROTOCOL_VERSION, BackupInspection, Client, Connection, Futures,
+    MaintenanceConnection, Receive, TranslatableEvent, Transmit,
 };
 pub use self::commands::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GetValueExt, GreenPower, Messaging, Mfglib,

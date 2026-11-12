@@ -1,10 +1,12 @@
 use std::num::NonZero;
+use std::sync::Arc;
 
 use le_stream::ToLeStream;
 use tokio::sync::mpsc::Sender;
-use tokio::sync::oneshot;
+use tokio::sync::{OwnedRwLockWriteGuard, RwLock, oneshot};
 
 use crate::api::Message;
+use crate::api::message::CommandGuard;
 use crate::api::negotiate_version::NegotiateVersion;
 use crate::frame::{Commands, Parameter, RespondsWith};
 use crate::{Communicate, Error, ezsp};
@@ -22,10 +24,31 @@ use crate::{Communicate, Error, ezsp};
 pub struct Connection {
     pub(crate) desired_version: NonZero<u8>,
     pub(crate) handle: Sender<Message>,
+    pub(crate) gate: Arc<RwLock<()>>,
 }
 
-impl Communicate for Connection {
-    async fn communicate<T>(&mut self, command: T) -> Result<T::Response, Error>
+/// Exclusive command session which waits for in-flight transactions and blocks
+/// all clones until dropped. It does not stop autonomous firmware activity.
+#[derive(Debug)]
+pub struct MaintenanceConnection {
+    connection: Connection,
+    guard: Arc<OwnedRwLockWriteGuard<()>>,
+}
+
+impl Connection {
+    /// Acquire exclusive access to this connection and all of its clones.
+    ///
+    /// Responses continue to flow through the transport actors. Callers must
+    /// drain callbacks and ensure firmware quiescence independently.
+    pub async fn maintenance(&self) -> MaintenanceConnection {
+        let guard = self.gate.clone().write_owned().await;
+        MaintenanceConnection {
+            connection: self.clone(),
+            guard: Arc::new(guard),
+        }
+    }
+
+    async fn transact<T>(&self, command: T, guard: CommandGuard) -> Result<T::Response, Error>
     where
         T: Parameter + RespondsWith + ToLeStream + Into<Commands>,
     {
@@ -35,6 +58,7 @@ impl Communicate for Connection {
             .send(Message::Command {
                 command: command.into(),
                 response,
+                guard: guard.clone(),
             })
             .await?;
 
@@ -51,5 +75,32 @@ impl Communicate for Connection {
                 Err(error)
             }
         }
+    }
+}
+
+impl Communicate for Connection {
+    async fn communicate<T>(&mut self, command: T) -> Result<T::Response, Error>
+    where
+        T: Parameter + RespondsWith + ToLeStream + Into<Commands>,
+    {
+        let guard = Arc::new(self.gate.clone().read_owned().await);
+        self.transact(command, CommandGuard::Read { _guard: guard })
+            .await
+    }
+}
+
+impl Communicate for MaintenanceConnection {
+    async fn communicate<T>(&mut self, command: T) -> Result<T::Response, Error>
+    where
+        T: Parameter + RespondsWith + ToLeStream + Into<Commands>,
+    {
+        self.connection
+            .transact(
+                command,
+                CommandGuard::Write {
+                    _guard: self.guard.clone(),
+                },
+            )
+            .await
     }
 }

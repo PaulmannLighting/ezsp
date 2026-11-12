@@ -447,97 +447,108 @@ channel access failure, network state errors, oversized messages, security failu
 expiry, and full tables. Unknown statuses remain backend-specific; they are never guessed from
 an unrelated status namespace.
 
-## Backup and restore foundations
+## Backup and restore
 
-`Ncp` implements `apis_saltans_hw::NetworkDump` and `NetworkRestore`, including
-actor dispatch and read-only restore validation. **No firmware profile can yet
-complete either operation successfully.** Dump rejects the absence of a consistent
-complete snapshot mechanism. Restore rejects unqualified persistent replay-state
-restoration and offline reset/readback before writing anything. The `apis-saltans`
-API is unchanged. A token copy or reforming a network from saved credentials does
-not satisfy its complete-backup contract.
+With `apis-saltans`, `Ncp` implements `NetworkDump` and `NetworkRestore` without
+changes to the upstream API. There is a successful, simulated end-to-end backend
+for **explicitly configured offline token profiles**. No hardware-qualified profile
+is bundled. Without a profile, the existing qualification errors remain in place.
 
-Existing `Driver::into_actor` leaves both operations disabled. Explicit registration
-makes the trait paths callable; the reported capabilities describe registration,
-not firmware qualification:
+An application supplies `apis_saltans::backup::OfflineTokenProfile::new` with an
+identifier, exact firmware version string, complete ordered token catalog, and
+`NetworkTokenLayout`, `SecurityTokenLayout`, and `DeviceTokenLayout` values. Each
+`TokenField` names a token key, array index, and byte offset. Integers and IEEE
+addresses use EZSP little-endian order. The constructor checks field bounds,
+duplicate tokens, and overlaps; outgoing APS counters may share exactly one field.
+All required device slots and outgoing counters must be mapped. The profile is a
+firmware contract: its full catalog must contain portable, writable core state,
+including all required child, key, policy, and incoming replay state. Selecting a
+profile asserts these properties; matching version and catalog metadata cannot
+prove them. The synthetic layout in the tests is not a Silicon Labs token layout.
+
+Configure an **offline** `Ncp` and register the optional actor operations explicitly:
 
 ```rust,no_run
 # use std::num::NonZeroUsize;
 # use apis_saltans_hw::Driver;
-# fn register(ncp: ezsp::Ncp) {
+# use ezsp::apis_saltans::backup::OfflineTokenProfile;
+# fn register(ncp: ezsp::Ncp, verified_profile: OfflineTokenProfile) {
+let ncp = ncp.with_offline_token_backup(verified_profile);
 let (handle, actor) = ncp.actor_builder(NonZeroUsize::MIN)
     .with_network_dump()
     .with_network_restore()
     .build();
-// Spawn the actor in the application's runtime. Calls currently return errors
-// describing firmware qualification or target compatibility; they do not write.
+// Spawn actor in the application's runtime, then use handle.dump_network()
+// or handle.restore_network(original_backup, explicit_counter_advances).
 # drop((handle, actor));
 # }
 ```
 
-`apis_saltans::backup::RestorePlan::prepare` checks an original snapshot and advances
-normalized outgoing counters and the extension's global APS counter once, preserving
-keys, sequence numbers, addresses, and incoming replay counters. The required
-`org.silabs.emberznet/security` version-one extension contains initial-security flags,
-the Trust Center key or hashed-key seed, and the global APS counter. Construct it
-through `EmberSecurityState`; debug output redacts the key. The current planner rejects
-foreign sources, additional network-key transitions, and missing or unknown extensions.
-This security extension does not represent all required policy, child, or replay state;
-a complete firmware-specific state schema and capture/write backend remain future work.
+`Driver::into_actor` still leaves both operations disabled. Capabilities describe
+registration, not firmware support. `Builder::start` initializes the network; this
+backend instead needs a connection negotiated at EZSP v13 and an `Ncp::new` created
+before network initialization. The application owns transport tasks and must keep
+callbacks drained. Capture requires a stopped NCP with its original saved network
+still intact. Do not use network leave or factory reset to stop the source: those
+operations can erase the state to be backed up. A live coordinator is rejected.
 
-The hardware actor already advances normalized counters before calling the traits;
-the trait implementation only advances the opaque extension counter. Direct trait
-callers must follow that same preparation contract. Do not pass a `RestorePlan`'s
-prepared snapshot back to `NcpHandle::restore_network`, which expects the original.
-Target validation additionally checks v13, offline state, classic key storage, an
-exact firmware identity match, IEEE-address writability, and key/child capacities.
-Validation errors occur before mutation. Direct apply failures retain an `Unchanged`
-mutation boundary and backend diagnostics; no success report is fabricated.
+Capture checks `NoNetwork`, classic key storage, exact firmware and token metadata;
+reads every token element twice; and rechecks metadata and operational identity.
+It derives normalized network parameters, keys, device records, and replay counters
+from the token bytes. Two equal reads detect observed changes; completeness and
+quiescence still depend on the profile's verified firmware behavior.
 
-The following building blocks are available independently of the `apis-saltans` feature:
+Restore validates the original token image against every normalized field, advances
+outgoing NWK and APS/link counters once, and preserves incoming counters, secrets,
+unused slots, and opaque metadata. It checks target capacities and IEEE writability
+before writes. The Java custom-manufacturing-token identity path avoids matching
+address writes and refuses occupied tokens. Restore writes the full image, compares
+exact readback, verifies offline state, metadata, operational IEEE, and normalized
+state, and only then returns `RestoreReport`. A lost write acknowledgement or failed
+verification returns `PossiblyModified`; no rollback or successful report is implied.
+A required IEEE reset returns an error with that mutation boundary before network
+tokens are written. The caller must reset/reconnect explicitly and retry.
 
-- `Connection::inspect_backup_firmware()` collects non-secret firmware, network-state,
-  key-storage, and token-table metadata. Inspection currently accepts only negotiated
-  EZSP v13, whose token responses use the modeled legacy status layout. Other versions
-  fail before commands are issued. Successful inspection is evidence for qualification,
-  not certification of backup support. The builder defaults to requesting EZSP v8;
-  choose v13 when connecting a compatible NCP for this inspection.
-- `SecurityCounters` reads the four-byte NWK and APS security counters and writes
-  caller-prepared values after checking that the target reports `NoNetwork`. These
-  counters are unrelated to APS message correlation sequences. Writes do not advance
-  counters or prove reset persistence. The caller must exclusively own the NCP and
-  prevent network startup or other writes between the state check and write.
-- `SecurityExt::export_network_key_with_info()` exports the current primary-network
-  key with its sequence, outgoing counter, and alternate-key presence metadata using
-  Security Manager commands. Metadata reads bracket export and reject observable
-  changes; they do not establish an atomic snapshot. Alternate key contents, device
-  keys, and replay state must still be captured separately.
-- `Identity::get_custom_eui64()` and `set_custom_eui64()` implement the standard
-  manufacturing-token path used by zsmartsystems. Writes require exclusive offline
-  ownership, skip already active addresses, and refuse to overwrite a non-erased
-  token. The result distinguishes an applied operational address from a required
-  reset; failures retain preflight/write/readback mutation boundaries. Factory reset
-  and reboot are never implicit, and persistence must be verified after reconnection.
-- `ember::token::Data` encodes its four-byte size followed by exactly that many bytes,
-  with a maximum payload of `MAX_TOKEN_DATA_SIZE` (64). Use `Data::try_new` for an
-  untrusted length and `as_slice()` to explicitly access the secret-bearing payload.
-  `Data::new` rejects oversized lengths by panicking and zeroes unused backing bytes.
+Both operations hold `Connection::maintenance()` across all commands, blocking
+connection clones and waiting for in-flight commands. Command permits survive
+cancellation until their firmware response arrives. This excludes host commands;
+it cannot stop autonomous firmware activity or another independent transport client.
+Keep the driver actor alive until an accepted restore finishes, including after a
+caller drops its response future. Aborting the actor or directly canceling a restore
+can leave partial storage; keep the target offline and revalidate it before startup.
 
-After negotiating a compatible connection, read-only inspection needs no network reset:
+No network formation, initialization, factory reset, reboot, or resume is implicit.
+Successful restore verifies storage readback, **not persistence across a real reset
+or operational RAM reload**. The application must perform any required offline
+reset/reconnection, reapply matching runtime configuration, and verify reload before
+explicit activation. Hardware qualification must establish that resets do not lower
+the restored counters or lose identity/keys/replay state. Firmware with required
+RAM-only replay state, nonportable tokens, PSA handles, or alternate network-key
+transitions is unsupported by this backend. See [the feasibility assessment](ARCHITECTURE.md#backup-firmware-feasibility)
+for the full contract and remaining acceptance work.
 
-```rust,no_run
-# async fn inspect(mut connection: ezsp::Connection) -> Result<(), ezsp::Error> {
-let inspection = connection.inspect_backup_firmware().await?;
-println!("{inspection:?}"); // Metadata only; no token values or key bytes.
-# Ok(())
-# }
-```
+`apis_saltans::backup::RestorePlan::prepare` accepts original snapshots. The hardware
+actor already advances normalized counters before invoking the backend; direct trait
+callers must use that preparation contract too. The planner advances the required
+`org.silabs.emberznet/security` extension's global APS counter. The backend advances
+counters inside the required `tokens` extension using its layout, deduplicating shared
+APS fields. Do not send a plan's already advanced snapshot to the actor, which expects
+the original backup. Unknown extensions and alternate-key transitions are rejected.
 
-Backup-related token/key parameters, exported key payloads, network credentials,
-and initial security state redact secret bytes in `Debug`. Raw `getValue`/`setValue`
-payloads are also redacted because their contents depend on the value ID. Explicitly
-accessed key arrays remain secret-bearing, and external transports must avoid logging
-raw frames. Redaction does not promise memory zeroization or backup-file encryption.
+The following helpers are available independently of `apis-saltans`:
 
-See [the firmware feasibility assessment](ARCHITECTURE.md#backup-firmware-feasibility)
-for evidence, blockers, and the requirements for enabling complete backup support.
+- `Connection::inspect_backup_firmware()` reads non-secret version, state, storage,
+  and token metadata. Only EZSP v13's modeled legacy token status layout is accepted.
+  The builder defaults to v8; request v13 for a compatible NCP.
+- `SecurityCounters` reads and writes typed NWK/APS counters; writes require offline
+  state. It does not advance counters or establish reset persistence.
+- `SecurityExt::export_network_key_with_info()` retains key sequence/counter metadata
+  and rejects observable changes around export. It does not establish an atomic snapshot.
+- `Identity` reads/writes custom EUI64 with explicit applied/restart-required results
+  and write/readback failure boundaries, following zsmartsystems' standard commands.
+- `ember::token::Data` transfers a four-byte size and exactly that many bytes, up to
+  64 bytes. Use `try_new` for untrusted lengths and `as_slice` to access secret bytes.
+
+Backup, token, key, and initial-security debug output redacts secret payloads. Raw
+transport logs and explicitly exposed byte arrays remain secret-bearing. Redaction
+provides neither memory zeroization nor encrypted/authenticated backup-file storage.

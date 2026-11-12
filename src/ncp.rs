@@ -63,6 +63,8 @@ pub struct Ncp {
     pub(crate) endpoints: Box<[Endpoint]>,
     event_handler_handle: Sender<Message>,
     options: Options,
+    #[cfg(feature = "apis-saltans")]
+    pub(crate) backup_profile: Option<crate::apis_saltans::backup::OfflineTokenProfile>,
 }
 
 impl Ncp {
@@ -129,6 +131,8 @@ impl Ncp {
             endpoints,
             event_handler_handle,
             options,
+            #[cfg(feature = "apis-saltans")]
+            backup_profile: None,
         })
     }
 }

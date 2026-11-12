@@ -109,6 +109,7 @@ impl ConnectionScript {
         let connection = crate::Connection {
             desired_version: std::num::NonZeroU8::new(protocol).unwrap(),
             handle,
+            gate: std::sync::Arc::new(tokio::sync::RwLock::new(())),
         };
         (connection, Self { inbox, script })
     }
@@ -126,13 +127,15 @@ impl ConnectionScript {
                 assert!(self.inbox.try_recv().is_err(), "unexpected remaining I/O");
                 return output;
             }
-            let message = match self.inbox.try_recv() {
-                Ok(message) => message,
+            let (command, response, guard) = match self.inbox.try_recv() {
+                Ok(crate::api::Message::Command {
+                    command,
+                    response,
+                    guard,
+                }) => (command, response, guard),
+                Ok(_) => panic!("unexpected connection operation"),
                 Err(tokio::sync::mpsc::error::TryRecvError::Empty) => continue,
                 Err(error) => panic!("connection channel closed: {error}"),
-            };
-            let crate::api::Message::Command { command, response } = message else {
-                panic!("unexpected connection operation");
             };
             let transaction = self.script.0.pop_front().expect("unexpected command");
             assert_eq!(command.id(), transaction.id);
@@ -145,6 +148,7 @@ impl ConnectionScript {
                     .map_err(Into::into)
             });
             response.send(result).unwrap();
+            drop(guard);
         }
         panic!("operation stalled after the bounded scripted scheduler budget");
     }

@@ -35,7 +35,7 @@ const GET_CONFIGURATION: u16 = 0x0052;
 const TOKEN_COUNT: u16 = 0x0100;
 const VERSION: &[u8] = &[0, 7, 0x34, 0x12, 7, 4, 2, 0, 0];
 
-fn options() -> RestoreOptions {
+pub(super) fn options() -> RestoreOptions {
     RestoreOptions::new(NonZeroU32::new(10).unwrap(), NonZeroU32::new(20).unwrap())
 }
 
@@ -81,7 +81,7 @@ fn snapshot(counter: u32, extensions: Vec<BackupExtension>) -> NetworkBackup {
     .unwrap()
 }
 
-fn backup() -> NetworkBackup {
+pub(super) fn backup() -> NetworkBackup {
     snapshot(
         NWK_COUNTER,
         vec![security(APS_COUNTER).to_extension().unwrap()],
@@ -95,7 +95,7 @@ fn ncp(protocol: u8, transactions: Vec<Transaction>) -> (Ncp, ConnectionScript) 
     (ncp, script)
 }
 
-async fn with_actor<A, R>(actor: A, request: R) -> R::Output
+pub(super) async fn with_actor<A, R>(actor: A, request: R) -> R::Output
 where
     A: Future,
     R: Future,

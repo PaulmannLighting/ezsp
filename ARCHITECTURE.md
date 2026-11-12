@@ -560,8 +560,11 @@ namespaces keep their existing opaque representation.
 The initial assessment does not certify a complete-backup firmware profile. No target
 NCP was exposed through a serial device in the implementation environment, so hardware
 capture, reset persistence, and replacement-device restoration could not be tested.
-`apis-saltans` remains unchanged and neither optional backup trait is implemented or
-registered. The implementation stops before profile-dependent restore writes.
+`apis-saltans` remains unchanged. `Ncp` now implements both optional backup traits;
+ordinary actor construction leaves them disabled, and explicit registration dispatches
+to software planning and read-only qualification. Every current profile is rejected
+before partial snapshot export or restore writes. No complete capture/write backend
+or successful restoration is claimed.
 
 The relevant source evidence is:
 
@@ -586,7 +589,7 @@ The relevant source evidence is:
 | Current network-key metadata | Export brackets key bytes with matching metadata reads | Establish synchronization; capture alternate key contents and transitions |
 | Consistent complete snapshot | No verified firmware synchronization mechanism | Freeze/version all required RAM and persistent state, or reject capture |
 | Incoming replay state | Neighbor accessors exist; token backup omits incoming counters; link-key import lacks replay metadata | Verify complete read/write coverage and persistence; add firmware support where absent |
-| Coordinator IEEE identity | Standard restored-EUI64 mechanism documented | Verify component inclusion, token identity, and effective address after reset |
+| Coordinator IEEE identity | Tested standard custom-token helper follows Java; restored-EUI64 mechanism also documented | Qualify the target's mechanism and effective address persistence after reset |
 | Trust Center and child records | Commands and token metadata provide starting points | Inventory required state, key/seed policies, child fields, and capacities |
 | PSA key storage | Inspection preserves the reported storage version | Verify export permissions and portable import; do not copy device-local key identifiers |
 | Offline restore and reset | Reset command exists; transport is externally owned | Provide exclusive preparation, reconnect, no automatic startup, and readback |
@@ -621,7 +624,7 @@ The remaining profile-dependent workflow is:
 flowchart TD
     inspect[Read-only firmware inspection] --> qualify[Qualify complete firmware profile]
     qualify --> gate{All required state supported?}
-    gate -->|No| reject[Keep dump and restore disabled]
+    gate -->|No| reject[Reject before export or writes]
     gate -->|Yes| capture[Implement synchronized complete capture]
     capture --> extension[Versioned required Ember extension]
     extension --> offline[Exclusive offline target preparation]
@@ -633,9 +636,9 @@ flowchart TD
     report --> resume[Caller explicitly resumes network]
 ```
 
-Before enabling `NetworkDump`/`NetworkRestore`, define the extension codec, validate all
-required extensions and capacities before mutation, and acquire ownership covering both
-the hardware actor and callback-generated commands. Upstream dispatch already advances
+Before allowing either trait to succeed, define the remaining complete state schema,
+implement synchronized capture and offline persistence/readback, and acquire ownership
+covering both the hardware actor and callback-generated commands. Upstream dispatch already advances
 normalized outgoing counters; the backend must advance extension counters exactly once.
 Direct callers must perform the same preparation and validation sequence. Any failure
 after a persistent write may have occurred must report `PossiblyModified` and prevent
@@ -646,3 +649,89 @@ replay-state preservation, reset persistence, failed-write/reconnection handling
 successful encrypted communication only after explicit resume. Software fixtures alone
 cannot close these blockers. Neither a generic token dump nor Java-style `formNetwork`
 recovery should be registered as complete backup support.
+
+
+### Registered trait integration and restore planning
+
+`apis_saltans/backup.rs` implements `NetworkDump` and `NetworkRestore` directly for
+`Ncp`. The hardware dependency enables both `driver` and `coordinator` so consumers
+can use the opaque handle's capability, dump, and restore methods. Existing default
+registration is unchanged. Capabilities indicate registration only; even a registered
+operation must reject unsupported firmware and snapshots.
+
+`NetworkDump` accepts only the modeled v13 layout, gathers non-secret inspection
+metadata, checks joined state and classic key storage, then returns the explicit
+snapshot-consistency blocker. It does not export keys or manufacture a partial
+`NetworkBackup` from the Java credential-recovery subset.
+
+`backup/plan.rs` validates the schema, source stack, and all required extensions before
+I/O. `RestorePlan::prepare` is for original snapshots; the internal actor path consumes
+already advanced normalized counters without advancing them again. The extension's
+global APS counter is advanced separately with checked arithmetic. The plan preserves
+per-device incoming replay state and generates a new extension encoding containing the
+advanced APS counter. Unknown extensions and alternate-key transitions are rejected.
+A software plan neither proves completeness nor authorizes hardware mutation.
+
+`backup/security.rs` defines version 1 of `org.silabs.emberznet/security`:
+
+| Offset | Length | Content |
+| --- | --- | --- |
+| 0 | 2 | Little-endian initial security flags |
+| 2 | 16 | Trust Center key or hashed-key seed |
+| 18 | 4 | Little-endian global outgoing APS security counter |
+
+The payload must be exactly 22 bytes; unknown flags, versions, and identifiers are
+rejected. The supported security shape requires network/preconfigured keys and global
+or hashed Trust Center mode, without distributed or install-code-derived initialization.
+Policies, full child records, and persistent replay state still require a firmware-specific
+complete state representation. No current dump creates this extension on a live NCP.
+
+Restore target validation is read-only: protocol, offline state, key storage, exact
+firmware identity, operational/custom IEEE address, and table capacities are checked.
+It then rejects the missing replay-persistence and offline-reset guarantees. The direct
+apply method repeats validation and wraps failures as `RestoreFailed(Unchanged)` with
+the original source; the actor normally returns the validation failure before reaching
+apply. No factory reset, key import, counter write, network formation, or reset occurs
+through either trait, and no `RestoreReport` is returned for unverified state.
+
+```mermaid
+sequenceDiagram
+    participant H as Hardware handle
+    participant A as Driver actor
+    participant P as EZSP restore planner
+    participant N as Target NCP
+    H->>A: Original backup and explicit counter advances
+    A->>A: Validate and advance normalized counters
+    A->>P: Prepared backup and options
+    P->>P: Validate extension and advance its APS counter
+    P->>N: Read state, version, identity, capacities
+    N-->>P: Target observations
+    P-->>A: Incompatible firmware guarantees
+    A-->>H: Error before any persistent write
+```
+
+### Java identity reference
+
+The reference checkout's `ZigBeeDongleEzsp.setIeeeAddress` first reads the operational
+address and avoids a redundant write. `EmberNcp.setMfgCustomEui64` delegates to
+`setMfgToken` with eight protocol-order bytes. Its backup manager factory-resets and
+leaves the network before setting identity, but ignores both the factory-reset result
+and the identity setter's result. `EmberNetworkInitialisation.setSecurityState` installs
+keys and writes NWK/APS outgoing counters before `formNetwork`; this starts the network
+and is therefore not a valid implementation of the complete offline restore contract.
+
+`extensions/identity.rs` implements the reusable standard-command identity path without
+copying the implicit destructive reset. It requires offline state, avoids matching-token
+rewrites, rejects occupied custom tokens, writes protocol-order bytes, verifies token
+readback, and checks the operational address. `RestartRequired` is explicit when the
+new token has not taken effect. Even `Applied` still requires caller-owned reset and
+persistence verification. Lost write responses and readback failures retain possible
+mutation in `IdentityError`. Firmware using the restored-EUI64 stack token instead of
+custom manufacturing storage needs a different, explicitly qualified profile.
+
+Software tests exercise actual `Connection` channels and the released hardware actor,
+including disabled/individual/combined registration, overflow before I/O, transport
+failures, read-only blockers, ordinary requests, and dropped dump response receivers.
+Identity command fixtures check byte order, write avoidance, occupied-token rejection,
+and mutation boundaries. They do not replace hardware acceptance or implement the
+remaining capture, persistent-state, and reset/reconnection mechanisms.

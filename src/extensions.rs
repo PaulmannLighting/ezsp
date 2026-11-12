@@ -4,10 +4,12 @@
 use std::fmt::Display;
 
 pub use self::configuration_ext::ConfigurationExt;
+pub use self::identity::{Identity, IdentityChange, IdentityError, IdentityStage};
 pub use self::policy_ext::PolicyExt;
 pub use self::security_counters::SecurityCounters;
 pub use self::security_ext::{NetworkKeyExport, SecurityExt};
 mod configuration_ext;
+mod identity;
 mod policy_ext;
 mod security_counters;
 mod security_ext;

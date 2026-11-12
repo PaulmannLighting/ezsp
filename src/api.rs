@@ -12,7 +12,7 @@ use tokio::sync::mpsc::{self, Sender, channel};
 pub use self::backup_inspection::{BACKUP_INSPECTION_PROTOCOL_VERSION, BackupInspection};
 pub use self::connection::Connection;
 pub use self::futures::Futures;
-use self::message::Message;
+pub use self::message::Message;
 pub use self::receiver::Receive;
 use self::receiver::Receiver;
 pub use self::translatable_event::TranslatableEvent;
@@ -21,7 +21,7 @@ use self::transmitter::Transmitter;
 use crate::api::negotiate_version::NegotiateVersion;
 use crate::{Callback, Error};
 
-mod backup_inspection;
+pub mod backup_inspection;
 mod connection;
 mod futures;
 mod message;

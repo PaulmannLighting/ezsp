@@ -43,7 +43,8 @@ pub use self::constants::{MAX_HEADER_SIZE, MIN_NON_LEGACY_VERSION};
 pub use self::defragmentation::{Defragmented, DefragmentedMessage, Defragmenter};
 pub use self::error::{Decode, Error, Status, ValueError};
 pub use self::extensions::{
-    ConfigurationExt, Displayable, NetworkKeyExport, PolicyExt, SecurityCounters, SecurityExt,
+    ConfigurationExt, Displayable, Identity, IdentityChange, IdentityError, IdentityStage,
+    NetworkKeyExport, PolicyExt, SecurityCounters, SecurityExt,
 };
 pub use self::frame::{
     Callback, CallbackType, Command, Commands, Extended, FormatVersion, Frame, Header, HighByte,

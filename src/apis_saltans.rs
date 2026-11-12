@@ -17,6 +17,15 @@
 //! serializes hardware requests; it is separate from the internal EZSP
 //! transmitter and receiver actors.
 //!
+//! # Optional backup operations
+//!
+//! [`Ncp`](crate::Ncp) implements `NetworkDump` and `NetworkRestore`. Explicit
+//! hardware actor registration enables dispatch; default registration stays
+//! disabled. No complete firmware profile is qualified yet, so these operations
+//! return compatibility/qualification errors before any persistent write or
+//! partial export. See [`backup`] for the validated restore planner and required
+//! Ember security extension. Registration is not proof of firmware support.
+//!
 //! # Endpoints
 //!
 //! `apis_saltans_hw::zdp::SimpleDescriptor` converts into [`crate::Endpoint`]
@@ -43,6 +52,7 @@
 //! source. Final acknowledged-unicast `messageSent` statuses are preserved in
 //! `apis_saltans_hw::aps::apsde::DataConfirm` values.
 
+pub mod backup;
 mod conversion;
 mod error;
 mod ncp;

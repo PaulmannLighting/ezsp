@@ -9,6 +9,11 @@ use le_stream::ToLeStream;
 use crate::frame::{Commands, Parameter, RespondsWith};
 use crate::{Communicate, Error, Parameters, Parsable};
 
+#[cfg(feature = "apis-saltans")]
+const CONNECTION_CAPACITY: usize = 16;
+#[cfg(feature = "apis-saltans")]
+const MAX_SCRIPT_POLLS: usize = 1024;
+
 /// One expected command and its raw response or transport failure.
 pub struct Transaction {
     id: u16,
@@ -86,5 +91,61 @@ where
     match future.as_mut().poll(&mut context) {
         Poll::Ready(output) => output,
         Poll::Pending => panic!("scripted future unexpectedly blocked"),
+    }
+}
+
+/// Feed scripted transactions through an actual Connection rather than a blanket command mock.
+#[cfg(feature = "apis-saltans")]
+pub struct ConnectionScript {
+    inbox: tokio::sync::mpsc::Receiver<crate::api::Message>,
+    script: Script,
+}
+
+#[cfg(feature = "apis-saltans")]
+impl ConnectionScript {
+    /// Construct an actor-channel-backed connection with the given negotiated protocol.
+    pub fn new(protocol: u8, script: Script) -> (crate::Connection, Self) {
+        let (handle, inbox) = tokio::sync::mpsc::channel(CONNECTION_CAPACITY);
+        let connection = crate::Connection {
+            desired_version: std::num::NonZeroU8::new(protocol).unwrap(),
+            handle,
+        };
+        (connection, Self { inbox, script })
+    }
+
+    /// Drive a connection operation, checking every transaction and forbidding extra I/O.
+    pub fn run<F>(&mut self, future: F) -> F::Output
+    where
+        F: Future,
+    {
+        let mut future = pin!(future);
+        let mut context = Context::from_waker(Waker::noop());
+        for _ in 0..MAX_SCRIPT_POLLS {
+            if let Poll::Ready(output) = future.as_mut().poll(&mut context) {
+                self.script.assert_finished();
+                assert!(self.inbox.try_recv().is_err(), "unexpected remaining I/O");
+                return output;
+            }
+            let message = match self.inbox.try_recv() {
+                Ok(message) => message,
+                Err(tokio::sync::mpsc::error::TryRecvError::Empty) => continue,
+                Err(error) => panic!("connection channel closed: {error}"),
+            };
+            let crate::api::Message::Command { command, response } = message else {
+                panic!("unexpected connection operation");
+            };
+            let transaction = self.script.0.pop_front().expect("unexpected command");
+            assert_eq!(command.id(), transaction.id);
+            assert_eq!(
+                command.to_le_stream().collect::<Vec<_>>(),
+                transaction.request
+            );
+            let result = transaction.response.and_then(|bytes| {
+                Parameters::parse_from_le_stream(transaction.id, bytes.into_iter())
+                    .map_err(Into::into)
+            });
+            response.send(result).unwrap();
+        }
+        panic!("operation stalled after the bounded scripted scheduler budget");
     }
 }

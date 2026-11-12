@@ -55,7 +55,7 @@ impl Connection {
     }
 }
 
-async fn inspect<T>(target: &mut T, protocol_version: u8) -> Result<BackupInspection, Error>
+pub async fn inspect<T>(target: &mut T, protocol_version: u8) -> Result<BackupInspection, Error>
 where
     T: Configuration + Networking + TokenInterface + Send,
 {

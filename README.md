@@ -449,12 +449,50 @@ an unrelated status namespace.
 
 ## Backup and restore foundations
 
-Complete `apis-saltans` network dump/restore is **not enabled**. Firmware feasibility
-checks found unresolved requirements for consistent capture, incoming replay-state
-restoration, and offline persistence/readback after reset. No firmware profile is
-certified, and this crate does not implement `NetworkDump` or `NetworkRestore` yet.
-The `apis-saltans` API is unchanged. A token copy or reforming a network from saved
-credentials does not satisfy its complete-backup contract.
+`Ncp` implements `apis_saltans_hw::NetworkDump` and `NetworkRestore`, including
+actor dispatch and read-only restore validation. **No firmware profile can yet
+complete either operation successfully.** Dump rejects the absence of a consistent
+complete snapshot mechanism. Restore rejects unqualified persistent replay-state
+restoration and offline reset/readback before writing anything. The `apis-saltans`
+API is unchanged. A token copy or reforming a network from saved credentials does
+not satisfy its complete-backup contract.
+
+Existing `Driver::into_actor` leaves both operations disabled. Explicit registration
+makes the trait paths callable; the reported capabilities describe registration,
+not firmware qualification:
+
+```rust,no_run
+# use std::num::NonZeroUsize;
+# use apis_saltans_hw::Driver;
+# fn register(ncp: ezsp::Ncp) {
+let (handle, actor) = ncp.actor_builder(NonZeroUsize::MIN)
+    .with_network_dump()
+    .with_network_restore()
+    .build();
+// Spawn the actor in the application's runtime. Calls currently return errors
+// describing firmware qualification or target compatibility; they do not write.
+# drop((handle, actor));
+# }
+```
+
+`apis_saltans::backup::RestorePlan::prepare` checks an original snapshot and advances
+normalized outgoing counters and the extension's global APS counter once, preserving
+keys, sequence numbers, addresses, and incoming replay counters. The required
+`org.silabs.emberznet/security` version-one extension contains initial-security flags,
+the Trust Center key or hashed-key seed, and the global APS counter. Construct it
+through `EmberSecurityState`; debug output redacts the key. The current planner rejects
+foreign sources, additional network-key transitions, and missing or unknown extensions.
+This security extension does not represent all required policy, child, or replay state;
+a complete firmware-specific state schema and capture/write backend remain future work.
+
+The hardware actor already advances normalized counters before calling the traits;
+the trait implementation only advances the opaque extension counter. Direct trait
+callers must follow that same preparation contract. Do not pass a `RestorePlan`'s
+prepared snapshot back to `NcpHandle::restore_network`, which expects the original.
+Target validation additionally checks v13, offline state, classic key storage, an
+exact firmware identity match, IEEE-address writability, and key/child capacities.
+Validation errors occur before mutation. Direct apply failures retain an `Unchanged`
+mutation boundary and backend diagnostics; no success report is fabricated.
 
 The following building blocks are available independently of the `apis-saltans` feature:
 
@@ -474,6 +512,12 @@ The following building blocks are available independently of the `apis-saltans` 
   Security Manager commands. Metadata reads bracket export and reject observable
   changes; they do not establish an atomic snapshot. Alternate key contents, device
   keys, and replay state must still be captured separately.
+- `Identity::get_custom_eui64()` and `set_custom_eui64()` implement the standard
+  manufacturing-token path used by zsmartsystems. Writes require exclusive offline
+  ownership, skip already active addresses, and refuse to overwrite a non-erased
+  token. The result distinguishes an applied operational address from a required
+  reset; failures retain preflight/write/readback mutation boundaries. Factory reset
+  and reboot are never implicit, and persistence must be verified after reconnection.
 - `ember::token::Data` encodes its four-byte size followed by exactly that many bytes,
   with a maximum payload of `MAX_TOKEN_DATA_SIZE` (64). Use `Data::try_new` for an
   untrusted length and `as_slice()` to explicitly access the secret-bearing payload.

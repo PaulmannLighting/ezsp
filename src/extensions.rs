@@ -5,8 +5,12 @@ use std::fmt::Display;
 
 pub use self::configuration_ext::ConfigurationExt;
 pub use self::policy_ext::PolicyExt;
+pub use self::security_counters::SecurityCounters;
+pub use self::security_ext::{NetworkKeyExport, SecurityExt};
 mod configuration_ext;
 mod policy_ext;
+mod security_counters;
+mod security_ext;
 
 /// Extension trait for converting a type into a displayable form.
 pub trait Displayable {

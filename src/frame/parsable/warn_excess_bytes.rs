@@ -27,8 +27,9 @@ where
                 instance,
             }) => {
                 warn!("Stream not exhausted after parsing: {instance:?}");
-                let remainder: Box<[u8]> = once(next_byte).chain(stream).collect();
-                debug!("Excess bytes: {remainder:#04X?}");
+                // Trailing bytes can be unparsed secret material on a mismatched firmware.
+                let count = once(next_byte).chain(stream).count();
+                debug!("Discarded {count} excess bytes");
                 Ok(instance)
             }
             Err(Error::UnexpectedEndOfStream) => Err(Decode::TooFewBytes),

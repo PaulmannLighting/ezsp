@@ -5,6 +5,26 @@ use std::io::ErrorKind;
 /// Invalid values.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, thiserror::Error)]
 pub enum ValueError {
+    /// A token payload exceeds the supported storage capacity.
+    #[error("Invalid token payload size: {0}")]
+    InvalidTokenSize(u32),
+
+    /// A security counter response has an unexpected byte length.
+    #[error("Invalid security counter length: {0}")]
+    InvalidSecurityCounterLength(usize),
+
+    /// A security counter write was requested while the NCP was not offline.
+    #[error("Cannot set security counters in network state {0:#04X}")]
+    SecurityCounterWriteWhileOnline(u8),
+
+    /// The active network key is not set.
+    #[error("No active network key is set")]
+    MissingNetworkKey,
+
+    /// Network-key metadata changed during export.
+    #[error("Network-key metadata changed during export")]
+    NetworkKeyChanged,
+
     /// An invalid frame ID for a legacy header was received.
     #[error("Invalid frame ID for legacy frame format: {0}")]
     InvalidFrameId(#[from] TryFromIntError),
@@ -41,8 +61,13 @@ pub enum ValueError {
 impl From<ValueError> for io::Error {
     fn from(error: ValueError) -> Self {
         let kind = match error {
-            ValueError::InvalidRouteRadius(_) => ErrorKind::InvalidInput,
-            ValueError::InvalidFrameId(_)
+            ValueError::InvalidRouteRadius(_)
+            | ValueError::InvalidTokenSize(_)
+            | ValueError::SecurityCounterWriteWhileOnline(_) => ErrorKind::InvalidInput,
+            ValueError::MissingNetworkKey
+            | ValueError::NetworkKeyChanged
+            | ValueError::InvalidSecurityCounterLength(_)
+            | ValueError::InvalidFrameId(_)
             | ValueError::EmberDutyCycleState(_)
             | ValueError::EmberNetworkStatus(_)
             | ValueError::EmberNodeType(_)

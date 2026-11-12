@@ -177,7 +177,7 @@ mod tests {
         scans.add_channel(energy_result());
         scans.complete(Err(Error::NotConfigured));
         assert!(result.blocking_recv().is_err());
-        assert!(scans.channels.is_empty());
+        assert_eq!(scans.channels, []);
         assert!(scans.queue.is_empty());
     }
 
@@ -188,6 +188,6 @@ mod tests {
         let (sender, result) = oneshot::channel();
         scans.register(PendingScan::Channel(sender));
         scans.complete(Ok(()));
-        assert!(result.blocking_recv().unwrap().unwrap().is_empty());
+        assert_eq!(result.blocking_recv().unwrap().unwrap(), []);
     }
 }

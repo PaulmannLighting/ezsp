@@ -3,8 +3,6 @@
 //!
 //! The response provides information about the firmware running on the NCP.
 
-use core::fmt::Debug;
-
 use crate::ezsp::StackVersion;
 
 crate::frame::parameters::frame!(

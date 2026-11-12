@@ -1,3 +1,4 @@
+use std::fmt::{self, Debug, Formatter};
 use std::ops::RangeInclusive;
 
 use rand::distr::{Distribution, StandardUniform};
@@ -25,7 +26,7 @@ const VALID_PAN_IDS: RangeInclusive<u16> = 0x0000..=0xFFFE;
 /// Random credentials can be sampled with [`RngExt::random`](rand::RngExt::random).
 /// The sampling implementation accepts any random-number generator, so
 /// production callers must supply a cryptographically secure generator.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq)]
 pub struct NetworkCredentials {
     pub(crate) extended_pan_id: Eui64,
     pub(crate) pan_id: PanId,
@@ -85,4 +86,16 @@ where
     // the all-zero and all-one sentinel addresses.
     bytes[0] = (bytes[0] & !MULTICAST_BIT) | LOCAL_BIT;
     Eui64::from(bytes)
+}
+
+impl Debug for NetworkCredentials {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("NetworkCredentials")
+            .field("extended_pan_id", &self.extended_pan_id)
+            .field("pan_id", &self.pan_id)
+            .field("trust_center_eui64", &self.trust_center_eui64)
+            .field("network_key", &"[REDACTED]")
+            .finish()
+    }
 }

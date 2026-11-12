@@ -30,7 +30,10 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(unsafe_code)]
 
-pub use self::api::{Client, Connection, Futures, Receive, TranslatableEvent, Transmit};
+pub use self::api::{
+    BACKUP_INSPECTION_PROTOCOL_VERSION, BackupInspection, Client, Connection, Futures, Receive,
+    TranslatableEvent, Transmit,
+};
 pub use self::commands::{
     Binding, Bootloader, Cbke, Configuration, Ezsp, GetValueExt, GreenPower, Messaging, Mfglib,
     Networking, ProxyTable, Security, SinkTable, TokenInterface, TrustCenter, Utilities, Wwah, Zll,
@@ -39,7 +42,9 @@ pub use self::communicate::Communicate;
 pub use self::constants::{MAX_HEADER_SIZE, MIN_NON_LEGACY_VERSION};
 pub use self::defragmentation::{Defragmented, DefragmentedMessage, Defragmenter};
 pub use self::error::{Decode, Error, Status, ValueError};
-pub use self::extensions::{ConfigurationExt, Displayable, PolicyExt};
+pub use self::extensions::{
+    ConfigurationExt, Displayable, NetworkKeyExport, PolicyExt, SecurityCounters, SecurityExt,
+};
 pub use self::frame::{
     Callback, CallbackType, Command, Commands, Extended, FormatVersion, Frame, Header, HighByte,
     Legacy, LowByte, Parameters, Parsable, Response, SleepMode, parameters,
@@ -64,6 +69,8 @@ mod extensions;
 pub mod ezsp;
 mod frame;
 mod ncp;
+#[cfg(test)]
+mod test_support;
 mod types;
 
 /// A specialized [`std::result::Result`] type for this crate.

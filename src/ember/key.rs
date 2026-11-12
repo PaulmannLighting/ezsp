@@ -2,6 +2,7 @@
 
 use core::num::TryFromIntError;
 use core::time::Duration;
+use std::fmt::{self, Debug, Formatter};
 
 use le_stream::{FromLeStream, ToLeStream};
 use num_derive::FromPrimitive;
@@ -73,7 +74,7 @@ impl TryFrom<u16> for Bitmask {
 }
 
 /// A structure containing a key and its associated data.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Struct {
     bitmask: u16,
     typ: u8,
@@ -339,5 +340,20 @@ impl TryFrom<u8> for TrustCenter {
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         Self::from_u8(value).ok_or(value)
+    }
+}
+
+impl Debug for Struct {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Struct")
+            .field("bitmask", &self.bitmask)
+            .field("typ", &self.typ)
+            .field("outgoing_frame_counter", &self.outgoing_frame_counter)
+            .field("incoming_frame_counter", &self.incoming_frame_counter)
+            .field("sequence_number", &self.sequence_number)
+            .field("partner_eui64", &self.partner_eui64)
+            .field("key", &"[REDACTED]")
+            .finish()
     }
 }

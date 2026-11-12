@@ -173,8 +173,8 @@ let parameters = InitializationParameters::new(
 let startup = Startup::Initialize(parameters);
 ```
 
-`NetworkCredentials` contains secret key material. Do not log its `Debug`
-output, and protect persisted or copied credentials appropriately. Random
+`NetworkCredentials` contains secret key material. Its `Debug` output redacts
+keys; protect explicitly accessed, persisted, or copied credentials appropriately. Random
 credentials can be sampled with `rand`, but the distribution accepts any RNG;
 production callers are responsible for selecting a cryptographically secure
 one.
@@ -442,3 +442,54 @@ source-route and many-to-one route failures, network congestion, local capacity 
 channel access failure, network state errors, oversized messages, security failures, indirect
 expiry, and full tables. Unknown statuses remain backend-specific; they are never guessed from
 an unrelated status namespace.
+
+## Backup and restore foundations
+
+Complete `apis-saltans` network dump/restore is **not enabled**. Firmware feasibility
+checks found unresolved requirements for consistent capture, incoming replay-state
+restoration, and offline persistence/readback after reset. No firmware profile is
+certified, and this crate does not implement `NetworkDump` or `NetworkRestore` yet.
+The `apis-saltans` API is unchanged. A token copy or reforming a network from saved
+credentials does not satisfy its complete-backup contract.
+
+The following building blocks are available independently of the `apis-saltans` feature:
+
+- `Connection::inspect_backup_firmware()` collects non-secret firmware, network-state,
+  key-storage, and token-table metadata. Inspection currently accepts only negotiated
+  EZSP v13, whose token responses use the modeled legacy status layout. Other versions
+  fail before commands are issued. Successful inspection is evidence for qualification,
+  not certification of backup support. The builder defaults to requesting EZSP v8;
+  choose v13 when connecting a compatible NCP for this inspection.
+- `SecurityCounters` reads the four-byte NWK and APS security counters and writes
+  caller-prepared values after checking that the target reports `NoNetwork`. These
+  counters are unrelated to APS message correlation sequences. Writes do not advance
+  counters or prove reset persistence. The caller must exclusively own the NCP and
+  prevent network startup or other writes between the state check and write.
+- `SecurityExt::export_network_key_with_info()` exports the current primary-network
+  key with its sequence, outgoing counter, and alternate-key presence metadata using
+  Security Manager commands. Metadata reads bracket export and reject observable
+  changes; they do not establish an atomic snapshot. Alternate key contents, device
+  keys, and replay state must still be captured separately.
+- `ember::token::Data` encodes its four-byte size followed by exactly that many bytes,
+  with a maximum payload of `MAX_TOKEN_DATA_SIZE` (64). Use `Data::try_new` for an
+  untrusted length and `as_slice()` to explicitly access the secret-bearing payload.
+  `Data::new` rejects oversized lengths by panicking and zeroes unused backing bytes.
+
+After negotiating a compatible connection, read-only inspection needs no network reset:
+
+```rust,no_run
+# async fn inspect(mut connection: ezsp::Connection) -> Result<(), ezsp::Error> {
+let inspection = connection.inspect_backup_firmware().await?;
+println!("{inspection:?}"); // Metadata only; no token values or key bytes.
+# Ok(())
+# }
+```
+
+Backup-related token/key parameters, exported key payloads, network credentials,
+and initial security state redact secret bytes in `Debug`. Raw `getValue`/`setValue`
+payloads are also redacted because their contents depend on the value ID. Explicitly
+accessed key arrays remain secret-bearing, and external transports must avoid logging
+raw frames. Redaction does not promise memory zeroization or backup-file encryption.
+
+See [the firmware feasibility assessment](ARCHITECTURE.md#backup-firmware-feasibility)
+for evidence, blockers, and the requirements for enabling complete backup support.

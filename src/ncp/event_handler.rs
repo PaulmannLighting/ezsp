@@ -457,7 +457,7 @@ mod tests {
                     .handle_networking_callbacks(completion(STATUS_SUCCESS))
                     .is_none()
             );
-            assert!(result.blocking_recv().unwrap().unwrap().is_empty());
+            assert_eq!(result.blocking_recv().unwrap().unwrap(), []);
         }
     }
 
@@ -496,7 +496,7 @@ mod tests {
                 .handle_networking_callbacks(completion(STATUS_SUCCESS))
                 .is_none()
         );
-        assert!(result.blocking_recv().unwrap().unwrap().is_empty());
+        assert_eq!(result.blocking_recv().unwrap().unwrap(), []);
     }
 
     #[test]

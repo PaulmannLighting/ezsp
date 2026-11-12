@@ -9,6 +9,7 @@ use std::num::NonZero;
 
 use tokio::sync::mpsc::{self, Sender, channel};
 
+pub use self::backup_inspection::{BACKUP_INSPECTION_PROTOCOL_VERSION, BackupInspection};
 pub use self::connection::Connection;
 pub use self::futures::Futures;
 use self::message::Message;
@@ -20,6 +21,7 @@ use self::transmitter::Transmitter;
 use crate::api::negotiate_version::NegotiateVersion;
 use crate::{Callback, Error};
 
+mod backup_inspection;
 mod connection;
 mod futures;
 mod message;

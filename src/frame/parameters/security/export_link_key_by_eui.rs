@@ -1,5 +1,7 @@
 //! Parameters for the [`Security::export_link_key_by_eui`](crate::Security::export_link_key_by_eui) command.
 
+use std::fmt::{self, Debug, Formatter};
+
 use le_stream::{FromLeStream, ToLeStream};
 use num_traits::FromPrimitive;
 use silizium::Status;
@@ -37,7 +39,7 @@ crate::frame::parameters::frame!(
 );
 
 /// Payload of the export link key by EUI64 command.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct Payload {
     plaintext_key: Key,
     index: u8,
@@ -61,5 +63,16 @@ impl Payload {
     #[must_use]
     pub const fn key_data(&self) -> &ApsKeyMetadata {
         &self.key_data
+    }
+}
+
+impl Debug for Payload {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Payload")
+            .field("index", &self.index)
+            .field("key_data", &self.key_data)
+            .field("plaintext_key", &"[REDACTED]")
+            .finish()
     }
 }

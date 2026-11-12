@@ -1,5 +1,7 @@
 //! Initial security state configuration for the `EmberZNet` stack.
 
+use std::fmt::{self, Debug, Formatter};
+
 use bitflags::bitflags;
 use le_stream::{FromLeStream, ToLeStream};
 
@@ -78,7 +80,7 @@ bitflags! {
 
 /// The security data used to set the configuration for the stack,
 /// or the retrieved configuration currently in use.
-#[derive(Clone, Debug, Eq, PartialEq, FromLeStream, ToLeStream)]
+#[derive(Clone, Eq, PartialEq, FromLeStream, ToLeStream)]
 pub struct State {
     bitmask: Bitmask,
     preconfigured_key: Data,
@@ -151,5 +153,24 @@ impl State {
     #[must_use]
     pub const fn preconfigured_trust_center_eui64(&self) -> Eui64 {
         self.preconfigured_trust_center_eui64
+    }
+}
+
+impl Debug for State {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("State")
+            .field("bitmask", &self.bitmask)
+            .field(
+                "network_key_sequence_number",
+                &self.network_key_sequence_number,
+            )
+            .field(
+                "preconfigured_trust_center_eui64",
+                &self.preconfigured_trust_center_eui64,
+            )
+            .field("preconfigured_key", &"[REDACTED]")
+            .field("network_key", &"[REDACTED]")
+            .finish()
     }
 }

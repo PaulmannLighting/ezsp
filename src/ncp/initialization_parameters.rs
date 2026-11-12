@@ -1,3 +1,5 @@
+use std::fmt::{self, Debug, Formatter};
+
 use macaddr::MacAddr8;
 use silizium::zigbee::security::man::Key;
 
@@ -22,7 +24,7 @@ const NETWORK_KEY_SEQUENCE_NUMBER: u8 = 0;
 /// [`NetworkCredentials`](NetworkCredentials). The remaining values are
 /// specific to forming the network: the preconfigured link key, radio channel,
 /// and join method.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq)]
 pub struct InitializationParameters {
     network_credentials: NetworkCredentials,
     link_key: Key,
@@ -102,5 +104,20 @@ impl InitializationParameters {
             self.nwk_update_id,
             CHANNEL_BIT << self.radio_channel,
         )
+    }
+}
+
+impl Debug for InitializationParameters {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("InitializationParameters")
+            .field("network_credentials", &self.network_credentials)
+            .field("radio_channel", &self.radio_channel)
+            .field("join_method", &self.join_method)
+            .field("bitmask", &self.bitmask)
+            .field("nwk_manager_id", &self.nwk_manager_id)
+            .field("nwk_update_id", &self.nwk_update_id)
+            .field("link_key", &"[REDACTED]")
+            .finish()
     }
 }

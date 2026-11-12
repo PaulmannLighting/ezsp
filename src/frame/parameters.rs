@@ -15,6 +15,27 @@ pub mod utilities;
 pub mod wwah;
 pub mod zll;
 
+// Payload fields returned as raw byte arrays/vectors can contain keys or tokens.
+// Redact at the parameter boundary so nested Debug output and error chains are safe.
+macro_rules! debug_field {
+    ($builder:ident, $value:ident, key) => {
+        $builder.field("key", &"[REDACTED]");
+    };
+    ($builder:ident, $value:ident, plaintext_key) => {
+        $builder.field("plaintext_key", &"[REDACTED]");
+    };
+    ($builder:ident, $value:ident, token_data) => {
+        $builder.field("token_data", &"[REDACTED]");
+    };
+    ($builder:ident, $value:ident, value) => {
+        $builder.field("value", &"[REDACTED]");
+    };
+    ($builder:ident, $value:ident, $field:ident) => {
+        $builder.field(stringify!($field), &$value.$field);
+    };
+}
+pub(crate) use debug_field;
+
 macro_rules! parameter {
     (
         $name:ident,
@@ -47,7 +68,6 @@ macro_rules! parameter {
         #[doc = concat!(stringify!($name), " parameters.")]
         #[derive(
             Clone,
-            Debug,
             Eq,
             PartialEq,
             le_stream::FromLeStream,
@@ -55,6 +75,14 @@ macro_rules! parameter {
         )]
         pub struct $name {
             $($field: $ty),+
+        }
+
+        impl core::fmt::Debug for $name {
+            fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                let mut builder = formatter.debug_struct(stringify!($name));
+                $(crate::frame::parameters::debug_field!(builder, self, $field);)+
+                builder.finish()
+            }
         }
     };
 }
@@ -431,3 +459,98 @@ macro_rules! parameter_group_enum {
     };
 }
 pub(crate) use parameter_group_enum;
+
+#[cfg(test)]
+mod secret_debug_tests {
+    use std::iter::once;
+
+    use le_stream::FromLeStream;
+    use silizium::zigbee::security::man::{Context, DerivedKeyType, Flags, KeyType};
+
+    use crate::ember::Eui64;
+    use crate::ember::security::initial::{Bitmask, State};
+    use crate::parameters::{configuration, security, utilities};
+    use crate::{Error, Parameters, Parsable};
+
+    const SECRET: [u8; 16] = [0xAB; 16];
+    const REVEALED_PREFIX: &str = "[171, 171";
+
+    #[test]
+    fn nested_export_responses_and_errors_redact_keys() {
+        let response = SECRET.into_iter().chain([0, 0, 0, 0]);
+        let parameters = Parameters::parse_from_le_stream(0x0114, response).unwrap();
+        let error = Error::UnexpectedResponse(Box::new(parameters));
+        for output in [format!("{error:?}"), format!("{error}")] {
+            assert!(output.contains("[REDACTED]"));
+            assert!(!output.contains(REVEALED_PREFIX));
+        }
+    }
+
+    #[test]
+    fn directly_exposed_link_key_payloads_redact_keys() {
+        let payload = [0; 8].into_iter().chain(SECRET).chain([0; 12]);
+        let payload =
+            security::export_link_key_by_index::Payload::from_le_stream_exact(payload).unwrap();
+        assert_eq!(payload.plaintext_key(), &SECRET);
+        let output = format!("{payload:?}");
+        assert!(output.contains("[REDACTED]"));
+        assert!(!output.contains(REVEALED_PREFIX));
+    }
+
+    #[test]
+    fn raw_values_and_manufacturing_tokens_are_redacted() {
+        let response = [0, 16].into_iter().chain(SECRET);
+        let response = configuration::get_value::Response::from_le_stream_exact(response).unwrap();
+        assert_eq!(
+            format!("{response:?}"),
+            "Response { status: 0, value: \"[REDACTED]\" }"
+        );
+        let response = once(16).chain(SECRET);
+        let response = utilities::get_mfg_token::Response::from_le_stream_exact(response).unwrap();
+        assert_eq!(
+            format!("{response:?}"),
+            "Response { token_data: \"[REDACTED]\" }"
+        );
+    }
+
+    #[test]
+    fn imported_keys_and_initial_security_state_are_redacted() {
+        let context = Context::new(
+            KeyType::Network,
+            0,
+            DerivedKeyType::None,
+            Eui64::default(),
+            0,
+            Flags::NONE,
+            0,
+        );
+        let command = security::import_key::Command::new(context, SECRET);
+        let state = State::new(
+            Bitmask::HAVE_NETWORK_KEY,
+            SECRET,
+            SECRET,
+            0,
+            Eui64::default(),
+        );
+        for output in [
+            format!("{command:?}"),
+            format!("{state:?}"),
+            format!(
+                "{:?}",
+                security::set_initial_security_state::Command::new(state)
+            ),
+        ] {
+            assert!(output.contains("[REDACTED]"));
+            assert!(!output.contains(REVEALED_PREFIX));
+        }
+    }
+
+    #[test]
+    fn ordinary_frame_metadata_remains_visible() {
+        let command = configuration::version::Command::new(13);
+        assert_eq!(
+            format!("{command:?}"),
+            "Command { desired_protocol_version: 13 }"
+        );
+    }
+}

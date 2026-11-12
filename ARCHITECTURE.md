@@ -554,3 +554,95 @@ Both command error conversion and `messageSent` confirmation conversion use this
 Command errors retain their concrete source. Confirmations carry portable failure semantics
 when recognized, or the original byte in `NetworkError::BackendStatus` otherwise. Other status
 namespaces keep their existing opaque representation.
+
+## Backup firmware feasibility
+
+The initial assessment does not certify a complete-backup firmware profile. No target
+NCP was exposed through a serial device in the implementation environment, so hardware
+capture, reset persistence, and replacement-device restoration could not be tested.
+`apis-saltans` remains unchanged and neither optional backup trait is implemented or
+registered. The implementation stops before profile-dependent restore writes.
+
+The relevant source evidence is:
+
+- [Gecko SDK 4.4 token serialization](https://github.com/SiliconLabs/gecko_sdk/blob/gsdk_4.4/protocol/zigbee/app/util/ezsp/ezsp-frame-utilities.c#L599)
+  writes a 32-bit size followed by exactly that many bytes, rather than always 64 bytes.
+  The Rust token codec now uses that representation, bounds lengths, and clears padding.
+- [Silicon Labs token-backup limitations](https://docs.silabs.com/zigbee/9.1.2/gp-combo-gateway-backup-restore/07-limitations)
+  describe non-atomic token collection, omission of incoming counters/RAM neighbor data,
+  and the reset required to reload operational tables after token restoration.
+- [Operational EUI64 restoration](https://docs.silabs.com/zigbee/9.1.2/gp-combo-gateway-backup-restore/04-saving-and-restoring-the-operational-eui64)
+  requires a restored-EUI64 token and supporting boot-time firmware behavior. Factory
+  address writes are not a portable substitute.
+- [Current token-interface frame layouts](https://docs.silabs.com/zigbee/8.2.2/sisdk-ezsp-reference-guide/16-token-interface-frames)
+  use `sl_status_t`, while the current Rust token response model uses an 8-bit Ember
+  status. Read-only inspection therefore accepts only EZSP v13's legacy layout;
+  newer protocol decoding must be implemented and verified before extending inspection.
+
+| Requirement | Current evidence | Remaining qualification or implementation |
+| --- | --- | --- |
+| Token wire transfer | Length-aware codec and command fixtures | Confirm device token catalog, sizes, and firmware-specific layouts |
+| NWK and APS outgoing counters | Typed four-byte reads/writes; offline state check | Verify storage persistence and boot-time increments on hardware |
+| Current network-key metadata | Export brackets key bytes with matching metadata reads | Establish synchronization; capture alternate key contents and transitions |
+| Consistent complete snapshot | No verified firmware synchronization mechanism | Freeze/version all required RAM and persistent state, or reject capture |
+| Incoming replay state | Neighbor accessors exist; token backup omits incoming counters; link-key import lacks replay metadata | Verify complete read/write coverage and persistence; add firmware support where absent |
+| Coordinator IEEE identity | Standard restored-EUI64 mechanism documented | Verify component inclusion, token identity, and effective address after reset |
+| Trust Center and child records | Commands and token metadata provide starting points | Inventory required state, key/seed policies, child fields, and capacities |
+| PSA key storage | Inspection preserves the reported storage version | Verify export permissions and portable import; do not copy device-local key identifiers |
+| Offline restore and reset | Reset command exists; transport is externally owned | Provide exclusive preparation, reconnect, no automatic startup, and readback |
+
+`api/backup_inspection.rs` collects read-only metadata through `Connection`. It queries
+version information, network state, key storage, token count, and indexed descriptions;
+it does not retrieve token payloads or keys. Unsupported protocols fail before I/O,
+and command/malformed-response failures return no partial report. Unknown storage
+versions remain observations rather than becoming accepted compatibility profiles.
+
+`extensions/security_counters.rs` provides typed security-counter operations. Its
+state check prevents accidental writes to an already active NCP, but does not reserve
+cloned connections or stop autonomous activity. Exclusive maintenance ownership is a
+prerequisite, not a guarantee supplied by these low-level helpers.
+
+`extensions/security_ext.rs` combines current primary-network key bytes with metadata,
+including sequence and outgoing counter, without the metadata loss of Java's v13
+compatibility path. Before/after equality detects visible changes only. A stable pair
+of reads is not proof of consistent capture, nor a substitute for an NCP snapshot
+mechanism. The result deliberately is not an `apis-saltans::NetworkBackup`.
+
+Secret-bearing generated parameter fields (`key`, `plaintext_key`, `token_data`, and
+raw `value`) are redacted at their `Debug` boundary. Key-bearing nested payloads and
+startup credentials redact keys too, so actor trace logs and unexpected-response
+errors inherit that protection. Excess-byte diagnostics log only counts, because
+unparsed bytes may also contain secrets. New parameter fields that contain secrets
+must receive equivalent redaction; raw transport logging remains outside this crate.
+
+The remaining profile-dependent workflow is:
+
+```mermaid
+flowchart TD
+    inspect[Read-only firmware inspection] --> qualify[Qualify complete firmware profile]
+    qualify --> gate{All required state supported?}
+    gate -->|No| reject[Keep dump and restore disabled]
+    gate -->|Yes| capture[Implement synchronized complete capture]
+    capture --> extension[Versioned required Ember extension]
+    extension --> offline[Exclusive offline target preparation]
+    offline --> validate[Validate and prepare all counters before writes]
+    validate --> persist[Persist complete state]
+    persist --> reconnect[Reset and reconnect while offline]
+    reconnect --> verify[Read back and verify persistent state]
+    verify --> report[Return restore report while stopped]
+    report --> resume[Caller explicitly resumes network]
+```
+
+Before enabling `NetworkDump`/`NetworkRestore`, define the extension codec, validate all
+required extensions and capacities before mutation, and acquire ownership covering both
+the hardware actor and callback-generated commands. Upstream dispatch already advances
+normalized outgoing counters; the backend must advance extension counters exactly once.
+Direct callers must perform the same preparation and validation sequence. Any failure
+after a persistent write may have occurred must report `PossiblyModified` and prevent
+normal startup until state is verified. Reset must not implicitly activate the network.
+
+Hardware acceptance must include replacement-device identity preservation, complete
+replay-state preservation, reset persistence, failed-write/reconnection handling, and
+successful encrypted communication only after explicit resume. Software fixtures alone
+cannot close these blockers. Neither a generic token dump nor Java-style `formNetwork`
+recovery should be registered as complete backup support.

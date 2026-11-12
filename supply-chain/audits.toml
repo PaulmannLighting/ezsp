@@ -601,6 +601,24 @@ criteria = "safe-to-deploy"
 version = "1.2.0"
 notes = "AI-assisted: inspected source 1.2.0; scope guard/drop helper only, no unsafe code and no ambient filesystem/process/network capabilities."
 
+[[audits.serde]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.0.228 -> 1.0.229"
+notes = "AI-assisted: reviewed the complete packaged source diff, including manifests, build script, duplicated serde_core sources, and lockfile. Changes advance the matched core version, update documentation/lints, gate the derive feature below Rust 1.71, and explicitly reborrow the in-place sequence visitor destination. The clear/reserve/insert operations and cautious size-hint bound are preserved. The docsrs-only unstable feature gate is narrowed. No new unsafe code or filesystem/process/network behavior; existing build-script output generation and rustc version probing remain unchanged."
+
+[[audits.serde_core]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.0.228 -> 1.0.229"
+notes = "AI-assisted: reviewed the complete packaged source diff, manifests, build script, and lockfile. Runtime changes explicitly reborrow the existing in-place sequence destination for clear/reserve/insert, preserving cautious allocation and error propagation. Other changes update version matching, documentation/lints, and derive compatibility gating from Rust 1.61 to 1.71. No new unsafe code or ambient capabilities; existing build-script output generation and compiler probing are unchanged."
+
+[[audits.serde_derive]]
+who = "Codex"
+criteria = "safe-to-deploy"
+delta = "1.0.228 -> 1.0.229"
+notes = "AI-assisted: reviewed the complete packaged source diff, manifests, and lockfile. The syn 3 migration updates function-pointer nodes, parenthesized argument access, default/bound AST fields, and raises MSRV to 1.71. Iterator-to-loop rewrites preserve field indices, skip/default predicates, bound construction, and serialization order. Generated adjacent/external enum and in-place sequence deserialization now explicitly match Result instead of using question-mark propagation; success, missing-field, and error branches remain equivalent. Shared field identifiers preserve naming/hygiene. No new unsafe code, external I/O, executable loading, or macro expansion capabilities."
+
 [[audits.serialport]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -900,13 +918,13 @@ notes = "Trusted publisher neumann-paulmann"
 
 [[trusted.find-msvc-tools]]
 criteria = "safe-to-deploy"
-user-id = 539 # Josh Stone (cuviper)
+user-id = 539
 start = "2025-08-29"
 end = "2027-06-23"
 
 [[trusted.js-sys]]
 criteria = "safe-to-deploy"
-user-id = 1 # Alex Crichton (alexcrichton)
+user-id = 1
 start = "2019-03-04"
 end = "2027-06-23"
 
@@ -981,84 +999,84 @@ end = "2027-06-23"
 
 [[trusted.wasm-bindgen]]
 criteria = "safe-to-deploy"
-user-id = 1 # Alex Crichton (alexcrichton)
+user-id = 1
 start = "2019-03-04"
 end = "2027-06-23"
 
 [[trusted.wasm-bindgen-macro]]
 criteria = "safe-to-deploy"
-user-id = 1 # Alex Crichton (alexcrichton)
+user-id = 1
 start = "2019-03-04"
 end = "2027-06-23"
 
 [[trusted.wasm-bindgen-macro-support]]
 criteria = "safe-to-deploy"
-user-id = 1 # Alex Crichton (alexcrichton)
+user-id = 1
 start = "2019-03-04"
 end = "2027-06-23"
 
 [[trusted.wasm-bindgen-shared]]
 criteria = "safe-to-deploy"
-user-id = 1 # Alex Crichton (alexcrichton)
+user-id = 1
 start = "2019-03-04"
 end = "2027-06-23"
 
 [[trusted.windows-core]]
 criteria = "safe-to-deploy"
-user-id = 64539 # Kenny Kerr (kennykerr)
+user-id = 64539
 start = "2021-11-15"
 end = "2027-06-23"
 
 [[trusted.windows-implement]]
 criteria = "safe-to-deploy"
-user-id = 64539 # Kenny Kerr (kennykerr)
+user-id = 64539
 start = "2022-01-27"
 end = "2027-06-23"
 
 [[trusted.windows-interface]]
 criteria = "safe-to-deploy"
-user-id = 64539 # Kenny Kerr (kennykerr)
+user-id = 64539
 start = "2022-02-18"
 end = "2027-06-23"
 
 [[trusted.windows-result]]
 criteria = "safe-to-deploy"
-user-id = 64539 # Kenny Kerr (kennykerr)
+user-id = 64539
 start = "2024-02-02"
 end = "2027-06-23"
 
 [[trusted.windows-strings]]
 criteria = "safe-to-deploy"
-user-id = 64539 # Kenny Kerr (kennykerr)
+user-id = 64539
 start = "2024-02-02"
 end = "2027-06-23"
 
 [[trusted.windows-sys]]
 criteria = "safe-to-deploy"
-user-id = 64539 # Kenny Kerr (kennykerr)
+user-id = 64539
 start = "2021-11-15"
 end = "2027-06-23"
 
 [[trusted.windows-targets]]
 criteria = "safe-to-deploy"
-user-id = 64539 # Kenny Kerr (kennykerr)
+user-id = 64539
 start = "2022-09-09"
 end = "2027-06-23"
 
 [[trusted.windows_aarch64_gnullvm]]
 criteria = "safe-to-deploy"
-user-id = 64539 # Kenny Kerr (kennykerr)
+user-id = 64539
 start = "2022-09-01"
 end = "2027-06-23"
 
 [[trusted.windows_i686_gnullvm]]
 criteria = "safe-to-deploy"
-user-id = 64539 # Kenny Kerr (kennykerr)
+user-id = 64539
 start = "2024-04-02"
 end = "2027-06-23"
 
 [[trusted.windows_x86_64_gnullvm]]
 criteria = "safe-to-deploy"
-user-id = 64539 # Kenny Kerr (kennykerr)
+user-id = 64539
 start = "2022-09-01"
 end = "2027-06-23"

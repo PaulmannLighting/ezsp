@@ -484,11 +484,13 @@ using the coordinator counter recovered from the EZSP message tag.
 families:
 
 - an acknowledged direct-unicast `MessageSent` becomes an APSDE `DataConfirm`;
-- `ChildJoin` becomes `DeviceJoined` or `DeviceLeft` after validating its short
-  address;
+- `ChildJoin` with `joining=true` becomes `DeviceEvent::Joined` after validating
+  its short address. A child removal is skipped because it describes a change
+  to the local child table;
 - successful `StackStatus` becomes `NetworkUp`, `NetworkDown`, `NetworkOpened`,
   or `NetworkClosed`; and
-- `TrustCenterJoin` becomes join, secured/unsecured rejoin, or leave events.
+- `TrustCenterJoin` becomes join or secured/unsecured rejoin events, or
+  `DeviceEvent::Left` when the status is `DeviceLeft`.
 
 Other callbacks, raw stack-status errors, unsupported stack statuses, and
 invalid membership addresses fail conversion. Scan callbacks and non-final

@@ -408,9 +408,9 @@ completion status; EZSP supplies no transmission timestamp, so it is `()`.
 The feature converts these EZSP callbacks into `apis_saltans_hw::Event` values:
 
 - `stackStatus` for network up, down, opened, and closed;
-- `childJoin` for child joins and leaves; and
-- `trustCenterJoin` for unsecured joins, secured/unsecured rejoins, and leaves;
-  and
+- `childJoinHandler` with `joining=true` for direct child joins;
+- `trustCenterJoin` for unsecured joins, secured/unsecured rejoins, and
+  network departures reported as `DeviceLeft`; and
 - final acknowledged direct-unicast `messageSent` callbacks as APSDE data
   confirmations.
 

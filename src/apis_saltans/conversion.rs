@@ -5,9 +5,9 @@
 //! membership/network callbacks, APSDE indications, and data confirmations.
 //!
 //! `TryFrom<Callback> for apis_saltans_hw::Event` recognizes `messageSent`,
-//! child-join, successful stack-status, and trust-center-join callbacks.
-//! Unsupported callback families, unrecognized Ember statuses, and raw status
-//! errors return `Err(())`. Fragment-internal `messageSent` callbacks are
+//! child additions, successful stack-status, and trust-center-join callbacks.
+//! Child removals, unsupported callback families, unrecognized Ember statuses,
+//! and raw status errors fail conversion. Fragment-internal `messageSent` callbacks are
 //! consumed by the high-level NCP event handler before this conversion is
 //! attempted.
 //!
@@ -84,18 +84,64 @@ impl TryFrom<DefragmentedMessage> for Event {
 
 #[cfg(test)]
 mod tests {
-    use apis_saltans_hw::{ApsdeEvent, Event};
+    use apis_saltans_hw::{ApsdeEvent, DeviceEvent, Event};
     use le_stream::FromLeStream;
 
-    use crate::DefragmentedMessage;
+    use crate::ember::device::Update;
+    use crate::frame::{Parameter, Parsable};
     use crate::parameters::messaging::handler::IncomingMessage;
+    use crate::parameters::networking::handler::ChildJoin;
+    use crate::parameters::trust_center::handler::TrustCenterJoin;
+    use crate::{Callback, DefragmentedMessage};
 
+    const CHILD_JOINING_INDEX: usize = 1;
+    const CHILD_JOIN_BYTES: [u8; 13] = [
+        0x00, 0x00, 0x34, 0x12, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x03,
+    ];
+    const TRUST_CENTER_STATUS_INDEX: usize = 10;
+    const TRUST_CENTER_JOIN_BYTES: [u8; 14] = [
+        0x34, 0x12, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x00, 0x03, 0x00, 0x00,
+    ];
     const ZDO_RESPONSE_REQUIRED_INDEX: usize = 8;
     const ZDO_RESPONSE_REQUIRED: u8 = 0x40;
     const INCOMING_MESSAGE_BYTES: [u8; 20] = [
         0x00, 0x04, 0x01, 0x06, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x56, 0x80, 0xd8, 0x34,
         0x12, 0xff, 0xff, 0x01, 0xaa,
     ];
+
+    fn child_join_callback(joining: bool) -> Callback {
+        let mut bytes = CHILD_JOIN_BYTES;
+        bytes[CHILD_JOINING_INDEX] = u8::from(joining);
+
+        Callback::parse_from_le_stream(ChildJoin::ID, bytes.into_iter())
+            .expect("childJoinHandler test callback is complete")
+    }
+
+    #[test]
+    fn child_addition_emits_device_joined() {
+        assert!(matches!(
+            Event::try_from(child_join_callback(true)),
+            Ok(Event::Device(DeviceEvent::Joined(_)))
+        ));
+    }
+
+    #[test]
+    fn child_removal_emits_no_event() {
+        assert!(Event::try_from(child_join_callback(false)).is_err());
+    }
+
+    #[test]
+    fn trust_center_device_left_emits_device_left() {
+        let mut bytes = TRUST_CENTER_JOIN_BYTES;
+        bytes[TRUST_CENTER_STATUS_INDEX] = Update::DeviceLeft.into();
+        let callback = Callback::parse_from_le_stream(TrustCenterJoin::ID, bytes.into_iter())
+            .expect("trust center test callback is complete");
+
+        assert!(matches!(
+            Event::try_from(callback),
+            Ok(Event::Device(DeviceEvent::Left(_)))
+        ));
+    }
 
     fn incoming_event(zdo_response_required: bool) -> Event {
         let mut bytes = INCOMING_MESSAGE_BYTES;

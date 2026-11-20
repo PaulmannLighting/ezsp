@@ -36,7 +36,7 @@
 //!
 //! # Events and incoming messages
 //!
-//! EZSP child, trust-center, stack-status, and final `messageSent` callbacks
+//! EZSP child additions, trust-center, stack-status, and final `messageSent` callbacks
 //! convert into the corresponding `apis_saltans_hw::Event::Device`,
 //! `apis_saltans_hw::Event::Network`, and `apis_saltans_hw::Event::Apsde`
 //! categories. Incoming APS messages convert into

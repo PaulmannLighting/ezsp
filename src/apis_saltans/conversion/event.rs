@@ -2,7 +2,7 @@
 //!
 //! Acknowledged direct-unicast `messageSent` callbacks recover the coordinator
 //! correlation counter from the EZSP message tag and become APSDE data
-//! confirmations. Child callbacks become join or leave events. Trust-center
+//! confirmations. Child additions become join events. Trust-center
 //! callbacks distinguish unsecured joins, secured/unsecured rejoins, and
 //! leaves. Only network up/down/opened/closed stack statuses have hardware
 //! event variants.
@@ -67,13 +67,12 @@ impl TryFrom<ChildJoin> for Event {
     type Error = ChildJoin;
 
     fn try_from(child_join: ChildJoin) -> Result<Self, Self::Error> {
-        let event = if child_join.joining() {
-            DeviceEvent::Joined(child_join.try_into()?)
-        } else {
-            DeviceEvent::Left(child_join.try_into()?)
-        };
+        if !child_join.joining() {
+            // The local child table can lose a device that stays on the network.
+            return Err(child_join);
+        }
 
-        Ok(Self::Device(event))
+        Ok(Self::Device(DeviceEvent::Joined(child_join.try_into()?)))
     }
 }
 

@@ -244,6 +244,10 @@ These modules share `Ncp` state without changing its public method paths.
 - a sender to the event handler;
 - baseline APS options configured by `Builder`.
 
+`Ncp::connection()` borrows the command handle. Commands from borrowed and
+cloned handles share the EZSP transmitter actor, response correlation, and
+maintenance lock with the `Ncp`.
+
 APS send methods require an explicit local source endpoint. Callers that want to
 derive one from the registered descriptors can use `Ncp::source_endpoint`,
 which scans endpoints in stored order and picks the first whose output clusters

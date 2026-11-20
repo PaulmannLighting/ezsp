@@ -124,6 +124,12 @@ network-up or network-down status arrives.
 `Builder::start` does not spawn either returned future. Spawn `bridge` before
 `event_handler`, and keep both tasks running while using the `Ncp`.
 
+Use `Ncp::connection()` to borrow the handle for direct EZSP reads and writes
+over the existing session. When storing the reference in a local variable, use
+`let mut connection = ncp.connection()` because the command traits take a
+mutable receiver. To retain an owned handle after moving the `Ncp` into an
+`apis-saltans` driver actor, call `ncp.connection().clone()` before `into_actor`.
+
 The event channel passed to `Builder::start` determines the application event
 type. That type must implement `TranslatableEvent`, which is automatically
 implemented for types that can be constructed from both `Callback` and

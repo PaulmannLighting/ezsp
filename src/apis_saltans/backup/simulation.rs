@@ -513,20 +513,22 @@ fn missing_image_wrong_catalog_and_normalized_token_disagreement_fail_before_wri
 }
 
 #[test]
-fn maintenance_session_blocks_clones_and_releases_them_after_drop() {
+fn maintenance_session_blocks_borrowed_commands_until_drop() {
     let profile = profile(false);
     let (ncp, mut simulator) = Simulator::ncp(Model::source(&profile), profile);
-    let mut clone = ncp.connection.clone();
+    let mut connection = ncp.connection();
     let session = ready(ncp.connection.maintenance());
     {
-        let mut operation = pin!(clone.get_eui64());
+        let mut operation = pin!(connection.get_eui64());
         let mut context = Context::from_waker(Waker::noop());
         assert!(operation.as_mut().poll(&mut context).is_pending());
         assert!(simulator.inbox.try_recv().is_err());
         drop(session);
         assert_eq!(simulator.run(operation).unwrap(), ADDRESS);
     }
-    drop(clone);
+    let mut owned = ncp.connection().clone();
+    drop(ncp);
+    assert_eq!(simulator.run(owned.get_eui64()).unwrap(), ADDRESS);
 }
 
 #[test]

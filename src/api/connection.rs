@@ -17,9 +17,9 @@ use crate::{Communicate, Error, ezsp};
 /// successful version negotiation.
 ///
 /// Each typed transaction is sent to the actor through a bounded channel and
-/// completed through a one-shot response channel. Clones can be used by
-/// independent tasks; the actor assigns sequence numbers and correlates their
-/// responses.
+/// completed through a one-shot response channel. Owned handles and shared
+/// references both implement [`Communicate`]. The actor assigns sequence
+/// numbers and correlates responses across callers.
 #[derive(Clone, Debug)]
 pub struct Connection {
     pub(crate) desired_version: NonZero<u8>,
@@ -79,6 +79,15 @@ impl Connection {
 }
 
 impl Communicate for Connection {
+    async fn communicate<T>(&mut self, command: T) -> Result<T::Response, Error>
+    where
+        T: Parameter + RespondsWith + ToLeStream + Into<Commands>,
+    {
+        (&*self).communicate(command).await
+    }
+}
+
+impl Communicate for &Connection {
     async fn communicate<T>(&mut self, command: T) -> Result<T::Response, Error>
     where
         T: Parameter + RespondsWith + ToLeStream + Into<Commands>,

@@ -68,6 +68,15 @@ pub struct Ncp {
 }
 
 impl Ncp {
+    /// Borrows the negotiated EZSP connection for direct command access.
+    ///
+    /// Use the reference for read and write commands or clone it to retain an
+    /// owned [`Connection`] after transferring ownership of the `Ncp`.
+    #[must_use]
+    pub const fn connection(&self) -> &Connection {
+        &self.connection
+    }
+
     /// Returns the first configured local endpoint that advertises an output cluster.
     ///
     /// ZDP messages always use endpoint zero. For other profiles, the endpoint

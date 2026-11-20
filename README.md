@@ -324,8 +324,9 @@ one ASHv2 DATA payload.
 ## `apis-saltans` integration
 
 EZSP 20 uses `apis-saltans-hw` 0.19. Applications using the hardware types
-should use the matching release. This major release also adds `ValueError`
-variants for the backup foundations; update exhaustive matches when upgrading.
+should use the matching release. Update exhaustive `ValueError` matches for
+the new backup-related variants. `Ncp::connection()` now gives callers direct
+access to the negotiated EZSP session through a shared reference.
 
 The `apis-saltans` feature adds implementations and conversions around the
 normal actor-backed `Ncp`; it does not add a wrapper type or another transport.

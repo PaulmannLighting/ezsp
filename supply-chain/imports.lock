@@ -1,10 +1,6 @@
 
 # cargo-vet imports lock
 
-[[unpublished.ezsp]]
-version = "20.0.1"
-audited_as = "20.0.0"
-
 [[publisher.apis-saltans-aps]]
 version = "0.13.0"
 when = "2026-11-12"
@@ -34,7 +30,7 @@ user-login = "neumann-paulmann"
 user-name = "Richard Neumann"
 
 [[publisher.ezsp]]
-version = "20.0.0"
+version = "20.0.1"
 when = "2026-11-20"
 user-id = 290593
 user-login = "neumann-paulmann"

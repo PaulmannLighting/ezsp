@@ -19,12 +19,6 @@ criteria = "safe-to-deploy"
 delta = "0.3.0 -> 0.4.0"
 notes = "AI-assisted: reviewed diff 0.3.0 -> 0.4.0; adds APS defragmentation over NWK envelopes and bytes::Bytes payloads, plus dependency bumps. Existing unsafe constructors remain invariant wrappers; no new filesystem/process/network capabilities."
 
-[[audits.apis-saltans-aps]]
-who = "Codex AI"
-criteria = "safe-to-deploy"
-delta = "0.13.0 -> 0.13.0@git:6590b994b29348c4b6601d0ce5451b83a5ac20c7"
-notes = "AI-assisted delta audit. Compared the pinned source and manifest with the published 0.13.0 package. Rust source and manifest match."
-
 [[audits.apis-saltans-core]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -37,12 +31,6 @@ criteria = "safe-to-deploy"
 delta = "0.4.0 -> 0.5.0"
 notes = "AI-assisted: reviewed diff 0.4.0 -> 0.5.0; introduces IeeeAddress/Eui64 newtype around MacAddr8 and migrates address-bearing types to it. Existing unsafe endpoint constructor unchanged; no new ambient capabilities."
 
-[[audits.apis-saltans-core]]
-who = "Codex AI"
-criteria = "safe-to-deploy"
-delta = "0.11.4 -> 0.11.4@git:6590b994b29348c4b6601d0ce5451b83a5ac20c7"
-notes = "AI-assisted delta audit. Compared the pinned source and manifest with the published 0.11.4 package. Rust source and manifest match."
-
 [[audits.apis-saltans-hw]]
 who = "Codex"
 criteria = "safe-to-deploy"
@@ -54,12 +42,6 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "0.2.0 -> 0.3.0"
 notes = "AI-assisted: reviewed diff 0.2.0 -> 0.3.0; frame metadata now requires profile and stores Box<[u8]> payloads, plus dependency bumps. Existing unsafe constructors remain invariant-only wrappers with safe constructors; no new I/O/process/network capabilities."
-
-[[audits.apis-saltans-hw]]
-who = "Codex AI"
-criteria = "safe-to-deploy"
-delta = "0.19.0 -> 0.20.0@git:6590b994b29348c4b6601d0ce5451b83a5ac20c7"
-notes = "AI-assisted delta audit. Reviewed the delta against the published 0.19.0 package, including validation of the reserved coverage extension, caller opt-in before hardware I/O, unchanged complete encoding, actor cancellation, the reported activation state, and dependencies. No new unsafe code or ambient capabilities."
 
 [[audits.apis-saltans-nwk]]
 who = "Codex"
@@ -96,12 +78,6 @@ who = "Codex AI"
 criteria = "safe-to-deploy"
 delta = "0.13.0 -> 0.13.1"
 notes = "AI-assisted delta audit from apis-saltans. Inspected binding, neighbor, and routing table responses against the published 0.13.0 package. Decoders consume complete entries under the declared count and enforce the fixed capacity in allocation-free builds. Regression coverage exercises malformed pages in both storage modes."
-
-[[audits.apis-saltans-zdp]]
-who = "Codex AI"
-criteria = "safe-to-deploy"
-delta = "0.13.1 -> 0.13.1@git:6590b994b29348c4b6601d0ce5451b83a5ac20c7"
-notes = "AI-assisted delta audit. Compared the pinned source and manifest with the published 0.13.1 package. Rust source and manifest match."
 
 [[audits.ashv2]]
 who = "Codex"
@@ -318,6 +294,12 @@ who = "Codex"
 criteria = "safe-to-deploy"
 delta = "1.2.4 -> 1.5.0"
 notes = "AI-assisted: reviewed diff 1.2.4 -> 1.5.0"
+
+[[audits.ezsp]]
+who = "Codex AI"
+criteria = "safe-to-deploy"
+delta = "20.0.1 -> 21.0.0"
+notes = "AI-assisted delta audit. Reviewed catalog-free EZSP v8 capture, caller consent and lifecycle checks before restore, outgoing counter arithmetic and readback, redaction of legacy key commands, EZSP transport ownership, and the migration to the published apis-saltans hardware API. No new unsafe code."
 
 [[audits.find-msvc-tools]]
 who = "Codex"

@@ -4,8 +4,9 @@ version = 4
 
 [[package]]
 name = "apis-saltans-aps"
-version = "0.13.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?rev=6590b994b29348c4b6601d0ce5451b83a5ac20c7#6590b994b29348c4b6601d0ce5451b83a5ac20c7"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce591681a30adeb9ca593cc95f19aa9d54f17939e933d71997be2c6fe6cc8863"
 dependencies = [
  "apis-saltans-core",
  "bitflags",
@@ -20,8 +21,9 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-core"
-version = "0.11.4"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?rev=6590b994b29348c4b6601d0ce5451b83a5ac20c7#6590b994b29348c4b6601d0ce5451b83a5ac20c7"
+version = "0.11.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbb5bef94fba06734ab59ff9959dd837b2642a5301c84ccebfb5e601bd462de0"
 dependencies = [
  "bitflags",
  "chrono",
@@ -39,7 +41,8 @@ dependencies = [
 [[package]]
 name = "apis-saltans-hw"
 version = "0.20.0"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?rev=6590b994b29348c4b6601d0ce5451b83a5ac20c7#6590b994b29348c4b6601d0ce5451b83a5ac20c7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab51df87f9d1bf6508506e8030d44655e5ea441e0be862b1e3b18fd4d91b37b3"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -51,8 +54,9 @@ dependencies = [
 
 [[package]]
 name = "apis-saltans-zdp"
-version = "0.13.1"
-source = "git+https://github.com/PaulmannLighting/apis-saltans.git?rev=6590b994b29348c4b6601d0ce5451b83a5ac20c7#6590b994b29348c4b6601d0ce5451b83a5ac20c7"
+version = "0.13.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f585fc551ce7ca9ce78b22eac083e1fa35ece7ffc70759a339a704042c07ca8b"
 dependencies = [
  "apis-saltans-aps",
  "apis-saltans-core",
@@ -167,7 +171,7 @@ dependencies = [
 
 [[package]]
 name = "ezsp"
-version = "20.0.1"
+version = "21.0.0"
 dependencies = [
  "apis-saltans-hw",
  "bitflags",

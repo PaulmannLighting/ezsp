@@ -491,8 +491,8 @@ actors with `CoordinatorStartup::start_managed()` or `start()`.
 
 ### Complete offline token backup
 
-With `apis-saltans`, `Ncp` implements `NetworkDump` and `NetworkRestore` without
-changes to the upstream API. There is a successful, simulated end-to-end backend
+With `apis-saltans`, `Ncp` implements the shared `NetworkDump` and
+`NetworkRestore` traits. There is a successful, simulated end-to-end backend
 for **explicitly configured offline token profiles**. No hardware-qualified profile
 is bundled. Complete offline token capture and restore require an explicit profile.
 

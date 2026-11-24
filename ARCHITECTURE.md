@@ -563,21 +563,24 @@ namespaces keep their existing opaque representation.
 
 ## EZSP v8 network recovery
 
-The `apis-saltans::backup::v8` module uses an exclusive `MaintenanceConnection`
-for both operations. Capture reads the active network and rechecks its identity and
+The EZSP v8 backend of `NetworkDump` and `NetworkRestore` uses an exclusive
+`MaintenanceConnection` for both operations. `Builder::prepare` configures an
+idle target and registers application endpoints without starting the network. Capture reads the active network and rechecks its identity and
 key after enumerating child, address and legacy key table entries. IEEE addresses
 identify devices across the tables. Child membership supplies the preferred short
 address. Conflicting address-only hints are omitted, while a partner found only in
 the key table retains its IEEE address and key. The recovery snapshot carries a
-distinct source identifier and the existing Ember Trust Center security extension.
+distinct source identifier, the generic rejoin coverage marker, and the existing
+Ember Trust Center security extension.
 
-Restore validates the snapshot, counter arithmetic, idle target, effective IEEE
-address, security level and table capacity before writes. The shared outgoing APS
+The hardware actor requires caller opt-in and advances normalized outgoing
+counters. Restore validates the snapshot, extension counters, idle target,
+effective IEEE address, security level and table capacity before writes. The shared outgoing APS
 floor covers the Trust Center and all exported partner counters. The workflow
 sets both outgoing counters while offline, installs initial security with
 `NO_FRAME_COUNTER_RESET`, clears and rebuilds the legacy key table, and forms the
 network. It verifies the live network, keys and counter floors after formation.
-The report exposes any network update ID change. The v8 key-table import resets
+The generic report exposes the resulting running network state and observed update ID. The v8 key-table import resets
 incoming APS counters, and v8 lacks child-table and replay-counter import
 commands. A failure after writes begin can leave the new network running.
 Full token-image capture and restore use the separately qualified offline
@@ -587,9 +590,8 @@ backend described below.
 
 The host implementation has a successful offline token-image backend and stateful
 simulated end-to-end coverage. No NCP was available for hardware qualification, and
-no production firmware profile is bundled. `apis-saltans` remains unchanged. The
-optional traits are registered explicitly; without `OfflineTokenProfile` the existing
-read-only qualification checks still reject complete capture and restore. A firmware
+no production firmware profile is bundled. The optional traits are registered
+explicitly. A complete capture or restore requires an `OfflineTokenProfile`. A firmware
 version string alone never enables writes.
 
 ### Reference evidence and scope

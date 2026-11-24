@@ -22,15 +22,12 @@
 //! [`Ncp`](crate::Ncp) implements `NetworkDump` and `NetworkRestore`. Explicit
 //! hardware actor registration enables dispatch; default registration stays
 //! disabled. An explicitly configured offline token profile enables capture and
-//! verified storage restoration. No hardware-qualified profile is bundled; without
-//! one, operations retain their qualification errors. See [`backup`] for the
-//! firmware contract, layouts, and restore planner. Registration does not qualify firmware.
+//! verified offline storage restoration. EZSP v8 can use the same traits for a
+//! rejoin backup. Its restore requires explicit opt-in and can form a running network.
+//! Initialize an idle restore target with [`crate::Builder::prepare`].
 //!
-//! For catalog-free EZSP v8 recovery, use
-//! [`Connection::capture_v8_recovery`](crate::Connection::capture_v8_recovery) and
-//! [`Connection::restore_v8_recovery`](crate::Connection::restore_v8_recovery).
-//! This workflow re-forms a live network with the captured keys and is available through
-//! the connected EZSP API. See [`backup::v8`] for its coverage.
+//! See [`backup`] for the offline firmware contract. Actor registration advertises
+//! dispatch support. The backend checks firmware and snapshot compatibility at runtime.
 //!
 //! # Endpoints
 //!

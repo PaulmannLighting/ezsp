@@ -7,8 +7,8 @@ use apis_saltans_hw::{
 };
 
 use super::{
-    BASE_SECURITY_FLAGS, EmberSecurityState, INVALID_KEY, RecoveryBackup, STACK, read_link_keys,
-    table_indices, valid_ieee, validate_key,
+    BASE_SECURITY_FLAGS, EmberSecurityState, INVALID_KEY, STACK, read_link_keys, table_indices,
+    valid_ieee, validate_key, validate_snapshot,
 };
 use crate::ember::{self, key, network, node, security};
 use crate::ezsp::config;
@@ -21,7 +21,9 @@ struct Device {
     key: Option<LinkKeyState>,
 }
 
-pub(super) async fn capture<T>(target: &mut T) -> Result<RecoveryBackup, Error>
+pub(in crate::apis_saltans::backup) async fn capture<T>(
+    target: &mut T,
+) -> Result<NetworkBackup, Error>
 where
     T: Communicate,
 {
@@ -60,7 +62,7 @@ where
         .into_iter()
         .map(|(ieee, device)| DeviceBackup::new(ieee, device.short, device.child, device.key, None))
         .collect();
-    RecoveryBackup::from_snapshot(NetworkBackup::new(
+    let snapshot = NetworkBackup::new(
         BackupSource::new(STACK.into(), firmware.to_string())?,
         settings,
         NetworkKeyState::new(
@@ -71,8 +73,10 @@ where
         Vec::new(),
         devices,
         vec![security.to_extension()?],
-    )?)
-    .map_err(Into::into)
+    )?
+    .with_rejoin_coverage();
+    validate_snapshot(&snapshot)?;
+    Ok(snapshot)
 }
 
 fn network_parameters(

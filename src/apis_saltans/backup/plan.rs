@@ -1,6 +1,6 @@
 //! Pure restore preparation shared by direct callers and actor-dispatched traits.
 
-use apis_saltans_hw::{BackupError, NetworkBackup, RestoreOptions};
+use apis_saltans_hw::{BackupCoverage, BackupError, NetworkBackup, RestoreOptions};
 
 use super::image::{TOKEN_EXTENSION, TokenImage};
 use super::{
@@ -52,6 +52,11 @@ impl RestorePlan {
         options: RestoreOptions,
     ) -> Result<Self, BackupError> {
         backup.validate()?;
+        if backup.coverage() != BackupCoverage::Complete {
+            return Err(BackupError::Incompatible(
+                "offline token restore requires complete coverage",
+            ));
+        }
         if backup.source().stack() != EMBER_BACKUP_STACK {
             return Err(BackupError::Incompatible("backup is not from EmberZNet"));
         }

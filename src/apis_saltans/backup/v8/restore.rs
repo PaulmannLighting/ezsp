@@ -1,13 +1,14 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use apis_saltans_hw::{BackupError, Error, RestoreFailureState, RestoreOptions};
+use apis_saltans_hw::{
+    BackupError, Error, LinkKeyState, NetworkBackup, RestoreFailureState, RestoreNetworkState,
+    RestoreOptions, RestoreReport,
+};
 use tokio::time::{sleep, timeout};
 
 use super::capture::{active_key, trust_center};
-use super::{
-    EmberSecurityState, RecoveryBackup, RecoveryReport, read_link_keys, table_indices, unchanged,
-};
+use super::{EmberSecurityState, read_link_keys, table_indices, unchanged, validate_snapshot};
 use crate::ember::{self, join, key, network, node, security};
 use crate::ezsp::config;
 use crate::frame::parameters::security::add_or_update_key_table_entry;
@@ -18,47 +19,86 @@ const FORMATION_TIMEOUT: Duration = Duration::from_secs(10);
 const STATE_POLL_INTERVAL: Duration = Duration::from_millis(50);
 const READBACK_MISMATCH: &str = "EZSP v8 restore readback did not match";
 
-pub(super) async fn restore<T>(
+struct PreparedRecovery<'a> {
+    backup: &'a NetworkBackup,
+    security: EmberSecurityState,
+    keys: BTreeMap<ember::Eui64, &'a key::Data>,
+    aps_floor: u32,
+}
+
+impl<'a> PreparedRecovery<'a> {
+    fn new(backup: &'a NetworkBackup, options: RestoreOptions) -> Result<Self, BackupError> {
+        if !options.allows_rejoin() {
+            return Err(BackupError::RejoinRequiresOptIn);
+        }
+        let mut security = validate_snapshot(backup)?;
+        security.advance(options.link_counter_advance().get())?;
+        let keys = backup
+            .devices()
+            .iter()
+            .filter_map(|device| {
+                Some((
+                    device.ieee_address().into(),
+                    device.link_key()?.key().expose_secret(),
+                ))
+            })
+            .collect();
+        let aps_floor = backup
+            .devices()
+            .iter()
+            .filter_map(|device| device.link_key())
+            .map(LinkKeyState::tx_counter)
+            .fold(security.aps_tx_counter(), u32::max);
+        Ok(Self {
+            backup,
+            security,
+            keys,
+            aps_floor,
+        })
+    }
+
+    async fn validate_target<T>(&self, target: &mut T) -> Result<(), Error>
+    where
+        T: Communicate,
+    {
+        let identity = self.backup.network();
+        validate_target(
+            target,
+            identity.coordinator_ieee().into(),
+            identity.security_level(),
+            self.keys.len(),
+        )
+        .await
+    }
+}
+
+pub(in crate::apis_saltans::backup) async fn validate<T>(
     target: &mut T,
-    backup: &RecoveryBackup,
+    backup: &NetworkBackup,
     options: RestoreOptions,
-    radio_tx_power: i8,
-) -> Result<RecoveryReport, Error>
+) -> Result<(), Error>
 where
     T: Communicate,
 {
-    let snapshot = backup
-        .snapshot()
-        .prepare_restore(options)
-        .map_err(unchanged)?;
-    let mut security = RecoveryBackup::security(&snapshot).map_err(unchanged)?;
-    security
-        .advance(options.link_counter_advance().get())
-        .map_err(unchanged)?;
-    let identity = snapshot.network();
-    let coordinator = identity.coordinator_ieee().into();
-    let keys: BTreeMap<ember::Eui64, &key::Data> = snapshot
-        .devices()
-        .iter()
-        .filter_map(|device| {
-            Some((
-                device.ieee_address().into(),
-                device.link_key()?.key().expose_secret(),
-            ))
-        })
-        .collect();
-    let nwk_floor = snapshot.network_key().tx_counter();
-    let aps_floor = snapshot
-        .devices()
-        .iter()
-        .filter_map(|device| device.link_key())
-        .map(apis_saltans_hw::LinkKeyState::tx_counter)
-        .fold(security.aps_tx_counter(), u32::max);
-
-    validate_target(target, coordinator, identity.security_level(), keys.len())
+    PreparedRecovery::new(backup, options)?
+        .validate_target(target)
         .await
-        .map_err(unchanged)?;
+}
 
+pub(in crate::apis_saltans::backup) async fn restore<T>(
+    target: &mut T,
+    backup: &NetworkBackup,
+    options: RestoreOptions,
+    radio_tx_power: i8,
+) -> Result<RestoreReport, Error>
+where
+    T: Communicate,
+{
+    let plan = PreparedRecovery::new(backup, options).map_err(unchanged)?;
+    plan.validate_target(target).await.map_err(unchanged)?;
+    let identity = backup.network();
+    let coordinator = identity.coordinator_ieee().into();
+    let active = backup.network_key();
     let parameters = network::Parameters::new(
         identity.extended_pan_id().into(),
         identity.pan_id(),
@@ -69,10 +109,9 @@ where
         identity.nwk_update_id(),
         identity.channel_mask().bits(),
     );
-    let active = snapshot.network_key();
     let initial_security = security::initial::State::new(
-        security.flags() | security::initial::Bitmask::NO_FRAME_COUNTER_RESET,
-        *security.trust_center_key().expose_secret(),
+        plan.security.flags(),
+        *plan.security.trust_center_key().expose_secret(),
         *active.key().expose_secret(),
         active.sequence_number(),
         coordinator,
@@ -81,24 +120,16 @@ where
     apply(
         target,
         initial_security,
-        &keys,
+        &plan.keys,
         parameters.clone(),
-        nwk_floor,
-        aps_floor,
+        active.tx_counter(),
+        plan.aps_floor,
     )
     .await
     .map_err(possibly_modified)?;
-    verify(
-        target,
-        coordinator,
-        &security,
-        &keys,
-        &parameters,
-        active,
-        aps_floor,
-    )
-    .await
-    .map_err(possibly_modified)
+    verify(target, &plan, &parameters)
+        .await
+        .map_err(possibly_modified)
 }
 
 async fn validate_target<T>(
@@ -182,16 +213,14 @@ where
 
 async fn verify<T>(
     target: &mut T,
-    coordinator: ember::Eui64,
-    security: &EmberSecurityState,
-    keys: &BTreeMap<ember::Eui64, &key::Data>,
+    plan: &PreparedRecovery<'_>,
     requested: &network::Parameters,
-    network_key: &apis_saltans_hw::NetworkKeyState,
-    aps_floor: u32,
-) -> Result<RecoveryReport, Error>
+) -> Result<RestoreReport, Error>
 where
     T: Communicate,
 {
+    let coordinator = plan.backup.network().coordinator_ieee().into();
+    let network_key = plan.backup.network_key();
     let (role, observed) = target.get_network_parameters().await?;
     if role != node::Type::Coordinator
         || target.get_eui64().await? != coordinator
@@ -208,9 +237,9 @@ where
         || active.sequence_number() != network_key.sequence_number()
         || active.outgoing_frame_counter() < network_key.tx_counter()
         || active.outgoing_frame_counter() == u32::MAX
-        || flags.contains(hashed) != security.flags().contains(hashed)
-        || tc_key.key() != security.trust_center_key().expose_secret()
-        || tc_key.outgoing_frame_counter() < aps_floor
+        || flags.contains(hashed) != plan.security.flags().contains(hashed)
+        || tc_key.key() != plan.security.trust_center_key().expose_secret()
+        || tc_key.outgoing_frame_counter() < plan.aps_floor
         || tc_key.outgoing_frame_counter() == u32::MAX
     {
         return Err(BackupError::Incompatible(READBACK_MISMATCH).into());
@@ -227,16 +256,16 @@ where
             return Err(BackupError::Incompatible(READBACK_MISMATCH).into());
         }
     }
-    if &verified != keys {
+    if verified != plan.keys {
         return Err(BackupError::Incompatible(READBACK_MISMATCH).into());
     }
-    Ok(RecoveryReport {
-        nwk_tx_counter: active.outgoing_frame_counter(),
-        aps_tx_counter: tc_key.outgoing_frame_counter(),
-        restored_link_keys: verified.len(),
-        requested_nwk_update_id: requested.nwk_update_id(),
-        observed_nwk_update_id: observed.nwk_update_id(),
-    })
+    Ok(RestoreReport::from_verified_rejoin(
+        plan.backup,
+        RestoreNetworkState::Running,
+        active.outgoing_frame_counter(),
+        tc_key.outgoing_frame_counter(),
+        observed.nwk_update_id(),
+    ))
 }
 
 fn possibly_modified(error: Error) -> Error {

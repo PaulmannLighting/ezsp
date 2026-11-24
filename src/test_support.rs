@@ -99,6 +99,7 @@ where
 pub struct ConnectionScript {
     inbox: tokio::sync::mpsc::Receiver<crate::api::Message>,
     script: Script,
+    expected_version: Option<u8>,
 }
 
 #[cfg(feature = "apis-saltans")]
@@ -111,7 +112,28 @@ impl ConnectionScript {
             handle,
             gate: std::sync::Arc::new(tokio::sync::RwLock::new(())),
         };
-        (connection, Self { inbox, script })
+        (
+            connection,
+            Self {
+                inbox,
+                script,
+                expected_version: None,
+            },
+        )
+    }
+
+    /// Construct a client whose first actor message must negotiate the given version.
+    pub fn client(protocol: u8, script: Script) -> (crate::Client, Self) {
+        let (handle, inbox) = tokio::sync::mpsc::channel(CONNECTION_CAPACITY);
+        let (_sender, callbacks) = tokio::sync::mpsc::channel(CONNECTION_CAPACITY);
+        (
+            crate::Client { handle, callbacks },
+            Self {
+                inbox,
+                script,
+                expected_version: Some(protocol),
+            },
+        )
     }
 
     /// Drive a connection operation, checking every transaction and forbidding extra I/O.
@@ -124,6 +146,10 @@ impl ConnectionScript {
         for _ in 0..MAX_SCRIPT_POLLS {
             if let Poll::Ready(output) = future.as_mut().poll(&mut context) {
                 self.script.assert_finished();
+                assert!(
+                    self.expected_version.is_none(),
+                    "version negotiation was skipped"
+                );
                 assert!(self.inbox.try_recv().is_err(), "unexpected remaining I/O");
                 return output;
             }
@@ -133,7 +159,15 @@ impl ConnectionScript {
                     response,
                     guard,
                 }) => (command, response, guard),
-                Ok(_) => panic!("unexpected connection operation"),
+                Ok(crate::api::Message::Connect {
+                    desired_version,
+                    response,
+                }) => {
+                    assert_eq!(Some(desired_version.get()), self.expected_version.take());
+                    response.send(Ok(())).unwrap();
+                    continue;
+                }
+                Ok(crate::api::Message::Response(_)) => panic!("unexpected connection response"),
                 Err(tokio::sync::mpsc::error::TryRecvError::Empty) => continue,
                 Err(error) => panic!("connection channel closed: {error}"),
             };

@@ -6,10 +6,10 @@ use tokio::sync::mpsc::{Receiver, Sender, channel};
 
 pub use self::build_result::BuildResult;
 use crate::ember::aps::Options;
-use crate::ember::concentrator;
+use crate::ember::{self, concentrator, network};
 use crate::ezsp::{config, policy};
-use crate::ncp::Endpoint;
 use crate::ncp::await_event::AwaitEvent;
+use crate::ncp::{DEFAULT_RADIO_TX_POWER, Endpoint};
 use crate::{
     Callback, Client, Configuration, ConfigurationExt, Connection, Displayable, Error,
     EventHandler, MIN_NON_LEGACY_VERSION, Messaging, Ncp, Networking, PolicyExt, Security, Startup,
@@ -18,7 +18,6 @@ use crate::{
 
 mod build_result;
 
-const RADIO_POWER: i8 = 8;
 const EVENT_MESSAGES_CAPACITY: usize = 64;
 
 /// Configures an actor-backed EZSP Network Co-Processor.
@@ -55,7 +54,7 @@ impl Builder {
             policy: BTreeMap::new(),
             configuration: BTreeMap::new(),
             concentrator: None,
-            radio_tx_power: RADIO_POWER,
+            radio_tx_power: DEFAULT_RADIO_TX_POWER,
             manufacturer_code: None,
             options: Options::NONE,
         }
@@ -203,11 +202,57 @@ impl Builder {
     where
         E: TranslatableEvent + 'static,
     {
+        self.build(Some(startup), endpoints, events).await
+    }
+
+    /// Configure an idle NCP and register endpoints while leaving its network stopped.
+    ///
+    /// Use this to prepare a restore target. Run the returned bridge and event handler
+    /// before submitting a restore through the hardware actor.
+    ///
+    /// # Errors
+    /// Returns an error if the network is already running, or if setup fails.
+    pub async fn prepare<E>(
+        self,
+        endpoints: Box<[Endpoint]>,
+        events: Sender<E>,
+    ) -> Result<
+        BuildResult<
+            impl Future<Output = ()> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
+        >,
+        Error,
+    >
+    where
+        E: TranslatableEvent + 'static,
+    {
+        self.build(None, endpoints, events).await
+    }
+
+    async fn build<E>(
+        self,
+        startup: Option<Startup>,
+        endpoints: Box<[Endpoint]>,
+        events: Sender<E>,
+    ) -> Result<
+        BuildResult<
+            impl Future<Output = ()> + Send + 'static,
+            impl Future<Output = ()> + Send + 'static,
+        >,
+        Error,
+    >
+    where
+        E: TranslatableEvent + 'static,
+    {
         if endpoints.is_empty() {
             return Err(Error::NoEndpoints);
         }
 
         let (mut connected, mut callbacks) = self.client.connect(self.desired_version).await?;
+
+        if startup.is_none() && connected.network_state().await? != network::Status::NoNetwork {
+            return Err(ember::Status::InvalidCall.into());
+        }
 
         configure_stack(
             &mut connected,
@@ -235,30 +280,15 @@ impl Builder {
         )
         .await?;
 
-        start_network(&mut connected, &mut callbacks, startup, self.radio_tx_power).await?;
-
-        debug!("Setting radio power to {}", self.radio_tx_power);
-        connected.set_radio_power(self.radio_tx_power).await?;
-
-        let network_state = connected.network_state().await?;
-        info!("Final network state: {network_state:?}");
-
-        let (typ, parameters) = connected.get_network_parameters().await?;
-        info!("Device type: {typ}");
-        info!("Network parameters:\n{parameters}");
-
-        log_state(&mut connected).await?;
-
-        let configured_radius = connected
-            .get_configuration_value(config::Id::MaxHops)
-            .await?;
-        let radius = configured_radius
-            .try_into()
-            .map_err(|_| ValueError::InvalidRouteRadius(configured_radius))?;
-        info!("Sending many-to-one route request: {radius} hops");
-        connected
-            .send_many_to_one_route_request(concentrator::Type::HighRam, radius)
-            .await?;
+        #[cfg(feature = "apis-saltans")]
+        let ncp = Ncp {
+            restore_tx_power: self.radio_tx_power,
+            ..ncp
+        };
+        if let Some(startup) = startup {
+            start_network(&mut connected, &mut callbacks, startup, self.radio_tx_power).await?;
+            configure_running_network(&mut connected, self.radio_tx_power).await?;
+        }
 
         info!("Creating message translation bridge.");
         let bridge = async move {
@@ -346,6 +376,36 @@ async fn start_network(
     Ok(())
 }
 
+async fn configure_running_network(
+    connected: &mut Connection,
+    radio_tx_power: i8,
+) -> Result<(), Error> {
+    debug!("Setting radio power to {radio_tx_power}");
+    connected.set_radio_power(radio_tx_power).await?;
+
+    let network_state = connected.network_state().await?;
+    info!("Final network state: {network_state:?}");
+
+    let (typ, parameters) = connected.get_network_parameters().await?;
+    info!("Device type: {typ}");
+    info!("Network parameters:\n{parameters}");
+
+    log_state(connected).await?;
+
+    let configured_radius = connected
+        .get_configuration_value(config::Id::MaxHops)
+        .await?;
+    let radius = configured_radius
+        .try_into()
+        .map_err(|_| ValueError::InvalidRouteRadius(configured_radius))?;
+    info!("Sending many-to-one route request: {radius} hops");
+    connected
+        .send_many_to_one_route_request(concentrator::Type::HighRam, radius)
+        .await?;
+
+    Ok(())
+}
+
 async fn log_state<T>(transport: &mut T) -> Result<(), Error>
 where
     T: Configuration + Security + Send,
@@ -366,4 +426,75 @@ where
     );
 
     Ok(())
+}
+
+#[cfg(all(test, feature = "apis-saltans"))]
+mod tests {
+    use std::num::NonZeroU8;
+
+    use tokio::sync::mpsc;
+
+    use crate::test_support::{ConnectionScript, Script, Transaction};
+    use crate::types::ByteSizedVec;
+    use crate::{Builder, Endpoint, Error, ember};
+
+    const EZSP_V8: u8 = 8;
+    const NETWORK_STATE: u16 = 0x0018;
+    const SET_CONCENTRATOR: u16 = 0x0010;
+    const GET_EUI64: u16 = 0x0026;
+    const ADD_ENDPOINT: u16 = 0x0002;
+    const ENDPOINT_ID: u8 = 1;
+    const PROFILE_ID: u16 = 0x0104;
+    const DEVICE_ID: u16 = 0x0005;
+    const TX_POWER: i8 = 5;
+
+    const fn endpoint() -> Endpoint {
+        Endpoint {
+            id: ENDPOINT_ID,
+            profile_id: PROFILE_ID,
+            device_id: DEVICE_ID,
+            app_flags: 0,
+            input_clusters: ByteSizedVec::new(),
+            output_clusters: ByteSizedVec::new(),
+        }
+    }
+
+    #[test]
+    fn prepare_registers_endpoints_without_starting_the_network() {
+        let (client, mut script) = ConnectionScript::client(
+            EZSP_V8,
+            Script::new([
+                Transaction::reply(NETWORK_STATE, &[], &[0]),
+                Transaction::reply(SET_CONCENTRATOR, &[0; 10], &[0]),
+                Transaction::reply(GET_EUI64, &[], &[1; 8]),
+                Transaction::reply(NETWORK_STATE, &[], &[0]),
+                Transaction::reply(ADD_ENDPOINT, &[1, 4, 1, 5, 0, 0, 0, 0], &[0]),
+            ]),
+        );
+        let (events, _incoming) = mpsc::channel::<apis_saltans_hw::Event<()>>(1);
+        let builder = Builder::new(client)
+            .with_desired_version(NonZeroU8::new(EZSP_V8).unwrap())
+            .with_radio_tx_power(TX_POWER);
+        let target = script
+            .run(builder.prepare(Box::new([endpoint()]), events))
+            .unwrap();
+        assert_eq!(&*target.ncp.endpoints, &[endpoint()]);
+        assert_eq!(target.ncp.restore_tx_power, TX_POWER);
+    }
+
+    #[test]
+    fn prepare_rejects_a_running_network_before_configuration() {
+        let (client, mut script) = ConnectionScript::client(
+            EZSP_V8,
+            Script::new([Transaction::reply(NETWORK_STATE, &[], &[2])]),
+        );
+        let (events, _incoming) = mpsc::channel::<apis_saltans_hw::Event<()>>(1);
+        let builder = Builder::new(client).with_desired_version(NonZeroU8::new(EZSP_V8).unwrap());
+        assert!(matches!(
+            script.run(builder.prepare(Box::new([endpoint()]), events)),
+            Err(Error::Status(crate::error::Status::Ember(Ok(
+                ember::Status::InvalidCall
+            ))))
+        ));
+    }
 }

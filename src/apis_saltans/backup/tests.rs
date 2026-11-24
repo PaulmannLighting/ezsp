@@ -88,7 +88,7 @@ pub(super) fn backup() -> NetworkBackup {
     )
 }
 
-fn ncp(protocol: u8, transactions: Vec<Transaction>) -> (Ncp, ConnectionScript) {
+pub(super) fn ncp(protocol: u8, transactions: Vec<Transaction>) -> (Ncp, ConnectionScript) {
     let (connection, script) = ConnectionScript::new(protocol, Script::new(transactions));
     let (events, _receiver) = mpsc::channel(1);
     let ncp = ready(Ncp::new(connection, Box::new([]), events, Options::NONE)).unwrap();

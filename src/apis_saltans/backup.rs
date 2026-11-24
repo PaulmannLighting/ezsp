@@ -2,8 +2,8 @@
 //!
 //! An explicit [`OfflineTokenProfile`] enables complete token-image capture and
 //! offline storage restoration. No real firmware profile is bundled or certified.
-//! Without a configured profile, operations retain the original qualification
-//! errors. Successful storage readback does not prove persistence across reset;
+//! EZSP v8 instead exposes rejoin coverage through the same optional traits.
+//! Successful offline storage readback does not prove persistence across reset;
 //! the application owns reset, reconnection, and later network activation.
 
 use apis_saltans_hw::{
@@ -38,7 +38,7 @@ mod security;
 mod simulation;
 #[cfg(test)]
 mod tests;
-pub mod v8;
+mod v8;
 
 const CLASSIC_KEY_STORAGE: u8 = 0;
 const ERASED_EUI64: [u8; 8] = [u8::MAX; 8];
@@ -67,6 +67,9 @@ impl NetworkDump for Ncp {
             let mut session = self.connection.maintenance().await;
             return offline::capture(&mut session, profile).await;
         }
+        if protocol == v8::VERSION {
+            return v8::capture(&mut self.connection.maintenance().await).await;
+        }
         dump(&mut self.connection, protocol).await
     }
 }
@@ -77,15 +80,19 @@ impl NetworkRestore for Ncp {
         backup: &NetworkBackup,
         options: RestoreOptions,
     ) -> Result<(), Error> {
-        let plan = RestorePlan::from_prepared(backup, options)?;
         let protocol = self.connection.desired_version.get();
         if let Some(profile) = &self.backup_profile {
+            let plan = RestorePlan::from_prepared(backup, options)?;
             check_protocol(protocol)?;
             let mut session = self.connection.maintenance().await;
             return offline::validate(&mut session, profile, &plan, options)
                 .await
                 .map(drop);
         }
+        if protocol == v8::VERSION {
+            return v8::validate(&mut self.connection.maintenance().await, backup, options).await;
+        }
+        let plan = RestorePlan::from_prepared(backup, options)?;
         validate_target(&mut self.connection, protocol, &plan).await
     }
 
@@ -103,6 +110,15 @@ impl NetworkRestore for Ncp {
             })?;
             let mut session = self.connection.maintenance().await;
             return offline::restore(&mut session, profile, &plan, options).await;
+        }
+        if self.connection.desired_version.get() == v8::VERSION {
+            return v8::restore(
+                &mut self.connection.maintenance().await,
+                &backup,
+                options,
+                self.restore_tx_power,
+            )
+            .await;
         }
         // Revalidate even for direct trait calls or if another connection changed
         // the target after validation. No write is attempted on an unqualified profile.

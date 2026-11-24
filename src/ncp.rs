@@ -47,6 +47,7 @@ mod startup;
 
 // The ZDP profile ID.
 const ZDP: u16 = 0x0000;
+const DEFAULT_RADIO_TX_POWER: i8 = 8;
 
 /// Host-side helper for an EZSP Network Co-Processor.
 ///
@@ -65,6 +66,8 @@ pub struct Ncp {
     options: Options,
     #[cfg(feature = "apis-saltans")]
     pub(crate) backup_profile: Option<crate::apis_saltans::backup::OfflineTokenProfile>,
+    #[cfg(feature = "apis-saltans")]
+    pub(crate) restore_tx_power: i8,
 }
 
 impl Ncp {
@@ -142,6 +145,8 @@ impl Ncp {
             options,
             #[cfg(feature = "apis-saltans")]
             backup_profile: None,
+            #[cfg(feature = "apis-saltans")]
+            restore_tx_power: DEFAULT_RADIO_TX_POWER,
         })
     }
 }

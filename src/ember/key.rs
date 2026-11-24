@@ -116,6 +116,12 @@ impl Struct {
         Bitmask::try_from(self.bitmask)
     }
 
+    /// Whether the supplied metadata flag is set, including when several flags are set.
+    #[must_use]
+    pub const fn has_flag(&self, flag: Bitmask) -> bool {
+        self.bitmask & flag as u16 != 0
+    }
+
     /// Return the type of the key.
     ///
     /// # Errors

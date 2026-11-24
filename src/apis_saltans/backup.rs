@@ -38,6 +38,7 @@ mod security;
 mod simulation;
 #[cfg(test)]
 mod tests;
+pub mod v8;
 
 const CLASSIC_KEY_STORAGE: u8 = 0;
 const ERASED_EUI64: [u8; 8] = [u8::MAX; 8];

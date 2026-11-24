@@ -35,7 +35,7 @@ tokio = { version = "1", features = ["sync"] }
 
 [features]
 semver = ["dep:semver"]
-apis-saltans = ["dep:apis-saltans-hw", "dep:bytes"]
+apis-saltans = ["dep:apis-saltans-hw", "dep:bytes", "tokio/time"]
 
 [profile.release]
 opt-level = 3

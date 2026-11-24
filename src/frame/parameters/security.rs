@@ -1,5 +1,6 @@
 //! Security Frames
 
+pub use self::add_or_update_key_table_entry::Response as AddOrUpdateKeyTableEntry;
 pub use self::check_key_context::Response as CheckKeyContext;
 pub use self::clear_key_table::Response as ClearKeyTable;
 pub use self::clear_transient_link_keys::Response as ClearTransientLinkKeys;
@@ -13,6 +14,7 @@ pub use self::find_key_table_entry::Response as FindKeyTableEntry;
 pub use self::get_aps_key_info::Response as GetApsKeyInfo;
 pub use self::get_current_security_state::Response as GetCurrentSecurityState;
 pub use self::get_key::Response as GetKey;
+pub use self::get_key_table_entry::Response as GetKeyTableEntry;
 pub use self::get_network_key_info::Response as GetNetworkKeyInfo;
 pub use self::import_key::Response as ImportKey;
 pub use self::import_link_key::Response as ImportLinkKey;
@@ -22,6 +24,7 @@ pub use self::send_trust_center_link_key::Response as SendTrustCenterLinkKey;
 pub use self::set_initial_security_state::Response as SetInitialSecurityState;
 pub use self::update_tc_link_key::Response as UpdateTcLinkKey;
 
+pub mod add_or_update_key_table_entry;
 pub mod check_key_context;
 pub mod clear_key_table;
 pub mod clear_transient_link_keys;
@@ -34,6 +37,7 @@ pub mod find_key_table_entry;
 pub mod get_aps_key_info;
 pub mod get_current_security_state;
 pub mod get_key;
+pub mod get_key_table_entry;
 pub mod get_network_key_info;
 pub mod handler;
 pub mod import_key;
@@ -46,6 +50,7 @@ pub mod update_tc_link_key;
 
 crate::frame::parameters::command_enum!(
     Command,
+    AddOrUpdateKeyTableEntry(add_or_update_key_table_entry::Command),
     CheckKeyContext(check_key_context::Command),
     ClearKeyTable(clear_key_table::Command),
     ClearTransientLinkKeys(clear_transient_link_keys::Command),
@@ -59,6 +64,7 @@ crate::frame::parameters::command_enum!(
     GetApsKeyInfo(get_aps_key_info::Command),
     GetCurrentSecurityState(get_current_security_state::Command),
     GetKey(get_key::Command),
+    GetKeyTableEntry(get_key_table_entry::Command),
     GetNetworkKeyInfo(get_network_key_info::Command),
     ImportKey(import_key::Command),
     ImportLinkKey(import_link_key::Command),
@@ -71,6 +77,7 @@ crate::frame::parameters::command_enum!(
 
 crate::frame::parameters::parameter_enum!(
     Response,
+    AddOrUpdateKeyTableEntry,
     CheckKeyContext,
     ClearKeyTable,
     ClearTransientLinkKeys,
@@ -84,6 +91,7 @@ crate::frame::parameters::parameter_enum!(
     GetApsKeyInfo,
     GetCurrentSecurityState,
     GetKey,
+    GetKeyTableEntry,
     GetNetworkKeyInfo,
     ImportKey,
     ImportLinkKey,

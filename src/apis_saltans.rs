@@ -26,6 +26,12 @@
 //! one, operations retain their qualification errors. See [`backup`] for the
 //! firmware contract, layouts, and restore planner. Registration does not qualify firmware.
 //!
+//! For catalog-free EZSP v8 recovery, use
+//! [`Connection::capture_v8_recovery`](crate::Connection::capture_v8_recovery) and
+//! [`Connection::restore_v8_recovery`](crate::Connection::restore_v8_recovery).
+//! This workflow re-forms a live network with the captured keys and is available through
+//! the connected EZSP API. See [`backup::v8`] for its coverage.
+//!
 //! # Endpoints
 //!
 //! `apis_saltans_hw::zdp::SimpleDescriptor` converts into [`crate::Endpoint`]

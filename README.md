@@ -456,6 +456,46 @@ an unrelated status namespace.
 
 ## Backup and restore
 
+### EZSP v8 network recovery
+
+With the `apis-saltans` feature, call
+`ncp.connection().capture_v8_recovery().await` on a running EZSP v8 coordinator.
+It captures the active network identity and network key, the Trust Center key or
+hash seed, outgoing counters, and the NCP's persistent partner link keys. It merges
+the NCP's child and address tables with the key table by IEEE address. No device
+catalog or token layout is needed. Pause commissioning and network key rotation
+during capture. The snapshot is intended for a stable network with a single active
+key epoch.
+
+Keep the original `RecoveryBackup` for recovery. To store it, serialize
+`backup.snapshot()` as an `apis_saltans_hw::NetworkBackup` with that crate's
+`serde` feature enabled. Reopen it with `RecoveryBackup::from_snapshot`.
+Protect the serialized keys and counters as network credentials.
+
+Use `Client::connect` with EZSP v8 to connect to an idle target that has no
+network to preserve. The original coordinator must be offline. The target must
+already report the original coordinator IEEE address and have the matching security
+level and enough link-key slots. Configure the target's normal Trust Center
+policies. Keep the transport actors and callback receiver running, then call
+`connection.restore_v8_recovery(&backup, options, radio_tx_power).await` with a
+Tokio time driver. Choose explicit nonzero NWK and APS counter advances through
+`RestoreOptions` that exceed traffic since capture, including any prior recovery
+using the same backup. Use a transmit power supported by the target.
+
+Restore forms the network and verifies its identity, active key, link keys and
+outgoing counters using live readback. The report contains both the requested and
+observed network update IDs because v8 firmware can reset the ID on formation.
+v8 cannot restore the child table or incoming replay counters through these
+commands. Devices must rediscover routes and sleepy children may need to wake and
+rejoin on their own. Device coverage depends on what the source NCP recorded.
+The operation leaves the network running. If a failure reports possible changes,
+or the caller cancels after writes begin, inspect the target before retrying.
+Hardware persistence across reset and actual device rejoin require hardware
+verification. To start a high-level `Ncp` after a radio reset, resume the
+persisted network with `Startup::Resume`.
+
+### Complete offline token backup
+
 With `apis-saltans`, `Ncp` implements `NetworkDump` and `NetworkRestore` without
 changes to the upstream API. There is a successful, simulated end-to-end backend
 for **explicitly configured offline token profiles**. No hardware-qualified profile

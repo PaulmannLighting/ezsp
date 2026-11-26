@@ -42,7 +42,11 @@
 //! EZSP child additions, trust-center, stack-status, and final `messageSent` callbacks
 //! convert into the corresponding `apis_saltans_hw::Event::Device`,
 //! `apis_saltans_hw::Event::Network`, and `apis_saltans_hw::Event::Apsde`
-//! categories. Incoming APS messages convert into
+//! categories. Trust-center join and rejoin events require an allow decision,
+//! with `NoAction` also accepted for secured rejoins. Departure events use the
+//! callback's `DeviceLeft` status independently of the policy decision.
+//!
+//! Incoming APS messages convert into
 //! `apis_saltans_hw::aps::apsde::DataIndication` values, preserving APSDE
 //! addressing, profile, cluster, payload, and link quality. EZSP provides
 //! neither a reception timestamp nor a device-key-pair handle, so both

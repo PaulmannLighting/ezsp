@@ -7,9 +7,9 @@
 //! `TryFrom<Callback> for apis_saltans_hw::Event` recognizes `messageSent`,
 //! child additions, successful stack-status, and trust-center-join callbacks.
 //! Child removals, unsupported callback families, unrecognized Ember statuses,
-//! and raw status errors fail conversion. Fragment-internal `messageSent` callbacks are
-//! consumed by the high-level NCP event handler before this conversion is
-//! attempted.
+//! raw status errors, and trust-center join or rejoin attempts without an
+//! accepted policy decision fail conversion. The high-level NCP event handler
+//! consumes fragment-internal `messageSent` callbacks before conversion.
 //!
 //! Incoming-message conversion is deliberately separate: a
 //! [`DefragmentedMessage`] converts into an
@@ -88,6 +88,7 @@ mod tests {
     use le_stream::FromLeStream;
 
     use crate::ember::device::Update;
+    use crate::ember::join::Decision;
     use crate::frame::{Parameter, Parsable};
     use crate::parameters::messaging::handler::IncomingMessage;
     use crate::parameters::networking::handler::ChildJoin;
@@ -99,6 +100,8 @@ mod tests {
         0x00, 0x00, 0x34, 0x12, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x03,
     ];
     const TRUST_CENTER_STATUS_INDEX: usize = 10;
+    const TRUST_CENTER_DECISION_INDEX: usize = 11;
+    const UNKNOWN_TRUST_CENTER_DECISION: u8 = 0xff;
     const TRUST_CENTER_JOIN_BYTES: [u8; 14] = [
         0x34, 0x12, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x00, 0x03, 0x00, 0x00,
     ];
@@ -130,17 +133,93 @@ mod tests {
         assert!(Event::try_from(child_join_callback(false)).is_err());
     }
 
+    fn trust_center_callback(status: Update, decision: u8) -> Callback {
+        let mut bytes = TRUST_CENTER_JOIN_BYTES;
+        bytes[TRUST_CENTER_STATUS_INDEX] = status.into();
+        bytes[TRUST_CENTER_DECISION_INDEX] = decision;
+
+        Callback::parse_from_le_stream(TrustCenterJoin::ID, bytes.into_iter())
+            .expect("trust center test callback is complete")
+    }
+
+    #[test]
+    fn trust_center_denied_or_unknown_join_decision_emits_no_event() {
+        for status in [
+            Update::StandardSecurityUnsecuredJoin,
+            Update::StandardSecurityUnsecuredRejoin,
+            Update::StandardSecuritySecuredRejoin,
+        ] {
+            for decision in [Decision::DenyJoin.into(), UNKNOWN_TRUST_CENTER_DECISION] {
+                assert!(
+                    Event::try_from(trust_center_callback(status, decision)).is_err(),
+                    "unexpected event for {status:?} with policy decision {decision:#04x}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn trust_center_no_action_on_unsecured_attempt_emits_no_event() {
+        for status in [
+            Update::StandardSecurityUnsecuredJoin,
+            Update::StandardSecurityUnsecuredRejoin,
+        ] {
+            assert!(
+                Event::try_from(trust_center_callback(status, Decision::NoAction.into())).is_err(),
+                "unexpected event for {status:?} with NoAction"
+            );
+        }
+    }
+
+    #[test]
+    fn trust_center_allowed_unsecured_attempt_emits_join_or_rejoin() {
+        for decision in [Decision::UsePreconfiguredKey, Decision::SendKeyInTheClear] {
+            assert!(matches!(
+                Event::try_from(trust_center_callback(
+                    Update::StandardSecurityUnsecuredJoin,
+                    decision.into(),
+                )),
+                Ok(Event::Device(DeviceEvent::Joined(_)))
+            ));
+            assert!(matches!(
+                Event::try_from(trust_center_callback(
+                    Update::StandardSecurityUnsecuredRejoin,
+                    decision.into(),
+                )),
+                Ok(Event::Device(DeviceEvent::Rejoined { secured: false, .. }))
+            ));
+        }
+    }
+
+    #[test]
+    fn trust_center_allowed_secured_rejoin_emits_secured_rejoin() {
+        for decision in [
+            Decision::NoAction,
+            Decision::UsePreconfiguredKey,
+            Decision::SendKeyInTheClear,
+        ] {
+            assert!(matches!(
+                Event::try_from(trust_center_callback(
+                    Update::StandardSecuritySecuredRejoin,
+                    decision.into(),
+                )),
+                Ok(Event::Device(DeviceEvent::Rejoined { secured: true, .. }))
+            ));
+        }
+    }
+
     #[test]
     fn trust_center_device_left_emits_device_left() {
-        let mut bytes = TRUST_CENTER_JOIN_BYTES;
-        bytes[TRUST_CENTER_STATUS_INDEX] = Update::DeviceLeft.into();
-        let callback = Callback::parse_from_le_stream(TrustCenterJoin::ID, bytes.into_iter())
-            .expect("trust center test callback is complete");
-
-        assert!(matches!(
-            Event::try_from(callback),
-            Ok(Event::Device(DeviceEvent::Left(_)))
-        ));
+        for decision in [
+            Decision::NoAction.into(),
+            Decision::DenyJoin.into(),
+            UNKNOWN_TRUST_CENTER_DECISION,
+        ] {
+            assert!(matches!(
+                Event::try_from(trust_center_callback(Update::DeviceLeft, decision)),
+                Ok(Event::Device(DeviceEvent::Left(_)))
+            ));
+        }
     }
 
     fn incoming_event(zdo_response_required: bool) -> Event {

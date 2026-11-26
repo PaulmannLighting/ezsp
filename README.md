@@ -409,10 +409,15 @@ The feature converts these EZSP callbacks into `apis_saltans_hw::Event` values:
 
 - `stackStatus` for network up, down, opened, and closed;
 - `childJoinHandler` with `joining=true` for direct child joins;
-- `trustCenterJoin` for unsecured joins, secured/unsecured rejoins, and
-  network departures reported as `DeviceLeft`; and
+- `trustCenterJoin` for allowed joins and rejoins, secured rejoins reported
+  with `NoAction`, and network departures reported as `DeviceLeft`; and
 - final acknowledged direct-unicast `messageSent` callbacks as APSDE data
   confirmations.
+
+Unsecured joins and rejoins require `UsePreconfiguredKey` or
+`SendKeyInTheClear`. Denied join and rejoin attempts and attempts with unknown
+policy decisions produce no event. `DeviceLeft` is reported independently of
+the join policy decision.
 
 Complete incoming APS messages convert separately into
 `apis_saltans_hw::aps::apsde::DataIndication<bytes::Bytes, ()>`. The conversion

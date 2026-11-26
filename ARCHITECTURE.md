@@ -489,13 +489,16 @@ families:
   to the local child table;
 - successful `StackStatus` becomes `NetworkUp`, `NetworkDown`, `NetworkOpened`,
   or `NetworkClosed`; and
-- `TrustCenterJoin` becomes join or secured/unsecured rejoin events, or
-  `DeviceEvent::Left` when the status is `DeviceLeft`.
+- `TrustCenterJoin` maps unsecured join and rejoin statuses to membership
+  events when the policy decision is `UsePreconfiguredKey` or
+  `SendKeyInTheClear`. Secured rejoins also accept `NoAction` because the
+  device already has the network key. `DeviceLeft` maps to `DeviceEvent::Left`
+  independently of the policy decision.
 
-Other callbacks, raw stack-status errors, unsupported stack statuses, and
-invalid membership addresses fail conversion. Scan callbacks and non-final
-fragment `messageSent` callbacks are consumed earlier by `EventHandler` for
-request correlation.
+Other callbacks, raw stack-status errors, unsupported stack statuses, invalid
+membership addresses, and joins or rejoins without an accepted policy decision
+fail conversion. Scan callbacks and non-final fragment `messageSent` callbacks
+are consumed earlier by `EventHandler` for request correlation.
 
 Incoming APS messages follow a separate conversion path after defragmentation:
 

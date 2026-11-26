@@ -3,9 +3,9 @@
 //! Acknowledged direct-unicast `messageSent` callbacks recover the coordinator
 //! correlation counter from the EZSP message tag and become APSDE data
 //! confirmations. Child additions become join events. Trust-center
-//! callbacks distinguish unsecured joins, secured/unsecured rejoins, and
-//! leaves. Only network up/down/opened/closed stack statuses have hardware
-//! event variants.
+//! callbacks use the policy decision for joins and rejoins and the status
+//! alone for departures. Only network up/down/opened/closed stack statuses
+//! have hardware event variants.
 
 use apis_saltans_hw::aps::apsde::{
     ConfirmStatus, DataConfirm, Destination, IndividualEndpoint, NetworkAddress,
@@ -16,6 +16,7 @@ use apis_saltans_hw::{ApsdeEvent, DeviceEvent, Event, NetworkError, NetworkEvent
 use crate::ember::Status;
 use crate::ember::aps::Options;
 use crate::ember::device::Update;
+use crate::ember::join::Decision;
 use crate::ember::message::Outgoing;
 use crate::parameters::messaging::handler::MessageSent;
 use crate::parameters::networking::handler::ChildJoin;
@@ -96,23 +97,31 @@ impl TryFrom<TrustCenterJoin> for Event {
     type Error = TrustCenterJoin;
 
     fn try_from(trust_center_join: TrustCenterJoin) -> Result<Self, Self::Error> {
-        let Ok(status) = trust_center_join.status() else {
-            return Err(trust_center_join);
-        };
+        let decision = trust_center_join.policy_decision();
+        let join_allowed = matches!(
+            decision,
+            Ok(Decision::UsePreconfiguredKey | Decision::SendKeyInTheClear)
+        );
 
-        let event = match status {
-            Update::StandardSecurityUnsecuredJoin => {
+        let event = match trust_center_join.status() {
+            Ok(Update::StandardSecurityUnsecuredJoin) if join_allowed => {
                 DeviceEvent::Joined(trust_center_join.try_into()?)
             }
-            Update::StandardSecurityUnsecuredRejoin => DeviceEvent::Rejoined {
+            Ok(Update::StandardSecurityUnsecuredRejoin) if join_allowed => DeviceEvent::Rejoined {
                 address: trust_center_join.try_into()?,
                 secured: false,
             },
-            Update::StandardSecuritySecuredRejoin => DeviceEvent::Rejoined {
-                address: trust_center_join.try_into()?,
-                secured: true,
-            },
-            Update::DeviceLeft => DeviceEvent::Left(trust_center_join.try_into()?),
+            // A secured rejoin can succeed with the device's existing network key.
+            Ok(Update::StandardSecuritySecuredRejoin)
+                if join_allowed || decision == Ok(Decision::NoAction) =>
+            {
+                DeviceEvent::Rejoined {
+                    address: trust_center_join.try_into()?,
+                    secured: true,
+                }
+            }
+            Ok(Update::DeviceLeft) => DeviceEvent::Left(trust_center_join.try_into()?),
+            _ => return Err(trust_center_join),
         };
 
         Ok(Self::Device(event))

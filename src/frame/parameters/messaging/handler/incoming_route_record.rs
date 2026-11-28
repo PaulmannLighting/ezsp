@@ -1,6 +1,25 @@
 use crate::ember::{Eui64, NodeId};
 use crate::types::ByteSizedVec;
 
+#[cfg(test)]
+mod tests {
+    use le_stream::FromLeStream;
+
+    use super::Handler;
+
+    const ROUTE_RECORD_PAYLOAD: [u8; 17] = [
+        0x82, 0xA2, 0x53, 0xC1, 0x01, 0x02, 0x01, 0x88, 0x17, 0x00, 0xFF, 0xB0, 0x02, 0x0F, 0x47,
+        0x6B, 0x82,
+    ];
+
+    #[test]
+    fn decodes_route_record_relays_as_node_ids() {
+        let handler = Handler::from_le_stream_exact(ROUTE_RECORD_PAYLOAD.into_iter()).unwrap();
+
+        assert_eq!(handler.relays(), &[0x470F, 0x826B]);
+    }
+}
+
 crate::frame::parameters::handler!(
     0x0059,
     {
@@ -8,7 +27,7 @@ crate::frame::parameters::handler!(
         source_eui: Eui64,
         last_hop_lqi: u8,
         last_hop_rssi: i8,
-        relays: ByteSizedVec<u8>,
+        relays: ByteSizedVec<NodeId>,
     },
     impl {
         impl Handler {
@@ -36,9 +55,9 @@ crate::frame::parameters::handler!(
                 self.last_hop_rssi
             }
 
-            /// Returns the relays.
+            /// Returns the relay node IDs in their received order.
             #[must_use]
-            pub fn relays(&self) -> &[u8] {
+            pub fn relays(&self) -> &[NodeId] {
                 self.relays.as_ref()
             }
         }
